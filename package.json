@@ -1,0 +1,14 @@
+{
+  "name": "crm-batiment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "install:apps": "npm --prefix backend install && npm --prefix frontend install",
+    "dev": "concurrently -n backend,frontend \"npm --prefix backend run start:dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "dev:frontend": "npm --prefix frontend run dev"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
