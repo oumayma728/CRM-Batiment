@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CRM Intelligent - Société de Bâtiment
 
 ## Description
@@ -61,3 +62,6 @@ npm run dev
 - Node.js >= 18
 - PostgreSQL >= 15
 - npm >= 9
+=======
+# CRM-BTP
+>>>>>>> c288ac94822e4e22fe15668abd06d011fe81867e
