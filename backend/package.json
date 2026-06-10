@@ -20,6 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:integration": "node --test --loader ts-node/esm ./test/assistant.integration.e2e.ts",
+    "db:migrate": "node prisma/apply-migrations.mjs",
+    "db:setup": "node prisma/apply-migrations.mjs && node --loader ts-node/esm prisma/seed.ts",
     "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "dependencies": {

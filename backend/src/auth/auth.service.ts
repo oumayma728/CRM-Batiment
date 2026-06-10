@@ -14,6 +14,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
@@ -262,6 +263,38 @@ export class AuthService {
     return {
       message: 'Mot de passe changé avec succès.',
       ...this.generateLoginResponse(user),
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const email = dto.email.trim();
+    const normalizedEmail = email.toLowerCase();
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { email: normalizedEmail }],
+      },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Aucun utilisateur trouve avec cet email');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false,
+        actif: true,
+      },
+    });
+
+    this.logger.log(`Mot de passe oublie reinitialise pour ${user.email}`);
+
+    return {
+      message:
+        'Mot de passe reinitialise avec succes. Vous pouvez vous connecter.',
     };
   }
 

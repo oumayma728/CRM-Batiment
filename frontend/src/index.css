@@ -1,11 +1,13 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ============================================================
    BÂTIFLOW — Design tokens
    Toutes les couleurs sont centralisées ici.
    Utilise var(--color-*) dans tout le CSS custom.
    ============================================================ */
-@theme {
+:root {
   /* Palette principale */
   --color-lavande:      #9683EC;
   --color-pervenche:    #CCCCFF;

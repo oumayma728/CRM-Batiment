@@ -35,6 +35,10 @@
     "node_modules",
     "dist",
     "prisma",
-    "src/modules/catalogue"
+    "src/modules/catalogue",
+    "src/devis/diagnostic.controller.ts",
+    "src/devis/diagnostic-session.service.ts",
+    "src/devis/devis-auto-generator.service.ts",
+    "src/devis/price-calculator.service.ts"
   ]
 }

@@ -16,6 +16,7 @@ import {
 import { AuthService } from './auth.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
@@ -75,6 +76,19 @@ export class AuthController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.authService.changePassword(dto, user);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reinitialiser un mot de passe oublie',
+    description:
+      "Verifie l'email puis remplace le mot de passe par le nouveau mot de passe saisi.",
+  })
+  @ApiResponse({ status: 200, description: 'Mot de passe reinitialise' })
+  @ApiResponse({ status: 404, description: 'Utilisateur non trouve' })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
   }
 
   // ──────────────────────────────────────────────

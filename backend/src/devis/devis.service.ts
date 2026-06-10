@@ -28,22 +28,13 @@ import {
   ClientValidationDecision,
   RespondClientValidationDto,
 } from './dto/respond-client-validation.dto.js';
+import { WorkflowStateService } from '../common/workflow/workflow-state.service.js';
 import type {
   DevisClientSignatureStatut,
   DevisStatut,
   Unite,
 } from '../../generated/prisma/client.js';
 
-const TRANSITIONS: Record<string, string[]> = {
-  BROUILLON: ['ENVOYE', 'ANNULE'],
-  ENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ACCEPTE: ['SIGNE', 'ANNULE'],
-  SIGNE: [],
-  REFUSE: ['REVISE', 'ANNULE'],
-  REVISE: ['RENVOYE', 'ANNULE'],
-  RENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ANNULE: [],
-};
 
 const MAX_SIGNATURE_OTP_ATTEMPTS = 3;
 
@@ -124,6 +115,7 @@ export class DevisService {
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly workflow: WorkflowStateService,
   ) {}
 
   private normalizePhone(phone: string) {
@@ -652,6 +644,34 @@ export class DevisService {
       });
     }
 
+    // Générer une facture d'acompte (BROUILLON) si elle n'existe pas encore.
+    // Par défaut, 30% si aucune configuration spécifique n'est fournie.
+    const existingAcompte = await this.prisma.facture.findFirst({
+      where: { devisId, typeFacture: 'ACOMPTE' },
+    });
+
+    if (!existingAcompte) {
+      const acomptePercentDefault = 30; // TODO: rendre configurable par company
+      const acompteTTC = this.round2((devis.totalTTC * acomptePercentDefault) / 100);
+      const tauxTVA = devis.tauxTVA ?? 20;
+      const acompteHT = this.round2(acompteTTC / (1 + tauxTVA / 100));
+      const acompteTVA = this.round2(acompteTTC - acompteHT);
+
+      await this.prisma.facture.create({
+        data: {
+          devisId,
+          reference: await this.generateDocumentReference('FAC', 'facture'),
+          montantHT: acompteHT,
+          montantTVA: acompteTVA,
+          montantTTC: acompteTTC,
+          statut: 'BROUILLON',
+          typeFacture: 'ACOMPTE',
+          acomptePercent: acomptePercentDefault,
+          acompteMontant: acompteTTC,
+        },
+      });
+    }
+
     let bonCommande = await this.prisma.bonCommande.findUnique({
       where: { devisId },
     });
@@ -1157,7 +1177,7 @@ export class DevisService {
     const current = devis.statut as string;
     const next = dto.statut as string;
 
-    const allowed = TRANSITIONS[current] ?? [];
+    const allowed = this.workflow.getAllowedTransitions(current) ?? [];
     if (!allowed.includes(next)) {
       throw new BadRequestException(
         `Transition ${current} -> ${next} non autorisee. Transitions possibles : ${
@@ -1797,6 +1817,7 @@ export class DevisService {
       where: { id, companyId },
       include: {
         client: { select: { id: true, nom: true, prenom: true } },
+        lignes: true,
       },
     });
 
@@ -1835,6 +1856,10 @@ export class DevisService {
       throw new BadRequestException(
         'Veuillez d abord configurer votre signature dans votre profil.',
       );
+    }
+
+    if (!devis.lignes || devis.lignes.length === 0) {
+      throw new BadRequestException('Impossible de signer un devis sans lignes.');
     }
 
     const signedAt = new Date();
