@@ -401,7 +401,21 @@ export class AssistantService {
       intentFallback,
       aiIntentHint,
     );
-    const intent = intentDetection.intent;
+    let intent = intentDetection.intent;
+    // FIX: si on est en parcours devis guidé (step > 0) et que le client répond
+    // avec un type de travaux, on FORCE demande_devis au lieu de basculer vers info_service.
+    if (
+      (state.currentGuidedStep ?? 0) > 0 &&
+      !state.checklistCompleted &&
+      intent === 'demande_info_service'
+    ) {
+      intent = 'demande_devis';
+    }
+    console.log('🔄 DEBUG ÉTAT —',
+    'state.intent (mémorisé):', state.intent,
+    '| currentGuidedStep:', state.currentGuidedStep,
+    '| checklistCompleted:', state.checklistCompleted,
+    '| intent (recalculé):', intent);
     const detectedIntents = intentDetection.detectedIntents;
     const commercialIntentsFallback = this.detectCommercialIntents({
       message: normalizedMessage,
@@ -439,7 +453,7 @@ export class AssistantService {
     }
 
     const mergedCollectedData = {
-      nom: aiExtracted?.nom || extractionPipeline.collectedData.nom || sessionState.nom || '',
+      nom: extractionPipeline.collectedData.nom || sessionState.nom || '',
       telephone:
         sessionState.telephone ||
         extractionPipeline.collectedData.telephone ||
@@ -477,27 +491,43 @@ export class AssistantService {
     let awaitingProjectTypeChangeConfirmation =
       state.awaitingProjectTypeChangeConfirmation;
     let pendingProjectType = state.pendingProjectType;
-
+    console.log('🔧 DEBUG VERROU — avant if:',
+      'sessionState.projectType =', JSON.stringify(sessionState.projectType),
+      '| candidate.known =', projectMatchCandidate.known,
+      '| candidate.projectType =', JSON.stringify(projectMatchCandidate.projectType),
+      '| candidate.suggestedType =', JSON.stringify(projectMatchCandidate.suggestedType),
+      '| quoteIntentSignal =', quoteIntentSignal,
+      '| currentGuidedStep mémorisé =', state.currentGuidedStep);
+    // "AUTRE" n'est pas un vrai type : on le considère comme "pas encore défini".
+    const hasRealProjectType =
+      Boolean(sessionState.projectType) && sessionState.projectType !== 'AUTRE';
     if (explicitProjectTypeChange) {
       sessionState.projectType = explicitProjectTypeChange;
       awaitingProjectTypeChangeConfirmation = false;
       pendingProjectType = null;
     } else if (
-      !sessionState.projectType &&
+      !hasRealProjectType &&
       projectMatchCandidate.known &&
       quoteIntentSignal
     ) {
       sessionState.projectType = projectMatchCandidate.projectType;
-    } else if (
-      !sessionState.projectType &&
+} else if (
+      !hasRealProjectType &&
       quoteIntentSignal &&
       projectMatchCandidate.suggestedType
     ) {
       // Evite de verrouiller un faux type inconnu trop tot.
       // On garde uniquement une suggestion raisonnable si elle existe.
       sessionState.projectType = projectMatchCandidate.suggestedType;
+    } else if (
+      !hasRealProjectType &&
+      (state.currentGuidedStep ?? 0) > 0 &&
+      projectMatchCandidate.suggestedType
+    ) {
+      // FIX: en parcours devis guidé, si le client donne un type reconnu
+      // (ex: "peinture" -> "Peinture / Décoration"), on le verrouille.
+      sessionState.projectType = projectMatchCandidate.suggestedType;
     }
-
     let projectTypeConflict = false;
     const hasExplicitTypeChangeSignal =
       /\b(changer|change|finalement|plutot|au lieu|remplacer|modifier)\b/i.test(
@@ -539,13 +569,28 @@ export class AssistantService {
         (projectTypeKnown ? projectType : null),
       confidence: Number(projectTypeConfidence.toFixed(3)),
     };
-
+    console.log('🎯 DEBUG PROJET — message:', normalizedMessage,
+      '| sessionState.projectType:', sessionState.projectType,
+      '| projectMatch.known:', projectMatch.known,
+      '| suggestedType:', projectMatch.suggestedType);
     const isAffirmative = this.isAffirmative(normalizedMessage);
+    
     const isModificationRequest = this.isModificationRequest(normalizedMessage);
     const awaitingConfirmation = false;
     const awaitingEstimateChoice = false;
     const guidedAnswers = { ...state.guidedAnswers };
-    const currentGuidedStep = 0;
+    // FIX: maintenir le contexte du parcours devis entre les messages.
+    // On récupère le step mémorisé, et on le passe à 1 dès qu'on entre en parcours
+    // devis sans type de projet encore défini (le bot va demander le type).
+    let currentGuidedStep = state.currentGuidedStep ?? 0;
+    const inDevisFlow =
+      intent === 'demande_devis' ||
+    detectedIntentsResolved.includes('demande_devis');
+    if (inDevisFlow && !sessionState.projectType) {
+      currentGuidedStep = 1;
+    } else if (sessionState.projectType) {
+      currentGuidedStep = Math.max(currentGuidedStep, 1);
+}
     let checklistCompleted = false;
     const isUrgent =
       sessionState.urgent ||
