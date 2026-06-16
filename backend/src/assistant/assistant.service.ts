@@ -388,7 +388,6 @@ export class AssistantService {
       normalizedMessage,
       projectTypeNames,
     );
-
     const intentFallback =
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? 'demande_devis'
@@ -411,8 +410,9 @@ export class AssistantService {
     });
     const detectedIntentsResolved =
       detectedIntents.length > 0 ? detectedIntents : commercialIntentsFallback;
-
+    // Le regex essaie aussi
     const regexExtracted = this.extractFields(normalizedMessage);
+    // Le code FUSIONNE les deux
     const extractionPipeline = this.runHybridExtractionPipeline({
       normalizedMessage,
       intent,
@@ -425,8 +425,11 @@ export class AssistantService {
       ...state.sessionState,
     });
 
-    if (!sessionState.nom && extractionPipeline.collectedData.nom) {
-      sessionState.nom = extractionPipeline.collectedData.nom;
+    // Priorité au nom extrait par l'IA (Mistral) — plus fiable que le regex
+    if (aiExtracted?.nom) {
+        sessionState.nom = aiExtracted.nom;
+    } else if (!sessionState.nom && extractionPipeline.collectedData.nom) {
+        sessionState.nom = extractionPipeline.collectedData.nom;
     }
     if (!sessionState.telephone && extractionPipeline.collectedData.telephone) {
       sessionState.telephone = extractionPipeline.collectedData.telephone;
@@ -436,7 +439,7 @@ export class AssistantService {
     }
 
     const mergedCollectedData = {
-      nom: sessionState.nom || extractionPipeline.collectedData.nom || '',
+      nom: aiExtracted?.nom || extractionPipeline.collectedData.nom || sessionState.nom || '',
       telephone:
         sessionState.telephone ||
         extractionPipeline.collectedData.telephone ||
