@@ -411,11 +411,7 @@ export class AssistantService {
     ) {
       intent = 'demande_devis';
     }
-    console.log('🔄 DEBUG ÉTAT —',
-    'state.intent (mémorisé):', state.intent,
-    '| currentGuidedStep:', state.currentGuidedStep,
-    '| checklistCompleted:', state.checklistCompleted,
-    '| intent (recalculé):', intent);
+
     const detectedIntents = intentDetection.detectedIntents;
     const commercialIntentsFallback = this.detectCommercialIntents({
       message: normalizedMessage,
@@ -491,13 +487,7 @@ export class AssistantService {
     let awaitingProjectTypeChangeConfirmation =
       state.awaitingProjectTypeChangeConfirmation;
     let pendingProjectType = state.pendingProjectType;
-    console.log('🔧 DEBUG VERROU — avant if:',
-      'sessionState.projectType =', JSON.stringify(sessionState.projectType),
-      '| candidate.known =', projectMatchCandidate.known,
-      '| candidate.projectType =', JSON.stringify(projectMatchCandidate.projectType),
-      '| candidate.suggestedType =', JSON.stringify(projectMatchCandidate.suggestedType),
-      '| quoteIntentSignal =', quoteIntentSignal,
-      '| currentGuidedStep mémorisé =', state.currentGuidedStep);
+
     // "AUTRE" n'est pas un vrai type : on le considère comme "pas encore défini".
     const hasRealProjectType =
       Boolean(sessionState.projectType) && sessionState.projectType !== 'AUTRE';
@@ -569,10 +559,7 @@ export class AssistantService {
         (projectTypeKnown ? projectType : null),
       confidence: Number(projectTypeConfidence.toFixed(3)),
     };
-    console.log('🎯 DEBUG PROJET — message:', normalizedMessage,
-      '| sessionState.projectType:', sessionState.projectType,
-      '| projectMatch.known:', projectMatch.known,
-      '| suggestedType:', projectMatch.suggestedType);
+
     const isAffirmative = this.isAffirmative(normalizedMessage);
     
     const isModificationRequest = this.isModificationRequest(normalizedMessage);
@@ -3265,7 +3252,7 @@ export class AssistantService {
     ];
     const devisLexicon = ['devis', 'chiffrage', 'estimation'];
     const prixLexicon = ['prix', 'tarif', 'cout', 'combien', 'budget'];
-    const rdvLexicon = ['rdv', 'rendez', 'visite', 'planifier'];
+    const rdvLexicon = ['rdv', 'rendez', 'rendez-vous', 'rendezvous', 'visite', 'planifier'];
     const suiviLexicon = ['suivi', 'statut', 'avancement', 'relance'];
 
     const serviceScore = this.computeLexiconHitRatio(tokenSet, serviceLexicon);
@@ -3279,7 +3266,11 @@ export class AssistantService {
     if (prixScore > 0) scores.demande_prix += 0.32 * prixScore;
     if (rdvScore > 0) scores.demande_rdv += 0.28 * rdvScore;
     if (suiviScore > 0) scores.demande_suivi += 0.28 * suiviScore;
-
+    console.log('🎤 DEBUG SCORES — message tokens:', JSON.stringify([...tokenSet]),
+      '| rdvScore:', rdvScore,
+      '| devisScore:', devisScore,
+      '| scores.demande_rdv:', scores.demande_rdv,
+      '| scores.demande_devis:', scores.demande_devis);
     const hasTypeProjetPhrase = phrases.some((phrase) =>
       this.fuzzyIncludes(phrase, ['type projet', 'type project'], 1),
     );
@@ -4004,7 +3995,7 @@ export class AssistantService {
 
     const contactOnlyMessage =
       (Boolean(emailMatch) || Boolean(phoneMatch)) &&
-      !/(devis|travaux|peinture|isolation|renovation|plomberie|je veux|besoin|projet)/i.test(
+      !/(devis|travaux|peinture|isolation|renovation|plomberie|je veux|besoin|projet|rendez|rdv|suivi|prix|service|tarif)/i.test(
         cleanedMessage,
       );
 
@@ -4015,7 +4006,7 @@ export class AssistantService {
       .trim();
 
     const descriptionHasNeedSignal =
-      /(devis|travaux|peinture|isolation|renovation|plomberie|service|prix|suivi|rdv|besoin|projet|fuite|reparation)/i.test(
+      /(devis|travaux|peinture|isolation|renovation|plomberie|service|prix|suivi|rdv|rendez|besoin|projet|fuite|reparation)/i.test(
         descriptionCandidate,
       );
 
@@ -4269,7 +4260,7 @@ export class AssistantService {
       pattern.test(normalized),
     );
     const hasIntentSignal =
-      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|suivi)\b/.test(
+      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi|bonjour|bonsoir|salut)\b/.test(
         normalized,
       );
 
