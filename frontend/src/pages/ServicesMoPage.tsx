@@ -3,9 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { ServiceMainOeuvre } from '@/types';
 import { formatCurrency } from '@/lib/utils';
+import PageHero from '@/components/PageHero';
 import {
-  Plus, Search, Edit, Trash2, X, Wrench, Loader2,
+  Plus, Search, Edit, Trash2, Wrench, Loader2
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Input, SubmitButton } from '@/components/ui/Form';
 
 export default function ServicesMoPage() {
   const queryClient = useQueryClient();
@@ -56,26 +59,23 @@ export default function ServicesMoPage() {
   const isForbidden = errorStatus === 403;
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Wrench size={24} className="text-orange-600" />
-            Services Main d'Œuvre
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            {isError ? 'Erreur de chargement' : `${list.length} service(s) enregistré(s)`}
-          </p>
-        </div>
-        <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
-          <Plus size={17} /> Nouveau service
-        </button>
-      </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<Wrench size={22} />}
+        title="Services Main d'Œuvre"
+        subtitle={isError ? 'Erreur de chargement' : `${list.length} service(s) enregistré(s)`}
+        accent="orange"
+        actions={
+          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all font-medium text-sm shadow-sm">
+            <Plus size={16} /> Nouveau service
+          </button>
+        }
+      />
 
-      <div className="mb-4">
-        <div className="relative max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher un service..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Rechercher un service..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-orange-400 focus:bg-white focus:ring-2 focus:ring-orange-400/20 transition-all" />
         </div>
       </div>
 
@@ -119,41 +119,55 @@ export default function ServicesMoPage() {
         </div>
       )}
 
-      {/* Create Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouveau service</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix unitaire</label>
-                  <input type="number" step="0.01" value={form.prixUnitaire} onChange={(e) => setForm({ ...form, prixUnitaire: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Unité</label>
-                  <input type="text" placeholder="heure, jour..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-                </div>
-              </div>
-              {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la création.</p>}
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Nouveau service"
+        icon={Wrench}
+        accent="orange"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Input
+            label="Nom"
+            required
+            value={form.nom}
+            onChange={(e) => setForm({ ...form, nom: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prix unitaire"
+              type="number"
+              step="0.01"
+              value={form.prixUnitaire}
+              onChange={(e) => setForm({ ...form, prixUnitaire: e.target.value })}
+            />
+            <Input
+              label="Unité"
+              placeholder="heure, jour..."
+              value={form.unite}
+              onChange={(e) => setForm({ ...form, unite: e.target.value })}
+            />
           </div>
-        </div>
-      )}
+          {createMutation.error && (
+            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+              Erreur lors de la création.
+            </p>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
+              Créer le service
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

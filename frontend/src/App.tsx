@@ -30,6 +30,7 @@ import TypesProjetPage from '@/pages/TypesProjetPage';
 import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import TasksChantierPage from '@/pages/TasksChantierPage';
+import WhatsappPage from '@/pages/WhatsappPage';
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
@@ -106,6 +107,7 @@ export default function App() {
               <Route path="demandes-devis" element={<DemandesDevisPage />} />
               <Route path="devis" element={<DevisPage />} />
               <Route path="factures" element={<FacturesPage />} />
+              <Route path="messagerie-whatsapp" element={<WhatsappPage />} />
               <Route path="factures/:id" element={<FactureDetailPage />} />
               <Route path="checklist" element={<TechnicoChecklist />} />
               <Route path="prestations" element={<PrestationsPage />} />
@@ -133,6 +135,7 @@ export default function App() {
             <Route path="devis" element={<TechnicoDevis />} />
             <Route path="factures" element={<TechnicoFactures />} />
             <Route path="factures/:id" element={<TechnicoFactureDetail />} />
+            <Route path="messagerie-whatsapp" element={<WhatsappPage />} />
             <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
             <Route path="devis/:id/signature" element={<TechnicoDevisSignature />} />
             <Route path="checklist" element={<TechnicoChecklist />} />

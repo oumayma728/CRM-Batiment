@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import type { DemandeDevis } from '@/types';
 import { formatDate, cn } from '@/lib/utils';
+import PageHero from '@/components/PageHero';
 import {
   Plus, Search, Trash2, X, ChevronLeft, ChevronRight,
-  FileText, Loader2, Eye, ListChecks,
+  FileText, Loader2, Eye, ListChecks, ClipboardList,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Select, TextArea, SubmitButton } from '@/components/ui/Form';
 
 const statutConfig: Record<string, { bg: string; text: string; dot: string; label: string }> = {
   NOUVEAU: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Nouveau' },
@@ -121,27 +124,35 @@ export default function DemandesDevisPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <FileText size={24} className="text-orange-600" />
-            Demandes de Devis
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">{meta.total} demande(s) au total</p>
-        </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
-        >
-          <Plus size={17} /> Nouvelle demande
-        </button>
-      </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<ClipboardList size={22} />}
+        title="Demandes de Devis"
+        subtitle={`${meta.total} demande(s) au total`}
+        accent="blue"
+        actions={
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
+          >
+            <Plus size={16} /> Nouvelle demande
+          </button>
+        }
+      />
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Rechercher..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20 transition-all"
+          />
         </div>
       </div>
 
@@ -206,7 +217,7 @@ export default function DemandesDevisPage() {
                         <button
                           onClick={() => handleOpenStudy(d)}
                           disabled={!canOpenStudy(normalizedStatut) || studyDemandeId === d.id}
-                          className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                          className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                           title={
                             canOpenStudy(normalizedStatut)
                               ? 'Etude checklist / generation de devis'
@@ -243,93 +254,139 @@ export default function DemandesDevisPage() {
       </div>
 
       {/* Create Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouvelle demande de devis</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Client *</label>
-                <select required value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                  <option value="">Sélectionner un client</option>
-                  {(clientsList ?? []).map((c: { id: number; prenom: string; nom: string }) => (
-                    <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description *</label>
-                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Ex: Renovation salle de bain 8m2, fuite sous douche, intervention souhaitee sous 7 jours." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Source</label>
-                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all bg-white">
-                  <option value="AUTRE">Autre</option>
-                  <option value="CHATBOT">Chatbot</option>
-                  <option value="TECHNICO_COMMERCIAL">Technico-Commercial</option>
-                  <option value="APPEL">Appel téléphonique</option>
-                  <option value="RECOMMANDATION">Recommandation</option>
-                  <option value="SITE_WEB">Site Web</option>
-                </select>
-              </div>
-              {createMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Erreur lors de la creation. Verifiez le client selectionne et la description.
-                </p>
-              )}
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Nouvelle demande de devis"
+        icon={ClipboardList}
+        accent="blue"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Select
+            label="Client"
+            required
+            value={form.clientId}
+            onChange={(e) => setForm({ ...form, clientId: e.target.value })}
+            options={[
+              { value: '', label: 'Sélectionner un client' },
+              ...(clientsList ?? []).map((c: { id: number; prenom: string; nom: string }) => ({
+                value: c.id,
+                label: `${c.prenom} ${c.nom}`
+              }))
+            ]}
+          />
+          
+          <TextArea
+            label="Description"
+            required
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            rows={3}
+            placeholder="Ex: Renovation salle de bain 8m2, fuite sous douche, intervention souhaitee sous 7 jours."
+          />
+
+          <Select
+            label="Source"
+            value={form.source}
+            onChange={(e) => setForm({ ...form, source: e.target.value })}
+            options={[
+              { value: 'AUTRE', label: 'Autre' },
+              { value: 'CHATBOT', label: 'Chatbot' },
+              { value: 'TECHNICO_COMMERCIAL', label: 'Technico-Commercial' },
+              { value: 'APPEL', label: 'Appel téléphonique' },
+              { value: 'RECOMMANDATION', label: 'Recommandation' },
+              { value: 'SITE_WEB', label: 'Site Web' }
+            ]}
+          />
+
+          {createMutation.error && (
+            <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+              Erreur lors de la creation. Verifiez le client selectionne et la description.
+            </p>
+          )}
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" onClick={() => setShowModal(false)} className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm">Annuler</button>
+            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
+              Créer la demande
+            </SubmitButton>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       {/* Detail Modal */}
-      {detailDemande && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Détail de la demande</h2>
-              <button onClick={() => setDetailDemande(null)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
+      <Modal
+        isOpen={!!detailDemande}
+        onClose={() => setDetailDemande(null)}
+        title="Détail de la demande"
+        icon={Eye}
+        accent="blue"
+        maxWidth="lg"
+      >
+        {detailDemande && (
+          <div className="p-6 space-y-6">
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase">Description</p>
+              <p className="text-sm font-semibold text-slate-800 mt-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                {detailDemande.description || '—'}
+              </p>
             </div>
-            <div className="p-6 space-y-4">
-              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Description</p><p className="text-sm text-gray-700 mt-0.5">{detailDemande.description || '—'}</p></div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-[11px] font-bold text-gray-400 uppercase">Statut</p>
-                  {(() => { const normalizedStatut = normalizeDemandeStatut(detailDemande.statut); const st = statutConfig[normalizedStatut] ?? { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', label: normalizedStatut }; return (
-                    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold mt-0.5', st.bg, st.text)}><span className={cn('w-1.5 h-1.5 rounded-full', st.dot)} />{st.label}</span>
-                  ); })()}
-                </div>
-                <div><p className="text-[11px] font-bold text-gray-400 uppercase">Source</p><p className="text-sm mt-0.5">{detailDemande.source}</p></div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase">Statut</p>
+                {(() => { 
+                  const normalizedStatut = normalizeDemandeStatut(detailDemande.statut); 
+                  const st = statutConfig[normalizedStatut] ?? { bg: 'bg-slate-50', text: 'text-slate-600', dot: 'bg-slate-400', label: normalizedStatut }; 
+                  return (
+                    <span className={cn('inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold mt-1', st.bg, st.text)}>
+                      <span className={cn('w-1.5 h-1.5 rounded-full', st.dot)} />
+                      {st.label}
+                    </span>
+                  ); 
+                })()}
               </div>
-              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Client</p><p className="text-sm mt-0.5">{detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}</p></div>
-              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Créée le</p><p className="text-sm mt-0.5">{formatDate(detailDemande.createdAt)}</p></div>
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => handleOpenStudy(detailDemande)}
-                  disabled={!canOpenStudy(detailDemande.statut) || studyDemandeId === detailDemande.id}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {studyDemandeId === detailDemande.id ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <ListChecks size={15} />
-                  )}
-                  Etude checklist / generer devis
-                </button>
+              <div>
+                <p className="text-[11px] font-bold text-slate-400 uppercase">Source</p>
+                <p className="text-[13px] font-semibold text-slate-700 mt-1">{detailDemande.source}</p>
               </div>
+            </div>
+            
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase">Client</p>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                  {detailDemande.client ? detailDemande.client.prenom[0] + detailDemande.client.nom[0] : '—'}
+                </span>
+                <p className="text-[13px] font-semibold text-slate-700">
+                  {detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase">Créée le</p>
+              <p className="text-[13px] font-medium text-slate-600 mt-1">{formatDate(detailDemande.createdAt)}</p>
+            </div>
+            
+            <div className="pt-4 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={() => handleOpenStudy(detailDemande)}
+                disabled={!canOpenStudy(detailDemande.statut) || studyDemandeId === detailDemande.id}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-semibold shadow-md hover:shadow-lg hover:shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              >
+                {studyDemandeId === detailDemande.id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <ListChecks size={16} />
+                )}
+                Étude checklist / générer devis
+              </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

@@ -1,31 +1,26 @@
 @import "tailwindcss";
 
 /* ============================================================
-   BÂTIFLOW — Design tokens
-   Toutes les couleurs sont centralisées ici.
-   Utilise var(--color-*) dans tout le CSS custom.
+   BÂTIFLOW — Design tokens (Industrial ERP Style)
    ============================================================ */
 @theme {
-  /* Palette principale */
-  --color-lavande:      #9683EC;
-  --color-pervenche:    #CCCCFF;
-  --color-iris:         #5A4FCF;
-  --color-menthe:       #B6F0E7;
-  --color-rose:         #F7C8E0;
-  --color-jaune:        #FFF6B7;
+  /* Palette principale (ERP - Deep, Sharp, Trustworthy) */
+  --color-primary-dark:   #1e293b; /* slate-800 */
+  --color-primary:        #334155; /* slate-700 */
+  --color-accent:         #4f46e5; /* indigo-600 */
+  --color-accent-hover:   #4338ca; /* indigo-700 */
+  
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f8fafc; /* slate-50 */
+  --color-gris-clair:     #e2e8f0; /* slate-200 */
 
-  /* Surfaces */
-  --color-surface:      #ffffff;
-  --color-surface-alt:  #d1dfeb;
-  --color-gris-clair:   #c6c9cc;
-
-  /* Couleur glass (ajoutée ici pour cohérence) */
-  --color-glass-bg:     rgba(105, 140, 227, 0.85);
-  --color-glass-border: rgba(148, 163, 184, 0.2);
+  /* Couleur glass (Professional Frosted) */
+  --color-glass-bg:       rgba(255, 255, 255, 0.90);
+  --color-glass-border:   rgba(226, 232, 240, 0.8); /* slate-200 */
 
   /* Scrollbar */
-  --color-scrollbar:       #5791e3;
-  --color-scrollbar-hover: #64748b;
+  --color-scrollbar:       #cbd5e1; /* slate-300 */
+  --color-scrollbar-hover: #94a3b8; /* slate-400 */
 }
 
 /* ============================================================
@@ -34,130 +29,118 @@
 @layer base {
   body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    /* Dégradé bleu un peu plus foncé pour un meilleur contraste */
-    background: linear-gradient(120deg, #75aef5 0%, #6891cc 100%);
-    color: #303e53; /* bleu foncé pour le texte, reste lisible */
+    /* Soft ERP Background */
+    background: #f1f5f9; /* slate-100 */
+    color: #1e293b; /* slate-800 */
     overflow-x: hidden;
     @apply antialiased;
+  }
+
+  /* Ensure all buttons have pointer cursors */
+  button, 
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"] {
+    cursor: pointer;
+  }
+  
+  button:disabled,
+  input:disabled {
+    cursor: not-allowed;
   }
 }
 
 /* ============================================================
    SCROLLBAR
    ============================================================ */
-::-webkit-scrollbar        { width: 5px; }
+::-webkit-scrollbar        { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: var(--color-scrollbar); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-scrollbar-hover); }
 
 /* ============================================================
-   GRADIENTS
+   GRADIENTS (Sharp, Corporate)
    ============================================================ */
 
-
-/* Palette pastel — usage général */
+/* Pastel removed, replaced with clean brand gradient */
 .pastel-gradient {
-  background: linear-gradient(133deg,
-    var(--color-lavande) 0%,
-    var(--color-menthe)  50%,
-    var(--color-rose)    100%
-  );
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
 }
 
-/* Batiflow dashboard banner — violet clair personnalisé */
 .batiflow-gradient {
-  background: linear-gradient(120deg, #c0b4fa 0%, #b4e0fa 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
 }
 
-/* Admin */
 .admin-gradient {
-  background: linear-gradient(133deg,
-    var(--color-iris)   0%,
-    var(--color-menthe) 50%,
-    var(--color-jaune)  100%
-  );
+  background: linear-gradient(135deg, #312e81 0%, #4f46e5 100%);
 }
-
-/* Technico — Iris → Lavande → Pervenche */
 
 .technico-gradient {
-  /* Dégradé violet (iris) vers bleu (ajouté) pour plus de contraste */
-  background: linear-gradient(133deg,
-    var(--color-iris)      0%,      /* violet foncé */
-    #3d6abe                60%,     /* bleu moyen (ajouté) */
-    var(--color-pervenche) 100%     /* bleu-violet pâle */
-  );
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
-/* Technico soft — variante inversée */
 .technico-gradient-soft {
-  background: linear-gradient(133deg,
-    #6161dc              0%,   /* teinte intermédiaire iris/lavande */
-    var(--color-lavande) 50%,
-    var(--color-iris)    100%
-  );
+  background: linear-gradient(135deg, #334155 0%, #475569 100%);
 }
 
-/* Sidebar — dark */
 .sidebar-gradient {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background: #1e293b; /* Solid slate-800 for stark contrast */
 }
 
 /* ============================================================
    GLASS CARD & FORMULAIRE
    ============================================================ */
 .glass-card, .form-card {
-  background: #b6c9f1; /* gris-bleuté très clair pour remplacer le blanc pur */
-  backdrop-filter: blur(12px);
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
   border: 1px solid var(--color-glass-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 /* ============================================================
    CARD INTERACTIONS
    ============================================================ */
 
-/* Légère élévation au survol */
 .card-hover {
   transition: all 0.2s ease;
 }
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0  8px 25px -5px rgba(0, 0, 0, 0.08),
-    0  4px 10px -6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-color: #cbd5e1;
 }
 
-/* Élévation plus prononcée pour les module cards */
 .module-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #e2e8f0;
 }
 .module-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -8px rgba(37, 99, 235, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15); /* Subtle indigo glow */
+  border-color: #a5b4fc; /* indigo-300 */
 }
 
 /* ============================================================
    ANIMATIONS
    ============================================================ */
-
-/* Pulsation douce — appliquer via : animation: stat-pulse 2s ease-in-out infinite */
 @keyframes stat-pulse {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.7; }
+  50%       { opacity: 0.6; }
 }
-
 .stat-pulse {
-  animation: stat-pulse 2s ease-in-out infinite;
+  animation: stat-pulse 2.5s ease-in-out infinite;
 }
 
 /* ============================================================
    BADGES
    ============================================================ */
 .badge-glow {
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
 }
 
-/* Masque les fleches des champs numeriques (usage cible: prix unitaire) */
+/* Number inputs without spin buttons */
 .input-no-spin {
   -moz-appearance: textfield;
   appearance: textfield;

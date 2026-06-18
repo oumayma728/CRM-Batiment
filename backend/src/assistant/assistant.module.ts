@@ -12,6 +12,6 @@ import { NotificationsModule } from '../notifications/notifications.module.js';
   imports: [DevisModule, ClientsModule, NotificationsModule],
   controllers: [AssistantController, AssistantAdminController],
   providers: [AssistantService, AssistantLlmService, AssistantRagService],
-  exports: [AssistantService],
+  exports: [AssistantService, AssistantRagService],
 })
 export class AssistantModule {}

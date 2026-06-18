@@ -14,9 +14,10 @@ import {
   X,
   CheckSquare,
   Signature,
-  Receipt,
+  FileCheck,
   Bot,
   PackageCheck,
+  MessageCircle,
 } from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 import { cn } from '@/lib/utils';
@@ -35,7 +36,8 @@ const techNavItems: TechNavItem[] = [
   { to: '/technico/clients', label: 'Mes Clients', icon: <Users size={20} />, description: 'Gerer vos clients', group: 'Commercial' },
   { to: '/technico/demandes', label: 'Demandes Devis', icon: <FileText size={20} />, description: 'Demandes recues', group: 'Commercial' },
   { to: '/technico/devis', label: 'Mes Devis', icon: <FileSpreadsheet size={20} />, description: 'Creer & suivre', group: 'Commercial' },
-  { to: '/technico/factures', label: 'Mes factures', icon: <Receipt size={20} />, description: 'Facturer & envoyer', group: 'Commercial' },
+  { to: '/technico/factures', label: 'Mes factures', icon: <FileCheck size={20} />, description: 'Facturer & envoyer', group: 'Commercial' },
+  { to: '/technico/messagerie-whatsapp', label: 'WhatsApp', icon: <MessageCircle size={20} />, description: 'Messagerie client', group: 'Commercial' },
   { to: '/technico/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={20} />, description: 'Achats & receptions', group: 'Commercial' },
   { to: '/technico/checklist', label: 'Checklist Devis', icon: <CheckSquare size={20} />, description: 'Generer un devis', group: 'Commercial' },
   { to: '/technico/assistant-ia', label: 'Assistant IA', icon: <Bot size={20} />, description: 'Gerer prospects chatbot', group: 'Commercial' },

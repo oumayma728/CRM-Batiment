@@ -81,7 +81,7 @@ export default function HomeLandingPage() {
               <div className="rounded-lg bg-white/12 p-2">
                 <Building2 size={16} />
               </div>
-              BatiCRM
+              BâtiFlow
             </div>
 
             <nav className="hidden items-center gap-7 text-sm text-white/85 md:flex">
@@ -125,8 +125,8 @@ export default function HomeLandingPage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#425d88]">
-              BatiCRM centralise vos clients, chantiers, devis et factures dans une seule
-              plateforme. Gagnez du temps, suivez vos projets en temps reel et developpez votre activite.
+              BâtiFlow centralise vos clients, chantiers, devis et factures dans une seule
+              plateforme. Gagnez du temps, suivez vos projets en temps réel et développez votre activité.
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -263,7 +263,7 @@ export default function HomeLandingPage() {
           <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-[#bfcef0] bg-white shadow-[0_30px_90px_rgba(8,24,52,0.45)]">
             <div className="flex items-center justify-between border-b border-[#dbe6fa] bg-[#f6f9ff] px-5 py-4">
               <div>
-                <p className="text-sm font-semibold text-[#204780]">Presentation dynamique BatiCRM</p>
+                <p className="text-sm font-semibold text-[#204780]">Présentation dynamique BâtiFlow</p>
                 <p className="text-xs text-[#6b84ad]">Apercu automatique de l application</p>
               </div>
               <button

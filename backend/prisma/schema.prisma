@@ -34,6 +34,7 @@ model Company {
   servicesMainOeuvre    ServiceMainOeuvre[]
   typesProjet           TypeProjet[]
   utilisateurs          User[]
+  whatsappConversations WhatsappConversation[]
 
   @@map("companies")
 }
@@ -107,6 +108,7 @@ model Client {
   typeProjetLinks ClientTypeProjet[]
   demandesDevis   DemandeDevis[]
   devis           Devis[]
+  whatsappConversations WhatsappConversation[]
 
   @@index([companyId])
   @@index([nom])
@@ -370,6 +372,7 @@ model Devis {
   factures                  Facture[]
   lignes                    LigneDevis[]
   versions                  VersionDevis[]
+  whatsappMessages          WhatsappMessage[]
 
   @@index([companyId])
   @@index([clientId])
@@ -488,6 +491,7 @@ model Facture {
   datePaiement          DateTime?
   devis                 Devis          @relation(fields: [devisId], references: [id])
   lignes                FactureLigne[]
+  whatsappMessages      WhatsappMessage[]
 
   @@index([devisId])
   @@index([statut])
@@ -883,4 +887,76 @@ enum ModeValidation {
   SIGNATURE
   VERBAL
   AUTRE
+}
+
+// ── WhatsApp Conversations ──────────────────────────────────────────────
+
+model WhatsappConversation {
+  id              Int                   @id @default(autoincrement())
+  companyId       Int
+  whatsappNumber  String
+  clientId        Int?
+  displayName     String?
+  lastMessageAt   DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  company         Company               @relation(fields: [companyId], references: [id])
+  client          Client?               @relation(fields: [clientId], references: [id])
+  messages        WhatsappMessage[]
+
+  @@unique([companyId, whatsappNumber])
+  @@index([companyId])
+  @@index([clientId])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsappMessage {
+  id                  Int                          @id @default(autoincrement())
+  conversationId      Int
+  waMessageId         String?                      @unique
+  direction           WhatsappMessageDirection
+  type                WhatsappMessageType
+  content             String?
+  mediaUrl            String?
+  mediaId             String?
+  filename            String?
+  mimeType            String?
+  reactions           Json?
+  status              WhatsappMessageStatus
+  devisId             Int?
+  factureId           Int?
+  sentAt              DateTime                     @default(now())
+  createdAt           DateTime                     @default(now())
+
+  conversation        WhatsappConversation          @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  devis               Devis?                       @relation(fields: [devisId], references: [id])
+  facture             Facture?                     @relation(fields: [factureId], references: [id])
+
+  @@index([conversationId])
+  @@index([status])
+  @@index([devisId])
+  @@index([factureId])
+  @@map("whatsapp_messages")
+}
+
+enum WhatsappMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsappMessageType {
+  TEXT
+  IMAGE
+  DOCUMENT
+  AUDIO
+  VIDEO
+}
+
+enum WhatsappMessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
 }

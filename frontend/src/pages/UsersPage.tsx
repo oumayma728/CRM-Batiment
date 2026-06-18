@@ -5,10 +5,13 @@ import api from '@/lib/api';
 import type { User, Role } from '@/types';
 import { formatDate, getInitials, cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import PageHero from '@/components/PageHero';
 import {
-  Plus, Search, Edit, Trash2, X, Shield, Loader2,
-  Mail, Phone, RotateCcw,
+  Plus, Search, Edit, Trash2, Shield,
+  Mail, Phone, RotateCcw, Users, Loader2, Edit3,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Input, Select, SubmitButton } from '@/components/ui/Form';
 
 const roleConfig: Record<Role, { bg: string; text: string; dot: string; label: string }> = {
   ADMIN: { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-400', label: 'Administrateur' },
@@ -222,35 +225,34 @@ export default function UsersPage() {
   );
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Shield size={24} className="text-red-600" />
-            Gestion des Utilisateurs
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">{list.length} utilisateur(s) enregistré(s)</p>
+    <div className="space-y-4">
+      <PageHero
+        icon={<Users size={22} />}
+        title="Gestion des Utilisateurs"
+        subtitle={`${list.length} utilisateur(s) enregistré(s)`}
+        accent="indigo"
+        actions={
+          <button
+            onClick={() => {
+              createMutation.reset();
+              setCreateFeedback(null);
+              setShowModal(true);
+            }}
+            className="inline-flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all font-medium text-sm shadow-sm"
+          >
+            <Plus size={16} /> Nouvel utilisateur
+          </button>
+        }
+      />
+
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Rechercher un utilisateur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20 transition-all" />
         </div>
-        <button
-          onClick={() => {
-            createMutation.reset();
-            setCreateFeedback(null);
-            setShowModal(true);
-          }}
-          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
-        >
-          <Plus size={17} /> Nouvel utilisateur
-        </button>
       </div>
 
-      <div className="mb-4">
-        <div className="relative max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher un utilisateur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         {isLoading ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-600" size={32} /></div>
         ) : list.length === 0 ? (
@@ -291,12 +293,14 @@ export default function UsersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {(() => { const rc = roleConfig[u.role]; return (
-                        <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold', rc.bg, rc.text)}>
-                          <span className={cn('w-1.5 h-1.5 rounded-full', rc.dot)} />
-                          {rc.label}
-                        </span>
-                      ); })()}
+                      {(() => {
+                        const rc = roleConfig[u.role]; return (
+                          <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold', rc.bg, rc.text)}>
+                            <span className={cn('w-1.5 h-1.5 rounded-full', rc.dot)} />
+                            {rc.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4">
                       <span className={cn(
@@ -330,11 +334,11 @@ export default function UsersPage() {
                             });
                           }}
                           disabled={resetTempPasswordMutation.isPending || deleteMutation.isPending}
-                          className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                          className="p-2 rounded-lg text-gray-400 hover:text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
                           title="Reinitialiser le mot de passe temporaire"
                         >
                           {resetTempPasswordMutation.isPending &&
-                          resetTempPasswordMutation.variables?.userId === u.id ? (
+                            resetTempPasswordMutation.variables?.userId === u.id ? (
                             <Loader2 size={16} className="animate-spin" />
                           ) : (
                             <RotateCcw size={16} />
@@ -389,207 +393,152 @@ export default function UsersPage() {
       </div>
 
       {/* Create Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouvel utilisateur</h2>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setCreateFeedback(null);
-                }}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom *</label>
-                  <input type="text" required value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                  <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-                <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
-              </div>
-              <div>
-                <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                  Le mot de passe temporaire est genere automatiquement par le backend puis envoye par email
-                  (ou affiche dans les logs backend en mode dev).
-                </p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
-                <input type="text" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Rôle *</label>
-                <select required value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all">
-                  {roles.map((r) => <option key={r} value={r}>{roleConfig[r].label}</option>)}
-                </select>
-              </div>
-              {createMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  {getApiErrorMessage(createMutation.error, 'Erreur lors de la creation.')}
-                </p>
-              )}
-              {createFeedback && (
-                <p
-                  className={cn(
-                    'text-sm px-4 py-2 rounded-lg',
-                    createFeedback.type === 'success'
-                      ? 'text-emerald-700 bg-emerald-50'
-                      : 'text-red-600 bg-red-50',
-                  )}
-                >
-                  {createFeedback.message}
-                </p>
-              )}
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setCreateFeedback(null);
-                  }}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Annuler
-                </button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); setCreateFeedback(null); }}
+        title="Nouvel utilisateur"
+        icon={Users}
+        accent="slate"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prénom"
+              required
+              value={form.prenom}
+              onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+            />
+            <Input
+              label="Nom"
+              required
+              value={form.nom}
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            />
           </div>
-        </div>
-      )}
+          <Input
+            label="Email"
+            type="email"
+            required
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          <div className="rounded-xl bg-blue-50 border border-blue-100 px-4 py-3 text-sm text-blue-700">
+            Le mot de passe temporaire est généré automatiquement par le backend puis envoyé par email
+            (ou affiché dans les logs backend en mode dev).
+          </div>
+          <Input
+            label="Téléphone"
+            value={form.telephone}
+            onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+          />
+          <Select
+            label="Rôle"
+            required
+            value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
+            options={roles.map((r) => ({ value: r, label: roleConfig[r].label }))}
+          />
+          {createMutation.error && (
+            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+              {getApiErrorMessage(createMutation.error, 'Erreur lors de la création.')}
+            </p>
+          )}
+          {createFeedback && (
+            <p className={cn(
+              'text-sm font-medium px-4 py-3 rounded-xl border',
+              createFeedback.type === 'success'
+                ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
+                : 'text-red-600 bg-red-50 border-red-100',
+            )}>
+              {createFeedback.message}
+            </p>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => { setShowModal(false); setCreateFeedback(null); }}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
+              Créer l'utilisateur
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
 
       {/* Edit Modal */}
-      {showEditModal && editingUser && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Modifier utilisateur</h2>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditingUser(null);
-                }}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                <input
-                  type="email"
-                  value={editingUser.email}
-                  disabled
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.prenom}
-                    onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.nom}
-                    onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
-                <input
-                  type="text"
-                  value={editForm.telephone}
-                  onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Rôle *</label>
-                <select
-                  required
-                  value={editForm.role}
-                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
-                >
-                  {roles.map((r) => (
-                    <option key={r} value={r}>
-                      {roleConfig[r].label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <label className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                <span className="text-sm font-medium text-gray-700">Compte actif</span>
-                <input
-                  type="checkbox"
-                  checked={editForm.actif}
-                  onChange={(e) => setEditForm({ ...editForm, actif: e.target.checked })}
-                  className="h-4 w-4"
-                />
-              </label>
-
-              {updateMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise a jour.')}
-                </p>
-              )}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowEditModal(false);
-                    setEditingUser(null);
-                  }}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateMutation.isPending}
-                  className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
-                >
-                  {updateMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Enregistrer
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showEditModal && !!editingUser}
+        onClose={() => { setShowEditModal(false); setEditingUser(null); }}
+        title="Modifier utilisateur"
+        icon={Edit3}
+        accent="slate"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleUpdateSubmit} className="p-6 space-y-5">
+          <Input
+            label="Email"
+            type="email"
+            value={editingUser?.email ?? ''}
+            disabled
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Prénom"
+              required
+              value={editForm.prenom}
+              onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
+            />
+            <Input
+              label="Nom"
+              required
+              value={editForm.nom}
+              onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
+            />
           </div>
-        </div>
-      )}
+          <Input
+            label="Téléphone"
+            value={editForm.telephone}
+            onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
+          />
+          <Select
+            label="Rôle"
+            required
+            value={editForm.role}
+            onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })}
+            options={roles.map((r) => ({ value: r, label: roleConfig[r].label }))}
+          />
+          <label className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+            <span className="text-sm font-semibold text-slate-700">Compte actif</span>
+            <input
+              type="checkbox"
+              checked={editForm.actif}
+              onChange={(e) => setEditForm({ ...editForm, actif: e.target.checked })}
+              className="h-4 w-4 rounded text-slate-600"
+            />
+          </label>
+          {updateMutation.error && (
+            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+              {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise à jour.')}
+            </p>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => { setShowEditModal(false); setEditingUser(null); }}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={updateMutation.isPending} icon={Edit3}>
+              Enregistrer
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

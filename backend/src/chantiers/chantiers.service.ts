@@ -1,7 +1,8 @@
-﻿import {
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { Prisma, Role, TacheStatut } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -11,10 +12,14 @@ import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { CreateTacheDto, TaskAssignmentType } from './dto/create-tache.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
+import type { WhatsappService } from '../whatsapp/whatsapp.service.js';
 
 @Injectable()
 export class ChantiersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly whatsappService?: WhatsappService,
+  ) {}
 
   private isTaskDone(task: { statut: TacheStatut; avancement: number }) {
     return task.statut === 'TERMINEE' || task.avancement >= 100;
@@ -882,6 +887,17 @@ export class ChantiersService {
 
     if (!created) {
       throw new NotFoundException('Tache creee mais introuvable.');
+    }
+
+    // 📲 Notify assigned user via WhatsApp
+    if (assignment?.userId && this.whatsappService) {
+      const chantierRef = await this.prisma.chantier.findUnique({
+        where: { id: chantierId },
+        select: { reference: true },
+      });
+      this.whatsappService
+        .notifyTaskAssignment(assignment.userId, dto.libelle.trim(), chantierRef?.reference ?? `#${chantierId}`)
+        .catch(() => {}); // Non-blocking
     }
 
     const taskStatusList = await this.prisma.tache.findMany({

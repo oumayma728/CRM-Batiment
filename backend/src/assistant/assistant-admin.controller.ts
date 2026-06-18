@@ -7,9 +7,13 @@ import {
   ParseIntPipe,
   Post,
   UseGuards,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AssistantService } from './assistant.service.js';
+import { AssistantRagService } from './assistant-rag.service.js';
+import { AssistantLlmService } from './assistant-llm.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -23,7 +27,11 @@ import { QualifyProspectDto } from './dto/qualify-prospect.dto.js';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('assistant/admin')
 export class AssistantAdminController {
-  constructor(private readonly assistantService: AssistantService) {}
+  constructor(
+    private readonly assistantService: AssistantService,
+    private readonly assistantRagService: AssistantRagService,
+    private readonly assistantLlmService: AssistantLlmService,
+  ) {}
 
   @Get('prospects')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
@@ -45,6 +53,80 @@ export class AssistantAdminController {
   })
   getFutureProjects(@CurrentUser() user: CurrentUserPayload) {
     return this.assistantService.getFutureProjects(user.companyId);
+  }
+
+  @Post('rag/test')
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Tester la base de connaissance RAG',
+    description:
+      'Envoie une requete de test a la base IA et retourne les snippets recuperes ainsi que le score de pertinence.',
+  })
+  async testRag(
+    @Body() body: { query: string; limit?: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const result = await this.assistantRagService.retrieveContext({
+      companyId: user.companyId,
+      query: body.query?.trim() || '',
+      limit: body.limit ?? 5,
+    });
+
+    let aiResponse = null;
+    if (result.snippets.length > 0) {
+      aiResponse = await this.assistantLlmService.generateRagAnswer(
+        body.query?.trim() || '',
+        result.context,
+      );
+    }
+
+    return {
+      query: body.query,
+      snippetsFound: result.snippets.length,
+      snippets: result.snippets,
+      contextBlock: result.context,
+      aiResponse,
+    };
+  }
+
+  @Post('rag/stream')
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Tester la base RAG en streaming',
+    description: 'Retourne un flux SSE (Server-Sent Events) contenant les snippets puis la reponse IA mot par mot.',
+  })
+  async streamRag(
+    @Body() body: { query: string; limit?: number },
+    @Res() res: Response,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const result = await this.assistantRagService.retrieveContext({
+      companyId: user.companyId,
+      query: body.query?.trim() || '',
+      limit: body.limit ?? 5,
+    });
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    // Send snippets first
+    res.write(`data: ${JSON.stringify({ type: 'snippets', snippetsFound: result.snippets.length, snippets: result.snippets })}\n\n`);
+
+    if (result.snippets.length > 0) {
+      const generator = this.assistantLlmService.generateRagAnswerStream(
+        body.query?.trim() || '',
+        result.context,
+      );
+
+      for await (const chunk of generator) {
+        res.write(`data: ${JSON.stringify({ type: 'chunk', text: chunk })}\n\n`);
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+    res.end();
   }
 
   @Post('prospects/:prospectId/qualify')
@@ -85,3 +167,5 @@ export class AssistantAdminController {
     });
   }
 }
+
+

@@ -26,13 +26,17 @@ import { CreateRagDocumentDto } from './dto/create-rag-document.dto.js';
 import { QueryRagDocumentsDto } from './dto/query-rag-documents.dto.js';
 import { UpdateRagDocumentDto } from './dto/update-rag-document.dto.js';
 import { RagService } from './rag.service.js';
+import { AssistantRagService } from '../assistant/assistant-rag.service.js';
 
 @ApiTags('Base IA / RAG')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('rag/documents')
 export class RagController {
-  constructor(private readonly ragService: RagService) {}
+  constructor(
+    private readonly ragService: RagService,
+    private readonly assistantRagService: AssistantRagService,
+  ) {}
 
   @Post()
   @Roles(Role.ADMIN)
@@ -42,7 +46,9 @@ export class RagController {
     @Body() dto: CreateRagDocumentDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.ragService.create(dto, user);
+    const result = this.ragService.create(dto, user);
+    result.then(() => this.assistantRagService.invalidateCache(user.companyId)).catch(() => null);
+    return result;
   }
 
   @Get()
@@ -73,7 +79,9 @@ export class RagController {
     @Body() dto: UpdateRagDocumentDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.ragService.update(id, dto, user);
+    const result = this.ragService.update(id, dto, user);
+    result.then(() => this.assistantRagService.invalidateCache(user.companyId)).catch(() => null);
+    return result;
   }
 
   @Delete(':id')
@@ -83,6 +91,8 @@ export class RagController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.ragService.remove(id, user);
+    const result = this.ragService.remove(id, user);
+    result.then(() => this.assistantRagService.invalidateCache(user.companyId)).catch(() => null);
+    return result;
   }
 }

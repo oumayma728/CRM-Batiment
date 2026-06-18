@@ -2,6 +2,7 @@ import { Fragment, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
+import PageHero from '@/components/PageHero';
 import { getImportErrorMessage, parseClientsSpreadsheet } from '@/lib/clientSpreadsheetImport';
 import { ProjectTypeCheckboxGroup } from '@/components/ProjectTypeCheckboxGroup';
 import type { Client, TypeProjet, LeadSource } from '@/types';
@@ -12,6 +13,8 @@ import {
   MapPin, Home, FileText, Zap, PhoneCall, Upload,
   Info, HardHat, AlertTriangle, CheckCircle2, Sparkles,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Input, Select, TextArea, SubmitButton } from '@/components/ui/Form';
 
 /* ───── Config labels ───── */
 const sourceLabels: Record<string, { label: string; bg: string; text: string }> = {
@@ -278,37 +281,30 @@ export default function ClientsPage() {
 
   return (
     <div className="max-w-full space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users size={24} className="text-primary-600" />
-            Gestion des Clients
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">{meta.total} client(s) enregistré(s)</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <input
-            ref={importInputRef}
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            onChange={handleImportFile}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => importInputRef.current?.click()}
-            disabled={isImporting}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
-          >
-            {isImporting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-            {isImporting ? 'Import en cours...' : 'Importer Excel'}
-          </button>
-          <button onClick={openCreate} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
-            <UserPlus size={17} /> Nouveau client
-          </button>
-        </div>
-      </div>
+      {/* Hero Header */}
+      <PageHero
+        icon={<Users size={22} />}
+        title="Gestion des Clients"
+        subtitle={`${meta.total} client(s) enregistré(s)`}
+        accent="blue"
+        actions={
+          <>
+            <input ref={importInputRef} type="file" accept=".xlsx,.xls,.csv" onChange={handleImportFile} className="hidden" />
+            <button
+              type="button"
+              onClick={() => importInputRef.current?.click()}
+              disabled={isImporting}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-60 transition-colors text-sm font-medium shadow-sm"
+            >
+              {isImporting ? <Loader2 size={15} className="animate-spin" /> : <Upload size={15} />}
+              {isImporting ? 'Import...' : 'Importer Excel'}
+            </button>
+            <button onClick={openCreate} className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-sm">
+              <UserPlus size={16} /> Nouveau client
+            </button>
+          </>
+        }
+      />
 
       {importFeedback && (
         <div
@@ -323,43 +319,50 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher par nom, email, téléphone..." value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+      {/* Search Row */}
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom, email, téléphone..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20 transition-all"
+          />
         </div>
       </div>
 
       {/* Table */}
-      <div className="max-w-full overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-600" size={32} /></div>
+          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={32} /></div>
         ) : clients.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><Users size={32} className="text-gray-300" /></div>
-            <p className="text-lg font-semibold text-gray-700">Aucun client trouvé</p>
-            <p className="text-sm text-gray-400 mt-1">Commencez par ajouter votre premier client.</p>
-            <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 text-primary-600 font-medium text-sm hover:text-primary-700"><UserPlus size={16} /> Ajouter un client</button>
+          <div className="text-center py-20 text-slate-500">
+            <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-4"><Users size={32} className="text-slate-300" /></div>
+            <p className="text-lg font-semibold text-slate-700">Aucun client trouvé</p>
+            <p className="text-sm text-slate-400 mt-1">Commencez par ajouter votre premier client.</p>
+            <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 text-blue-600 font-medium text-sm hover:text-blue-700"><UserPlus size={16} /> Ajouter un client</button>
           </div>
         ) : (
-          <div className="overflow-hidden">
-            <table className="w-full table-fixed">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/90">
-                  <th className="w-[7%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">ID</th>
-                  <th className="w-[20%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Client</th>
-                  <th className="w-[22%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Contact</th>
-                  <th className="w-[18%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Type projet</th>
-                  <th className="w-[10%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Besoin</th>
-                  <th className="w-[8%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Source</th>
-                  <th className="w-[9%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Date</th>
-                  <th className="w-[6%] px-3 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-gray-500">Actions</th>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1500px] table-fixed divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="w-[7%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">ID</th>
+                  <th className="w-[20%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Client</th>
+                  <th className="w-[22%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Contact</th>
+                  <th className="w-[18%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Type projet</th>
+                  <th className="w-[10%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Besoin</th>
+                  <th className="w-[8%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Source</th>
+                  <th className="w-[9%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Date</th>
+                  <th className="w-[6%] px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {clients.map((client) => {
                   const isExpanded = expandedId === client.id;
                   const bCfg = besoinConfig[client.besoin ?? ''];
@@ -379,14 +382,14 @@ export default function ClientsPage() {
                         onClick={() => { setExpandedId(isExpanded ? null : client.id); setGenDescription(''); }}
                       >
                         {/* ID */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           <span className="inline-flex rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-mono font-semibold text-gray-500">
                             #{client.id}
                           </span>
                         </td>
 
                         {/* Client */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           <div className="flex min-w-0 items-center gap-3">
                             <div className={cn(
                               'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-sm font-bold shadow-sm',
@@ -411,7 +414,7 @@ export default function ClientsPage() {
                         </td>
 
                         {/* Contact */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           <div className="min-w-0 space-y-1.5">
                             {client.email && (
                               <p className="flex min-w-0 items-center gap-2 text-[13px] text-gray-700">
@@ -436,7 +439,7 @@ export default function ClientsPage() {
                         </td>
 
                         {/* Type projet */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           {primaryProject ? (
                             <div className="space-y-1">
                               <div
@@ -452,20 +455,20 @@ export default function ClientsPage() {
                                 <p className="text-[11px] font-medium text-gray-500">+{projectTypes.length - 1} autre(s) type(s)</p>
                               )}
                             </div>
-                          ) : <span className="text-[12px] text-gray-300">-</span>}
+                              ) : <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500">Non spécifié</span>}
                         </td>
 
                         {/* Besoin */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           {bCfg ? (
                             <span className={cn('inline-flex items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-semibold', bCfg.bg, bCfg.text)}>
                               {bCfg.label}
                             </span>
-                          ) : <span className="text-[12px] text-gray-300">-</span>}
+                          ) : <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500">Non spécifié</span>}
                         </td>
 
                         {/* Source */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           {(() => {
                             const src = sourceLabels[client.source ?? 'AUTRE'] ?? sourceLabels.AUTRE;
                             return <span className={cn('inline-flex items-center whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-semibold', src.bg, src.text)}>{src.label}</span>;
@@ -473,10 +476,10 @@ export default function ClientsPage() {
                         </td>
 
                         {/* Date */}
-                        <td className="px-3 py-3.5 align-top text-[13px] font-medium text-gray-600">{formatDate(client.createdAt)}</td>
+                        <td className="px-6 py-4 align-top text-[13px] font-medium text-gray-600">{formatDate(client.createdAt)}</td>
 
                         {/* Actions */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="px-6 py-4 align-top">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               onClick={(e) => { e.stopPropagation(); openEdit(client); }}
@@ -499,7 +502,7 @@ export default function ClientsPage() {
                       {/* ─── Expandable Panel ─── */}
                       {isExpanded && (
                         <tr key={`${client.id}-expand`} className="bg-gray-50/50">
-                          <td colSpan={8} className="px-3 py-3">
+                          <td colSpan={8} className="px-6 py-4">
                             <div className="grid grid-cols-1 gap-3 lg:grid-cols-3" onClick={(e) => e.stopPropagation()}>
                               {/* Col 1: Détails client */}
                               <div className="min-w-0 rounded-xl border border-gray-100 bg-white p-3 space-y-2">
@@ -623,133 +626,122 @@ export default function ClientsPage() {
       </div>
 
       {/* ─── Create / Edit Modal ─── */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">{editingClient ? 'Modifier le client' : 'Nouveau client'}</h2>
-              <button onClick={closeModal} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"><X size={18} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* Nom / Prénom */}
-              <div className="grid grid-cols-2 gap-4">
-                <InputField label="Nom" value={form.nom} onChange={(v) => setForm({ ...form, nom: v })} required />
-                <InputField label="Prénom" value={form.prenom} onChange={(v) => setForm({ ...form, prenom: v })} />
-              </div>
-
-              {/* Email / Téléphone */}
-              <div className="grid grid-cols-2 gap-4">
-                <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                <InputField label="Téléphone" value={form.telephone} onChange={(v) => setForm({ ...form, telephone: v })} />
-              </div>
-
-              {/* Adresses */}
-              <InputField label="Adresse Client" value={form.adresseClient} onChange={(v) => setForm({ ...form, adresseClient: v })} />
-              <InputField label="Adresse Chantier" value={form.adresseChantier} onChange={(v) => setForm({ ...form, adresseChantier: v })} />
-
-              {/* Type de projet & Source */}
-              <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
-                <ProjectTypeCheckboxGroup
-                  label="Type de projet"
-                  typesProjet={projectTypesForClientForm.items}
-                  selectedIds={form.typeProjetIds}
-                  onToggle={toggleProjectType}
-                  helperText={`${projectTypesForClientForm.complexCount} type(s) complexe(s) et ${projectTypesForClientForm.simpleCount} type(s) simple(s) disponibles.`}
-                  accent="primary"
-                />
-                <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Source</label>
-                  <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all bg-white">
-                    {sourceOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* ─── Besoin rapide ─── */}
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                  Besoin du client <span className="text-gray-400 font-normal text-[12px]">— cliquez pour sélectionner</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {besoinOptions.map((b) => {
-                    const selected = form.besoin === b.value;
-                    const Icon = b.icon;
-                    return (
-                      <button key={b.value} type="button"
-                        onClick={() => setForm({ ...form, besoin: selected ? '' : b.value })}
-                        className={cn(
-                          'flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left text-[12px] font-semibold transition-all',
-                          selected
-                            ? `${b.activeBg} ${b.border} ${b.color} shadow-sm`
-                            : 'border-gray-100 text-gray-500 hover:border-gray-200 hover:bg-gray-50',
-                        )}
-                      >
-                        <Icon size={15} className={selected ? b.color : 'text-gray-400'} />
-                        {b.label}
-                        {selected && <CheckCircle2 size={13} className={cn('ml-auto', b.color)} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Notes</label>
-                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm resize-none transition-all"
-                  placeholder="Informations complémentaires, détails du besoin..." />
-              </div>
-
-              {/* Errors */}
-              {(createMutation.error || updateMutation.error) && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Une erreur est survenue. Veuillez réessayer.</p>
-              )}
-
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={closeModal} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {saving && <Loader2 size={16} className="animate-spin" />}
-                  {editingClient ? 'Enregistrer' : 'Créer le client'}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={closeModal}
+        title={editingClient ? 'Modifier le client' : 'Nouveau client'}
+        icon={Users}
+        accent="blue"
+        maxWidth="2xl"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          {/* Nom / Prénom */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Nom" value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} required />
+            <Input label="Prénom" value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} />
           </div>
-        </div>
-      )}
+
+          {/* Email / Téléphone */}
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <Input label="Téléphone" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
+          </div>
+
+          {/* Adresses */}
+          <Input label="Adresse Client" value={form.adresseClient} onChange={(e) => setForm({ ...form, adresseClient: e.target.value })} />
+          <Input label="Adresse Chantier" value={form.adresseChantier} onChange={(e) => setForm({ ...form, adresseChantier: e.target.value })} />
+
+          {/* Type de projet & Source */}
+          <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
+            <ProjectTypeCheckboxGroup
+              label="Type de projet"
+              typesProjet={projectTypesForClientForm.items}
+              selectedIds={form.typeProjetIds}
+              onToggle={toggleProjectType}
+              helperText={`${projectTypesForClientForm.complexCount} type(s) complexe(s) et ${projectTypesForClientForm.simpleCount} type(s) simple(s) disponibles.`}
+              accent="primary"
+            />
+            <Select 
+              label="Source" 
+              value={form.source} 
+              onChange={(e) => setForm({ ...form, source: e.target.value })}
+              options={sourceOptions}
+            />
+          </div>
+
+          {/* ─── Besoin rapide ─── */}
+          <div>
+            <label className="block text-[13px] font-semibold text-slate-700 mb-2">
+              Besoin du client <span className="text-slate-400 font-normal text-[12px]">— cliquez pour sélectionner</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {besoinOptions.map((b) => {
+                const selected = form.besoin === b.value;
+                const Icon = b.icon;
+                return (
+                  <button key={b.value} type="button"
+                    onClick={() => setForm({ ...form, besoin: selected ? '' : b.value })}
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-left text-[12px] font-semibold transition-all',
+                      selected
+                        ? `${b.activeBg} ${b.border} ${b.color} shadow-sm`
+                        : 'border-slate-100 text-slate-500 hover:border-slate-200 hover:bg-slate-50',
+                    )}
+                  >
+                    <Icon size={15} className={selected ? b.color : 'text-slate-400'} />
+                    {b.label}
+                    {selected && <CheckCircle2 size={13} className={cn('ml-auto', b.color)} />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <TextArea 
+            label="Notes" 
+            value={form.notes} 
+            onChange={(e) => setForm({ ...form, notes: e.target.value })} 
+            rows={3}
+            placeholder="Informations complémentaires, détails du besoin..." 
+          />
+
+          {/* Errors */}
+          {(createMutation.error || updateMutation.error) && (
+            <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Une erreur est survenue. Veuillez réessayer.</p>
+          )}
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button type="button" onClick={closeModal} className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm">Annuler</button>
+            <SubmitButton isLoading={saving} icon={editingClient ? Edit : UserPlus}>
+              {editingClient ? 'Enregistrer' : 'Créer le client'}
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
 
       {/* ─── Delete Confirmation ─── */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
-            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><Trash2 className="text-red-600" size={24} /></div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer ce client ?</h3>
-            <p className="text-sm text-gray-500 mb-6">Cette action est irréversible. Toutes les données associées seront supprimées.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-              <button onClick={() => deleteMutation.mutate(deleteId)} disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors">
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </button>
-            </div>
+      <Modal
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        title="Supprimer ce client ?"
+        icon={Trash2}
+        accent="slate"
+        maxWidth="sm"
+      >
+        <div className="p-6 text-center">
+          <p className="text-sm text-slate-500 mb-6">Cette action est irréversible. Toutes les données associées seront supprimées.</p>
+          <div className="flex gap-3">
+            <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">Annuler</button>
+            <button onClick={() => deleteMutation.mutate(deleteId!)} disabled={deleteMutation.isPending}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 shadow-sm disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+              {deleteMutation.isPending && <Loader2 size={16} className="animate-spin" />}
+              Supprimer
+            </button>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-/* ─── Reusable InputField ─── */
-function InputField({ label, value, onChange, type = 'text', required = false }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean;
-}) {
-  return (
-    <div>
-      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required}
-        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+      </Modal>
     </div>
   );
 }

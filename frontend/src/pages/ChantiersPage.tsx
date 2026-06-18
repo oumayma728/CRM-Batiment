@@ -8,10 +8,16 @@ import {
   RefreshCcw,
   Search,
   Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Select, Input, TextArea, SubmitButton } from '@/components/ui/Form';
 import axios from 'axios';
 import api from '@/lib/api';
 import { cn, formatDate } from '@/lib/utils';
+import PageHero from '@/components/PageHero';
 import type {
   Chantier,
   ChantierStatut,
@@ -250,86 +256,81 @@ export default function ChantiersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.20),_transparent_30%),linear-gradient(135deg,#fff7ed_0%,#ffffff_55%,#ecfeff_100%)] p-6 shadow-sm ring-1 ring-orange-200">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">Chef Chantier</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Liste des chantiers</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Les chantiers sont synchronises automatiquement a partir des devis acceptes/signes.
-              Vous pouvez aussi ajouter, modifier et supprimer des elements manuellement.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
+    <div className="space-y-4">
+      <PageHero
+        icon={<HardHat size={22} />}
+        title="Gestion des Chantiers"
+        subtitle={`${meta.total} chantier(s) au total · Synchronisation automatique depuis les devis acceptés`}
+        accent="amber"
+        actions={
+          <>
             <button
               onClick={() => syncMutation.mutate()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-orange-50"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-60 transition-colors text-sm font-medium shadow-sm"
               disabled={syncMutation.isPending}
             >
-              {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
-              Synchroniser depuis devis
+              {syncMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <RefreshCcw size={15} />}
+              Synchroniser
             </button>
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
+              className="inline-flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all font-medium text-sm shadow-sm"
             >
               <Plus size={16} /> Nouveau chantier
             </button>
-          </div>
-        </div>
+          </>
+        }
+      />
 
-        {syncMessage ? (
-          <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{syncMessage}</p>
-        ) : null}
-      </section>
+      {syncMessage && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">{syncMessage}</div>
+      )}
 
-      <section className="rounded-[24px] bg-white p-4 shadow-sm ring-1 ring-stone-200">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative max-w-xl flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(event) => {
-                setPage(1);
-                setSearch(event.target.value);
-              }}
-              placeholder="Rechercher client, reference chantier, adresse ou description"
-              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
+      {/* Search & Filter Row */}
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={search}
             onChange={(event) => {
               setPage(1);
-              setStatusFilter(event.target.value as ChantierStatusFilter);
+              setSearch(event.target.value);
             }}
-            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-orange-400"
-          >
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status === 'ALL' ? 'Tous les statuts' : statusLabels[status]}
-              </option>
-            ))}
-          </select>
+            placeholder="Rechercher client, référence chantier, adresse..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20 transition-all"
+          />
         </div>
-      </section>
+        <select
+          value={statusFilter}
+          onChange={(event) => {
+            setPage(1);
+            setStatusFilter(event.target.value as ChantierStatusFilter);
+          }}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none focus:border-slate-400"
+        >
+          {statusOptions.map((status) => (
+            <option key={status} value={status}>
+              {status === 'ALL' ? 'Tous les statuts' : statusLabels[status]}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <section className="overflow-hidden rounded-[24px] bg-white shadow-sm ring-1 ring-stone-200">
+      {/* Table */}
+      <div className="max-w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-sm">
-            <thead className="bg-stone-50 text-slate-500">
+          <table className="w-full min-w-[1300px] table-fixed divide-y divide-slate-200">
+            <thead className="bg-slate-50">
               <tr>
-                <th className="px-5 py-3 text-left font-semibold">Client</th>
-                <th className="px-5 py-3 text-left font-semibold">Chantier</th>
-                <th className="px-5 py-3 text-left font-semibold">Description detaillee</th>
-                <th className="px-5 py-3 text-left font-semibold">Statut</th>
-                <th className="px-5 py-3 text-left font-semibold">Mise a jour</th>
-                <th className="px-5 py-3 text-right font-semibold">Actions</th>
+                <th className="w-[15%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Client</th>
+                <th className="w-[15%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Chantier</th>
+                <th className="w-[30%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Description détaillée</th>
+                <th className="w-[15%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
+                <th className="w-[15%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Mise à jour</th>
+                <th className="w-[10%] px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-200 bg-white">
               {listQuery.isLoading ? (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
@@ -394,181 +395,128 @@ export default function ChantiersPage() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t border-stone-200 px-5 py-4 text-sm">
+        <div className="flex items-center justify-between border-t border-slate-100 px-5 py-4 text-sm">
           <p className="text-slate-500">{meta.total} chantier(s) au total</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
-              className="rounded-xl border border-stone-200 px-3 py-1.5 text-slate-600 disabled:opacity-40"
+              className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"
               onClick={() => setPage((current) => Math.max(1, current - 1))}
               disabled={meta.page <= 1}
             >
-              Precedent
+              <ChevronLeft size={16} />
             </button>
-            <span className="px-2 text-slate-600">Page {meta.page} / {meta.totalPages}</span>
+            <span className="px-3 text-sm font-medium text-slate-600">Page {meta.page} / {meta.totalPages}</span>
             <button
-              className="rounded-xl border border-stone-200 px-3 py-1.5 text-slate-600 disabled:opacity-40"
+              className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"
               onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
               disabled={meta.page >= meta.totalPages}
             >
-              Suivant
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
       {listQuery.error ? (
-        <section className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700">
           {getApiErrorMessage(listQuery.error, 'Impossible de charger la liste des chantiers.')}
         </section>
       ) : null}
 
-      {showModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900">
-                {editing ? 'Modifier chantier' : 'Nouveau chantier'}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditing(null);
-                }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-500 hover:bg-stone-50"
-              >
-                ✕
-              </button>
+      <Modal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); setEditing(null); }}
+        title={editing ? 'Modifier chantier' : 'Nouveau chantier'}
+        icon={editing ? Edit3 : HardHat}
+        accent="amber"
+        maxWidth="3xl"
+      >
+        <div className="p-6 overflow-y-auto">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Select
+                label="Client"
+                required
+                value={form.clientId}
+                onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))}
+                options={[
+                  { value: '', label: 'Sélectionner un client' },
+                  ...(clientsQuery.data ?? []).map((client) => ({ value: client.id, label: `${client.prenom} ${client.nom}` }))
+                ]}
+              />
+              <Input
+                label="Référence"
+                value={form.reference}
+                onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))}
+                placeholder="Auto si vide"
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Client</span>
-                  <select
-                    required
-                    value={form.clientId}
-                    onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  >
-                    <option value="">Selectionner un client</option>
-                    {(clientsQuery.data ?? []).map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.prenom} {client.nom}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+            <Input
+              label="Adresse chantier"
+              required
+              value={form.adresse}
+              onChange={(event) => setForm((current) => ({ ...current, adresse: event.target.value }))}
+            />
 
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Reference</span>
-                  <input
-                    value={form.reference}
-                    onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))}
-                    placeholder="Auto si vide"
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  />
-                </label>
-              </div>
+            <TextArea
+              label="Description détaillée"
+              rows={4}
+              value={form.description}
+              onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+            />
 
-              <label className="space-y-1 block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Adresse chantier</span>
-                <input
-                  required
-                  value={form.adresse}
-                  onChange={(event) => setForm((current) => ({ ...current, adresse: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                />
-              </label>
+            <div className="grid gap-4 md:grid-cols-3">
+              <Select
+                label="Statut"
+                value={form.statut}
+                onChange={(event) => setForm((current) => ({ ...current, statut: event.target.value as ChantierStatut }))}
+                options={statusOptions
+                  .filter((status): status is ChantierStatut => status !== 'ALL')
+                  .map((status) => ({ value: status, label: statusLabels[status] }))}
+              />
+              <Input
+                label="Date début"
+                type="date"
+                value={form.dateDebut}
+                onChange={(event) => setForm((current) => ({ ...current, dateDebut: event.target.value }))}
+              />
+              <Input
+                label="Date fin"
+                type="date"
+                value={form.dateFin}
+                onChange={(event) => setForm((current) => ({ ...current, dateFin: event.target.value }))}
+              />
+            </div>
 
-              <label className="space-y-1 block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Description detaillee</span>
-                <textarea
-                  rows={4}
-                  value={form.description}
-                  onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                />
-              </label>
+            <TextArea
+              label="Notes"
+              rows={2}
+              value={form.notes}
+              onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
+            />
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Statut</span>
-                  <select
-                    value={form.statut}
-                    onChange={(event) => setForm((current) => ({ ...current, statut: event.target.value as ChantierStatut }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  >
-                    {statusOptions
-                      .filter((status): status is ChantierStatut => status !== 'ALL')
-                      .map((status) => (
-                        <option key={status} value={status}>
-                          {statusLabels[status]}
-                        </option>
-                      ))}
-                  </select>
-                </label>
+            {submitMutation.error && (
+              <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 border border-rose-100">
+                {getApiErrorMessage(submitMutation.error, 'Impossible d enregistrer ce chantier.')}
+              </p>
+            )}
 
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Date debut</span>
-                  <input
-                    type="date"
-                    value={form.dateDebut}
-                    onChange={(event) => setForm((current) => ({ ...current, dateDebut: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  />
-                </label>
-
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Date fin</span>
-                  <input
-                    type="date"
-                    value={form.dateFin}
-                    onChange={(event) => setForm((current) => ({ ...current, dateFin: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  />
-                </label>
-              </div>
-
-              <label className="space-y-1 block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Notes</span>
-                <textarea
-                  rows={2}
-                  value={form.notes}
-                  onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                />
-              </label>
-
-              {submitMutation.error ? (
-                <p className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {getApiErrorMessage(submitMutation.error, 'Impossible d enregistrer ce chantier.')}
-                </p>
-              ) : null}
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditing(null);
-                  }}
-                  className="rounded-2xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-stone-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60"
-                >
-                  {submitMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <HardHat size={16} />}
-                  {editing ? 'Mettre a jour' : 'Ajouter chantier'}
-                </button>
-              </div>
-            </form>
-          </div>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => { setShowModal(false); setEditing(null); }}
+                className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+              >
+                Annuler
+              </button>
+              <SubmitButton isLoading={submitMutation.isPending} icon={editing ? Pencil : HardHat}>
+                {editing ? 'Mettre à jour' : 'Ajouter chantier'}
+              </SubmitButton>
+            </div>
+          </form>
         </div>
-      ) : null}
+      </Modal>
     </div>
   );
 }
