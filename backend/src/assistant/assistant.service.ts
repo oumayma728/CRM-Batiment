@@ -58,6 +58,7 @@ type ConversationSessionState = {
   delai: string | null;
   urgent: boolean;
   confirmed: boolean;
+  pendingRdv: boolean;
 };
 
 type AssistantLanguage = 'fr' | 'ar';
@@ -407,7 +408,8 @@ export class AssistantService {
     if (
       (state.currentGuidedStep ?? 0) > 0 &&
       !state.checklistCompleted &&
-      intent === 'demande_info_service'
+      intent === 'demande_info_service' &&
+      !intentDetection.detectedIntents.includes('demande_rdv')
     ) {
       intent = 'demande_devis';
     }
@@ -420,6 +422,28 @@ export class AssistantService {
     });
     const detectedIntentsResolved =
       detectedIntents.length > 0 ? detectedIntents : commercialIntentsFallback;
+
+    // FIX: garantir la détection du rendez-vous (son score est trop faible
+    // pour passer le seuil). Si le message mentionne un rdv, on l'ajoute.
+    const mentionsRdvDirect = /\b(rendez[\s-]?vous|rdv|planifier|visite)\b/i.test(
+      normalizedMessage,
+    );
+    // On maintient le rdv si le message le mentionne OU si on était déjà en parcours rdv
+    // (et qu'aucune nouvelle intention claire de devis/prix/suivi n'est exprimée).
+    const wasPendingRdv = Boolean(state.sessionState?.pendingRdv);
+    const switchesAway =
+      /\b(devis|prix|tarif|suivi|service)\b/i.test(normalizedMessage);
+    if (mentionsRdvDirect || (wasPendingRdv && !switchesAway)) {
+      // On force le parcours rendez-vous : ajouter demande_rdv en tête
+      if (!detectedIntentsResolved.includes('demande_rdv')) {
+        detectedIntentsResolved.unshift('demande_rdv');
+      }
+      // ...et retirer demande_devis qui empêche le parcours rdv de se lancer
+      const idxDevis = detectedIntentsResolved.indexOf('demande_devis');
+      if (idxDevis !== -1) {
+        detectedIntentsResolved.splice(idxDevis, 1);
+      }
+    }
     // Le regex essaie aussi
     const regexExtracted = this.extractFields(normalizedMessage);
     // Le code FUSIONNE les deux
@@ -438,8 +462,8 @@ export class AssistantService {
     // Priorité au nom extrait par l'IA (Mistral) — plus fiable que le regex
     if (aiExtracted?.nom) {
         sessionState.nom = aiExtracted.nom;
-    } else if (!sessionState.nom && extractionPipeline.collectedData.nom) {
-        sessionState.nom = extractionPipeline.collectedData.nom;
+    } else if (extractionPipeline.collectedData.nom) {
+      sessionState.nom = extractionPipeline.collectedData.nom;
     }
     if (!sessionState.telephone && extractionPipeline.collectedData.telephone) {
       sessionState.telephone = extractionPipeline.collectedData.telephone;
@@ -447,7 +471,10 @@ export class AssistantService {
     if (!sessionState.email && extractionPipeline.collectedData.email) {
       sessionState.email = extractionPipeline.collectedData.email;
     }
-
+    // Mémorise / maintient le parcours rendez-vous entre les messages.
+    if (detectedIntentsResolved.includes('demande_rdv')) {
+      sessionState.pendingRdv = true;
+    }
     const mergedCollectedData = {
       nom: extractionPipeline.collectedData.nom || sessionState.nom || '',
       telephone:
@@ -491,17 +518,21 @@ export class AssistantService {
     // "AUTRE" n'est pas un vrai type : on le considère comme "pas encore défini".
     const hasRealProjectType =
       Boolean(sessionState.projectType) && sessionState.projectType !== 'AUTRE';
+    // En parcours rendez-vous, on ne verrouille aucun type de projet.
+    const isRdvContext = detectedIntentsResolved.includes('demande_rdv');
     if (explicitProjectTypeChange) {
       sessionState.projectType = explicitProjectTypeChange;
       awaitingProjectTypeChangeConfirmation = false;
       pendingProjectType = null;
     } else if (
+      !isRdvContext &&
       !hasRealProjectType &&
       projectMatchCandidate.known &&
       quoteIntentSignal
     ) {
       sessionState.projectType = projectMatchCandidate.projectType;
-} else if (
+    } else if (
+      !isRdvContext &&
       !hasRealProjectType &&
       quoteIntentSignal &&
       projectMatchCandidate.suggestedType
@@ -510,6 +541,7 @@ export class AssistantService {
       // On garde uniquement une suggestion raisonnable si elle existe.
       sessionState.projectType = projectMatchCandidate.suggestedType;
     } else if (
+      !isRdvContext &&
       !hasRealProjectType &&
       (state.currentGuidedStep ?? 0) > 0 &&
       projectMatchCandidate.suggestedType
@@ -544,6 +576,7 @@ export class AssistantService {
     }
 
     const projectType = sessionState.projectType || 'AUTRE';
+
     const projectTypeKnown = projectTypes.some(
       (type) => type.nom === projectType,
     );
@@ -653,7 +686,10 @@ export class AssistantService {
         responseMessage =
           'Tout est bon pour vous ? Repondez "Oui" pour confirmer ou dites-moi ce que vous voulez changer.';
       }
-    } else if (lowConfidenceClarification) {
+    } else if (
+      lowConfidenceClarification &&
+      !detectedIntentsResolved.includes('demande_rdv')
+    ) {
       responseMessage = lowConfidenceClarification;
     } else {
       // ========== REPONSE INTELLIGENTE ET CONTEXTUELLE ==========
@@ -925,7 +961,6 @@ export class AssistantService {
         signal: futureProjectSignal,
       });
     }
-
     await this.prisma.chatSession.update({
       where: { id: sessionId },
       data: {
@@ -2698,6 +2733,7 @@ export class AssistantService {
           ? rawSessionState.urgent
           : Boolean(raw.is_urgent),
       confirmed: Boolean(rawSessionState.confirmed),
+      pendingRdv: Boolean(rawSessionState.pendingRdv),
     });
 
     return {
@@ -2777,6 +2813,7 @@ export class AssistantService {
       delai: input?.delai ?? null,
       urgent: Boolean(input?.urgent),
       confirmed: Boolean(input?.confirmed),
+      pendingRdv: Boolean(input?.pendingRdv),
     };
   }
 
@@ -3216,6 +3253,16 @@ export class AssistantService {
       .slice(0, 4)
       .map((entry) => entry.intent);
 
+    // FIX: le score "rendez-vous" est structurellement trop faible pour passer
+    // le seuil de 0.34. Si le message mentionne clairement un rendez-vous,
+    // on ajoute demande_rdv directement (sans dépendre du seuil).
+    const mentionsRdv = /\b(rendez[\s-]?vous|rdv|prendre\s+rendez|planifier|visite)\b/i.test(
+      input.message,
+    );
+    if (mentionsRdv && !intents.includes('demande_rdv')) {
+      intents.unshift('demande_rdv');
+    }
+
     if (intents.length === 0) {
       intents.push(mappedFallback !== 'autre' ? mappedFallback : 'autre');
     }
@@ -3266,11 +3313,6 @@ export class AssistantService {
     if (prixScore > 0) scores.demande_prix += 0.32 * prixScore;
     if (rdvScore > 0) scores.demande_rdv += 0.28 * rdvScore;
     if (suiviScore > 0) scores.demande_suivi += 0.28 * suiviScore;
-    console.log('🎤 DEBUG SCORES — message tokens:', JSON.stringify([...tokenSet]),
-      '| rdvScore:', rdvScore,
-      '| devisScore:', devisScore,
-      '| scores.demande_rdv:', scores.demande_rdv,
-      '| scores.demande_devis:', scores.demande_devis);
     const hasTypeProjetPhrase = phrases.some((phrase) =>
       this.fuzzyIncludes(phrase, ['type projet', 'type project'], 1),
     );
@@ -5704,10 +5746,13 @@ export class AssistantService {
       projectKnown: input.projectMatch.known,
       message: input.normalizedMessage,
     });
-    if (dbDrivenChecklistResponse) {
+    // Ne pas court-circuiter le parcours rendez-vous avec la checklist devis.
+    const isRdvFlow =
+      input.detectedIntents.includes('demande_rdv') &&
+      !input.detectedIntents.includes('demande_devis');
+    if (dbDrivenChecklistResponse && !isRdvFlow) {
       return dbDrivenChecklistResponse;
     }
-
     // ---------- 6. Demande RDV ----------
     if (
       input.detectedIntents.includes('demande_rdv') &&
