@@ -444,6 +444,7 @@ export class AssistantService {
         detectedIntentsResolved.splice(idxDevis, 1);
       }
     }
+    
     // Le regex essaie aussi
     const regexExtracted = this.extractFields(normalizedMessage);
     // Le code FUSIONNE les deux
@@ -592,6 +593,21 @@ export class AssistantService {
         (projectTypeKnown ? projectType : null),
       confidence: Number(projectTypeConfidence.toFixed(3)),
     };
+    if ((state.currentGuidedStep ?? 0) > 0 && projectMatch.known) {
+      const idxService = detectedIntentsResolved.indexOf('demande_service');
+      if (idxService !== -1) {
+        detectedIntentsResolved.splice(idxService, 1);
+      }
+      const idxInfoService = detectedIntentsResolved.indexOf(
+        'demande_info_service' as CommercialIntent,
+      );
+      if (idxInfoService !== -1) {
+        detectedIntentsResolved.splice(idxInfoService, 1);
+      }
+      if (!detectedIntentsResolved.includes('demande_devis')) {
+        detectedIntentsResolved.unshift('demande_devis');
+      }
+    }
 
     const isAffirmative = this.isAffirmative(normalizedMessage);
     
