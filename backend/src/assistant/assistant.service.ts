@@ -393,12 +393,6 @@ export class AssistantService {
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? 'demande_devis'
         : state.intent;
-    console.log('🛒 DEBUG DEVIS —',
-      'currentGuidedStep:', state.currentGuidedStep,
-      '| checklistCompleted:', state.checklistCompleted,
-      '| intentFallback:', intentFallback,
-      '| state.intent:', state.intent,
-      '| message:', normalizedMessage);
     const aiIntentHint =
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? undefined
