@@ -894,10 +894,19 @@ export class AssistantService {
 
     const missingContactFields =
       this.getMissingContactFields(mergedCollectedData);
-    const registrationMissingFields = this.getRegistrationMissingFields({
+    let registrationMissingFields = this.getRegistrationMissingFields({
       collectedData: mergedCollectedData,
       projectType: sessionState.projectType || projectType,
     });
+    // En parcours rendez-vous, le type de projet n'est pas requis pour enregistrer.
+    const isRdvRegistration =
+      detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_devis');
+    if (isRdvRegistration) {
+      registrationMissingFields = registrationMissingFields.filter(
+        (field) => field !== 'projectType',
+      );
+    }
     const hasCommercialIntent =
       intent === 'demande_devis' ||
       detectedIntentsResolved.includes('demande_devis') ||
@@ -905,6 +914,11 @@ export class AssistantService {
       detectedIntentsResolved.includes('demande_rdv');
     const shouldUpsertProspect =
       hasCommercialIntent && registrationMissingFields.length === 0;
+    console.log('🏠 DEBUG PROSPECT —',
+      'shouldUpsert:', shouldUpsertProspect,
+      '| hasCommercialIntent:', hasCommercialIntent,
+      '| detectedIntents:', JSON.stringify(detectedIntentsResolved),
+      '| registrationMissingFields:', JSON.stringify(registrationMissingFields));
 
     let prospectId: number | null = null;
     if (shouldUpsertProspect) {
@@ -915,6 +929,9 @@ export class AssistantService {
         isKnownProject: projectMatch.known,
         projectTypes,
         notesOverride: technicoDescription,
+        isRdv:
+          detectedIntentsResolved.includes('demande_rdv') &&
+          !detectedIntentsResolved.includes('demande_devis'),
       });
     }
 
@@ -4227,11 +4244,26 @@ export class AssistantService {
   }
 
   private sanitizeName(value: string): string {
-    return value
+    let cleaned = value
       .replace(/\d+/g, ' ')
       .replace(/[^a-zA-ZÀ-ÿ\s'-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+    // Coupe le nom dès qu'on rencontre un mot parasite (ex: "Karim mon telephone" -> "Karim")
+    const stopWords = [
+      'mon', 'ma', 'mes', 'numero', 'numéro', 'telephone', 'téléphone',
+      'tel', 'email', 'mail', 'adresse', 'gmail', 'com', 'le', 'la',
+      'est', 'cest', 'voici', 'rendez', 'rdv', 'devis',
+    ];
+    const words = cleaned.split(' ');
+    const result: string[] = [];
+    for (const word of words) {
+      if (stopWords.includes(word.toLowerCase())) {
+        break; // on s'arrête au premier mot parasite
+      }
+      result.push(word);
+    }
+    return result.join(' ').trim();
   }
 
   private sanitizePhone(value: string): string {
@@ -4773,9 +4805,14 @@ export class AssistantService {
     isKnownProject: boolean;
     projectTypes: Array<{ id: number; nom: string }>;
     notesOverride?: string;
+    isRdv?: boolean;
   }): Promise<number> {
     const normalizedEmail = input.collectedData.email.toLowerCase();
     const normalizedPhone = input.collectedData.telephone;
+    // Nom propre : on rejette les noms pollués par le regex (ex: "Nour mon telephone")
+    // On nettoie toujours le nom (coupe les mots parasites comme "mon telephone")
+    const cleanName = this.sanitizeName(input.collectedData.nom);
+    const besoinValue = input.isRdv ? 'RENDEZ_VOUS' : 'DEVIS';
 
     const existing = await this.prisma.client.findFirst({
       where: {
@@ -4800,10 +4837,10 @@ export class AssistantService {
       await this.prisma.client.update({
         where: { id: existing.id },
         data: {
-          nom: input.collectedData.nom,
+          nom: cleanName,
           telephone: normalizedPhone,
           email: normalizedEmail,
-          besoin: 'DEVIS',
+          besoin: besoinValue,
           notes: input.notesOverride || input.collectedData.description,
           source: LeadSource.CHATBOT,
           typeProjetId: matchedTypeProjet?.id ?? null,
@@ -4816,11 +4853,11 @@ export class AssistantService {
     const created = await this.prisma.client.create({
       data: {
         companyId: input.companyId,
-        nom: input.collectedData.nom,
+        nom: cleanName,
         telephone: normalizedPhone,
         email: normalizedEmail,
         source: LeadSource.CHATBOT,
-        besoin: 'DEVIS',
+        besoin: besoinValue,
         notes: input.notesOverride || input.collectedData.description,
         typeProjetId: matchedTypeProjet?.id,
       },
