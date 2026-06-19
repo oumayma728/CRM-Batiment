@@ -6343,13 +6343,9 @@ export class AssistantService {
     });
 
     const baseMessage = input.responseMessage.trim();
-    const contextBlock = [header, ...sourceLines].join('\n');
-
-    if (baseMessage.includes(contextBlock)) {
-      return baseMessage;
-    }
-
-    return `${baseMessage}\n\n${contextBlock}`;
+    // On n'affiche PLUS les sources RAG au client (texte technique interne).
+    // Le contexte RAG sert a guider la reponse, pas a etre montre tel quel.
+    return baseMessage;
   }
 
   private shouldApplyRagContext(input: {
