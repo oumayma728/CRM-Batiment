@@ -393,6 +393,12 @@ export class AssistantService {
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? 'demande_devis'
         : state.intent;
+    console.log('🛒 DEBUG DEVIS —',
+      'currentGuidedStep:', state.currentGuidedStep,
+      '| checklistCompleted:', state.checklistCompleted,
+      '| intentFallback:', intentFallback,
+      '| state.intent:', state.intent,
+      '| message:', normalizedMessage);
     const aiIntentHint =
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? undefined
@@ -688,7 +694,8 @@ export class AssistantService {
       }
     } else if (
       lowConfidenceClarification &&
-      !detectedIntentsResolved.includes('demande_rdv')
+      !detectedIntentsResolved.includes('demande_rdv') &&
+      !((state.currentGuidedStep ?? 0) > 0 && !state.checklistCompleted)
     ) {
       responseMessage = lowConfidenceClarification;
     } else {
@@ -4324,6 +4331,9 @@ export class AssistantService {
       /\b(maison|appartement|villa|immeuble|batiment|chantier)\b/,
       /\b(toiture|isolation|plomberie|peinture|renovation|travaux|carrelage)\b/,
       /\b(individuelle|collectif|collective|residentiel|residentielle)\b/,
+      /\b(revetement|sol|menuiserie|maconnerie|electricite|demolition|desamiantage)\b/,
+      /\b(amenagement|exterieur|extension|surelevation|construction|couverture)\b/,
+      /\b(faience|platrerie|sanitaire|cuisine|salle|bain|decoration|terrasse)\b/,
     ];
     const hasNonPersonSignal = nonPersonNamePatterns.some((pattern) =>
       pattern.test(normalized),
