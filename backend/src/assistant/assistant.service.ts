@@ -914,11 +914,6 @@ export class AssistantService {
       detectedIntentsResolved.includes('demande_rdv');
     const shouldUpsertProspect =
       hasCommercialIntent && registrationMissingFields.length === 0;
-    console.log('🏠 DEBUG PROSPECT —',
-      'shouldUpsert:', shouldUpsertProspect,
-      '| hasCommercialIntent:', hasCommercialIntent,
-      '| detectedIntents:', JSON.stringify(detectedIntentsResolved),
-      '| registrationMissingFields:', JSON.stringify(registrationMissingFields));
 
     let prospectId: number | null = null;
     if (shouldUpsertProspect) {
@@ -4334,7 +4329,12 @@ export class AssistantService {
       pattern.test(normalized),
     );
     const hasIntentSignal =
-      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi|bonjour|bonsoir|salut)\b/.test(
+      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi)\b/.test(
+        normalized,
+      );
+    // Formules de politesse / acquiescement : ce ne sont pas des noms.
+    const hasPolitenessSignal =
+      /\b(merci|accord|ok|oui|non|parfait|bonjour|bonsoir|salut|super|cool|bien|tres bien|d accord)\b/.test(
         normalized,
       );
 
@@ -4345,7 +4345,8 @@ export class AssistantService {
       value.length >= 5 &&
       !forbidden.has(normalized) &&
       !hasNonPersonSignal &&
-      !hasIntentSignal
+      !hasIntentSignal &&
+      !hasPolitenessSignal
     );
   }
 
