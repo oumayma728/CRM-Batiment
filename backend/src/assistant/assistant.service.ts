@@ -59,6 +59,8 @@ type ConversationSessionState = {
   urgent: boolean;
   confirmed: boolean;
   pendingRdv: boolean;
+  pendingSuivi: boolean;
+  lastDemandeId: number | null;
 };
 
 type AssistantLanguage = 'fr' | 'ar';
@@ -444,7 +446,25 @@ export class AssistantService {
         detectedIntentsResolved.splice(idxDevis, 1);
       }
     }
-    
+
+    // Detection / maintien du parcours SUIVI (par mot-cle ou reference DEM-X).
+    const mentionsSuiviDirect =
+      /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage) ||
+      /dem[\s-]?\d+/i.test(normalizedMessage);
+    const wasPendingSuivi = Boolean(state.sessionState?.pendingSuivi);
+    const switchesAwayFromSuivi =
+      /\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage);
+    if (mentionsSuiviDirect || (wasPendingSuivi && !switchesAwayFromSuivi)) {
+      if (!detectedIntentsResolved.includes('demande_suivi')) {
+        detectedIntentsResolved.unshift('demande_suivi');
+      }
+      // Le suivi ne doit pas declencher un devis
+      const idxDevisSuivi = detectedIntentsResolved.indexOf('demande_devis');
+      if (idxDevisSuivi !== -1) {
+        detectedIntentsResolved.splice(idxDevisSuivi, 1);
+      }
+    }
+
     // Le regex essaie aussi
     const regexExtracted = this.extractFields(normalizedMessage);
     // Le code FUSIONNE les deux
@@ -475,6 +495,10 @@ export class AssistantService {
     // Mémorise / maintient le parcours rendez-vous entre les messages.
     if (detectedIntentsResolved.includes('demande_rdv')) {
       sessionState.pendingRdv = true;
+    }
+    // Mémorise / maintient le parcours suivi entre les messages.
+    if (detectedIntentsResolved.includes('demande_suivi')) {
+      sessionState.pendingSuivi = true;
     }
     const mergedCollectedData = {
       nom: extractionPipeline.collectedData.nom || sessionState.nom || '',
@@ -957,7 +981,7 @@ export class AssistantService {
     ) {
       const actorUserId = await this.findInternalActorUserId(dto.companyId);
       if (actorUserId) {
-        devisId = await this.createOrReuseAssistantDraftDevis({
+        const draftResult = await this.createOrReuseAssistantDraftDevis({
           companyId: dto.companyId,
           actorUserId,
           prospectId,
@@ -965,6 +989,11 @@ export class AssistantService {
           typeProjetId:
             projectTypes.find((type) => type.nom === projectType)?.id ?? null,
         });
+        if (draftResult) {
+          devisId = draftResult.devisId;
+          // On memorise la reference de la demande pour le suivi futur.
+          sessionState.lastDemandeId = draftResult.demandeId;
+        }
       }
     }
 
@@ -2240,7 +2269,7 @@ export class AssistantService {
 
       const actorUserId = await this.findInternalActorUserId(dto.companyId);
       if (actorUserId && prospectId) {
-        generatedDevisId = await this.createOrReuseAssistantDraftDevis({
+        const draftResultPdf = await this.createOrReuseAssistantDraftDevis({
           companyId: dto.companyId,
           actorUserId,
           prospectId,
@@ -2249,6 +2278,7 @@ export class AssistantService {
             `${projectType} - ${selectedPrestation?.nom || normalizedService}`,
           typeProjetId: matchedType.id,
         });
+        generatedDevisId = draftResultPdf ? draftResultPdf.devisId : null;
       }
     } else if (dto.confirmValidation && !canValidate) {
       responseMessage =
@@ -2763,6 +2793,11 @@ export class AssistantService {
           : Boolean(raw.is_urgent),
       confirmed: Boolean(rawSessionState.confirmed),
       pendingRdv: Boolean(rawSessionState.pendingRdv),
+      pendingSuivi: Boolean(rawSessionState.pendingSuivi),
+      lastDemandeId:
+        typeof rawSessionState.lastDemandeId === 'number'
+          ? rawSessionState.lastDemandeId
+          : null,
     });
 
     return {
@@ -2843,6 +2878,9 @@ export class AssistantService {
       urgent: Boolean(input?.urgent),
       confirmed: Boolean(input?.confirmed),
       pendingRdv: Boolean(input?.pendingRdv),
+      pendingSuivi: Boolean(input?.pendingSuivi),
+      lastDemandeId:
+        typeof input?.lastDemandeId === 'number' ? input.lastDemandeId : null,
     };
   }
 
@@ -3062,7 +3100,12 @@ export class AssistantService {
     const nom = state.nom ?? 'cher client';
     const email = state.email ?? 'votre email';
     const delai = state.delai ?? '48h';
-    return `Merci ${nom} ! ✅\n\nVotre dossier est transmis a notre equipe. Vous recevrez votre devis detaille a ${email} sous ${delai}.\n\nN'hesitez pas a revenir si vous avez des questions. Bonne journee ! 😊`;
+    // Si une demande a ete enregistree, on donne sa reference au client
+    // pour qu'il puisse suivre l'avancement plus tard.
+    const reference = state.lastDemandeId
+      ? `\n\n📎 Votre reference de suivi : DEM-${state.lastDemandeId} (gardez-la pour suivre votre demande).`
+      : '';
+    return `Merci ${nom} ! ✅\n\nVotre dossier est transmis a notre equipe. Vous recevrez votre devis detaille a ${email} sous ${delai}.${reference}\n\nN'hesitez pas a revenir si vous avez des questions. Bonne journee ! 😊`;
   }
 
   private pickBestDescriptionForConversation(input: {
@@ -4343,7 +4386,7 @@ export class AssistantService {
       /\b(individuelle|collectif|collective|residentiel|residentielle)\b/,
       /\b(revetement|sol|menuiserie|maconnerie|electricite|demolition|desamiantage)\b/,
       /\b(amenagement|exterieur|extension|surelevation|construction|couverture)\b/,
-      /\b(faience|platrerie|sanitaire|cuisine|salle|bain|decoration|terrasse)\b/,
+      /\b(faience|platrerie|sanitaire|cuisine|salle|bain|decoration|terrasse|gros)\b/,
     ];
     const hasNonPersonSignal = nonPersonNamePatterns.some((pattern) =>
       pattern.test(normalized),
@@ -4741,7 +4784,7 @@ export class AssistantService {
     return text
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ' ')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -4818,7 +4861,85 @@ export class AssistantService {
       sessionId: input.sessionId,
     };
   }
+  // Recherche une demande pour le suivi, par reference (DEM-X) ou par email.
+  private async buildSuiviResponse(input: {
+    companyId: number;
+    message: string;
+    email?: string | null;
+  }): Promise<string | null> {
+    const message = (input.message || '').trim();
+    const email = (input.email || '').toLowerCase().trim();
 
+    // 1. On cherche une reference de demande dans le message (ex: "DEM-14" ou "14")
+    const refMatch = message.match(/dem[\s-]?(\d+)/i) || message.match(/\b(\d{1,6})\b/);
+    const demandeId = refMatch ? parseInt(refMatch[1], 10) : null;
+
+    // Il faut au moins une reference OU un email pour identifier la demande
+    if (!demandeId && !email) {
+      return null;
+    }
+
+    // 2. On cherche la demande
+    let demande = null;
+    if (demandeId) {
+      demande = await this.prisma.demandeDevis.findFirst({
+        where: { id: demandeId, companyId: input.companyId },
+        select: {
+          id: true,
+          statut: true,
+          description: true,
+          client: { select: { nom: true } },
+        },
+      });
+    }
+
+    // 3. Si pas trouve par reference, on essaie par email
+    if (!demande && email) {
+      const client = await this.prisma.client.findFirst({
+        where: { companyId: input.companyId, email },
+        select: { id: true, nom: true },
+      });
+      if (client) {
+        demande = await this.prisma.demandeDevis.findFirst({
+          where: { clientId: client.id, companyId: input.companyId },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            statut: true,
+            description: true,
+            client: { select: { nom: true } },
+          },
+        });
+      }
+    }
+
+    // 4. Aucune demande trouvee
+    if (!demande) {
+      return (
+        'Je ne trouve aucune demande correspondante. Verifiez votre reference (ex: DEM-14) ' +
+        'ou votre email, ou contactez-nous directement si le probleme persiste. 📋'
+      );
+    }
+
+    // 5. On traduit le statut en francais lisible
+    const statutLabels: Record<string, string> = {
+      NOUVEAU: 'Nouvelle demande recue ✨',
+      EN_COURS: 'En cours de traitement 🔧',
+      QUALIFIE: 'Qualifiee, devis en preparation 📝',
+      CONVERTI: 'Devis envoye / converti ✅',
+      PERDU: 'Cloturee',
+    };
+    const statutLisible = statutLabels[demande.statut] || demande.statut;
+    const nomClient = demande.client?.nom || 'cher client';
+
+    return (
+      `Bonjour ${nomClient} ! 📋\n\n` +
+      `Voici l'etat de votre demande DEM-${demande.id} :\n` +
+      `- ${demande.description}\n` +
+      `- Statut : ${statutLisible}\n\n` +
+      `Notre equipe reste a votre disposition pour toute question. 😊`
+    );
+  }
   private async upsertChatbotProspect(input: {
     companyId: number;
     collectedData: AssistantResult['collected_data'];
@@ -5603,7 +5724,7 @@ export class AssistantService {
     prospectId: number;
     description: string;
     typeProjetId: number | null;
-  }): Promise<number | null> {
+  }): Promise<{ devisId: number; demandeId: number } | null> {
     try {
       const existingDemande = await this.prisma.demandeDevis.findFirst({
         where: {
@@ -5656,7 +5777,7 @@ export class AssistantService {
         typeProjetId: input.typeProjetId,
       });
 
-      return devis.id;
+      return { devisId: devis.id, demandeId };
     } catch {
       return null;
     }
@@ -5829,11 +5950,21 @@ export class AssistantService {
     }
 
     // ---------- 7. Demande de suivi ----------
-    if (
-      input.detectedIntents.includes('demande_suivi') &&
-      !input.detectedIntents.includes('demande_devis')
-    ) {
-      return 'Pour le suivi, donnez-moi votre nom complet ou la reference de devis.';
+    if (input.detectedIntents.includes('demande_suivi')) {
+      // On tente de retrouver la demande par reference (DEM-X) ou email.
+      const suiviResult = await this.buildSuiviResponse({
+        companyId: input.companyId,
+        message: input.normalizedMessage,
+        email: input.sessionState.email,
+      });
+      if (suiviResult) {
+        return suiviResult;
+      }
+      // Pas encore de reference/email fournis : on les demande.
+      return (
+        'Bien sur, je peux verifier l\'avancement de votre demande. 📋\n' +
+        'Donnez-moi votre reference de suivi (ex: DEM-14) ou l\'email utilise lors de votre demande.'
+      );
     }
 
     // ---------- 8. Information generale / questions ----------
