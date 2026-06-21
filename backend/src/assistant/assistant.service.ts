@@ -953,9 +953,16 @@ export class AssistantService {
       detectedIntentsResolved.includes('demande_devis') ||
       detectedIntentsResolved.includes('demande_prix') ||
       detectedIntentsResolved.includes('demande_rdv');
+    // On ne cree le prospect qu'APRES confirmation (le "oui"), pour les devis.
+    // Les rdv n'exigent pas de confirmation (creation directe apres infos).
+    const isRdvRegistrationFlow =
+      detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_devis');
+    const confirmationOk = sessionState.confirmed || isRdvRegistrationFlow;
     const shouldUpsertProspect =
-      hasCommercialIntent && registrationMissingFields.length === 0;
-
+      hasCommercialIntent &&
+      registrationMissingFields.length === 0 &&
+      confirmationOk;
     let prospectId: number | null = null;
     if (shouldUpsertProspect) {
       prospectId = await this.upsertChatbotProspect({
