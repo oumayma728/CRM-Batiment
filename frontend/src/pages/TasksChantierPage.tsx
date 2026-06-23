@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Select, Input, TextArea, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 import api from '@/lib/api';
 import { cn, formatDate } from '@/lib/utils';
 import PageHero from '@/components/PageHero';
@@ -95,11 +97,13 @@ function toEditForm(task: TacheChantier): TaskFormState {
 
 export default function TasksChantierPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [selectedChantierId, setSelectedChantierId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<TacheChantier | null>(null);
   const [form, setForm] = useState<TaskFormState>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<TacheChantier | null>(null);
 
   const chantiersQuery = useQuery({
     queryKey: ['task-page-chantiers', search],
@@ -164,6 +168,10 @@ export default function TasksChantierPage() {
       setShowModal(false);
       setEditingTask(null);
       setForm(emptyForm);
+      toast.success('Tâche créée', 'La tâche a été ajoutée avec succès.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la création', getErrorMessage(error, 'Erreur lors de la création.'));
     },
   });
 
@@ -195,6 +203,10 @@ export default function TasksChantierPage() {
       setShowModal(false);
       setEditingTask(null);
       setForm(emptyForm);
+      toast.success('Tâche mise à jour avec succès');
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Erreur lors de la mise à jour de la tâche'));
     },
   });
 
@@ -219,8 +231,18 @@ export default function TasksChantierPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chantier-taches'] });
       queryClient.invalidateQueries({ queryKey: ['task-page-chantiers'] });
+      setDeleteTarget(null);
+      toast.success('Tâche supprimée avec succès');
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Erreur lors de la suppression de la tâche'));
     },
   });
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id);
+  };
 
   const submitMutation = editingTask ? updateMutation : createMutation;
   const taskList = tasksQuery.data?.tasks ?? [];
@@ -475,11 +497,7 @@ export default function TasksChantierPage() {
                                 <Pencil size={15} />
                               </button>
                               <button
-                                onClick={() => {
-                                  if (window.confirm(`Supprimer la tache "${task.libelle}" ?`)) {
-                                    deleteMutation.mutate(task.id);
-                                  }
-                                }}
+                                onClick={() => setDeleteTarget(task)}
                                 className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50"
                                 title="Supprimer"
                               >
@@ -611,6 +629,20 @@ export default function TasksChantierPage() {
           {getApiErrorMessage(tasksQuery.error, 'Impossible de charger les taches du chantier.')}
         </section>
       ) : null}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer la tâche"
+        message={
+          deleteTarget
+            ? `Êtes-vous sûr de vouloir supprimer la tâche "${deleteTarget.libelle}" ? Cette action est irréversible.`
+            : ''
+        }
+        confirmLabel="Supprimer"
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

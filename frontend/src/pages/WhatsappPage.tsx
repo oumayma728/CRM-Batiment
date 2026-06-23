@@ -11,6 +11,7 @@ import { whatsappApi, type WhatsappMessage } from '@/lib/whatsapp.api';
 import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import api from '@/lib/api';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 
 // ─── Emoji data ────────────────────────────────────────────────────────────
 const EMOJI_CATEGORIES = [
@@ -394,6 +395,7 @@ export default function WhatsappPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const toast = useToast();
 
   const conversationsQuery = useQuery({
     queryKey: ['whatsapp-conversations'],
@@ -426,12 +428,15 @@ export default function WhatsappPage() {
       if (textareaRef.current) { textareaRef.current.style.height = 'auto'; }
       queryClient.invalidateQueries({ queryKey: ['whatsapp-messages', selectedConvId] });
       queryClient.invalidateQueries({ queryKey: ['whatsapp-conversations'] });
+      toast.success('Message envoyé');
     },
+    onError: (err) => { toast.error('Échec de l\'envoi', getErrorMessage(err)); },
   });
 
   const reactMutation = useMutation({
     mutationFn: ({ msgId, emoji }: { msgId: number; emoji: string }) => whatsappApi.reactToMessage(msgId, emoji),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['whatsapp-messages', selectedConvId] }),
+    onError: (err) => { toast.error('Réaction échouée', getErrorMessage(err)); },
   });
 
   const mediaMutation = useMutation({
@@ -439,7 +444,11 @@ export default function WhatsappPage() {
       if (!selectedConvId) throw new Error('No conversation selected');
       return whatsappApi.sendMedia(selectedConvId, file);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['whatsapp-messages', selectedConvId] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-messages', selectedConvId] });
+      toast.success('Média envoyé');
+    },
+    onError: (err) => { toast.error('Échec de l\'envoi du média', getErrorMessage(err)); },
   });
 
   // Auto-scroll to bottom

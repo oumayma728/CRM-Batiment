@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Select, TextArea, Input, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 
 interface PrestationOptionFormChoix {
   nom: string;
@@ -142,6 +144,7 @@ export default function PrestationsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
   const [expandedCats, setExpandedCats] = useState<Set<number>>(new Set());
@@ -150,6 +153,8 @@ export default function PrestationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<PrestationCreateFormState>(() => createEmptyPrestationForm());
   const [optionsForm, setOptionsForm] = useState<PrestationOptionForm[]>([]);
+  const [deleteCategoryTarget, setDeleteCategoryTarget] = useState<{ id: number; name: string } | null>(null);
+  const [deletePrestationTarget, setDeletePrestationTarget] = useState<{ id: number; name: string } | null>(null);
 
   const { data: catalogue, isLoading } = useQuery({
     queryKey: ['catalogue-full'],
@@ -197,17 +202,25 @@ export default function PrestationsPage() {
       setShowModal(false);
       setForm(createEmptyPrestationForm());
       setOptionsForm([]);
-      window.alert(
+      toast.success(
+        'Prestation créée',
         optionsCount > 0
-          ? `Prestation creee avec ${optionsCount} option(s). Cliquez sur la fleche de la prestation pour voir le raffinement.`
-          : 'Prestation creee avec succes.',
+          ? `Prestation créée avec ${optionsCount} option(s). Cliquez sur la flèche de la prestation pour voir le raffinement.`
+          : 'Prestation créée avec succès.',
       );
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/prestations/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['catalogue-full'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['catalogue-full'] });
+      setDeletePrestationTarget(null);
+      toast.success('Prestation supprimée', 'La prestation a été retirée définitivement.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la suppression', getErrorMessage(error, 'Erreur lors de la suppression.'));
+    },
   });
 
   const deleteSelectedCategoryMutation = useMutation({
@@ -220,24 +233,21 @@ export default function PrestationsPage() {
         next.delete(deletedCategoryId);
         return next;
       });
-      window.alert('Categorie supprimee avec succes.');
+      setDeleteCategoryTarget(null);
+      toast.success('Catégorie supprimée', 'La catégorie a été supprimée avec succès.');
     },
     onError: (error) => {
-      if (axios.isAxiosError(error)) {
-        const apiMessage = (error.response?.data as { message?: string })?.message;
-        if (apiMessage) {
-          window.alert(apiMessage);
-          return;
-        }
-      }
-      window.alert('Echec de suppression de la categorie.');
+      const msg = axios.isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message
+        : null;
+      toast.error('Échec de la suppression', msg || 'Échec de suppression de la catégorie.');
     },
   });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.categorieId) {
-      window.alert('Veuillez selectionner une categorie.');
+      toast.warning('Champ manquant', 'Veuillez sélectionner une catégorie.');
       return;
     }
 
@@ -245,18 +255,18 @@ export default function PrestationsPage() {
     const parsedMax = Number(form.prixVenteMax);
 
     if (!Number.isFinite(parsedMin) || !Number.isFinite(parsedMax)) {
-      window.alert('Veuillez saisir des prix valides.');
+      toast.warning('Champ invalide', 'Veuillez saisir des prix valides.');
       return;
     }
 
     if (parsedMax < parsedMin) {
-      window.alert('Le prix de vente max doit etre superieur ou egal au prix de vente min.');
+      toast.warning('Champ invalide', 'Le prix de vente max doit être supérieur ou égal au prix de vente min.');
       return;
     }
 
     const builtOptions = buildOptionsPayload(optionsForm);
     if ('error' in builtOptions) {
-      window.alert(builtOptions.error);
+      toast.warning('Erreur de validation', builtOptions.error);
       return;
     }
 
@@ -359,11 +369,21 @@ export default function PrestationsPage() {
 
   function handleDeleteCategory(categoryId: number, categoryName: string) {
     if (deleteSelectedCategoryMutation.isPending) return;
-    const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer la catÃ©gorie "${categoryName}" ?`,
-    );
-    if (!confirmed) return;
-    deleteSelectedCategoryMutation.mutate(categoryId);
+    setDeleteCategoryTarget({ id: categoryId, name: categoryName });
+  }
+
+  function confirmDeleteCategory() {
+    if (!deleteCategoryTarget) return;
+    deleteSelectedCategoryMutation.mutate(deleteCategoryTarget.id);
+  }
+
+  function handleDeletePrestation(prestationId: number, prestationName: string) {
+    setDeletePrestationTarget({ id: prestationId, name: prestationName });
+  }
+
+  function confirmDeletePrestation() {
+    if (!deletePrestationTarget) return;
+    deleteMutation.mutate(deletePrestationTarget.id);
   }
 
   // Filter catalogue by search
@@ -528,7 +548,7 @@ export default function PrestationsPage() {
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
-                          onDelete={() => deleteMutation.mutate(p.id)}
+                          onDelete={() => handleDeletePrestation(p.id, p.nom)}
                           canEdit={isAdmin}
                           indent={1}
                         />
@@ -559,7 +579,7 @@ export default function PrestationsPage() {
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
-                          onDelete={() => deleteMutation.mutate(p.id)}
+                          onDelete={() => handleDeletePrestation(p.id, p.nom)}
                           canEdit={isAdmin}
                           indent={2}
                         />
@@ -812,6 +832,36 @@ export default function PrestationsPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={!!deleteCategoryTarget}
+        title="Supprimer la catégorie ?"
+        message={
+          <>
+            Vous êtes sur le point de supprimer définitivement la catégorie
+            {deleteCategoryTarget ? <strong className="text-slate-800"> {deleteCategoryTarget.name} </strong> : ''}.
+            Cette action est irréversible.
+          </>
+        }
+        loading={deleteSelectedCategoryMutation.isPending}
+        onConfirm={confirmDeleteCategory}
+        onClose={() => setDeleteCategoryTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={!!deletePrestationTarget}
+        title="Supprimer la prestation ?"
+        message={
+          <>
+            Vous êtes sur le point de supprimer définitivement la prestation
+            {deletePrestationTarget ? <strong className="text-slate-800"> {deletePrestationTarget.name} </strong> : ''}.
+            Cette action est irréversible.
+          </>
+        }
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDeletePrestation}
+        onClose={() => setDeletePrestationTarget(null)}
+      />
     </div>
   );
 }

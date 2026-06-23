@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input, TextArea, SubmitButton } from '@/components/ui/Form';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 
 interface TypeProjetForm {
   nom: string;
@@ -90,12 +91,16 @@ export default function TypesProjetPage() {
     new Map<number, { clients: number; linkedTypeIds: number[] }>(),
   );
 
+  const toast = useToast();
+
   const createMutation = useMutation({
     mutationFn: (body: TypeProjetForm) => api.post('/types-projet', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Type de projet créé', 'Le type a été ajouté avec succès.');
     },
+    onError: (err) => { toast.error('Échec de la création', getErrorMessage(err)); },
   });
 
   const updateMutation = useMutation({
@@ -103,7 +108,9 @@ export default function TypesProjetPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Type de projet modifié', 'Les modifications ont été enregistrées.');
     },
+    onError: (err) => { toast.error('Échec de la modification', getErrorMessage(err)); },
   });
 
   const deleteMutation = useMutation({
@@ -111,7 +118,9 @@ export default function TypesProjetPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       setDeleteId(null);
+      toast.success('Type de projet supprimé', 'Le type a été retiré définitivement.');
     },
+    onError: (err) => { toast.error('Échec de la suppression', getErrorMessage(err)); },
   });
 
   const createSimpleTaskMutation = useMutation({
@@ -138,7 +147,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Tâche simple créée', 'La tâche a été ajoutée avec succès.');
     },
+    onError: (err) => { toast.error('Échec de la création', getErrorMessage(err)); },
   });
 
   const updateSimpleTaskMutation = useMutation({
@@ -168,7 +179,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeSimpleTaskModal();
+      toast.success('Tâche simple modifiée', 'Les modifications ont été enregistrées.');
     },
+    onError: (err) => { toast.error('Échec de la modification', getErrorMessage(err)); },
   });
 
   const deleteSimpleTaskMutation = useMutation({
@@ -182,7 +195,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       setDeleteSimpleTask(null);
+      toast.success('Tâche simple supprimée', 'La tâche a été retirée définitivement.');
     },
+    onError: (err) => { toast.error('Échec de la suppression', getErrorMessage(err)); },
   });
 
   function extractCategorieIds(item: TypeProjet) {

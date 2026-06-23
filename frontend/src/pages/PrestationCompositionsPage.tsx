@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Loader2, Pencil, Plus, Search, Trash2, X, ListPlus, Edit3 } from 'lucide-react';
+import { BookOpen, Loader2, Pencil, Plus, Search, Trash2, ListPlus, Edit3 } from 'lucide-react';
 import api from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Modal } from '@/components/ui/Modal';
 import { Select, Input, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast } from '@/components/ui/Toast';
 import PageHero from '@/components/PageHero';
 import type {
   CatalogueCategorieWithCompositions,
@@ -185,12 +187,14 @@ function flattenPrestations(catalogue: CatalogueCategorieWithCompositions[]): Pr
 export default function PrestationCompositionsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const isAdmin = user?.role === 'ADMIN';
 
   const [search, setSearch] = useState('');
   const [showEditor, setShowEditor] = useState(false);
   const [editingRow, setEditingRow] = useState<CompositionRow | null>(null);
   const [form, setForm] = useState<CompositionFormState>(() => createEmptyForm());
+  const [deleteTarget, setDeleteTarget] = useState<CompositionRow | null>(null);
 
   const {
     data: catalogue,
@@ -280,6 +284,10 @@ export default function PrestationCompositionsPage() {
       setShowEditor(false);
       setEditingRow(null);
       setForm(createEmptyForm());
+      toast.success('Composition créée', 'La composition a été ajoutée avec succès.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la création', getApiErrorMessage(error, 'Erreur lors de la création.'));
     },
   });
 
@@ -300,6 +308,10 @@ export default function PrestationCompositionsPage() {
       setShowEditor(false);
       setEditingRow(null);
       setForm(createEmptyForm());
+      toast.success('Composition modifiée', 'Les modifications ont été enregistrées.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la modification', getApiErrorMessage(error, 'Erreur lors de la mise à jour.'));
     },
   });
 
@@ -307,6 +319,11 @@ export default function PrestationCompositionsPage() {
     mutationFn: (id: number) => api.delete(`/prestations/compositions/${id}`),
     onSuccess: async () => {
       await refreshCatalogueQueries();
+      setDeleteTarget(null);
+      toast.success('Composition supprimée', 'La composition a été retirée définitivement.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la suppression', getApiErrorMessage(error, 'Erreur lors de la suppression.'));
     },
   });
 
@@ -335,11 +352,12 @@ export default function PrestationCompositionsPage() {
 
   function handleDelete(row: CompositionRow) {
     if (deleteMutation.isPending) return;
-    const confirmed = window.confirm(
-      `Supprimer la composition #${row.compositionId} de la prestation "${row.prestationNom}" ?`,
-    );
-    if (!confirmed) return;
-    deleteMutation.mutate(row.compositionId);
+    setDeleteTarget(row);
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.compositionId);
   }
 
   function handleEditorSubmit(e: React.FormEvent) {
@@ -353,15 +371,15 @@ export default function PrestationCompositionsPage() {
       : null;
 
     if (!Number.isInteger(prestationId) || prestationId <= 0) {
-      window.alert('Veuillez sélectionner une prestation.');
+      toast.warning('Champ manquant', 'Veuillez sélectionner une prestation.');
       return;
     }
     if (!Number.isFinite(quantiteParUnite) || quantiteParUnite <= 0) {
-      window.alert('La quantité par unité doit être strictement positive.');
+      toast.warning('Champ invalide', 'La quantité par unité doit être strictement positive.');
       return;
     }
     if (!materiauId && !serviceMainOeuvreId) {
-      window.alert('Sélectionnez au moins un matériau ou un service main d\'oeuvre.');
+      toast.warning('Champ manquant', 'Sélectionnez au moins un matériau ou un service main d\'œuvre.');
       return;
     }
 
@@ -627,6 +645,21 @@ export default function PrestationCompositionsPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer la composition ?"
+        message={
+          <>
+            Vous êtes sur le point de supprimer la composition de la prestation
+            {deleteTarget ? <strong className="text-slate-800"> {deleteTarget.prestationNom} </strong> : ''}.
+            Cette action est irréversible.
+          </>
+        }
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

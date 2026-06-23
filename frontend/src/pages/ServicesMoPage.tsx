@@ -5,16 +5,29 @@ import type { ServiceMainOeuvre } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 import PageHero from '@/components/PageHero';
 import {
-  Plus, Search, Edit, Trash2, Wrench, Loader2
+  Plus, Search, Edit, Trash2, Wrench, Loader2, Edit3
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
+
+interface ServiceForm {
+  nom: string;
+  prixUnitaire: string;
+  unite: string;
+}
+
+const emptyForm: ServiceForm = { nom: '', prixUnitaire: '', unite: '' };
 
 export default function ServicesMoPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ nom: '', prixUnitaire: '', unite: '' });
+  const [editingService, setEditingService] = useState<ServiceMainOeuvre | null>(null);
+  const [form, setForm] = useState<ServiceForm>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<ServiceMainOeuvre | null>(null);
 
   const {
     data: services,
@@ -35,28 +48,85 @@ export default function ServicesMoPage() {
     mutationFn: (body: Record<string, unknown>) => api.post('/services-mo', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services-mo'] });
-      setShowModal(false);
-      setForm({ nom: '', prixUnitaire: '', unite: '' });
+      closeModal();
+      toast.success('Service créé', 'Le service de main d\'œuvre a été ajouté avec succès.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la création', getErrorMessage(error));
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      api.patch(`/services-mo/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services-mo'] });
+      closeModal();
+      toast.success('Service modifié', 'Les modifications ont été enregistrées.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la modification', getErrorMessage(error));
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/services-mo/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['services-mo'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services-mo'] });
+      setDeleteTarget(null);
+      toast.success('Service supprimé', 'Le service a été retiré définitivement.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la suppression', getErrorMessage(error));
+    },
   });
+
+  function openCreate() {
+    setEditingService(null);
+    setForm(emptyForm);
+    setShowModal(true);
+  }
+
+  function openEdit(service: ServiceMainOeuvre) {
+    setEditingService(service);
+    setForm({
+      nom: service.nom ?? '',
+      prixUnitaire: service.prixUnitaire != null ? String(service.prixUnitaire) : '',
+      unite: service.unite ?? '',
+    });
+    setShowModal(true);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setEditingService(null);
+    setForm(emptyForm);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    createMutation.mutate({
+    const body: Record<string, unknown> = {
       nom: form.nom,
       prixUnitaire: form.prixUnitaire ? parseFloat(form.prixUnitaire) : undefined,
       unite: form.unite || undefined,
-    });
+    };
+
+    if (editingService) {
+      updateMutation.mutate({ id: editingService.id, body });
+    } else {
+      createMutation.mutate(body);
+    }
+  }
+
+  function confirmDelete() {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id);
   }
 
   const list = services ?? [];
   const errorStatus = (error as { response?: { status?: number } } | null)?.response?.status;
   const isForbidden = errorStatus === 403;
+  const saving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-4">
@@ -66,7 +136,7 @@ export default function ServicesMoPage() {
         subtitle={isError ? 'Erreur de chargement' : `${list.length} service(s) enregistré(s)`}
         accent="orange"
         actions={
-          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all font-medium text-sm shadow-sm">
+          <button onClick={openCreate} className="inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-all font-medium text-sm shadow-sm">
             <Plus size={16} /> Nouveau service
           </button>
         }
@@ -103,8 +173,12 @@ export default function ServicesMoPage() {
                   <Wrench size={20} />
                 </div>
                 <div className="flex gap-1">
-                  <button className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"><Edit size={14} /></button>
-                  <button onClick={() => deleteMutation.mutate(s.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
+                  <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors" title="Modifier">
+                    <Edit size={14} />
+                  </button>
+                  <button onClick={() => setDeleteTarget(s)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Supprimer">
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
               <h3 className="font-semibold text-gray-900 mb-1">{s.nom}</h3>
@@ -121,9 +195,9 @@ export default function ServicesMoPage() {
 
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Nouveau service"
-        icon={Wrench}
+        onClose={closeModal}
+        title={editingService ? 'Modifier le service' : 'Nouveau service'}
+        icon={editingService ? Edit3 : Wrench}
         accent="orange"
         maxWidth="lg"
       >
@@ -149,25 +223,35 @@ export default function ServicesMoPage() {
               onChange={(e) => setForm({ ...form, unite: e.target.value })}
             />
           </div>
-          {createMutation.error && (
-            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
-              Erreur lors de la création.
-            </p>
-          )}
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => setShowModal(false)}
+              onClick={closeModal}
               className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
             >
               Annuler
             </button>
-            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
-              Créer le service
+            <SubmitButton isLoading={saving} icon={editingService ? Edit3 : Plus}>
+              {editingService ? 'Enregistrer' : 'Créer le service'}
             </SubmitButton>
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer le service ?"
+        message={
+          <>
+            Vous êtes sur le point de supprimer définitivement
+            {deleteTarget ? <strong className="text-slate-800"> {deleteTarget.nom} </strong> : ' ce service'}.
+            Cette action est irréversible.
+          </>
+        }
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

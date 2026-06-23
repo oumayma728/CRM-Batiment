@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import api from '@/lib/api';
 import type { User, Role } from '@/types';
 import { formatDate, getInitials, cn } from '@/lib/utils';
@@ -8,10 +7,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import PageHero from '@/components/PageHero';
 import {
   Plus, Search, Edit, Trash2, Shield,
-  Mail, Phone, RotateCcw, Users, Loader2, Edit3,
+  Mail, Phone, RotateCcw, Users, Loader2, Edit3, KeyRound,
 } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Input, Select, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 
 const roleConfig: Record<Role, { bg: string; text: string; dot: string; label: string }> = {
   ADMIN: { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-400', label: 'Administrateur' },
@@ -39,19 +40,10 @@ const emptyForm: UserForm = {
   role: 'TECHNICO',
 };
 
-function getApiErrorMessage(error: unknown, fallback: string) {
-  if (axios.isAxiosError(error)) {
-    const message = error.response?.data?.message;
-    if (Array.isArray(message)) return message.join(', ');
-    if (typeof message === 'string') return message;
-  }
-  if (error instanceof Error) return error.message;
-  return fallback;
-}
-
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -64,15 +56,8 @@ export default function UsersPage() {
     role: 'TECHNICO',
     actif: true,
   });
-  const [resetFeedback, setResetFeedback] = useState<{
-    userId: number;
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
-  const [createFeedback, setCreateFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<User | null>(null);
+  const [resetTarget, setResetTarget] = useState<User | null>(null);
 
   const { data: users, isLoading } = useQuery({
     queryKey: ['users', search],
@@ -99,18 +84,19 @@ export default function UsersPage() {
 
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setForm(emptyForm);
-      setCreateFeedback({
-        type: 'success',
-        message: temporaryPassword
-          ? `Utilisateur cree. Mot de passe temporaire: ${temporaryPassword}`
-          : 'Utilisateur cree. Verifiez la boite mail ou les logs backend pour le mot de passe temporaire.',
-      });
+      setShowModal(false);
+
+      if (temporaryPassword) {
+        toast.success('Utilisateur créé', `Mot de passe temporaire : ${temporaryPassword}`);
+      } else {
+        toast.success(
+          'Utilisateur créé',
+          'Vérifiez la boîte mail ou les logs backend pour le mot de passe temporaire.',
+        );
+      }
     },
-    onError: (error) => {
-      setCreateFeedback({
-        type: 'error',
-        message: getApiErrorMessage(error, 'Erreur lors de la creation.'),
-      });
+    onError: (err) => {
+      toast.error('Échec de la création', getErrorMessage(err, 'Erreur lors de la création.'));
     },
   });
 
@@ -134,38 +120,51 @@ export default function UsersPage() {
       await queryClient.invalidateQueries({ queryKey: ['users'] });
       setShowEditModal(false);
       setEditingUser(null);
+      toast.success('Utilisateur modifié', 'Les modifications ont été enregistrées.');
+    },
+    onError: (err) => {
+      toast.error('Échec de la modification', getErrorMessage(err, 'Erreur lors de la mise à jour.'));
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/users/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['users'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      setDeactivateTarget(null);
+      toast.success('Utilisateur désactivé', 'Le compte a été désactivé avec succès.');
+    },
+    onError: (err) => {
+      toast.error('Échec de la désactivation', getErrorMessage(err, 'Erreur lors de la désactivation.'));
+    },
   });
 
   const resetTempPasswordMutation = useMutation({
     mutationFn: (payload: { userId: number; email: string }) =>
       api.post('/auth/reset-temp-password', { email: payload.email }),
-    onSuccess: async (response, payload) => {
+    onSuccess: async (response) => {
       const temporaryPassword =
         typeof response?.data?.temporaryPassword === 'string'
           ? response.data.temporaryPassword
           : '';
 
-      setResetFeedback({
-        userId: payload.userId,
-        type: 'success',
-        message: temporaryPassword
-          ? `Mot de passe temporaire: ${temporaryPassword}`
-          : 'Mot de passe temporaire regenere. Verifiez les logs backend (console dev) ou la boite mail.',
-      });
+      setResetTarget(null);
       await queryClient.invalidateQueries({ queryKey: ['users'] });
+
+      if (temporaryPassword) {
+        toast.success(
+          'Mot de passe réinitialisé',
+          `Nouveau mot de passe temporaire : ${temporaryPassword}`,
+        );
+      } else {
+        toast.success(
+          'Mot de passe réinitialisé',
+          'Vérifiez les logs backend (console dev) ou la boîte mail.',
+        );
+      }
     },
-    onError: (error, payload) => {
-      setResetFeedback({
-        userId: payload.userId,
-        type: 'error',
-        message: getApiErrorMessage(error, 'Echec de reinitialisation du mot de passe.'),
-      });
+    onError: (err) => {
+      toast.error('Échec de la réinitialisation', getErrorMessage(err, 'Échec de réinitialisation du mot de passe.'));
     },
   });
 
@@ -208,16 +207,23 @@ export default function UsersPage() {
 
   function handleDeactivate(user: User) {
     if (currentUser?.id === user.id) {
-      window.alert('Vous ne pouvez pas desactiver votre propre compte.');
+      toast.warning('Action impossible', 'Vous ne pouvez pas désactiver votre propre compte.');
       return;
     }
+    setDeactivateTarget(user);
+  }
 
-    const shouldDeactivate = window.confirm(
-      `Desactiver le compte de ${user.prenom} ${user.nom} ?`,
-    );
-    if (!shouldDeactivate) return;
+  function confirmDeactivate() {
+    if (!deactivateTarget) return;
+    deleteMutation.mutate(deactivateTarget.id);
+  }
 
-    deleteMutation.mutate(user.id);
+  function confirmReset() {
+    if (!resetTarget) return;
+    resetTempPasswordMutation.mutate({
+      userId: resetTarget.id,
+      email: resetTarget.email,
+    });
   }
 
   const list = (users ?? []).filter((u) =>
@@ -235,7 +241,6 @@ export default function UsersPage() {
           <button
             onClick={() => {
               createMutation.reset();
-              setCreateFeedback(null);
               setShowModal(true);
             }}
             className="inline-flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all font-medium text-sm shadow-sm"
@@ -275,7 +280,7 @@ export default function UsersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {list.map((u) => (
-                  <tr key={u.id} className="hover:bg-primary-50/30 transition-colors group">
+                  <tr key={u.id} className="hover:bg-primary-50/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 batiflow-gradient rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-sm">
@@ -313,29 +318,19 @@ export default function UsersPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{formatDate(u.createdAt)}</td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openEditModal(u)}
                           className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                          title="Modifier l utilisateur"
+                          title="Modifier l'utilisateur"
                         >
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => {
-                            const shouldReset = window.confirm(
-                              `Reinitialiser le mot de passe temporaire pour ${u.email} ?`,
-                            );
-                            if (!shouldReset) return;
-                            setResetFeedback(null);
-                            resetTempPasswordMutation.mutate({
-                              userId: u.id,
-                              email: u.email,
-                            });
-                          }}
+                          onClick={() => setResetTarget(u)}
                           disabled={resetTempPasswordMutation.isPending || deleteMutation.isPending}
                           className="p-2 rounded-lg text-gray-400 hover:text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
-                          title="Reinitialiser le mot de passe temporaire"
+                          title="Réinitialiser le mot de passe temporaire"
                         >
                           {resetTempPasswordMutation.isPending &&
                             resetTempPasswordMutation.variables?.userId === u.id ? (
@@ -354,29 +349,16 @@ export default function UsersPage() {
                           }
                           title={
                             currentUser?.id === u.id
-                              ? 'Impossible de desactiver votre propre compte'
+                              ? 'Impossible de désactiver votre propre compte'
                               : !u.actif
-                                ? 'Compte deja inactif'
-                                : 'Desactiver le compte'
+                                ? 'Compte déjà inactif'
+                                : 'Désactiver le compte'
                           }
                           className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                         >
                           <Trash2 size={16} />
                         </button>
                       </div>
-
-                      {resetFeedback && resetFeedback.userId === u.id && (
-                        <p
-                          className={cn(
-                            'mt-2 text-xs',
-                            resetFeedback.type === 'success'
-                              ? 'text-emerald-700'
-                              : 'text-red-600',
-                          )}
-                        >
-                          {resetFeedback.message}
-                        </p>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -384,18 +366,12 @@ export default function UsersPage() {
             </table>
           </div>
         )}
-
-        {deleteMutation.error && (
-          <p className="px-6 pb-4 text-sm text-red-600">
-            {getApiErrorMessage(deleteMutation.error, 'Erreur lors de la desactivation.')}
-          </p>
-        )}
       </div>
 
       {/* Create Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); setCreateFeedback(null); }}
+        onClose={() => { setShowModal(false); }}
         title="Nouvel utilisateur"
         icon={Users}
         accent="slate"
@@ -439,25 +415,10 @@ export default function UsersPage() {
             onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
             options={roles.map((r) => ({ value: r, label: roleConfig[r].label }))}
           />
-          {createMutation.error && (
-            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
-              {getApiErrorMessage(createMutation.error, 'Erreur lors de la création.')}
-            </p>
-          )}
-          {createFeedback && (
-            <p className={cn(
-              'text-sm font-medium px-4 py-3 rounded-xl border',
-              createFeedback.type === 'success'
-                ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
-                : 'text-red-600 bg-red-50 border-red-100',
-            )}>
-              {createFeedback.message}
-            </p>
-          )}
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => { setShowModal(false); setCreateFeedback(null); }}
+              onClick={() => { setShowModal(false); }}
               className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
             >
               Annuler
@@ -520,11 +481,6 @@ export default function UsersPage() {
               className="h-4 w-4 rounded text-slate-600"
             />
           </label>
-          {updateMutation.error && (
-            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
-              {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise à jour.')}
-            </p>
-          )}
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
@@ -539,6 +495,45 @@ export default function UsersPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Deactivate Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!deactivateTarget}
+        title="Désactiver le compte ?"
+        message={
+          <>
+            Vous êtes sur le point de désactiver le compte de
+            {deactivateTarget ? (
+              <strong className="text-slate-800"> {deactivateTarget.prenom} {deactivateTarget.nom} </strong>
+            ) : null}.
+            L'utilisateur ne pourra plus se connecter.
+          </>
+        }
+        confirmLabel="Désactiver"
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDeactivate}
+        onClose={() => setDeactivateTarget(null)}
+      />
+
+      {/* Reset Password Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!resetTarget}
+        title="Réinitialiser le mot de passe ?"
+        icon={KeyRound}
+        message={
+          <>
+            Un nouveau mot de passe temporaire sera généré pour
+            {resetTarget ? (
+              <strong className="text-slate-800"> {resetTarget.email} </strong>
+            ) : null}.
+            L'ancien mot de passe ne fonctionnera plus.
+          </>
+        }
+        confirmLabel="Réinitialiser"
+        loading={resetTempPasswordMutation.isPending}
+        onConfirm={confirmReset}
+        onClose={() => setResetTarget(null)}
+      />
     </div>
   );
 }

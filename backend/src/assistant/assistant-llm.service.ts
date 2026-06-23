@@ -5,11 +5,11 @@ type AssistantLlmInput = {
   userMessage: string;
   fallbackMessage: string;
   intent:
-    | 'demande_devis'
-    | 'demande_info_service'
-    | 'demande_prix'
-    | 'information_generale'
-    | 'autre';
+  | 'demande_devis'
+  | 'demande_info_service'
+  | 'demande_prix'
+  | 'information_generale'
+  | 'autre';
   projectType: string;
   knownProject: boolean;
   suggestedType: string | null;
@@ -30,11 +30,11 @@ export type ExtractedFields = {
   description: string;
   projectType: string;
   intent:
-    | 'demande_devis'
-    | 'demande_info_service'
-    | 'demande_prix'
-    | 'information_generale'
-    | 'autre';
+  | 'demande_devis'
+  | 'demande_info_service'
+  | 'demande_prix'
+  | 'information_generale'
+  | 'autre';
   isUrgent: boolean;
   motsCles: string[];
 };
@@ -294,9 +294,9 @@ export class AssistantLlmService {
         | 'information_generale'
         | 'autre' =
         rawIntent === 'demande_devis' ||
-        rawIntent === 'demande_info_service' ||
-        rawIntent === 'demande_prix' ||
-        rawIntent === 'information_generale'
+          rawIntent === 'demande_info_service' ||
+          rawIntent === 'demande_prix' ||
+          rawIntent === 'information_generale'
           ? rawIntent
           : 'autre';
 
@@ -762,7 +762,8 @@ export class AssistantLlmService {
     if (!apiKey) return;
 
     const model = process.env.OPENROUTER_MODEL?.trim() || 'nvidia/llama-3.1-nemotron-70b-instruct';
-    const timeoutMs = this.getTimeoutMs() * 2; // Allow more time for streaming
+    // Use a much longer timeout for the stream (120 seconds) because generating the full response can take time.
+    const timeoutMs = 120000;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -778,7 +779,14 @@ export class AssistantLlmService {
           temperature: 0.1,
           stream: true,
           messages: [
-            { role: 'system', content: `Tu es l'assistant IA de BâtiFlow. Réponds à la question de l'utilisateur uniquement en te basant sur le contexte suivant:\n\n${context}\n\nSi le contexte ne contient pas la réponse, dis simplement que tu n'as pas l'information dans la base de connaissance.` },
+            {
+              role: 'system',
+              content: `Tu es l'assistant IA de BâtiFlow (logiciel CRM pour le bâtiment).
+              Règles :
+              1. Si l'utilisateur dit bonjour ou fait une salutation, réponds poliment et propose ton aide.
+              2. Pour les autres questions, réponds UNIQUEMENT en te basant sur le contexte suivant:\n\n${context}\n\n
+              3. Si le contexte ne contient pas la réponse, dis simplement que tu n'as pas l'information dans la base de connaissance.`,
+            },
             { role: 'user', content: query },
           ],
         }),
@@ -930,7 +938,7 @@ export class AssistantLlmService {
 
   private getTimeoutMs(): number {
     const raw = Number.parseInt(process.env.ASSISTANT_LLM_TIMEOUT_MS || '', 10);
-    if (Number.isNaN(raw) || raw < 1000 || raw > 60000) return 12000;
+    if (Number.isNaN(raw) || raw < 1000 || raw > 120000) return 60000;
     return raw;
   }
 }

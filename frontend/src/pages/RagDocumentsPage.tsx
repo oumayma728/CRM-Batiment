@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 import type { RagDocument } from '@/types';
 import PageHero from '@/components/PageHero';
 import ManagerAssistantChat from '@/components/ManagerAssistantChat';
@@ -51,7 +52,6 @@ export default function RagDocumentsPage() {
   const [editingDocument, setEditingDocument] = useState<RagDocument | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [form, setForm] = useState<RagDocumentForm>(emptyForm);
-  const [testQuery, setTestQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'documents' | 'assistant'>('documents');
 
   const { data: documents, isLoading, isError } = useQuery({
@@ -72,12 +72,7 @@ export default function RagDocumentsPage() {
     return [...new Set([...categoryOptions, ...fromDocuments])].filter(Boolean);
   }, [documents]);
 
-  const testRagMutation = useMutation({
-    mutationFn: async (query: string) => {
-      const res = await api.post('/assistant/admin/rag/test', { query });
-      return res.data;
-    },
-  });
+  const toast = useToast();
 
   const saveMutation = useMutation({
     mutationFn: (payload: RagDocumentForm) => {
@@ -98,7 +93,9 @@ export default function RagDocumentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rag-documents'] });
       closeModal();
+      toast.success(editingDocument ? 'Document mis à jour' : 'Document créé', editingDocument ? 'Les modifications ont été enregistrées.' : 'Le document a été ajouté avec succès.');
     },
+    onError: (err) => { toast.error('Échec de l\'enregistrement', getErrorMessage(err)); },
   });
 
   const toggleMutation = useMutation({
@@ -107,6 +104,7 @@ export default function RagDocumentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rag-documents'] });
     },
+    onError: (err) => { toast.error('Échec du changement de statut', getErrorMessage(err)); },
   });
 
   const deleteMutation = useMutation({
@@ -114,7 +112,9 @@ export default function RagDocumentsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rag-documents'] });
       setDeleteId(null);
+      toast.success('Document supprimé', 'Le document a été retiré définitivement.');
     },
+    onError: (err) => { toast.error('Échec de la suppression', getErrorMessage(err)); },
   });
 
   function openCreate() {
@@ -150,13 +150,21 @@ export default function RagDocumentsPage() {
 
   const items = documents ?? [];
 
+  if (activeTab === 'assistant') {
+    return (
+      <div className="-mx-3 sm:-mx-4 lg:-mx-6 -mb-3 sm:-mb-4 lg:-mb-6 -mt-3 sm:-mt-4 lg:-mt-6 h-[calc(100vh-61px)] flex flex-col z-10 relative">
+        <ManagerAssistantChat onSwitchToDocuments={() => setActiveTab('documents')} />
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("space-y-4 flex flex-col", activeTab === 'assistant' ? "h-[calc(100vh-6rem)]" : "")}>
+    <div className="space-y-4 flex flex-col">
       <PageHero
-        icon={activeTab === 'documents' ? <Database size={22} /> : <Bot size={22} />}
-        title={activeTab === 'documents' ? "IA & Système RAG" : "Assistant IA BatiFlow"}
-        subtitle={activeTab === 'documents' ? `${items.length} document(s) dans la base de connaissance` : "Propulsé par votre base de connaissance"}
-        accent={activeTab === 'documents' ? "indigo" : "blue"}
+        icon={<Database size={22} />}
+        title="IA & Système RAG"
+        subtitle={`${items.length} document(s) dans la base de connaissance`}
+        accent="indigo"
         actions={
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             {/* Tabs inside Header */}
@@ -164,12 +172,7 @@ export default function RagDocumentsPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('documents')}
-                className={cn(
-                  'flex items-center justify-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none',
-                  activeTab === 'documents'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900',
-                )}
+                className="flex items-center justify-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none bg-white text-slate-900 shadow-sm"
               >
                 <Database size={15} />
                 Base de Connaissance
@@ -177,12 +180,7 @@ export default function RagDocumentsPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('assistant')}
-                className={cn(
-                  'flex items-center justify-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none',
-                  activeTab === 'assistant'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900',
-                )}
+                className="flex items-center justify-center whitespace-nowrap gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all flex-1 sm:flex-none text-slate-600 hover:text-slate-900"
               >
                 <Bot size={15} />
                 Assistant IA
@@ -190,29 +188,18 @@ export default function RagDocumentsPage() {
               </button>
             </div>
 
-            {activeTab === 'documents' && (
-              <button
-                type="button"
-                onClick={openCreate}
-                className="inline-flex items-center justify-center whitespace-nowrap gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition-all font-medium text-sm shadow-sm w-full sm:w-auto"
-              >
-                <Plus size={16} /> Ajouter document
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={openCreate}
+              className="inline-flex items-center justify-center whitespace-nowrap gap-2 bg-slate-800 text-white px-4 py-2 rounded-xl hover:bg-slate-700 transition-all font-medium text-sm shadow-sm w-full sm:w-auto"
+            >
+              <Plus size={16} /> Ajouter document
+            </button>
           </div>
         }
       />
 
-      {/* Assistant IA Tab */}
-      {activeTab === 'assistant' && (
-        <div className="flex-1 min-h-0">
-          <ManagerAssistantChat />
-        </div>
-      )}
-
       {/* Documents Tab */}
-      {activeTab === 'documents' && (
-        <>
 
 
           <div className="flex flex-col gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm sm:flex-row">
@@ -321,8 +308,6 @@ export default function RagDocumentsPage() {
               </div>
             )}
           </div>
-        </>
-      )}
 
       {showModal && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
