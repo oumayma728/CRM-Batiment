@@ -697,7 +697,26 @@ export class AssistantService {
     });
 
     let responseMessage = '';
-    if (sessionState.confirmed) {
+    // Politesse pure (merci, d'accord, ok...) : on repond simplement, sans relancer.
+    // On normalise le message pour gerer l'apostrophe (d'accord -> d accord)
+    const politeNorm = normalizedMessage
+      .toLowerCase()
+      .replace(/['’]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    // Le message est-il UNIQUEMENT compose de mots de politesse ?
+    const politeWords = [
+      'merci', 'd', 'accord', 'ok', 'okay', 'parfait', 'super',
+      'tres', 'bien', 'c', 'est', 'bon', 'nickel', 'genial', 'cool',
+      'au', 'revoir', 'bonne', 'journee', 'a', 'bientot', 'beaucoup',
+    ];
+    const tokensPolite = politeNorm.split(' ').filter((w) => w.length > 0);
+    const isPolitenessOnly =
+      tokensPolite.length > 0 &&
+      tokensPolite.every((w) => politeWords.includes(w));
+    if (isPolitenessOnly) {
+      responseMessage = 'Avec plaisir ! 😊 Bonne journee et a bientot.';
+    } else if (sessionState.confirmed) {
       responseMessage = this.buildClosureMessage(sessionState);
     } else if (awaitingProjectTypeChangeConfirmation && pendingProjectType) {
       if (isAffirmative) {
@@ -729,6 +748,7 @@ export class AssistantService {
     } else if (
       lowConfidenceClarification &&
       !detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_suivi') &&
       !((state.currentGuidedStep ?? 0) > 0 && !state.checklistCompleted)
     ) {
       responseMessage = lowConfidenceClarification;
@@ -998,8 +1018,12 @@ export class AssistantService {
         });
         if (draftResult) {
           devisId = draftResult.devisId;
-          // On memorise la reference de la demande pour le suivi futur.
           sessionState.lastDemandeId = draftResult.demandeId;
+          if (isAffirmative && sessionState.confirmed) {
+            // On regenere le message AVEC la reference, et on met a jour le resultat.
+            responseMessage = this.buildClosureMessage(sessionState);
+            result.response_message = responseMessage;
+          }
         }
       }
     }
@@ -4769,8 +4793,27 @@ export class AssistantService {
       { trigger: 'peinture', matches: ['peindre', 'peinture'] },
       { trigger: 'isolation', matches: ['isoler', 'isolation'] },
       { trigger: 'plomberie', matches: ['plombier', 'plomberie'] },
-      { trigger: 'renovation', matches: ['renover', 'renovation'] },
     ];
+
+    // Cas special "renovation X" : le mot "renovation" seul ne suffit pas,
+    // il faut aussi le mot distinctif (maison, appartement, cuisine, salle de bain...).
+    if (normalizedType.includes('renovation')) {
+      const renovationKeywords = [
+        'maison', 'appartement', 'cuisine', 'salle', 'bain',
+      ];
+      // On garde uniquement les mots distinctifs presents dans CE type
+      const typeKeywords = renovationKeywords.filter((kw) =>
+        normalizedType.includes(kw),
+      );
+      // Le message doit mentionner "renovation" ET le bon mot distinctif
+      const mentionsRenovation = /renov/.test(normalizedMessage);
+      const mentionsDistinctive = typeKeywords.some((kw) =>
+        normalizedMessage.includes(kw),
+      );
+      if (mentionsRenovation && mentionsDistinctive) {
+        return true;
+      }
+    }
 
     for (const alias of aliases) {
       if (!normalizedType.includes(alias.trigger)) {
