@@ -58,6 +58,9 @@ type ConversationSessionState = {
   delai: string | null;
   urgent: boolean;
   confirmed: boolean;
+  pendingRdv: boolean;
+  pendingSuivi: boolean;
+  lastDemandeId: number | null;
 };
 
 type AssistantLanguage = 'fr' | 'ar';
@@ -388,7 +391,6 @@ export class AssistantService {
       normalizedMessage,
       projectTypeNames,
     );
-
     const intentFallback =
       state.currentGuidedStep > 0 && !state.checklistCompleted
         ? 'demande_devis'
@@ -402,7 +404,18 @@ export class AssistantService {
       intentFallback,
       aiIntentHint,
     );
-    const intent = intentDetection.intent;
+    let intent = intentDetection.intent;
+    // FIX: si on est en parcours devis guidé (step > 0) et que le client répond
+    // avec un type de travaux, on FORCE demande_devis au lieu de basculer vers info_service.
+    if (
+      (state.currentGuidedStep ?? 0) > 0 &&
+      !state.checklistCompleted &&
+      intent === 'demande_info_service' &&
+      !intentDetection.detectedIntents.includes('demande_rdv')
+    ) {
+      intent = 'demande_devis';
+    }
+
     const detectedIntents = intentDetection.detectedIntents;
     const commercialIntentsFallback = this.detectCommercialIntents({
       message: normalizedMessage,
@@ -412,7 +425,49 @@ export class AssistantService {
     const detectedIntentsResolved =
       detectedIntents.length > 0 ? detectedIntents : commercialIntentsFallback;
 
+    // FIX: garantir la détection du rendez-vous (son score est trop faible
+    // pour passer le seuil). Si le message mentionne un rdv, on l'ajoute.
+    const mentionsRdvDirect = /\b(rendez[\s-]?vous|rdv|planifier|visite)\b/i.test(
+      normalizedMessage,
+    );
+    // On maintient le rdv si le message le mentionne OU si on était déjà en parcours rdv
+    // (et qu'aucune nouvelle intention claire de devis/prix/suivi n'est exprimée).
+    const wasPendingRdv = Boolean(state.sessionState?.pendingRdv);
+    const switchesAway =
+      /\b(devis|prix|tarif|suivi|service)\b/i.test(normalizedMessage);
+    if (mentionsRdvDirect || (wasPendingRdv && !switchesAway)) {
+      // On force le parcours rendez-vous : ajouter demande_rdv en tête
+      if (!detectedIntentsResolved.includes('demande_rdv')) {
+        detectedIntentsResolved.unshift('demande_rdv');
+      }
+      // ...et retirer demande_devis qui empêche le parcours rdv de se lancer
+      const idxDevis = detectedIntentsResolved.indexOf('demande_devis');
+      if (idxDevis !== -1) {
+        detectedIntentsResolved.splice(idxDevis, 1);
+      }
+    }
+
+    // Detection / maintien du parcours SUIVI (par mot-cle ou reference DEM-X).
+    const mentionsSuiviDirect =
+      /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage) ||
+      /dem[\s-]?\d+/i.test(normalizedMessage);
+    const wasPendingSuivi = Boolean(state.sessionState?.pendingSuivi);
+    const switchesAwayFromSuivi =
+      /\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage);
+    if (mentionsSuiviDirect || (wasPendingSuivi && !switchesAwayFromSuivi)) {
+      if (!detectedIntentsResolved.includes('demande_suivi')) {
+        detectedIntentsResolved.unshift('demande_suivi');
+      }
+      // Le suivi ne doit pas declencher un devis
+      const idxDevisSuivi = detectedIntentsResolved.indexOf('demande_devis');
+      if (idxDevisSuivi !== -1) {
+        detectedIntentsResolved.splice(idxDevisSuivi, 1);
+      }
+    }
+
+    // Le regex essaie aussi
     const regexExtracted = this.extractFields(normalizedMessage);
+    // Le code FUSIONNE les deux
     const extractionPipeline = this.runHybridExtractionPipeline({
       normalizedMessage,
       intent,
@@ -425,7 +480,10 @@ export class AssistantService {
       ...state.sessionState,
     });
 
-    if (!sessionState.nom && extractionPipeline.collectedData.nom) {
+    // Priorité au nom extrait par l'IA (Mistral) — plus fiable que le regex
+    if (aiExtracted?.nom) {
+        sessionState.nom = aiExtracted.nom;
+    } else if (extractionPipeline.collectedData.nom) {
       sessionState.nom = extractionPipeline.collectedData.nom;
     }
     if (!sessionState.telephone && extractionPipeline.collectedData.telephone) {
@@ -434,9 +492,16 @@ export class AssistantService {
     if (!sessionState.email && extractionPipeline.collectedData.email) {
       sessionState.email = extractionPipeline.collectedData.email;
     }
-
+    // Mémorise / maintient le parcours rendez-vous entre les messages.
+    if (detectedIntentsResolved.includes('demande_rdv')) {
+      sessionState.pendingRdv = true;
+    }
+    // Mémorise / maintient le parcours suivi entre les messages.
+    if (detectedIntentsResolved.includes('demande_suivi')) {
+      sessionState.pendingSuivi = true;
+    }
     const mergedCollectedData = {
-      nom: sessionState.nom || extractionPipeline.collectedData.nom || '',
+      nom: extractionPipeline.collectedData.nom || sessionState.nom || '',
       telephone:
         sessionState.telephone ||
         extractionPipeline.collectedData.telephone ||
@@ -475,26 +540,41 @@ export class AssistantService {
       state.awaitingProjectTypeChangeConfirmation;
     let pendingProjectType = state.pendingProjectType;
 
+    // "AUTRE" n'est pas un vrai type : on le considère comme "pas encore défini".
+    const hasRealProjectType =
+      Boolean(sessionState.projectType) && sessionState.projectType !== 'AUTRE';
+    // En parcours rendez-vous, on ne verrouille aucun type de projet.
+    const isRdvContext = detectedIntentsResolved.includes('demande_rdv');
     if (explicitProjectTypeChange) {
       sessionState.projectType = explicitProjectTypeChange;
       awaitingProjectTypeChangeConfirmation = false;
       pendingProjectType = null;
     } else if (
-      !sessionState.projectType &&
+      !isRdvContext &&
+      !hasRealProjectType &&
       projectMatchCandidate.known &&
       quoteIntentSignal
     ) {
       sessionState.projectType = projectMatchCandidate.projectType;
     } else if (
-      !sessionState.projectType &&
+      !isRdvContext &&
+      !hasRealProjectType &&
       quoteIntentSignal &&
       projectMatchCandidate.suggestedType
     ) {
       // Evite de verrouiller un faux type inconnu trop tot.
       // On garde uniquement une suggestion raisonnable si elle existe.
       sessionState.projectType = projectMatchCandidate.suggestedType;
+    } else if (
+      !isRdvContext &&
+      !hasRealProjectType &&
+      (state.currentGuidedStep ?? 0) > 0 &&
+      projectMatchCandidate.suggestedType
+    ) {
+      // FIX: en parcours devis guidé, si le client donne un type reconnu
+      // (ex: "peinture" -> "Peinture / Décoration"), on le verrouille.
+      sessionState.projectType = projectMatchCandidate.suggestedType;
     }
-
     let projectTypeConflict = false;
     const hasExplicitTypeChangeSignal =
       /\b(changer|change|finalement|plutot|au lieu|remplacer|modifier)\b/i.test(
@@ -521,6 +601,7 @@ export class AssistantService {
     }
 
     const projectType = sessionState.projectType || 'AUTRE';
+
     const projectTypeKnown = projectTypes.some(
       (type) => type.nom === projectType,
     );
@@ -536,13 +617,40 @@ export class AssistantService {
         (projectTypeKnown ? projectType : null),
       confidence: Number(projectTypeConfidence.toFixed(3)),
     };
+    if ((state.currentGuidedStep ?? 0) > 0 && projectMatch.known) {
+      const idxService = detectedIntentsResolved.indexOf('demande_service');
+      if (idxService !== -1) {
+        detectedIntentsResolved.splice(idxService, 1);
+      }
+      const idxInfoService = detectedIntentsResolved.indexOf(
+        'demande_info_service' as CommercialIntent,
+      );
+      if (idxInfoService !== -1) {
+        detectedIntentsResolved.splice(idxInfoService, 1);
+      }
+      if (!detectedIntentsResolved.includes('demande_devis')) {
+        detectedIntentsResolved.unshift('demande_devis');
+      }
+    }
 
     const isAffirmative = this.isAffirmative(normalizedMessage);
+    
     const isModificationRequest = this.isModificationRequest(normalizedMessage);
     const awaitingConfirmation = false;
     const awaitingEstimateChoice = false;
     const guidedAnswers = { ...state.guidedAnswers };
-    const currentGuidedStep = 0;
+    // FIX: maintenir le contexte du parcours devis entre les messages.
+    // On récupère le step mémorisé, et on le passe à 1 dès qu'on entre en parcours
+    // devis sans type de projet encore défini (le bot va demander le type).
+    let currentGuidedStep = state.currentGuidedStep ?? 0;
+    const inDevisFlow =
+      intent === 'demande_devis' ||
+    detectedIntentsResolved.includes('demande_devis');
+    if (inDevisFlow && !sessionState.projectType) {
+      currentGuidedStep = 1;
+    } else if (sessionState.projectType) {
+      currentGuidedStep = Math.max(currentGuidedStep, 1);
+}
     let checklistCompleted = false;
     const isUrgent =
       sessionState.urgent ||
@@ -589,7 +697,26 @@ export class AssistantService {
     });
 
     let responseMessage = '';
-    if (sessionState.confirmed) {
+    // Politesse pure (merci, d'accord, ok...) : on repond simplement, sans relancer.
+    // On normalise le message pour gerer l'apostrophe (d'accord -> d accord)
+    const politeNorm = normalizedMessage
+      .toLowerCase()
+      .replace(/['’]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    // Le message est-il UNIQUEMENT compose de mots de politesse ?
+    const politeWords = [
+      'merci', 'd', 'accord', 'ok', 'okay', 'parfait', 'super',
+      'tres', 'bien', 'c', 'est', 'bon', 'nickel', 'genial', 'cool',
+      'au', 'revoir', 'bonne', 'journee', 'a', 'bientot', 'beaucoup',
+    ];
+    const tokensPolite = politeNorm.split(' ').filter((w) => w.length > 0);
+    const isPolitenessOnly =
+      tokensPolite.length > 0 &&
+      tokensPolite.every((w) => politeWords.includes(w));
+    if (isPolitenessOnly) {
+      responseMessage = 'Avec plaisir ! 😊 Bonne journee et a bientot.';
+    } else if (sessionState.confirmed) {
       responseMessage = this.buildClosureMessage(sessionState);
     } else if (awaitingProjectTypeChangeConfirmation && pendingProjectType) {
       if (isAffirmative) {
@@ -618,7 +745,12 @@ export class AssistantService {
         responseMessage =
           'Tout est bon pour vous ? Repondez "Oui" pour confirmer ou dites-moi ce que vous voulez changer.';
       }
-    } else if (lowConfidenceClarification) {
+    } else if (
+      lowConfidenceClarification &&
+      !detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_suivi') &&
+      !((state.currentGuidedStep ?? 0) > 0 && !state.checklistCompleted)
+    ) {
       responseMessage = lowConfidenceClarification;
     } else {
       // ========== REPONSE INTELLIGENTE ET CONTEXTUELLE ==========
@@ -823,18 +955,34 @@ export class AssistantService {
 
     const missingContactFields =
       this.getMissingContactFields(mergedCollectedData);
-    const registrationMissingFields = this.getRegistrationMissingFields({
+    let registrationMissingFields = this.getRegistrationMissingFields({
       collectedData: mergedCollectedData,
       projectType: sessionState.projectType || projectType,
     });
+    // En parcours rendez-vous, le type de projet n'est pas requis pour enregistrer.
+    const isRdvRegistration =
+      detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_devis');
+    if (isRdvRegistration) {
+      registrationMissingFields = registrationMissingFields.filter(
+        (field) => field !== 'projectType',
+      );
+    }
     const hasCommercialIntent =
       intent === 'demande_devis' ||
       detectedIntentsResolved.includes('demande_devis') ||
       detectedIntentsResolved.includes('demande_prix') ||
       detectedIntentsResolved.includes('demande_rdv');
+    // On ne cree le prospect qu'APRES confirmation (le "oui"), pour les devis.
+    // Les rdv n'exigent pas de confirmation (creation directe apres infos).
+    const isRdvRegistrationFlow =
+      detectedIntentsResolved.includes('demande_rdv') &&
+      !detectedIntentsResolved.includes('demande_devis');
+    const confirmationOk = sessionState.confirmed || isRdvRegistrationFlow;
     const shouldUpsertProspect =
-      hasCommercialIntent && registrationMissingFields.length === 0;
-
+      hasCommercialIntent &&
+      registrationMissingFields.length === 0 &&
+      confirmationOk;
     let prospectId: number | null = null;
     if (shouldUpsertProspect) {
       prospectId = await this.upsertChatbotProspect({
@@ -844,6 +992,9 @@ export class AssistantService {
         isKnownProject: projectMatch.known,
         projectTypes,
         notesOverride: technicoDescription,
+        isRdv:
+          detectedIntentsResolved.includes('demande_rdv') &&
+          !detectedIntentsResolved.includes('demande_devis'),
       });
     }
 
@@ -857,7 +1008,7 @@ export class AssistantService {
     ) {
       const actorUserId = await this.findInternalActorUserId(dto.companyId);
       if (actorUserId) {
-        devisId = await this.createOrReuseAssistantDraftDevis({
+        const draftResult = await this.createOrReuseAssistantDraftDevis({
           companyId: dto.companyId,
           actorUserId,
           prospectId,
@@ -865,6 +1016,15 @@ export class AssistantService {
           typeProjetId:
             projectTypes.find((type) => type.nom === projectType)?.id ?? null,
         });
+        if (draftResult) {
+          devisId = draftResult.devisId;
+          sessionState.lastDemandeId = draftResult.demandeId;
+          if (isAffirmative && sessionState.confirmed) {
+            // On regenere le message AVEC la reference, et on met a jour le resultat.
+            responseMessage = this.buildClosureMessage(sessionState);
+            result.response_message = responseMessage;
+          }
+        }
       }
     }
 
@@ -890,7 +1050,6 @@ export class AssistantService {
         signal: futureProjectSignal,
       });
     }
-
     await this.prisma.chatSession.update({
       where: { id: sessionId },
       data: {
@@ -2141,7 +2300,7 @@ export class AssistantService {
 
       const actorUserId = await this.findInternalActorUserId(dto.companyId);
       if (actorUserId && prospectId) {
-        generatedDevisId = await this.createOrReuseAssistantDraftDevis({
+        const draftResultPdf = await this.createOrReuseAssistantDraftDevis({
           companyId: dto.companyId,
           actorUserId,
           prospectId,
@@ -2150,6 +2309,7 @@ export class AssistantService {
             `${projectType} - ${selectedPrestation?.nom || normalizedService}`,
           typeProjetId: matchedType.id,
         });
+        generatedDevisId = draftResultPdf ? draftResultPdf.devisId : null;
       }
     } else if (dto.confirmValidation && !canValidate) {
       responseMessage =
@@ -2663,6 +2823,12 @@ export class AssistantService {
           ? rawSessionState.urgent
           : Boolean(raw.is_urgent),
       confirmed: Boolean(rawSessionState.confirmed),
+      pendingRdv: Boolean(rawSessionState.pendingRdv),
+      pendingSuivi: Boolean(rawSessionState.pendingSuivi),
+      lastDemandeId:
+        typeof rawSessionState.lastDemandeId === 'number'
+          ? rawSessionState.lastDemandeId
+          : null,
     });
 
     return {
@@ -2742,6 +2908,10 @@ export class AssistantService {
       delai: input?.delai ?? null,
       urgent: Boolean(input?.urgent),
       confirmed: Boolean(input?.confirmed),
+      pendingRdv: Boolean(input?.pendingRdv),
+      pendingSuivi: Boolean(input?.pendingSuivi),
+      lastDemandeId:
+        typeof input?.lastDemandeId === 'number' ? input.lastDemandeId : null,
     };
   }
 
@@ -2961,7 +3131,12 @@ export class AssistantService {
     const nom = state.nom ?? 'cher client';
     const email = state.email ?? 'votre email';
     const delai = state.delai ?? '48h';
-    return `Merci ${nom} ! ✅\n\nVotre dossier est transmis a notre equipe. Vous recevrez votre devis detaille a ${email} sous ${delai}.\n\nN'hesitez pas a revenir si vous avez des questions. Bonne journee ! 😊`;
+    // Si une demande a ete enregistree, on donne sa reference au client
+    // pour qu'il puisse suivre l'avancement plus tard.
+    const reference = state.lastDemandeId
+      ? `\n\n📎 Votre reference de suivi : DEM-${state.lastDemandeId} (gardez-la pour suivre votre demande).`
+      : '';
+    return `Merci ${nom} ! ✅\n\nVotre dossier est transmis a notre equipe. Vous recevrez votre devis detaille a ${email} sous ${delai}.${reference}\n\nN'hesitez pas a revenir si vous avez des questions. Bonne journee ! 😊`;
   }
 
   private pickBestDescriptionForConversation(input: {
@@ -3181,6 +3356,16 @@ export class AssistantService {
       .slice(0, 4)
       .map((entry) => entry.intent);
 
+    // FIX: le score "rendez-vous" est structurellement trop faible pour passer
+    // le seuil de 0.34. Si le message mentionne clairement un rendez-vous,
+    // on ajoute demande_rdv directement (sans dépendre du seuil).
+    const mentionsRdv = /\b(rendez[\s-]?vous|rdv|prendre\s+rendez|planifier|visite)\b/i.test(
+      input.message,
+    );
+    if (mentionsRdv && !intents.includes('demande_rdv')) {
+      intents.unshift('demande_rdv');
+    }
+
     if (intents.length === 0) {
       intents.push(mappedFallback !== 'autre' ? mappedFallback : 'autre');
     }
@@ -3217,7 +3402,7 @@ export class AssistantService {
     ];
     const devisLexicon = ['devis', 'chiffrage', 'estimation'];
     const prixLexicon = ['prix', 'tarif', 'cout', 'combien', 'budget'];
-    const rdvLexicon = ['rdv', 'rendez', 'visite', 'planifier'];
+    const rdvLexicon = ['rdv', 'rendez', 'rendez-vous', 'rendezvous', 'visite', 'planifier'];
     const suiviLexicon = ['suivi', 'statut', 'avancement', 'relance'];
 
     const serviceScore = this.computeLexiconHitRatio(tokenSet, serviceLexicon);
@@ -3231,7 +3416,6 @@ export class AssistantService {
     if (prixScore > 0) scores.demande_prix += 0.32 * prixScore;
     if (rdvScore > 0) scores.demande_rdv += 0.28 * rdvScore;
     if (suiviScore > 0) scores.demande_suivi += 0.28 * suiviScore;
-
     const hasTypeProjetPhrase = phrases.some((phrase) =>
       this.fuzzyIncludes(phrase, ['type projet', 'type project'], 1),
     );
@@ -3956,7 +4140,7 @@ export class AssistantService {
 
     const contactOnlyMessage =
       (Boolean(emailMatch) || Boolean(phoneMatch)) &&
-      !/(devis|travaux|peinture|isolation|renovation|plomberie|je veux|besoin|projet)/i.test(
+      !/(devis|travaux|peinture|isolation|renovation|plomberie|je veux|besoin|projet|rendez|rdv|suivi|prix|service|tarif)/i.test(
         cleanedMessage,
       );
 
@@ -3967,7 +4151,7 @@ export class AssistantService {
       .trim();
 
     const descriptionHasNeedSignal =
-      /(devis|travaux|peinture|isolation|renovation|plomberie|service|prix|suivi|rdv|besoin|projet|fuite|reparation)/i.test(
+      /(devis|travaux|peinture|isolation|renovation|plomberie|service|prix|suivi|rdv|rendez|besoin|projet|fuite|reparation)/i.test(
         descriptionCandidate,
       );
 
@@ -4146,11 +4330,26 @@ export class AssistantService {
   }
 
   private sanitizeName(value: string): string {
-    return value
+    let cleaned = value
       .replace(/\d+/g, ' ')
       .replace(/[^a-zA-ZÀ-ÿ\s'-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
+    // Coupe le nom dès qu'on rencontre un mot parasite (ex: "Karim mon telephone" -> "Karim")
+    const stopWords = [
+      'mon', 'ma', 'mes', 'numero', 'numéro', 'telephone', 'téléphone',
+      'tel', 'email', 'mail', 'adresse', 'gmail', 'com', 'le', 'la',
+      'est', 'cest', 'voici', 'rendez', 'rdv', 'devis',
+    ];
+    const words = cleaned.split(' ');
+    const result: string[] = [];
+    for (const word of words) {
+      if (stopWords.includes(word.toLowerCase())) {
+        break; // on s'arrête au premier mot parasite
+      }
+      result.push(word);
+    }
+    return result.join(' ').trim();
   }
 
   private sanitizePhone(value: string): string {
@@ -4216,12 +4415,20 @@ export class AssistantService {
       /\b(maison|appartement|villa|immeuble|batiment|chantier)\b/,
       /\b(toiture|isolation|plomberie|peinture|renovation|travaux|carrelage)\b/,
       /\b(individuelle|collectif|collective|residentiel|residentielle)\b/,
+      /\b(revetement|sol|menuiserie|maconnerie|electricite|demolition|desamiantage)\b/,
+      /\b(amenagement|exterieur|extension|surelevation|construction|couverture)\b/,
+      /\b(faience|platrerie|sanitaire|cuisine|salle|bain|decoration|terrasse|gros)\b/,
     ];
     const hasNonPersonSignal = nonPersonNamePatterns.some((pattern) =>
       pattern.test(normalized),
     );
     const hasIntentSignal =
-      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|suivi)\b/.test(
+      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi)\b/.test(
+        normalized,
+      );
+    // Formules de politesse / acquiescement : ce ne sont pas des noms.
+    const hasPolitenessSignal =
+      /\b(merci|accord|ok|oui|non|parfait|bonjour|bonsoir|salut|super|cool|bien|tres bien|d accord)\b/.test(
         normalized,
       );
 
@@ -4232,7 +4439,8 @@ export class AssistantService {
       value.length >= 5 &&
       !forbidden.has(normalized) &&
       !hasNonPersonSignal &&
-      !hasIntentSignal
+      !hasIntentSignal &&
+      !hasPolitenessSignal
     );
   }
 
@@ -4585,8 +4793,27 @@ export class AssistantService {
       { trigger: 'peinture', matches: ['peindre', 'peinture'] },
       { trigger: 'isolation', matches: ['isoler', 'isolation'] },
       { trigger: 'plomberie', matches: ['plombier', 'plomberie'] },
-      { trigger: 'renovation', matches: ['renover', 'renovation'] },
     ];
+
+    // Cas special "renovation X" : le mot "renovation" seul ne suffit pas,
+    // il faut aussi le mot distinctif (maison, appartement, cuisine, salle de bain...).
+    if (normalizedType.includes('renovation')) {
+      const renovationKeywords = [
+        'maison', 'appartement', 'cuisine', 'salle', 'bain',
+      ];
+      // On garde uniquement les mots distinctifs presents dans CE type
+      const typeKeywords = renovationKeywords.filter((kw) =>
+        normalizedType.includes(kw),
+      );
+      // Le message doit mentionner "renovation" ET le bon mot distinctif
+      const mentionsRenovation = /renov/.test(normalizedMessage);
+      const mentionsDistinctive = typeKeywords.some((kw) =>
+        normalizedMessage.includes(kw),
+      );
+      if (mentionsRenovation && mentionsDistinctive) {
+        return true;
+      }
+    }
 
     for (const alias of aliases) {
       if (!normalizedType.includes(alias.trigger)) {
@@ -4607,7 +4834,7 @@ export class AssistantService {
     return text
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, ' ')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -4684,7 +4911,85 @@ export class AssistantService {
       sessionId: input.sessionId,
     };
   }
+  // Recherche une demande pour le suivi, par reference (DEM-X) ou par email.
+  private async buildSuiviResponse(input: {
+    companyId: number;
+    message: string;
+    email?: string | null;
+  }): Promise<string | null> {
+    const message = (input.message || '').trim();
+    const email = (input.email || '').toLowerCase().trim();
 
+    // 1. On cherche une reference de demande dans le message (ex: "DEM-14" ou "14")
+    const refMatch = message.match(/dem[\s-]?(\d+)/i) || message.match(/\b(\d{1,6})\b/);
+    const demandeId = refMatch ? parseInt(refMatch[1], 10) : null;
+
+    // Il faut au moins une reference OU un email pour identifier la demande
+    if (!demandeId && !email) {
+      return null;
+    }
+
+    // 2. On cherche la demande
+    let demande = null;
+    if (demandeId) {
+      demande = await this.prisma.demandeDevis.findFirst({
+        where: { id: demandeId, companyId: input.companyId },
+        select: {
+          id: true,
+          statut: true,
+          description: true,
+          client: { select: { nom: true } },
+        },
+      });
+    }
+
+    // 3. Si pas trouve par reference, on essaie par email
+    if (!demande && email) {
+      const client = await this.prisma.client.findFirst({
+        where: { companyId: input.companyId, email },
+        select: { id: true, nom: true },
+      });
+      if (client) {
+        demande = await this.prisma.demandeDevis.findFirst({
+          where: { clientId: client.id, companyId: input.companyId },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            statut: true,
+            description: true,
+            client: { select: { nom: true } },
+          },
+        });
+      }
+    }
+
+    // 4. Aucune demande trouvee
+    if (!demande) {
+      return (
+        'Je ne trouve aucune demande correspondante. Verifiez votre reference (ex: DEM-14) ' +
+        'ou votre email, ou contactez-nous directement si le probleme persiste. 📋'
+      );
+    }
+
+    // 5. On traduit le statut en francais lisible
+    const statutLabels: Record<string, string> = {
+      NOUVEAU: 'Nouvelle demande recue ✨',
+      EN_COURS: 'En cours de traitement 🔧',
+      QUALIFIE: 'Qualifiee, devis en preparation 📝',
+      CONVERTI: 'Devis envoye / converti ✅',
+      PERDU: 'Cloturee',
+    };
+    const statutLisible = statutLabels[demande.statut] || demande.statut;
+    const nomClient = demande.client?.nom || 'cher client';
+
+    return (
+      `Bonjour ${nomClient} ! 📋\n\n` +
+      `Voici l'etat de votre demande DEM-${demande.id} :\n` +
+      `- ${demande.description}\n` +
+      `- Statut : ${statutLisible}\n\n` +
+      `Notre equipe reste a votre disposition pour toute question. 😊`
+    );
+  }
   private async upsertChatbotProspect(input: {
     companyId: number;
     collectedData: AssistantResult['collected_data'];
@@ -4692,9 +4997,14 @@ export class AssistantService {
     isKnownProject: boolean;
     projectTypes: Array<{ id: number; nom: string }>;
     notesOverride?: string;
+    isRdv?: boolean;
   }): Promise<number> {
     const normalizedEmail = input.collectedData.email.toLowerCase();
     const normalizedPhone = input.collectedData.telephone;
+    // Nom propre : on rejette les noms pollués par le regex (ex: "Nour mon telephone")
+    // On nettoie toujours le nom (coupe les mots parasites comme "mon telephone")
+    const cleanName = this.sanitizeName(input.collectedData.nom);
+    const besoinValue = input.isRdv ? 'RENDEZ_VOUS' : 'DEVIS';
 
     const existing = await this.prisma.client.findFirst({
       where: {
@@ -4719,10 +5029,10 @@ export class AssistantService {
       await this.prisma.client.update({
         where: { id: existing.id },
         data: {
-          nom: input.collectedData.nom,
+          nom: cleanName,
           telephone: normalizedPhone,
           email: normalizedEmail,
-          besoin: 'DEVIS',
+          besoin: besoinValue,
           notes: input.notesOverride || input.collectedData.description,
           source: LeadSource.CHATBOT,
           typeProjetId: matchedTypeProjet?.id ?? null,
@@ -4735,11 +5045,11 @@ export class AssistantService {
     const created = await this.prisma.client.create({
       data: {
         companyId: input.companyId,
-        nom: input.collectedData.nom,
+        nom: cleanName,
         telephone: normalizedPhone,
         email: normalizedEmail,
         source: LeadSource.CHATBOT,
-        besoin: 'DEVIS',
+        besoin: besoinValue,
         notes: input.notesOverride || input.collectedData.description,
         typeProjetId: matchedTypeProjet?.id,
       },
@@ -5464,7 +5774,7 @@ export class AssistantService {
     prospectId: number;
     description: string;
     typeProjetId: number | null;
-  }): Promise<number | null> {
+  }): Promise<{ devisId: number; demandeId: number } | null> {
     try {
       const existingDemande = await this.prisma.demandeDevis.findFirst({
         where: {
@@ -5517,7 +5827,7 @@ export class AssistantService {
         typeProjetId: input.typeProjetId,
       });
 
-      return devis.id;
+      return { devisId: devis.id, demandeId };
     } catch {
       return null;
     }
@@ -5665,10 +5975,13 @@ export class AssistantService {
       projectKnown: input.projectMatch.known,
       message: input.normalizedMessage,
     });
-    if (dbDrivenChecklistResponse) {
+    // Ne pas court-circuiter le parcours rendez-vous avec la checklist devis.
+    const isRdvFlow =
+      input.detectedIntents.includes('demande_rdv') &&
+      !input.detectedIntents.includes('demande_devis');
+    if (dbDrivenChecklistResponse && !isRdvFlow) {
       return dbDrivenChecklistResponse;
     }
-
     // ---------- 6. Demande RDV ----------
     if (
       input.detectedIntents.includes('demande_rdv') &&
@@ -5687,11 +6000,21 @@ export class AssistantService {
     }
 
     // ---------- 7. Demande de suivi ----------
-    if (
-      input.detectedIntents.includes('demande_suivi') &&
-      !input.detectedIntents.includes('demande_devis')
-    ) {
-      return 'Pour le suivi, donnez-moi votre nom complet ou la reference de devis.';
+    if (input.detectedIntents.includes('demande_suivi')) {
+      // On tente de retrouver la demande par reference (DEM-X) ou email.
+      const suiviResult = await this.buildSuiviResponse({
+        companyId: input.companyId,
+        message: input.normalizedMessage,
+        email: input.sessionState.email,
+      });
+      if (suiviResult) {
+        return suiviResult;
+      }
+      // Pas encore de reference/email fournis : on les demande.
+      return (
+        'Bien sur, je peux verifier l\'avancement de votre demande. 📋\n' +
+        'Donnez-moi votre reference de suivi (ex: DEM-14) ou l\'email utilise lors de votre demande.'
+      );
     }
 
     // ---------- 8. Information generale / questions ----------
@@ -6217,13 +6540,9 @@ export class AssistantService {
     });
 
     const baseMessage = input.responseMessage.trim();
-    const contextBlock = [header, ...sourceLines].join('\n');
-
-    if (baseMessage.includes(contextBlock)) {
-      return baseMessage;
-    }
-
-    return `${baseMessage}\n\n${contextBlock}`;
+    // On n'affiche PLUS les sources RAG au client (texte technique interne).
+    // Le contexte RAG sert a guider la reponse, pas a etre montre tel quel.
+    return baseMessage;
   }
 
   private shouldApplyRagContext(input: {

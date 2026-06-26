@@ -42,6 +42,7 @@ const besoinOptions = [
 
 const besoinConfig: Record<string, { label: string; bg: string; text: string }> = {
   DEVIS: { label: 'Veut un devis', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  RENDEZ_VOUS: { label: 'Veut un rendez-vous', bg: 'bg-sky-50', text: 'text-sky-700' },
   CONTACT_RESPONSABLE: { label: 'Contacter', bg: 'bg-blue-50', text: 'text-blue-700' },
   INFORMATION: { label: 'Information', bg: 'bg-violet-50', text: 'text-violet-700' },
   VISITE_TECHNIQUE: { label: 'Visite tech.', bg: 'bg-amber-50', text: 'text-amber-700' },
