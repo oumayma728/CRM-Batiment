@@ -47,6 +47,7 @@ const besoinConfig: Record<string, { label: string; bg: string; text: string }> 
   INFORMATION: { label: 'Information', bg: 'bg-violet-50', text: 'text-violet-700' },
   VISITE_TECHNIQUE: { label: 'Visite tech.', bg: 'bg-amber-50', text: 'text-amber-700' },
   URGENCE: { label: 'Urgent', bg: 'bg-red-50', text: 'text-red-700' },
+  DEVIS_RENDEZ_VOUS: { label: 'Veut un devis et un rendez-vous', bg: 'bg-purple-50', text: 'text-purple-700' },
 };
 
 /* ───── Types ───── */

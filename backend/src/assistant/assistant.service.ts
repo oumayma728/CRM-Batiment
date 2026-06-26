@@ -697,6 +697,36 @@ export class AssistantService {
     });
 
     let responseMessage = '';
+        // Si le client a deja confirme une demande mais exprime une NOUVELLE intention
+    // (rendez-vous, nouveau devis, suivi), on repart sur un nouveau parcours
+    // tout en gardant ses infos (nom, telephone, email).
+    const expressesNewIntent =
+      detectedIntentsResolved.includes('demande_rdv') ||
+      detectedIntentsResolved.includes('demande_devis') ||
+      detectedIntentsResolved.includes('demande_suivi') ||
+      /\b(rendez[\s-]?vous|rdv|devis|suivi|suivre)\b/i.test(normalizedMessage);
+    if (sessionState.confirmed && expressesNewIntent) {
+      sessionState.confirmed = false;
+      sessionState.pendingSuivi = false;
+      summarySent = false;
+      // Detection rdv renforcee (intention OU mots-cles)
+      const wantsRdvNow =
+        detectedIntentsResolved.includes('demande_rdv') ||
+        /\b(rendez[\s-]?vous|rdv)\b/i.test(normalizedMessage);
+      if (wantsRdvNow) {
+        // On force le parcours rdv et on efface le projet du devis precedent.
+        sessionState.projectType = null;
+        if (!detectedIntentsResolved.includes('demande_rdv')) {
+          detectedIntentsResolved.unshift('demande_rdv');
+        }
+        const idxDevisNew = detectedIntentsResolved.indexOf('demande_devis');
+        if (idxDevisNew !== -1) {
+          detectedIntentsResolved.splice(idxDevisNew, 1);
+        }
+        sessionState.pendingRdv = true;
+      }
+
+    }
     // Politesse pure (merci, d'accord, ok...) : on repond simplement, sans relancer.
     // On normalise le message pour gerer l'apostrophe (d'accord -> d accord)
     const politeNorm = normalizedMessage
@@ -5004,7 +5034,6 @@ export class AssistantService {
     // Nom propre : on rejette les noms pollués par le regex (ex: "Nour mon telephone")
     // On nettoie toujours le nom (coupe les mots parasites comme "mon telephone")
     const cleanName = this.sanitizeName(input.collectedData.nom);
-    const besoinValue = input.isRdv ? 'RENDEZ_VOUS' : 'DEVIS';
 
     const existing = await this.prisma.client.findFirst({
       where: {
@@ -5016,9 +5045,19 @@ export class AssistantService {
       },
       select: {
         id: true,
+        besoin: true,
       },
     });
-
+    // Calcul du besoin : si le client avait deja un devis et demande un rdv
+    // (ou l'inverse), on combine en DEVIS_RENDEZ_VOUS.
+    const nouveauBesoin = input.isRdv ? 'RENDEZ_VOUS' : 'DEVIS';
+    const ancienBesoin = existing?.besoin ?? null;
+    let besoinValue: string = nouveauBesoin;
+    if (ancienBesoin && ancienBesoin !== nouveauBesoin) {
+      besoinValue = 'DEVIS_RENDEZ_VOUS';
+    } else if (ancienBesoin === 'DEVIS_RENDEZ_VOUS') {
+      besoinValue = 'DEVIS_RENDEZ_VOUS';
+    }
     const matchedTypeProjet = input.isKnownProject
       ? input.projectTypes.find(
           (projectType) => projectType.nom === input.projectType,
