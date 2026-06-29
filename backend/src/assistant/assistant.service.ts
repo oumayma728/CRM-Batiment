@@ -480,10 +480,10 @@ export class AssistantService {
       ...state.sessionState,
     });
 
-    // Priorité au nom extrait par l'IA (Mistral) — plus fiable que le regex
-    if (aiExtracted?.nom) {
-        sessionState.nom = aiExtracted.nom;
-    } else if (extractionPipeline.collectedData.nom) {
+    // Le nom vient UNIQUEMENT du pipeline hybride, qui a deja valide le candidat
+    // (IA + regex + historique) avec isLikelyName. On ne court-circuite plus avec
+    // le nom brut de l'IA, qui peut etre une hallucination (ex: "Client Renovation Cuisine").
+    if (extractionPipeline.collectedData.nom) {
       sessionState.nom = extractionPipeline.collectedData.nom;
     }
     if (!sessionState.telephone && extractionPipeline.collectedData.telephone) {
@@ -4234,6 +4234,11 @@ export class AssistantService {
       ],
       validator: (value) => this.isLikelyName(value),
     });
+    console.log('🔬 DEBUG NOM —',
+      'aiName brut:', JSON.stringify(input.aiExtracted?.nom),
+      '| aiName nettoye:', JSON.stringify(aiName),
+      '| isLikelyName(aiName):', this.isLikelyName(aiName),
+      '| nameAudit choisi:', JSON.stringify(nameAudit));
 
     const aiPhone = this.sanitizePhone(input.aiExtracted?.telephone || '');
     const regexPhone = this.sanitizePhone(input.regexExtracted.telephone || '');
@@ -4452,10 +4457,21 @@ export class AssistantService {
     const hasNonPersonSignal = nonPersonNamePatterns.some((pattern) =>
       pattern.test(normalized),
     );
+    // Mots d'intention, de demande, et formes interrogatives : ce ne sont pas des noms.
     const hasIntentSignal =
-      /\b(je|j)\b|\b(veux|voudrais|souhaite|besoin|demande)\b|\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi)\b/.test(
+      /\b(je|j|tu|vous|moi|me|m)\b/.test(normalized) ||
+      /\b(veux|voudrais|souhaite|besoin|demande|aimerais|cherche|peux|peut|pouvez|pouvoir|faire|creer|crees?|calculer|modifier|ajouter|transformer|aider|aide)\b/.test(
         normalized,
-      );
+      ) ||
+      /\b(devis|prix|tarif|service|prestations?|projet|rdv|rendez|suivi|facture|chantier|remise|surface|budget|cout|estimation)\b/.test(
+        normalized,
+      ) ||
+      // Mots interrogatifs (comment, combien, quel...) : signe d'une question.
+      /\b(comment|combien|quel|quelle|quels|quelles|pourquoi|est ce que|est|ou|quand|peux tu|pouvez vous)\b/.test(
+        normalized,
+      ) ||
+      // Phrase qui se termine par un point d'interrogation = question, pas un nom.
+      /\?/.test(value);
     // Formules de politesse / acquiescement : ce ne sont pas des noms.
     const hasPolitenessSignal =
       /\b(merci|accord|ok|oui|non|parfait|bonjour|bonsoir|salut|super|cool|bien|tres bien|d accord)\b/.test(
