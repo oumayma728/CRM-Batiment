@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   // Préfixe global pour toutes les routes : /api
   app.setGlobalPrefix('api');
@@ -55,3 +55,4 @@ async function bootstrap() {
   console.log(`📚 Swagger docs : http://localhost:${port}/api/docs\n`);
 }
 bootstrap();
+

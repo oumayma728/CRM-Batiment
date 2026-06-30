@@ -170,8 +170,8 @@ export default function ClientDevisValidationPage() {
               <div
                 className={
                   feedback.type === 'success'
-                    ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-                    : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
+                    ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-sm text-emerald-700'
+                    : 'rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700'
                 }
               >
                 {feedback.text}
@@ -222,18 +222,18 @@ export default function ClientDevisValidationPage() {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="bg-slate-900 text-left text-sm text-white">
-                        <th className="px-4 py-3 font-semibold">N°</th>
-                        <th className="px-4 py-3 font-semibold">Description</th>
-                        <th className="px-4 py-3 text-right font-semibold">Quantite</th>
-                        <th className="px-4 py-3 text-right font-semibold">Prix U.</th>
-                        <th className="px-4 py-3 text-right font-semibold">Total HT</th>
+                        <th className="px-6 py-4 font-semibold">N°</th>
+                        <th className="px-6 py-4 font-semibold">Description</th>
+                        <th className="px-6 py-4 text-right font-semibold">Quantite</th>
+                        <th className="px-6 py-4 text-right font-semibold">Prix U.</th>
+                        <th className="px-6 py-4 text-right font-semibold">Total HT</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 bg-white">
                       {(devis.lignes ?? []).map((ligne, index) => (
                         <tr key={ligne.id}>
-                          <td className="px-4 py-4 text-sm font-semibold text-slate-500">{index + 1}</td>
-                          <td className="px-4 py-4">
+                          <td className="px-6 py-4 text-sm font-semibold text-slate-500">{index + 1}</td>
+                          <td className="px-6 py-4">
                             <p className="text-sm font-semibold text-slate-900">
                               {ligne.description || ligne.prestation?.nom || 'Ligne de devis'}
                             </p>
@@ -241,13 +241,13 @@ export default function ClientDevisValidationPage() {
                               <p className="mt-1 text-xs text-slate-500">Dimensions: {ligne.dimension}</p>
                             )}
                           </td>
-                          <td className="px-4 py-4 text-right text-sm text-slate-700">
+                          <td className="px-6 py-4 text-right text-sm text-slate-700">
                             {ligne.quantite} {ligne.unite}
                           </td>
-                          <td className="px-4 py-4 text-right text-sm text-slate-700">
+                          <td className="px-6 py-4 text-right text-sm text-slate-700">
                             {formatCurrency(ligne.prixUnitaireVente ?? 0)}
                           </td>
-                          <td className="px-4 py-4 text-right text-sm font-semibold text-slate-900">
+                          <td className="px-6 py-4 text-right text-sm font-semibold text-slate-900">
                             {formatCurrency(ligne.totalHT ?? 0)}
                           </td>
                         </tr>
@@ -276,7 +276,7 @@ export default function ClientDevisValidationPage() {
                       <span className="text-slate-500">TVA</span>
                       <span className="font-semibold text-slate-900">{formatCurrency(devis.totalTVA ?? 0)}</span>
                     </div>
-                    <div className="flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-3">
+                    <div className="flex items-center justify-between rounded-2xl bg-amber-50 px-6 py-4">
                       <span className="font-semibold text-slate-700">Total TTC</span>
                       <span className="text-lg font-bold text-slate-900">{formatCurrency(devis.totalTTC ?? 0)}</span>
                     </div>
@@ -293,8 +293,8 @@ export default function ClientDevisValidationPage() {
                     <div
                       className={
                         preview.decisionTaken === 'ACCEPTE'
-                          ? 'mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 text-emerald-700'
-                          : 'mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-4 text-rose-700'
+                          ? 'mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-emerald-700'
+                          : 'mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-rose-700'
                       }
                     >
                       {preview.decisionTaken === 'ACCEPTE'
@@ -302,7 +302,7 @@ export default function ClientDevisValidationPage() {
                         : 'Ce devis a deja ete refuse.'}
                     </div>
                   ) : !preview?.canRespond ? (
-                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-600">
+                    <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-4 text-slate-600">
                       Ce devis n'est plus en attente de validation.
                     </div>
                   ) : (
@@ -316,8 +316,8 @@ export default function ClientDevisValidationPage() {
                           onClick={() => setSelectedDecision('ACCEPTE')}
                           className={
                             selectedDecision === 'ACCEPTE'
-                              ? 'flex items-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-4 text-left text-emerald-700'
-                              : 'flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50/60'
+                              ? 'flex items-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-6 py-4 text-left text-emerald-700'
+                              : 'flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-left text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50/60'
                           }
                         >
                           <CheckCircle2 size={20} />
@@ -331,8 +331,8 @@ export default function ClientDevisValidationPage() {
                           onClick={() => setSelectedDecision('REFUSE')}
                           className={
                             selectedDecision === 'REFUSE'
-                              ? 'flex items-center gap-3 rounded-2xl border border-rose-300 bg-rose-50 px-4 py-4 text-left text-rose-700'
-                              : 'flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-4 text-left text-slate-700 transition hover:border-rose-200 hover:bg-rose-50/60'
+                              ? 'flex items-center gap-3 rounded-2xl border border-rose-300 bg-rose-50 px-6 py-4 text-left text-rose-700'
+                              : 'flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-4 text-left text-slate-700 transition hover:border-rose-200 hover:bg-rose-50/60'
                           }
                         >
                           <XCircle size={20} />
@@ -348,7 +348,7 @@ export default function ClientDevisValidationPage() {
                           selectedDecision && respondMutation.mutate(selectedDecision)
                         }
                         disabled={!selectedDecision || respondMutation.isPending}
-                        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
                       >
                         {respondMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                         {selectedDecision === 'ACCEPTE'

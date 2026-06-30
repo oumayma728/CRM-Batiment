@@ -2,26 +2,26 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
-  Users,
-  FileText,
-  FileSpreadsheet,
-  List,
-  Box,
-  Wrench,
+  User,
+  ClipboardList,
+  FileSignature,
+  FileCheck,
+  MessageSquare,
+  ShoppingCart,
+  ListTree,
+  Package,
+  Hammer,
   Truck,
-  Shield,
-  LogOut,
-  Search,
-  Building2,
-  Settings,
-  Menu,
-  X,
-  FolderKanban,
-  PackageCheck,
   HardHat,
   CheckSquare,
-  Receipt,
-  Database,
+  ShieldCheck,
+  Tags,
+  Settings2,
+  Menu,
+  X,
+  Search,
+  LogOut,
+  BrainCircuit,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
@@ -40,25 +40,26 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/admin', label: 'Tableau de bord', icon: <LayoutDashboard size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'] },
   // Module 1: Clients & Devis
-  { to: '/admin/clients', label: 'Clients', icon: <Users size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'], section: 'Clients & Devis' },
-  { to: '/admin/demandes-devis', label: 'Demandes', icon: <FileText size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/devis', label: 'Devis', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/factures', label: 'Mes factures', icon: <Receipt size={19} />, roles: ['ADMIN', 'ASSISTANTE'] },
-  { to: '/admin/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Clients & Devis' },
+  { to: '/admin/clients', label: 'Clients', icon: <User size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'], section: 'Clients & Devis' },
+  { to: '/admin/demandes-devis', label: 'Demandes', icon: <ClipboardList size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
+  { to: '/admin/devis', label: 'Devis', icon: <FileSignature size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
+  { to: '/admin/factures', label: 'Mes factures', icon: <FileCheck size={19} />, roles: ['ADMIN', 'ASSISTANTE'] },
+  { to: '/admin/messagerie-whatsapp', label: 'WhatsApp', icon: <MessageSquare size={19} />, roles: ['ADMIN', 'ASSISTANTE'] },
+  { to: '/admin/commandes-fournisseur', label: 'Commandes', icon: <ShoppingCart size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Clients & Devis' },
   // Module 2: Bibliothèque de prix
-  { to: '/admin/prestations', label: 'Prestations', icon: <List size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Bibliothèque Prix' },
-  { to: '/admin/prestations-compositions', label: 'Prestations et leurs compositions', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/materiaux', label: 'Matériaux', icon: <Box size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/services-mo', label: 'Main d\'œuvre', icon: <Wrench size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
+  { to: '/admin/prestations', label: 'Prestations', icon: <ListTree size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Bibliothèque Prix' },
+  { to: '/admin/prestations-compositions', label: 'Compositions', icon: <FileSignature size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
+  { to: '/admin/materiaux', label: 'Matériaux', icon: <Package size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
+  { to: '/admin/services-mo', label: 'Main d\'œuvre', icon: <Hammer size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
   // Module 3: Fournisseurs
   { to: '/admin/fournisseurs', label: 'Fournisseurs', icon: <Truck size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Fournisseurs' },
   { to: '/admin/chantiers', label: 'Chantiers', icon: <HardHat size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Chantiers' },
-  { to: '/admin/taches-chantier', label: 'Taches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'], section: 'Chantiers' },
+  { to: '/admin/taches-chantier', label: 'Tâches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'], section: 'Chantiers' },
   // Administration
-  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: <Shield size={19} />, roles: ['ADMIN'], section: 'Administration' },
-  { to: '/admin/types-projet', label: 'Types de projet', icon: <FolderKanban size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/base-ia', label: 'Base IA / RAG', icon: <Database size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/parametres-chiffrage', label: 'Paramètres chiffrage', icon: <Settings size={19} />, roles: ['ADMIN'] },
+  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: <ShieldCheck size={19} />, roles: ['ADMIN'], section: 'Administration' },
+  { to: '/admin/types-projet', label: 'Types de projet', icon: <Tags size={19} />, roles: ['ADMIN'] },
+  { to: '/admin/base-ia', label: 'Connaissances & IA', icon: <BrainCircuit size={19} />, roles: ['ADMIN'] },
+  { to: '/admin/parametres-chiffrage', label: 'Paramètres', icon: <Settings2 size={19} />, roles: ['ADMIN'] },
 ];
 
 const roleBadgeStyles: Record<Role, { bg: string; text: string; label: string }> = {
@@ -81,6 +82,7 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -100,18 +102,18 @@ export default function AppLayout() {
 
       {/* SIDEBAR */}
       <aside className={cn(
-        'w-[232px] sidebar-gradient text-gray-400 flex flex-col fixed h-full z-50 transition-transform duration-300',
+        'w-[232px] bg-slate-800 border-r border-slate-700 text-slate-300 flex flex-col fixed h-full z-50 transition-transform duration-300',
         mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}>
         {/* Brand */}
-        <div className="px-5 py-5 border-b border-white/[0.06]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 batiflow-gradient rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Building2 className="text-white w-5 h-5" />
+        <div className="px-5 py-6 border-b border-slate-700">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+              <HardHat className="text-white w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-white font-bold text-[17px] leading-tight tracking-tight">BÂTIFLOW</h2>
-              <p className="text-[11px] text-gray-500 font-medium">Gestion Bâtiment Pro</p>
+              <h2 className="text-slate-100 font-extrabold text-xl leading-tight tracking-tight">BÂTIFLOW</h2>
+              <p className="text-[12px] text-slate-400 font-medium">Gestion Bâtiment Pro</p>
             </div>
           </div>
         </div>
@@ -140,8 +142,8 @@ export default function AppLayout() {
                     cn(
                       'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group text-[13.5px] font-medium',
                       isActive
-                        ? 'bg-primary-600/20 text-white shadow-sm'
-                        : 'hover:bg-white/[0.05] hover:text-gray-200',
+                        ? 'bg-white/10 text-white shadow-sm'
+                        : 'text-slate-300 hover:bg-white/[0.05] hover:text-white',
                     )
                   }
                 >
@@ -163,7 +165,7 @@ export default function AppLayout() {
       {/* MAIN */}
       <main className="min-w-0 flex-1 overflow-x-hidden lg:ml-[232px]">
         {/* Top Header */}
-        <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200/60 px-4 lg:px-8 py-3 flex items-center justify-between sticky top-0 z-30">
+        <header className="bg-white border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
           <div className="flex items-center gap-4">
             {/* Mobile toggle */}
             <button
@@ -174,8 +176,8 @@ export default function AppLayout() {
             </button>
 
             {/* Search bar */}
-            <div className="hidden sm:flex items-center gap-2 bg-gray-100/80 rounded-xl px-4 py-2 w-72 group focus-within:ring-2 focus-within:ring-primary-500/30 focus-within:bg-white focus-within:border-gray-200 transition-all">
-              <Search size={16} className="text-gray-400" />
+            <div className="hidden sm:flex items-center gap-2 bg-slate-50 rounded-lg px-4 py-2 w-72 group focus-within:ring-2 focus-within:ring-slate-900/20 focus-within:border-slate-900 border border-slate-200 transition-all">
+              <Search size={16} className="text-slate-400 group-focus-within:text-slate-600" />
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -190,31 +192,41 @@ export default function AppLayout() {
 
             {/* Settings */}
             <button className="w-9 h-9 rounded-xl bg-gray-100/80 flex items-center justify-center text-gray-500 hover:bg-gray-200/80 hover:text-gray-700 transition-colors">
-              <Settings size={18} />
+              <Settings2 size={18} />
             </button>
 
-            <button
-              onClick={handleLogout}
-              className="inline-flex h-9 items-center gap-2 rounded-xl bg-red-50 px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
-              title="Se deconnecter"
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Deconnexion</span>
-            </button>
+            <div className="w-px h-7 bg-gray-200 mx-1" />
 
-            <div className="w-px h-7 bg-gray-200" />
+            {/* User info dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setProfileOpen(!profileOpen)}
+                className="flex items-center gap-2.5 hover:bg-slate-50 p-1.5 rounded-lg transition-colors text-left"
+              >
+                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                  {initials}
+                </div>
+                <div className="hidden md:block">
+                  <p className="text-[13px] font-semibold text-slate-800 leading-none">{user?.prenom} {user?.nom}</p>
+                  <span className={cn('text-[10px] font-bold uppercase mt-0.5 inline-block px-1.5 py-0.5 rounded', roleHeaderStyles[user?.role ?? 'ADMIN'])}>
+                    {roleInfo.label}
+                  </span>
+                </div>
+              </button>
 
-            {/* User info */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 batiflow-gradient rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                {initials}
-              </div>
-              <div className="hidden md:block">
-                <p className="text-[13px] font-semibold text-gray-800 leading-none">{user?.prenom} {user?.nom}</p>
-                <span className={cn('text-[10px] font-bold uppercase mt-0.5 inline-block px-1.5 py-0.5 rounded', roleHeaderStyles[user?.role ?? 'ADMIN'])}>
-                  {roleInfo.label}
-                </span>
-              </div>
+              {profileOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 font-medium"
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </header>

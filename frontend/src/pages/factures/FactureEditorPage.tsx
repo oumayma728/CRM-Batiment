@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Loader2, Mail, Plus, Printer, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Mail, Plus, Printer, Save, Trash2, MessageCircle } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PrintDocumentModal } from '@/components/documents/PrintDocumentModal';
 import api from '@/lib/api';
@@ -256,6 +256,28 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
     },
   });
 
+  const sendWhatsAppMutation = useMutation({
+    mutationFn: async () => {
+      if (!draft) throw new Error('Facture non chargee.');
+      const response = await api.post(`/whatsapp/send-facture/${draft.id}`, {
+        to: draft.telephoneClient,
+      });
+      return response.data;
+    },
+    onMutate: () => setFeedback(null),
+    onSuccess: (response) => {
+      const data = response.data;
+      const text = data?.dev
+        ? `✅ Facture enregistrée en messagerie CRM (mode démo — sans clés Meta).`
+        : `✅ Facture envoyée via WhatsApp avec succès.`;
+      setFeedback({ type: 'success', text });
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-conversations'] });
+    },
+    onError: (error: unknown) => {
+      setFeedback({ type: 'error', text: parseApiMessage(error, 'Erreur envoi WhatsApp.') });
+    },
+  });
+
   const sendMutation = useMutation({
     mutationFn: async () => {
       if (!draft) {
@@ -317,7 +339,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
   if (factureQuery.isError) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700">
         Impossible de charger la facture.
       </div>
     );
@@ -387,6 +409,15 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
           </button>
 
           <button
+            onClick={() => sendWhatsAppMutation.mutate()}
+            disabled={sendWhatsAppMutation.isPending || !draft.telephoneClient}
+            className="inline-flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 hover:bg-green-100 disabled:opacity-60"
+          >
+            <MessageCircle size={15} />
+            WhatsApp
+          </button>
+
+          <button
             onClick={() => saveMutation.mutate()}
             disabled={saveMutation.isPending || locked}
             className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
@@ -400,7 +431,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
       {feedback && (
         <div
           className={cn(
-            'rounded-xl border px-4 py-3 text-sm',
+            'rounded-xl border px-6 py-4 text-sm',
             feedback.type === 'success'
               ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
               : 'border-rose-200 bg-rose-50 text-rose-700',
@@ -894,7 +925,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
                 <p className="text-[13px] text-slate-700">{draft.companyEmail} {draft.companyTelephone}</p>
                 <p className="text-[12px] text-slate-600">SIRET: {draft.companySiret || '-'}</p>
               </div>
-              <div className="rounded-lg border border-slate-300 bg-[#f2f2f2] px-4 py-3 text-[13px] leading-6">
+              <div className="rounded-lg border border-slate-300 bg-[#f2f2f2] px-6 py-4 text-[13px] leading-6">
                 <p className="font-semibold text-slate-900">Facture {draft.reference}</p>
                 <p>Date: {formatLongDate(draft.date)}</p>
                 <p>Echeance: {formatLongDate(draft.dateEcheance)}</p>
@@ -902,7 +933,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
               </div>
             </div>
 
-            <div className="mt-3 rounded-lg border border-slate-300 bg-[#f8f8f8] px-4 py-3 text-[13px]">
+            <div className="mt-3 rounded-lg border border-slate-300 bg-[#f8f8f8] px-6 py-4 text-[13px]">
               <p className="font-semibold text-slate-900">Client</p>
               <p>{`${draft.prenomClient} ${draft.nomClient}`.trim()}</p>
               <p>{draft.adresseClient}</p>

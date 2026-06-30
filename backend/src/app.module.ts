@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { DevController } from './dev.controller.js';
+import { DashboardController } from './dashboard.controller.js';
 import { PrismaModule } from './prisma/prisma.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UsersModule } from './users/users.module.js';
@@ -22,6 +23,7 @@ import { ChantiersModule } from './chantiers/chantiers.module.js';
 import { FacturesModule } from './factures/factures.module.js';
 import { AssistantModule } from './assistant/assistant.module.js';
 import { RagModule } from './rag/rag.module.js';
+import { WhatsappModule } from './whatsapp/whatsapp.module.js';
 // TODO: Fix imports in CatalogueModule
 // import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 
@@ -57,8 +59,9 @@ import { RagModule } from './rag/rag.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
+    WhatsappModule,
   ],
-  controllers: [AppController, DevController],
+  controllers: [AppController, DevController, DashboardController],
   providers: [AppService],
 })
 export class AppModule {}

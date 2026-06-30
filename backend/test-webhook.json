@@ -1,0 +1,24 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [{
+    "id": "900013416454818",
+    "changes": [{
+      "value": {
+        "messaging_product": "whatsapp",
+        "metadata": {
+          "display_phone_number": "123456789",
+          "phone_number_id": "1074061005800177"
+        },
+        "contacts": [{ "profile": { "name": "Brunet" }, "wa_id": "21622411620" }],
+        "messages": [{
+          "from": "21622411620",
+          "id": "wamid.TEST001",
+          "timestamp": "1700000000",
+          "type": "text",
+          "text": { "body": "Où en est mon chantier ?" }
+        }]
+      },
+      "field": "messages"
+    }]
+  }]
+}

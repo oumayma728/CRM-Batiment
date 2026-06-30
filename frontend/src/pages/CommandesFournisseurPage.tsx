@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import PageHero from '@/components/PageHero';
 import { CommandeFournisseurDocument } from '@/components/documents/CommandeFournisseurDocument';
 import {
   buildSupplierPurchaseDocumentDataFromOrderDetail,
@@ -167,12 +168,12 @@ export default function CommandesFournisseurPage() {
     selectedOrder?.devis.bonCommandeStatut === 'ENVOYE';
   const hasPendingOrdersForSelectedDevis = Boolean(
     selectedOrder &&
-      orders.some(
-        (order) =>
-          order.devisId === selectedOrder.devisId &&
-          order.statutLivraison === 'CREEE' &&
-          !order.dateEnvoi,
-      ),
+    orders.some(
+      (order) =>
+        order.devisId === selectedOrder.devisId &&
+        order.statutLivraison === 'CREEE' &&
+        !order.dateEnvoi,
+    ),
   );
   const canValidateAndSendSelectedDevis =
     Boolean(selectedOrder) &&
@@ -371,87 +372,83 @@ export default function CommandesFournisseurPage() {
   const queryError = ordersQuery.error;
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[30px] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_26%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_48%,#eff6ff_100%)] p-6 shadow-sm ring-1 ring-stone-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Reception chantier</p>
-        <div className="mt-2 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Bons d achat fournisseur et receptions materiaux</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Toutes les commandes fournisseur generees automatiquement depuis les devis valides apparaissent ici. L admin ou le chef de chantier peut ajuster, valider, puis envoyer automatiquement aux fournisseurs.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-3 lg:w-[420px]">
-            {kpis.map((kpi) => (
-              <div key={kpi.label} className="rounded-3xl bg-white/85 p-4 ring-1 ring-stone-200">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white">
-                  {kpi.icon}
-                </div>
-                <p className="text-2xl font-bold text-slate-900">{kpi.value}</p>
-                <p className="text-sm text-slate-500">{kpi.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="space-y-4">
+      <PageHero
+        icon={<Truck size={22} />}
+        title="Bons d'achat & Réceptions"
+        subtitle="Commandes fournisseurs générées depuis les devis, prêtes à être expédiées."
+        accent="indigo"
+      />
 
-      <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-stone-200">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative max-w-xl flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Rechercher par chantier, devis, fournisseur ou client"
-              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
-            />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {kpis.map((kpi) => (
+          <div key={kpi.label} className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex items-center gap-4">
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
+              {kpi.icon}
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-slate-900 leading-none">{kpi.value}</p>
+              <p className="text-sm text-slate-500 mt-1">{kpi.label}</p>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {statusOptions.map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition-all',
-                  statusFilter === status ? 'bg-emerald-700 text-white' : 'bg-stone-100 text-slate-600 hover:bg-stone-200',
-                )}
-              >
-                {status === 'ALL' ? 'Tous' : statusMeta[status].label}
-              </button>
-            ))}
-          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-col gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm lg:flex-row lg:items-center">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher par chantier, devis, fournisseur ou client..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 py-2.5 text-sm outline-none focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-400/20 transition-all"
+          />
         </div>
-      </section>
+        <div className="flex flex-wrap gap-2">
+          {statusOptions.map((status) => (
+            <button
+              key={status}
+              onClick={() => setStatusFilter(status)}
+              className={cn(
+                'rounded-lg px-3 py-2 text-sm font-medium transition-all',
+                statusFilter === status ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200',
+              )}
+            >
+              {status === 'ALL' ? 'Tous' : statusMeta[status].label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {queryError ? (
-        <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
           {getApiErrorMessage(queryError, 'Impossible de charger les commandes fournisseur.')}
-        </section>
+        </div>
       ) : null}
 
-      <section className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
-          <div className="mb-4 flex items-center justify-between">
+      <section className="grid gap-4 xl:grid-cols-[0.92fr_1.08fr]">
+        <div className="rounded-xl bg-white p-5 shadow-sm border border-slate-200">
+          <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
               <h2 className="text-lg font-bold text-slate-900">Par chantier</h2>
               <p className="text-sm text-slate-500">{ordersQuery.data?.meta.total ?? 0} bon(s) d achat</p>
             </div>
-            {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-emerald-700" /> : null}
+            {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-emerald-600" /> : null}
           </div>
 
           <div className="space-y-4">
             {ordersQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-32 animate-pulse rounded-3xl bg-stone-100" />
+                <div key={index} className="h-32 animate-pulse rounded-xl bg-slate-100" />
               ))
             ) : groupedOrders.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-5 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-5 py-12 text-center text-sm text-slate-500">
                 Aucune commande fournisseur a afficher.
               </div>
             ) : (
               groupedOrders.map((group) => (
-                <div key={group.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
+                <div key={group.key} className="rounded-xl border border-slate-200 bg-slate-50/50 p-4">
                   <div className="mb-3">
                     <p className="text-sm font-semibold text-slate-900">{group.chantierRef}</p>
                     <p className="text-sm text-slate-500">{group.chantierAdresse}</p>
@@ -462,8 +459,8 @@ export default function CommandesFournisseurPage() {
                         key={order.id}
                         onClick={() => setSelectedOrderId(order.id)}
                         className={cn(
-                          'w-full rounded-3xl border p-4 text-left transition-all',
-                          activeOrderId === order.id ? 'border-emerald-300 bg-emerald-50/60' : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50',
+                          'w-full rounded-xl border p-4 text-left transition-all',
+                          activeOrderId === order.id ? 'border-emerald-300 bg-emerald-50/60 ring-1 ring-emerald-300' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -490,14 +487,14 @@ export default function CommandesFournisseurPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-5 shadow-sm border border-slate-200">
           {!selectedOrder ? (
-            <div className="flex min-h-[420px] items-center justify-center rounded-[24px] border border-dashed border-stone-300 bg-stone-50 text-center text-sm text-slate-500">
+            <div className="flex min-h-[420px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm text-slate-500">
               Selectionnez un bon d achat pour saisir une reception.
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="flex flex-col gap-4 border-b border-stone-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-4 border-b border-slate-100 pb-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-bold text-slate-900">{selectedOrder.reference}</h2>
@@ -506,9 +503,9 @@ export default function CommandesFournisseurPage() {
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-sm text-slate-600">
-                    <span className="rounded-full bg-stone-100 px-3 py-1.5">{selectedOrder.fournisseur.nom}</span>
-                    <span className="rounded-full bg-stone-100 px-3 py-1.5">Devis {selectedOrder.devis.reference}</span>
-                    <span className="rounded-full bg-stone-100 px-3 py-1.5">Client {selectedOrder.devis.client?.prenom} {selectedOrder.devis.client?.nom}</span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1.5">{selectedOrder.fournisseur.nom}</span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1.5">Devis {selectedOrder.devis.reference}</span>
+                    <span className="rounded-lg bg-slate-100 px-3 py-1.5">Client {selectedOrder.devis.client?.prenom} {selectedOrder.devis.client?.nom}</span>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -519,12 +516,12 @@ export default function CommandesFournisseurPage() {
                         buildSupplierPurchaseDocumentDataFromOrderDetail(selectedOrder),
                       )
                     }
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                   >
                     <FileText size={16} />
-                    Apercu bon d achat / PDF
+                    Aperçu bon d'achat / PDF
                   </button>
-                  <div className="rounded-3xl bg-stone-50 p-4 ring-1 ring-stone-200">
+                  <div className="rounded-xl bg-slate-50 p-4 border border-slate-200">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reste a receptionner</p>
                     <p className="mt-2 text-3xl font-bold text-slate-900">{remainingQuantity}</p>
                     <p className="mt-1 text-sm text-slate-500">{selectedOrder.metrics.totalQuantiteRecue} / {selectedOrder.metrics.totalQuantiteCommandee} deja recus</p>
@@ -540,7 +537,7 @@ export default function CommandesFournisseurPage() {
                             [selectedOrder.id]: buildOrderEditForm(selectedOrder),
                           }));
                         }}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                       >
                         <Pencil size={16} />
                         Modifier manuellement
@@ -557,7 +554,7 @@ export default function CommandesFournisseurPage() {
                               validateOrderBeforeSendMutation.isPending ||
                               isSelectedOrderValidated
                             }
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {validateOrderBeforeSendMutation.isPending ? (
                               <Loader2 size={16} className="animate-spin" />
@@ -578,7 +575,7 @@ export default function CommandesFournisseurPage() {
                             !selectedOrder.fournisseur.email ||
                             !isSelectedOrderValidated
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {sendOrderMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                           Envoyer cette commande
@@ -592,7 +589,7 @@ export default function CommandesFournisseurPage() {
                               validateDevisAndSendMutation.isPending ||
                               !canValidateAndSendSelectedDevis
                             }
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {validateDevisAndSendMutation.isPending ? (
                               <Loader2 size={16} className="animate-spin" />
@@ -748,7 +745,7 @@ export default function CommandesFournisseurPage() {
                                   (sum, line) =>
                                     sum +
                                     (Number(line.quantite) || 0) *
-                                      (Number(line.prixUnitaire) || 0),
+                                    (Number(line.prixUnitaire) || 0),
                                   0,
                                 ),
                               )}

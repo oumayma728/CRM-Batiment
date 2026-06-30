@@ -128,6 +128,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get typeProjet() {
     return this._client.typeProjet;
   }
+  get whatsappConversation() {
+    return this._client.whatsappConversation;
+  }
+  get whatsappMessage() {
+    return this._client.whatsappMessage;
+  }
 
   // Transaction support
   $transaction(

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, Loader2, Save, Settings, UploadCloud } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, Save, Settings, UploadCloud, Activity, Calculator, User, ListChecks } from 'lucide-react';
 import api from '@/lib/api';
+import PageHero from '@/components/PageHero';
 
 interface ChiffrageSettingsResponse {
   tvaDefaut: number;
@@ -93,17 +94,31 @@ function formatDateTime(value?: string | null) {
   if (!value) return 'Jamais';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('fr-FR');
+  return date.toLocaleString('fr-FR', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function StatCard({ label, value, icon, danger = false }: { label: string, value: number, icon: React.ReactNode, danger?: boolean }) {
+  return (
+    <div className={"flex items-center gap-4 rounded-xl p-4 border " + (danger && value > 0 ? 'bg-red-50 border-red-100 text-red-800' : 'bg-white border-slate-200 text-slate-800')}>
+       <div className={"p-3 rounded-full " + (danger && value > 0 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500')}>
+         {icon}
+       </div>
+       <div>
+         <p className="text-xs font-bold uppercase tracking-wider opacity-70 mb-0.5">{label}</p>
+         <p className="text-2xl font-black">{value}</p>
+       </div>
+    </div>
+  );
 }
 
 export default function ParametresChiffragePage() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<ChiffrageSettingsForm>({
-    tvaDefaut: '20',
-    devise: 'EUR',
-    margeCiblePourcent: '30',
-    fraisFixeDeplacement: '0',
-    pasArrondiPrix: '0.01',
+    tvaDefaut: '20', devise: 'EUR', margeCiblePourcent: '30',
+    fraisFixeDeplacement: '0', pasArrondiPrix: '0.01',
   });
   const [lastValidation, setLastValidation] = useState<CatalogueValidationResponse | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -201,279 +216,223 @@ export default function ParametresChiffragePage() {
   const effectiveValidation = lastValidation ?? null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Settings size={24} className="text-blue-600" />
-            Parametres de chiffrage
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            Configurer les regles globales de calcul et piloter la publication catalogue.
-          </p>
-        </div>
-      </div>
+    <div className="space-y-8 pb-12">
+      <PageHero
+        icon={<Settings size={28} />}
+        title="Paramètres de chiffrage"
+        subtitle="Configurer les règles globales de calcul et piloter la publication catalogue."
+        accent="blue"
+      />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
-          <form onSubmit={handleSave} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Regles de calcul globales</h2>
-
-            {loadingSettings ? (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <Loader2 size={16} className="animate-spin" />
-                Chargement des parametres...
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          
+          <section className="bg-white rounded-[24px] shadow-sm ring-1 ring-slate-200 overflow-hidden">
+            <div className="border-b border-slate-100 px-8 py-6 bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-50 shadow-sm ring-1 ring-blue-100 rounded-xl text-blue-600"><Calculator size={22} /></div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Règles de calcul globales</h2>
+                  <p className="text-sm font-medium text-slate-500 mt-1">Marge, TVA, devise et règles d&apos;arrondi par défaut</p>
+                </div>
               </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field
-                    label="TVA par defaut (%)"
-                    value={form.tvaDefaut}
-                    onChange={(value) => setForm((current) => ({ ...current, tvaDefaut: value }))}
-                    type="number"
-                    step="0.01"
-                  />
-                  <Field
-                    label="Devise"
-                    value={form.devise}
-                    onChange={(value) => setForm((current) => ({ ...current, devise: value }))}
-                  />
-                  <Field
-                    label="Marge cible (%)"
-                    value={form.margeCiblePourcent}
-                    onChange={(value) =>
-                      setForm((current) => ({ ...current, margeCiblePourcent: value }))
-                    }
-                    type="number"
-                    step="0.01"
-                  />
-                  <Field
-                    label="Frais fixes de deplacement"
-                    value={form.fraisFixeDeplacement}
-                    onChange={(value) =>
-                      setForm((current) => ({ ...current, fraisFixeDeplacement: value }))
-                    }
-                    type="number"
-                    step="0.01"
-                  />
-                  <Field
-                    label="Pas d'arrondi des prix"
-                    value={form.pasArrondiPrix}
-                    onChange={(value) =>
-                      setForm((current) => ({ ...current, pasArrondiPrix: value }))
-                    }
-                    type="number"
-                    step="0.01"
-                  />
-                </div>
-
-                {saveMutation.error && (
-                  <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                    {getApiErrorMessage(saveMutation.error, 'Erreur lors de la sauvegarde.')}
-                  </p>
-                )}
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={saveMutation.isPending}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl batiflow-gradient text-white text-sm font-medium disabled:opacity-50"
-                  >
-                    {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                    Enregistrer
-                  </button>
-                </div>
-              </>
-            )}
-          </form>
-
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mt-6 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Validation et publication du catalogue</h2>
-            <p className="text-sm text-gray-500">
-              La publication est bloquee tant que la validation detecte des erreurs.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={() => validateMutation.mutate()}
-                disabled={validateMutation.isPending}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
-              >
-                {validateMutation.isPending ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <CheckCircle2 size={16} />
-                )}
-                Valider le catalogue
-              </button>
-
-              <button
-                onClick={() => publishMutation.mutate()}
-                disabled={publishMutation.isPending}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {publishMutation.isPending ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <UploadCloud size={16} />
-                )}
-                Publier le catalogue
-              </button>
             </div>
+            
+            <form onSubmit={handleSave} className="p-8">
+              {loadingSettings ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-slate-400">
+                  <Loader2 className="animate-spin" size={28} />
+                  <span className="font-medium">Chargement des paramètres...</span>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <Field label="TVA par défaut (%)" value={form.tvaDefaut} onChange={(v) => setForm(f => ({ ...f, tvaDefaut: v }))} type="number" step="0.01" />
+                    <Field label="Devise" value={form.devise} onChange={(v) => setForm(f => ({ ...f, devise: v }))} />
+                    <Field label="Marge cible (%)" value={form.margeCiblePourcent} onChange={(v) => setForm(f => ({ ...f, margeCiblePourcent: v }))} type="number" step="0.01" />
+                    <Field label="Frais fixes déplacement" value={form.fraisFixeDeplacement} onChange={(v) => setForm(f => ({ ...f, fraisFixeDeplacement: v }))} type="number" step="0.01" />
+                    <div className="md:col-span-2">
+                       <Field label="Pas d'arrondi des prix" value={form.pasArrondiPrix} onChange={(v) => setForm(f => ({ ...f, pasArrondiPrix: v }))} type="number" step="0.01" />
+                    </div>
+                  </div>
 
-            {publishError && (
-              <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">{publishError}</p>
-            )}
-
-            {effectiveValidation && (
-              <div className="rounded-xl border border-gray-200 p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  {effectiveValidation.isValid ? (
-                    <CheckCircle2 size={16} className="text-emerald-600" />
-                  ) : (
-                    <AlertTriangle size={16} className="text-amber-600" />
+                  {saveMutation.error && (
+                    <div className="flex items-start gap-3 p-4 bg-red-50 ring-1 ring-red-100 rounded-xl text-sm text-red-800 font-medium">
+                      <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                      <p>{getApiErrorMessage(saveMutation.error, "Erreur lors de la sauvegarde.")}</p>
+                    </div>
                   )}
-                  <p className="text-sm font-semibold text-gray-900">
-                    {effectiveValidation.isValid
-                      ? 'Catalogue valide'
-                      : 'Catalogue non valide'}
-                  </p>
-                </div>
 
-                <p className="text-xs text-gray-500">
-                  Verifie le {formatDateTime(effectiveValidation.validatedAt)}
-                </p>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <StatChip label="Categories" value={effectiveValidation.stats.activeCategories} />
-                  <StatChip label="Prestations" value={effectiveValidation.stats.activePrestations} />
-                  <StatChip label="Erreurs" value={effectiveValidation.stats.errors} danger />
-                  <StatChip label="Alertes" value={effectiveValidation.stats.warnings} />
-                </div>
-
-                {effectiveValidation.errors.length > 0 && (
-                  <div className="rounded-lg bg-red-50 border border-red-100 px-3 py-2">
-                    <p className="text-xs font-semibold text-red-700 mb-1">Erreurs bloquantes</p>
-                    <ul className="text-xs text-red-700 space-y-1">
-                      {effectiveValidation.errors.slice(0, 8).map((error, index) => (
-                        <li key={`${error.type}-${index}`}>- {error.message}</li>
-                      ))}
-                    </ul>
+                  <div className="flex justify-end pt-6 border-t border-slate-100">
+                    <button type="submit" disabled={saveMutation.isPending} className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-sm transition-all disabled:opacity-50">
+                      {saveMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                      Enregistrer les modifications
+                    </button>
                   </div>
-                )}
+                </div>
+              )}
+            </form>
+          </section>
+
+          <section className="bg-white rounded-[24px] shadow-sm ring-1 ring-slate-200 overflow-hidden">
+            <div className="border-b border-slate-100 px-8 py-6 bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white shadow-sm ring-1 ring-emerald-100 rounded-xl text-emerald-600">
+                  <UploadCloud size={22} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Validation et publication</h2>
+                  <p className="text-sm font-medium text-slate-500 mt-1">Validez l&apos;intégrité du catalogue avant de le rendre public</p>
+                </div>
               </div>
-            )}
-          </div>
+            </div>
+
+            <div className="p-8 space-y-8">
+               <div className="flex flex-col sm:flex-row gap-4">
+                  <button onClick={() => validateMutation.mutate()} disabled={validateMutation.isPending} className="flex-1 inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl border-2 border-slate-200 text-slate-700 font-bold hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-50">
+                    {validateMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <Activity size={18} />}
+                    Inspecter le catalogue
+                  </button>
+                  <button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} className="flex-1 inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow transition-colors disabled:opacity-50">
+                    {publishMutation.isPending ? <Loader2 size={18} className="animate-spin" /> : <UploadCloud size={18} />}
+                    Publier la version
+                  </button>
+               </div>
+
+               {publishError && (
+                 <div className="flex items-start gap-3 p-4 bg-red-50 ring-1 ring-red-100 rounded-xl text-sm text-red-800 font-medium">
+                   <AlertTriangle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                   <p>{publishError}</p>
+                 </div>
+               )}
+
+               {effectiveValidation && (
+                 <div className={"mt-8 rounded-2xl ring-1 p-8 " + (effectiveValidation.isValid ? 'ring-emerald-200 bg-emerald-50/30' : 'ring-amber-200 bg-amber-50/30')}>
+                    <div className="flex flex-col gap-6">
+                      <div className="flex items-center gap-4">
+                        {effectiveValidation.isValid ? (
+                          <div className="p-3 bg-emerald-100 rounded-full text-emerald-600 shadow-inner">
+                            <CheckCircle2 size={28} />
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-amber-100 rounded-full text-amber-600 shadow-inner">
+                            <AlertTriangle size={28} />
+                          </div>
+                        )}
+                        <div>
+                           <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                             {effectiveValidation.isValid ? 'Catalogue opérationnel' : 'Validation échouée'}
+                           </h3>
+                           <p className="text-sm font-medium text-slate-500 mt-1">
+                             Rapport généré le {formatDateTime(effectiveValidation.validatedAt)}
+                           </p>
+                        </div>
+                      </div>
+
+                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                         <StatCard label="Catégories" value={effectiveValidation.stats.activeCategories} icon={<ListChecks size={20} />} />
+                         <StatCard label="Prestations" value={effectiveValidation.stats.activePrestations} icon={<Settings size={20} />} />
+                         <StatCard label="Erreurs" value={effectiveValidation.stats.errors} icon={<AlertTriangle size={20} />} danger />
+                         <StatCard label="Alertes" value={effectiveValidation.stats.warnings} icon={<Activity size={20} />} />
+                       </div>
+
+                       {effectiveValidation.errors.length > 0 && (
+                          <div className="mt-4 rounded-xl bg-white shadow-sm ring-1 ring-red-100 p-6">
+                             <h4 className="flex items-center gap-2 text-sm font-bold text-red-700 uppercase tracking-wider mb-4"><AlertTriangle size={16}/> Points bloquants</h4>
+                             <ul className="space-y-3 text-sm text-red-900 font-medium">
+                               {effectiveValidation.errors.slice(0, 8).map((error, idx) => (
+                                 <li key={idx} className="flex gap-3 items-start bg-red-50/50 p-3 rounded-lg">
+                                   <span className="mt-0.5 text-red-500">•</span>
+                                   <span className="leading-relaxed">{error.message}</span>
+                                 </li>
+                               ))}
+                             </ul>
+                          </div>
+                       )}
+                    </div>
+                 </div>
+               )}
+            </div>
+          </section>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-fit">
-          <h3 className="text-sm font-semibold text-gray-900">Etat de publication</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            Derniere publication du catalogue pour cette entreprise.
-          </p>
+        <div className="space-y-8">
+           <div className="bg-white rounded-[24px] shadow-sm ring-1 ring-slate-200 p-8">
+             <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2"><Activity size={18} className="text-blue-600"/> Monitoring</h3>
+             <div className="space-y-6">
+               <div className="flex items-start gap-4">
+                 <div className="p-3 bg-slate-50 rounded-xl ring-1 ring-slate-100 text-slate-600 shadow-sm">
+                   <UploadCloud size={20} />
+                 </div>
+                 <div>
+                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Version Publique</p>
+                   <p className="text-base font-bold text-slate-900 mt-1">
+                     {formatDateTime(publicationStatus?.lastPublication?.publishedAt ?? null)}
+                   </p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-4">
+                 <div className="p-3 bg-blue-600 rounded-xl ring-1 ring-blue-700 text-white shadow-sm"><Settings size={20} /></div>
+                 <div>
+                   <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Dernière Modif.</p>
+                   <p className="text-base font-bold text-slate-900 mt-1">
+                     {formatDateTime(publicationStatus?.chiffrageSettings?.updatedAt ?? settings?.updatedAt ?? null)}
+                   </p>
+                 </div>
+               </div>
+             </div>
+           </div>
 
-          <div className="mt-4 space-y-3 text-sm">
-            <div>
-              <p className="text-gray-500">Derniere publication</p>
-              <p className="text-gray-900 font-semibold">
-                {formatDateTime(publicationStatus?.lastPublication?.publishedAt ?? null)}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-gray-500">Derniere maj parametres</p>
-              <p className="text-gray-900 font-semibold">
-                {formatDateTime(publicationStatus?.chiffrageSettings?.updatedAt ?? settings?.updatedAt ?? null)}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 pt-4 border-t border-gray-100">
-            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-              Historique recent
-            </p>
-
-            {loadingPublicationHistory ? (
-              <div className="flex items-center gap-2 text-xs text-gray-500 mt-3">
-                <Loader2 size={14} className="animate-spin" />
-                Chargement de l'historique...
-              </div>
-            ) : publicationHistory && publicationHistory.length > 0 ? (
-              <div className="mt-3 space-y-3">
-                {publicationHistory.slice(0, 8).map((item) => (
-                  <div key={item.id} className="rounded-xl border border-gray-100 px-3 py-2.5">
-                    <p className="text-xs font-semibold text-gray-900">
-                      {formatDateTime(item.publishedAt)}
-                    </p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
-                      Par {item.publishedBy?.fullName || 'Utilisateur inconnu'}
-                    </p>
-                    {item.validationStats && (
-                      <p className="text-[11px] text-gray-600 mt-1">
-                        {item.validationStats.activeCategories ?? '-'} cat. |{' '}
-                        {item.validationStats.activePrestations ?? '-'} prest. |{' '}
-                        {item.validationStats.errors ?? '-'} err. |{' '}
-                        {item.validationStats.warnings ?? '-'} alertes
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-gray-500 mt-3">Aucune publication enregistree.</p>
-            )}
-          </div>
+           <div className="bg-white rounded-[24px] shadow-sm ring-1 ring-slate-200 p-8">
+             <h3 className="text-lg font-bold text-slate-900 mb-8 flex items-center gap-2"><UploadCloud size={18} className="text-slate-400"/> Historique</h3>
+             {loadingPublicationHistory ? (
+               <div className="flex justify-center py-8 text-slate-400">
+                 <Loader2 className="animate-spin" size={28} />
+               </div>
+             ) : publicationHistory && publicationHistory.length > 0 ? (
+               <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[17px] before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent">
+                 {publicationHistory.slice(0, 6).map((item) => (
+                   <div key={item.id} className="relative flex items-start gap-5">
+                      <div className="flex items-center justify-center w-[36px] h-[36px] rounded-full ring-4 ring-white bg-slate-100 text-slate-500 shrink-0 z-10">
+                         <CheckCircle2 size={16} />
+                      </div>
+                      
+                      <div className="flex-1 pb-2">
+                         <p className="text-[13px] font-bold text-slate-900">{formatDateTime(item.publishedAt)}</p>
+                         <div className="flex items-center gap-1.5 mt-1 text-slate-500">
+                           <User size={12} />
+                           <p className="text-[11px] font-semibold truncate">{item.publishedBy?.fullName || "Système"}</p>
+                         </div>
+                         
+                         {item.validationStats && (
+                           <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold tracking-wide text-slate-600">
+                              <span className="bg-slate-50 ring-1 ring-slate-100 px-2 py-1 rounded w-fit">{item.validationStats.activePrestations ?? 0} PREST.</span>
+                              {item.validationStats.errors ? <span className="bg-red-50 text-red-700 ring-1 ring-red-100 px-2 py-1 rounded w-fit">{item.validationStats.errors} ERR.</span> : null}
+                           </div>
+                         )}
+                      </div>
+                   </div>
+                 ))}
+               </div>
+             ) : (
+               <p className="text-sm font-medium text-slate-400 text-center py-8">Aucun historique disponible.</p>
+             )}
+           </div>
         </div>
       </div>
     </div>
   );
 }
 
-function Field({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  step,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  step?: string;
-}) {
+function Field({ label, value, onChange, type = 'text', step }: { label: string; value: string; onChange: (v: string) => void; type?: string; step?: string; }) {
   return (
     <div>
-      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-[13px] font-bold text-slate-700 uppercase tracking-wide mb-2">{label}</label>
       <input
-        type={type}
-        value={value}
-        step={step}
+        type={type} value={value} step={step}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400"
+        className="w-full px-4 py-3.5 bg-slate-50 border-0 ring-1 ring-slate-200 rounded-xl text-slate-900 font-semibold transition-all focus:bg-white focus:ring-2 focus:ring-blue-600 outline-none shadow-sm hover:ring-slate-300"
       />
-    </div>
-  );
-}
-
-function StatChip({
-  label,
-  value,
-  danger = false,
-}: {
-  label: string;
-  value: number;
-  danger?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-lg px-2.5 py-2 ${
-        danger ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-700'
-      }`}
-    >
-      <p className="text-[10px] uppercase tracking-wide">{label}</p>
-      <p className="text-sm font-semibold">{value}</p>
     </div>
   );
 }

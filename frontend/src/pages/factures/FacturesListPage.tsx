@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { FileSpreadsheet, Loader2, Receipt, Search } from 'lucide-react';
+import { FileSpreadsheet, Loader2, MessageCircle, Receipt, Search } from 'lucide-react';
 import api from '@/lib/api';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { Facture, FactureSourceDevis, PaginatedResponse } from '@/types';
+import PageHero from '@/components/PageHero';
 
 interface FacturesListPageProps {
   scope: 'admin' | 'technico';
@@ -36,6 +37,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
   const [search, setSearch] = useState('');
   const [pageDevis, setPageDevis] = useState(1);
   const [pageFactures, setPageFactures] = useState(1);
+  const [sendingWhatsAppId, setSendingWhatsAppId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
   );
@@ -84,18 +86,42 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     onError: (error: unknown) => {
       const message =
         typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof error.response === 'object' &&
-        error.response !== null &&
-        'data' in error.response &&
-        typeof error.response.data === 'object' &&
-        error.response.data !== null &&
-        'message' in error.response.data &&
-        typeof error.response.data.message === 'string'
+          error !== null &&
+          'response' in error &&
+          typeof error.response === 'object' &&
+          error.response !== null &&
+          'data' in error.response &&
+          typeof error.response.data === 'object' &&
+          error.response.data !== null &&
+          'message' in error.response.data &&
+          typeof error.response.data.message === 'string'
           ? error.response.data.message
           : 'Impossible de transformer ce devis en facture.';
       setFeedback({ type: 'error', text: message });
+    },
+  });
+
+  const sendWhatsAppMutation = useMutation({
+    mutationFn: async ({ factureId, telephone }: { factureId: number; telephone: string }) => {
+      return api.post(`/whatsapp/send-facture/${factureId}`, { to: telephone });
+    },
+    onMutate: ({ factureId }) => {
+      setSendingWhatsAppId(factureId);
+      setFeedback(null);
+    },
+    onSuccess: (response) => {
+      const data = response.data;
+      const text = data?.dev
+        ? `✅ Facture enregistrée en messagerie CRM (mode démo — sans clés Meta).`
+        : `✅ Facture envoyée via WhatsApp avec succès.`;
+      setFeedback({ type: 'success', text });
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-conversations'] });
+    },
+    onError: () => {
+      setFeedback({ type: 'error', text: 'Erreur lors de l envoi WhatsApp. Vérifiez le numéro du client.' });
+    },
+    onSettled: () => {
+      setSendingWhatsAppId(null);
     },
   });
 
@@ -106,20 +132,17 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
   const facturesMeta = facturesQuery.data?.meta;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-            <Receipt size={24} className="text-teal-600" />
-            Mes factures
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Transformez vos devis en factures, modifiez puis envoyez au client.
-          </p>
-        </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<Receipt size={22} />}
+        title="Mes factures"
+        subtitle="Transformez vos devis en factures, modifiez puis envoyez au client."
+        accent="indigo"
+      />
 
-        <div className="relative w-full sm:w-96">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={search}
             onChange={(event) => {
@@ -127,8 +150,8 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
               setPageDevis(1);
               setPageFactures(1);
             }}
-            placeholder="Rechercher devis, facture ou client"
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+            placeholder="Rechercher devis, facture ou client..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20"
           />
         </div>
       </div>
@@ -136,7 +159,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
       {feedback && (
         <div
           className={cn(
-            'rounded-xl border px-4 py-3 text-sm',
+            'rounded-xl border px-6 py-4 text-sm',
             feedback.type === 'success'
               ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
               : 'border-rose-200 bg-rose-50 text-rose-700',
@@ -146,7 +169,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
         </div>
       )}
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Devis existants</h2>
           <span className="text-xs font-medium text-slate-400">
@@ -162,28 +185,28 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
           <p className="py-10 text-center text-sm text-slate-500">Aucun devis trouve.</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Devis</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Client</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Montant TTC</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Facture liee</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Action</th>
+            <table className="w-full min-w-[1100px] table-fixed divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="w-[20%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Devis</th>
+                  <th className="w-[25%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Client</th>
+                  <th className="w-[20%] px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Montant TTC</th>
+                  <th className="w-[20%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Facture liée</th>
+                  <th className="w-[15%] px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {devisData.map((devis) => (
                   <tr key={devis.id}>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4">
                       <p className="font-semibold text-slate-800">{devis.reference}</p>
                       <p className="text-xs text-slate-400">{formatDate(devis.createdAt)}</p>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">{getClientLabel(devis)}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-800">
+                    <td className="px-6 py-4 text-slate-600">{getClientLabel(devis)}</td>
+                    <td className="px-6 py-4 text-right font-semibold text-slate-800">
                       {formatCurrency(devis.totalTTC ?? 0)}
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-6 py-4 text-slate-600">
                       {devis.existingFacture ? (
                         <button
                           onClick={() => navigate(`${basePath}/${devis.existingFacture?.id}`)}
@@ -195,7 +218,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                         <span className="text-xs text-slate-400">Aucune</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => createFromDevisMutation.mutate(devis.id)}
                         disabled={createFromDevisMutation.isPending}
@@ -239,7 +262,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
         )}
       </section>
 
-      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Factures creees</h2>
           <span className="text-xs font-medium text-slate-400">
@@ -256,10 +279,9 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {facturesData.map((facture) => (
-              <button
+              <div
                 key={facture.id}
-                onClick={() => navigate(`${basePath}/${facture.id}`)}
-                className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-teal-300 hover:bg-teal-50"
+                className="rounded-lg border border-slate-200 bg-white p-4 transition hover:border-indigo-300 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -279,12 +301,12 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
-                  <div className="rounded-lg bg-white px-3 py-2">
+                  <div className="rounded-md bg-slate-50 px-3 py-2 border border-slate-100">
                     <p className="text-slate-500">Date facture</p>
                     <p className="mt-1 font-medium text-slate-800">{formatDate(facture.date)}</p>
                   </div>
-                  <div className="rounded-lg bg-white px-3 py-2">
-                    <p className="text-slate-500">Echeance</p>
+                  <div className="rounded-md bg-slate-50 px-3 py-2 border border-slate-100">
+                    <p className="text-slate-500">Échéance</p>
                     <p className="mt-1 font-medium text-slate-800">
                       {facture.dateEcheance ? formatDate(facture.dateEcheance) : '-'}
                     </p>
@@ -292,12 +314,40 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-3">
-                  <span className="text-xs text-slate-500">Total TTC</span>
                   <span className="text-base font-bold text-slate-900">
                     {formatCurrency(facture.montantTTC ?? 0)}
                   </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const phone = (facture as any).telephoneClient || (facture as any).devis?.client?.telephone;
+                        if (phone) {
+                          sendWhatsAppMutation.mutate({ factureId: facture.id, telephone: phone });
+                        } else {
+                          setFeedback({ type: 'error', text: 'Aucun numéro WhatsApp trouvé pour ce client.' });
+                        }
+                      }}
+                      disabled={sendingWhatsAppId === facture.id}
+                      title="Envoyer par WhatsApp"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700 hover:bg-green-100 disabled:opacity-60 transition-colors"
+                    >
+                      {sendingWhatsAppId === facture.id ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <MessageCircle size={12} />
+                      )}
+                      WhatsApp
+                    </button>
+                    <button
+                      onClick={() => navigate(`${basePath}/${facture.id}`)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      Ouvrir
+                    </button>
+                  </div>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}

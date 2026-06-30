@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -19,6 +19,8 @@ import {
   Target,
   Zap,
   BarChart3,
+  TrendingUp,
+  Activity,
 } from 'lucide-react';
 
 interface ModuleCard {
@@ -33,66 +35,65 @@ interface ModuleCard {
   comingSoon?: boolean;
 }
 
+interface DashboardStats {
+  totalClients: number;
+  totalDemandes: number;
+  totalDevis: number;
+  devisAcceptes: number;
+  chiffreAffaires: number;
+  chantiers: { total: number; enCours: number; termines: number };
+  recentDevis: Array<{
+    id: number;
+    reference: string;
+    statut: string;
+    updatedAt: string;
+    client: { nom: string; prenom: string } | null;
+  }>;
+}
+
+const statutColors: Record<string, string> = {
+  BROUILLON: 'text-slate-600 bg-slate-100',
+  ENVOYE: 'text-blue-700 bg-blue-50',
+  ACCEPTE: 'text-emerald-700 bg-emerald-50',
+  SIGNE: 'text-emerald-800 bg-emerald-100',
+  REFUSE: 'text-rose-700 bg-rose-50',
+  ANNULE: 'text-amber-700 bg-amber-50',
+  REVISE: 'text-violet-700 bg-violet-50',
+  RENVOYE: 'text-cyan-700 bg-cyan-50',
+};
+
+const statutLabels: Record<string, string> = {
+  BROUILLON: 'Brouillon',
+  ENVOYE: 'Envoyé',
+  ACCEPTE: 'Accepté',
+  SIGNE: 'Signé',
+  REFUSE: 'Refusé',
+  ANNULE: 'Annulé',
+  REVISE: 'Révisé',
+  RENVOYE: 'Renvoyé',
+};
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const { data: clients } = useQuery({
-    queryKey: ['clients-count'],
+  const { data: stats } = useQuery<DashboardStats>({
+    queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      const res = await api.get('/clients', { params: { page: 1, limit: 1 } });
+      const res = await api.get('/dashboard/stats');
       return res.data;
     },
+    refetchInterval: 30000,
   });
 
-  const { data: demandes } = useQuery({
-    queryKey: ['demandes-count'],
-    queryFn: async () => {
-      const res = await api.get('/demandes-devis', { params: { page: 1, limit: 1 } });
-      return res.data;
-    },
-  });
-
-  const { data: devis } = useQuery({
-    queryKey: ['devis-count'],
-    queryFn: async () => {
-      const res = await api.get('/devis', { params: { page: 1, limit: 1 } });
-      return res.data;
-    },
-  });
-
-  const { data: prestations } = useQuery({
-    queryKey: ['prestations-count'],
-    queryFn: async () => {
-      const res = await api.get('/prestations');
-      const arr = res.data?.data ?? res.data ?? [];
-      return { total: Array.isArray(arr) ? arr.length : 0 };
-    },
-  });
-
-  const { data: fournisseurs } = useQuery({
-    queryKey: ['fournisseurs-count'],
-    queryFn: async () => {
-      const res = await api.get('/fournisseurs');
-      const arr = res.data?.data ?? res.data ?? [];
-      return { total: Array.isArray(arr) ? arr.length : 0 };
-    },
-  });
-
-  const { data: chantiers } = useQuery({
-    queryKey: ['chantiers-count'],
-    queryFn: async () => {
-      const res = await api.get('/chantiers', { params: { page: 1, limit: 1 } });
-      return res.data;
-    },
-  });
-
-  const totalClients = clients?.meta?.total ?? 0;
-  const totalDemandes = demandes?.meta?.total ?? 0;
-  const totalDevis = devis?.meta?.total ?? 0;
-  const totalPrestations = prestations?.total ?? 0;
-  const totalFournisseurs = fournisseurs?.total ?? 0;
-  const totalChantiers = chantiers?.meta?.total ?? 0;
+  const totalClients = stats?.totalClients ?? 0;
+  const totalDemandes = stats?.totalDemandes ?? 0;
+  const totalDevis = stats?.totalDevis ?? 0;
+  const devisAcceptes = stats?.devisAcceptes ?? 0;
+  const chiffreAffaires = stats?.chiffreAffaires ?? 0;
+  const totalChantiers = stats?.chantiers?.total ?? 0;
+  const chantiersEnCours = stats?.chantiers?.enCours ?? 0;
+  const recentDevis = stats?.recentDevis ?? [];
 
   // Module cards
   const modules: ModuleCard[] = [
@@ -112,13 +113,13 @@ export default function DashboardPage() {
     },
     {
       title: 'Bibliothèque Prix',
-      description: 'Catalogue de prestations, matériaux et main d\'œuvre',
+      description: "Catalogue de prestations, matériaux et main d'œuvre",
       icon: <BookOpen size={28} />,
       gradient: 'from-emerald-500 to-emerald-700',
       bgLight: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
       stats: [
-        { label: 'Prestations', value: totalPrestations },
+        { label: 'Prestations', value: '—' },
         { label: 'Catégories', value: '10+' },
       ],
       href: '/admin/prestations',
@@ -131,7 +132,7 @@ export default function DashboardPage() {
       bgLight: 'bg-violet-50',
       iconColor: 'text-violet-600',
       stats: [
-        { label: 'Fournisseurs', value: totalFournisseurs },
+        { label: 'Fournisseurs', value: '—' },
         { label: 'Commandes', value: 0 },
       ],
       href: '/admin/fournisseurs',
@@ -145,7 +146,7 @@ export default function DashboardPage() {
       iconColor: 'text-amber-600',
       stats: [
         { label: 'Chantiers', value: totalChantiers },
-        { label: 'En cours', value: 0 },
+        { label: 'En cours', value: chantiersEnCours },
       ],
       href: '/admin/chantiers',
     },
@@ -158,7 +159,8 @@ export default function DashboardPage() {
       icon: <Users size={20} />,
       color: 'text-blue-600',
       bg: 'bg-blue-50',
-      trend: '+12%',
+      trend: `${totalClients} inscrits`,
+      trendColor: 'text-blue-600 bg-blue-50',
     },
     {
       label: 'Demandes en cours',
@@ -166,23 +168,26 @@ export default function DashboardPage() {
       icon: <FileText size={20} />,
       color: 'text-orange-600',
       bg: 'bg-orange-50',
-      trend: '+8%',
+      trend: `${totalDemandes} reçues`,
+      trendColor: 'text-orange-600 bg-orange-50',
     },
     {
-      label: 'Devis émis',
-      value: totalDevis,
+      label: 'Devis acceptés',
+      value: devisAcceptes,
       icon: <FileSpreadsheet size={20} />,
       color: 'text-emerald-600',
       bg: 'bg-emerald-50',
-      trend: '+15%',
+      trend: devisAcceptes > 0 ? <><TrendingUp size={11} className="inline" /> {devisAcceptes}</> : '0 signé',
+      trendColor: 'text-emerald-600 bg-emerald-50',
     },
     {
-      label: 'Chiffre d\'affaires',
-      value: formatCurrency(0),
+      label: "Chiffre d'affaires",
+      value: formatCurrency(chiffreAffaires),
       icon: <Euro size={20} />,
       color: 'text-violet-600',
       bg: 'bg-violet-50',
-      trend: '+22%',
+      trend: chiffreAffaires > 0 ? <><TrendingUp size={11} className="inline" /> CA réel</> : '—',
+      trendColor: 'text-violet-600 bg-violet-50',
     },
   ];
 
@@ -194,13 +199,13 @@ export default function DashboardPage() {
         <div className="absolute bottom-0 right-32 w-40 h-40 bg-white/5 rounded-full translate-y-1/2" />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-1">
-            <Zap size={18} className="text-blue-600" />
-            <span className="text-blue-700 text-sm font-medium">BÂTIFLOW Dashboard</span>
+            <Zap size={18} className="text-indigo-400" />
+            <span className="text-indigo-200 text-sm font-medium">BÂTIFLOW Dashboard</span>
           </div>
-          <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-blue-900">
+          <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-white">
             Bonjour, {user?.prenom} 👋
           </h1>
-          <p className="text-blue-800 text-sm lg:text-base max-w-lg">
+          <p className="text-slate-300 text-sm lg:text-base max-w-lg">
             Voici un aperçu de votre activité. Gérez vos projets de construction efficacement.
           </p>
         </div>
@@ -211,14 +216,15 @@ export default function DashboardPage() {
         {kpiCards.map((card) => (
           <div
             key={card.label}
-            className="bg-white rounded-2xl border border-gray-100 p-5 card-hover group"
+            className="bg-white rounded-xl border border-slate-300 p-5 card-hover group shadow-sm hover:shadow-md transition-shadow"
           >
             <div className="flex items-center justify-between mb-4">
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${card.bg} ${card.color}`}>
                 {card.icon}
               </div>
-              <span className="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded-full flex items-center gap-0.5">
-                {card.trend} <ArrowUpRight size={12} />
+              <span className={`text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-0.5 ${card.trendColor}`}>
+                {card.trend}
+                {typeof card.trend === 'string' && <ArrowUpRight size={12} />}
               </span>
             </div>
             <p className="text-2xl font-bold text-gray-900">{card.value}</p>
@@ -281,7 +287,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Actions + Status Grid */}
+      {/* Actions + Pipeline + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
         {/* Actions rapides */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
@@ -298,34 +304,56 @@ export default function DashboardPage() {
         </div>
 
         {/* Statut pipeline */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 lg:col-span-2">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
             <BarChart3 size={18} className="text-primary-600" />
-            Pipeline d'activité
+            Pipeline
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <PipelineCard
-              icon={<Clock size={20} />}
-              label="En attente"
-              count={totalDemandes}
-              color="amber"
-              description="Demandes à traiter"
-            />
-            <PipelineCard
-              icon={<FileSpreadsheet size={20} />}
-              label="Devis en cours"
-              count={totalDevis}
-              color="blue"
-              description="Devis non validés"
-            />
-            <PipelineCard
-              icon={<CheckCircle size={20} />}
-              label="Acceptés"
-              count={0}
-              color="emerald"
-              description="Devis signés"
-            />
+          <div className="space-y-3">
+            <PipelineCard icon={<Clock size={18} />} label="En attente" count={totalDemandes} color="amber" description="Demandes à traiter" />
+            <PipelineCard icon={<FileSpreadsheet size={18} />} label="Devis en cours" count={Math.max(0, totalDevis - devisAcceptes)} color="blue" description="Devis non validés" />
+            <PipelineCard icon={<CheckCircle size={18} />} label="Acceptés" count={devisAcceptes} color="emerald" description="Devis signés/acceptés" />
           </div>
+        </div>
+
+        {/* Recent activity feed */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6">
+          <h2 className="text-base font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Activity size={18} className="text-primary-600" />
+            Activité récente
+          </h2>
+          {recentDevis.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8">Aucune activité récente</p>
+          ) : (
+            <div className="space-y-2">
+              {recentDevis.map((d) => {
+                const label = statutLabels[d.statut] ?? d.statut;
+                const colorCls = statutColors[d.statut] ?? 'text-gray-600 bg-gray-100';
+                const clientName = d.client
+                  ? `${d.client.prenom ?? ''} ${d.client.nom}`.trim()
+                  : 'Client inconnu';
+                return (
+                  <div
+                    key={d.id}
+                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer"
+                    onClick={() => navigate('/admin/devis')}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                      <FileSpreadsheet size={13} className="text-slate-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-gray-900 truncate">{d.reference}</p>
+                      <p className="text-[11px] text-gray-400 truncate">{clientName}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-0.5 shrink-0">
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${colorCls}`}>{label}</span>
+                      <span className="text-[9px] text-gray-400">{formatDate(d.updatedAt)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -347,27 +375,29 @@ function ActionButton({ icon, label, onClick, color }: { icon: React.ReactNode; 
     >
       {icon}
       <span className="text-[13px] font-medium">{label}</span>
-      <ArrowRight size={14} className="ml-auto opacity-0 group-hover:opacity-100" />
+      <ArrowRight size={14} className="ml-auto opacity-40" />
     </button>
   );
 }
 
 function PipelineCard({ icon, label, count, color, description }: { icon: React.ReactNode; label: string; count: number; color: string; description: string }) {
-  const colorMap: Record<string, { bg: string; iconBg: string; text: string }> = {
-    amber: { bg: 'border-amber-100', iconBg: 'bg-amber-50 text-amber-600', text: 'text-amber-700' },
-    blue: { bg: 'border-blue-100', iconBg: 'bg-blue-50 text-blue-600', text: 'text-blue-700' },
-    emerald: { bg: 'border-emerald-100', iconBg: 'bg-emerald-50 text-emerald-600', text: 'text-emerald-700' },
+  const colorMap: Record<string, { iconBg: string; text: string }> = {
+    amber: { iconBg: 'bg-amber-50 text-amber-600', text: 'text-amber-700' },
+    blue: { iconBg: 'bg-indigo-50 text-indigo-600', text: 'text-indigo-700' },
+    emerald: { iconBg: 'bg-emerald-50 text-emerald-600', text: 'text-emerald-700' },
   };
   const c = colorMap[color] ?? colorMap.blue;
 
   return (
-    <div className={`rounded-xl border ${c.bg} p-4`}>
-      <div className={`w-10 h-10 ${c.iconBg} rounded-xl flex items-center justify-center mb-3`}>
+    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors">
+      <div className={`w-9 h-9 ${c.iconBg} rounded-lg flex items-center justify-center flex-shrink-0`}>
         {icon}
       </div>
-      <p className="text-2xl font-bold text-gray-900">{count}</p>
-      <p className={`text-sm font-semibold ${c.text}`}>{label}</p>
-      <p className="text-[11px] text-gray-400 mt-0.5">{description}</p>
+      <div className="flex-1 min-w-0">
+        <p className={`text-sm font-semibold ${c.text}`}>{label}</p>
+        <p className="text-[11px] text-gray-400">{description}</p>
+      </div>
+      <span className="text-xl font-bold text-gray-900 tabular-nums">{count}</span>
     </div>
   );
 }

@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { Fournisseur } from '@/types';
+import PageHero from '@/components/PageHero';
 import {
-  Plus, Search, Edit, Trash2, X, Truck, Loader2,
-  Phone, Mail, Download,
+  Plus, Search, Edit, Trash2, Truck,
+  Phone, Mail, Download, Loader2
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Input, TextArea, SubmitButton } from '@/components/ui/Form';
 
 export default function FournisseursPage() {
   const queryClient = useQueryClient();
@@ -52,29 +55,28 @@ export default function FournisseursPage() {
   const list = fournisseurs ?? [];
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Truck size={24} className="text-violet-600" />
-            Gestion des Fournisseurs
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">{list.length} fournisseur(s) enregistré(s)</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium">
-            <Download size={16} /> Exporter
-          </button>
-          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
-            <Plus size={17} /> Nouveau fournisseur
-          </button>
-        </div>
-      </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<Truck size={22} />}
+        title="Gestion des Fournisseurs"
+        subtitle={`${list.length} fournisseur(s) enregistré(s)`}
+        accent="emerald"
+        actions={
+          <>
+            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 transition-colors text-sm font-medium shadow-sm">
+              <Download size={16} /> Exporter
+            </button>
+            <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-all font-medium text-sm shadow-sm">
+              <Plus size={16} /> Nouveau fournisseur
+            </button>
+          </>
+        }
+      />
 
-      <div className="mb-4">
-        <div className="relative max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher un fournisseur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Rechercher un fournisseur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20 transition-all" />
         </div>
       </div>
 
@@ -90,7 +92,7 @@ export default function FournisseursPage() {
           {list.map((f) => (
             <div key={f.id} className="bg-white rounded-2xl border border-gray-100 p-5 card-hover shadow-sm">
               <div className="flex items-start justify-between mb-3">
-                <div className="w-11 h-11 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center">
+                <div className="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
                   <Truck size={20} />
                 </div>
                 <div className="flex gap-1">
@@ -123,57 +125,75 @@ export default function FournisseursPage() {
         </div>
       )}
 
-      {/* Create Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouveau fournisseur</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Contact</label>
-                <input type="text" value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                  <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
-                  <input type="text" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Adresse</label>
-                <input type="text" value={form.adresse} onChange={(e) => setForm({ ...form, adresse: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Types de matériaux</label>
-                <input type="text" placeholder="Bois, Béton, Acier..." value={form.typesMateriaux} onChange={(e) => setForm({ ...form, typesMateriaux: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Conditions</label>
-                <textarea value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
-              </div>
-              {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la création.</p>}
-              <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Nouveau fournisseur"
+        icon={Truck}
+        accent="green"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <Input
+            label="Nom"
+            required
+            value={form.nom}
+            onChange={(e) => setForm({ ...form, nom: e.target.value })}
+          />
+          <Input
+            label="Contact"
+            value={form.contact}
+            onChange={(e) => setForm({ ...form, contact: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
+            <Input
+              label="Téléphone"
+              value={form.telephone}
+              onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+            />
           </div>
-        </div>
-      )}
+          <Input
+            label="Adresse"
+            value={form.adresse}
+            onChange={(e) => setForm({ ...form, adresse: e.target.value })}
+          />
+          <Input
+            label="Types de matériaux"
+            placeholder="Bois, Béton, Acier..."
+            value={form.typesMateriaux}
+            onChange={(e) => setForm({ ...form, typesMateriaux: e.target.value })}
+          />
+          <TextArea
+            label="Conditions"
+            value={form.conditions}
+            onChange={(e) => setForm({ ...form, conditions: e.target.value })}
+            rows={2}
+          />
+          {createMutation.error && (
+            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+              Erreur lors de la création.
+            </p>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
+              Créer le fournisseur
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

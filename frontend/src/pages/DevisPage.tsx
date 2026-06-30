@@ -25,7 +25,12 @@ import {
   Trash2,
   X,
   Receipt,
+  MessageCircle,
+  Plus,
 } from 'lucide-react';
+import PageHero from '@/components/PageHero';
+import { Modal } from '@/components/ui/Modal';
+import { Select, TextArea, Input, SubmitButton } from '@/components/ui/Form';
 
 const statutConfig: Record<
   string,
@@ -124,8 +129,8 @@ function buildPurchaseOrderFeedback(data: unknown, fallback: string) {
   const warnings =
     'warnings' in data && Array.isArray(data.warnings)
       ? data.warnings.filter(
-          (warning): warning is string => typeof warning === 'string',
-        )
+        (warning): warning is string => typeof warning === 'string',
+      )
       : [];
 
   return warnings.length > 0
@@ -192,6 +197,32 @@ export default function DevisPage() {
     mutationFn: (id: number) => api.delete(`/devis/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devis'] });
+    },
+  });
+
+  const sendWhatsAppMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const devis = devisList.find(d => d.id === id);
+      if (!devis?.client?.telephone) throw new Error("Le client n'a pas de numero de telephone");
+      return api.post(`/whatsapp/send-devis/${id}`, { to: devis.client.telephone });
+    },
+    onMutate: (id) => {
+      setSendingDevisId(id);
+      setFeedback(null);
+    },
+    onSuccess: (response) => {
+      const data = response.data;
+      const text = data?.dev
+        ? `✅ Devis enregistré en messagerie CRM (mode démo — sans clés Meta).`
+        : `✅ Devis envoyé via WhatsApp avec succès.`;
+      setFeedback({ type: 'success', text });
+      queryClient.invalidateQueries({ queryKey: ['whatsapp-conversations'] });
+    },
+    onError: (error: unknown) => {
+      setFeedback({ type: 'error', text: getApiErrorMessage(error, 'Erreur lors de l envoi WhatsApp.') });
+    },
+    onSettled: () => {
+      setSendingDevisId(null);
     },
   });
 
@@ -354,33 +385,41 @@ export default function DevisPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-            <FileSpreadsheet size={24} className="text-primary-600" />
-            Gestion des devis
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">{meta.total} devis enregistres</p>
-        </div>
-
-      </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<FileSpreadsheet size={22} />}
+        title="Gestion des Devis"
+        subtitle={`${meta.total} devis enregistrés`}
+        accent="blue"
+        actions={
+          <button
+            onClick={() => {
+              setForm(emptyForm);
+              setShowModal(true);
+            }}
+            className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-sm"
+          >
+            <Plus size={16} /> Nouveau devis
+          </button>
+        }
+      />
 
       {feedback && (
         <div
           className={
             feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-              : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
+              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-sm text-emerald-700'
+              : 'rounded-2xl border border-rose-200 bg-rose-50 px-6 py-4 text-sm text-rose-700'
           }
         >
           {feedback.text}
         </div>
       )}
 
-      <div className="max-w-md">
-        <div className="relative">
-          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+      {/* Search Row */}
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             value={search}
@@ -389,12 +428,12 @@ export default function DevisPage() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-400/20 transition-all"
           />
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="animate-spin text-primary-600" size={32} />
@@ -409,19 +448,19 @@ export default function DevisPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/80">
-                  <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Reference</th>
-                  <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Client</th>
-                  <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Statut</th>
-                  <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500">HT</th>
-                  <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500">TTC</th>
-                  <th className="px-6 py-3.5 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Date</th>
-                  <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500">Actions</th>
+            <table className="w-full min-w-[1300px] table-fixed divide-y divide-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="w-[12%] px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Reference</th>
+                  <th className="w-[20%] px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Client</th>
+                  <th className="w-[15%] px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
+                  <th className="w-[12%] px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">HT</th>
+                  <th className="w-[12%] px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">TTC</th>
+                  <th className="w-[12%] px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Date</th>
+                  <th className="w-[10%] px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {devisList.map((devis) => {
                   const status = statutConfig[devis.statut] ?? statutConfig.BROUILLON;
                   const actions = statutActions[devis.statut] ?? [];
@@ -451,17 +490,32 @@ export default function DevisPage() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {canSendToClient(devis.statut) && (
-                            <button
-                              onClick={() => sendClientMutation.mutate(devis.id)}
-                              className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                              title={devis.statut === 'ENVOYE' || devis.statut === 'RENVOYE' ? 'Renvoyer au client' : 'Envoyer au client'}
-                            >
-                              {sendingDevisId === devis.id && sendClientMutation.isPending ? (
-                                <Loader2 size={15} className="animate-spin" />
-                              ) : (
-                                <Send size={15} />
-                              )}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => sendClientMutation.mutate(devis.id)}
+                                className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                                title={devis.statut === 'ENVOYE' || devis.statut === 'RENVOYE' ? 'Renvoyer par email' : 'Envoyer par email'}
+                              >
+                                {sendingDevisId === devis.id && sendClientMutation.isPending ? (
+                                  <Loader2 size={15} className="animate-spin" />
+                                ) : (
+                                  <Send size={15} />
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => sendWhatsAppMutation.mutate(devis.id)}
+                                disabled={!devis.client?.telephone}
+                                className="rounded-lg p-2 text-slate-400 transition hover:bg-green-50 hover:text-green-600 disabled:opacity-30"
+                                title={devis.client?.telephone ? 'Envoyer via WhatsApp' : 'Pas de numero WhatsApp'}
+                              >
+                                {sendingDevisId === devis.id && sendWhatsAppMutation.isPending ? (
+                                  <Loader2 size={15} className="animate-spin" />
+                                ) : (
+                                  <MessageCircle size={15} />
+                                )}
+                              </button>
+                            </>
                           )}
 
                           {actions.length > 0 && (
@@ -555,86 +609,65 @@ export default function DevisPage() {
         )}
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <h2 className="text-lg font-bold text-slate-900">Nouveau devis</h2>
-              <button
-                onClick={() => setShowModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-slate-200"
-              >
-                <X size={18} />
-              </button>
-            </div>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Nouveau devis"
+        icon={FileSpreadsheet}
+        accent="blue"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <Select
+            label="Client"
+            required
+            value={form.clientId}
+            onChange={(event) => setForm({ ...form, clientId: event.target.value })}
+            options={[
+              { value: '', label: 'Sélectionner un client' },
+              ...(clientsList ?? []).map((client) => ({
+                value: client.id,
+                label: `${client.prenom ?? ''} ${client.nom}`.trim()
+              }))
+            ]}
+          />
 
-            <form onSubmit={handleSubmit} className="space-y-4 p-6">
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">Client *</label>
-                <select
-                  required
-                  value={form.clientId}
-                  onChange={(event) => setForm({ ...form, clientId: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                >
-                  <option value="">Selectionner un client</option>
-                  {(clientsList ?? []).map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {`${client.prenom ?? ''} ${client.nom}`.trim()}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <Input
+            label="TVA (%)"
+            type="number"
+            min="0"
+            step="0.1"
+            value={form.tauxTVA}
+            onChange={(event) => setForm({ ...form, tauxTVA: event.target.value })}
+          />
 
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">TVA (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={form.tauxTVA}
-                  onChange={(event) => setForm({ ...form, tauxTVA: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                />
-              </div>
+          <TextArea
+            label="Notes"
+            value={form.notes}
+            rows={4}
+            onChange={(event) => setForm({ ...form, notes: event.target.value })}
+          />
 
-              <div>
-                <label className="mb-1.5 block text-sm font-semibold text-slate-700">Notes</label>
-                <textarea
-                  value={form.notes}
-                  rows={4}
-                  onChange={(event) => setForm({ ...form, notes: event.target.value })}
-                  className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                />
-              </div>
+          {createMutation.error && (
+            <p className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600">
+              Erreur lors de la creation du devis.
+            </p>
+          )}
 
-              {createMutation.error && (
-                <p className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600">
-                  Erreur lors de la creation du devis.
-                </p>
-              )}
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
-                >
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Creer le devis
-                </button>
-              </div>
-            </form>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowModal(false)}
+              className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={createMutation.isPending} icon={Plus}>
+              Créer le devis
+            </SubmitButton>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
 
       {loadingPreview && previewDevisId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -657,16 +690,16 @@ export default function DevisPage() {
           onOpenCommandeFournisseur={handleOpenCommandeFournisseur}
           onValidateBonCommandeAndSend={
             previewDevis.bonCommande &&
-            ['ACCEPTE', 'SIGNE'].includes(previewDevis.statut) &&
-            (previewDevis.bonCommande.statut !== 'ENVOYE' ||
-              (previewDevis.commandesFournisseur ?? []).some(
-                (commande) => commande.statutLivraison === 'CREEE',
-              ))
+              ['ACCEPTE', 'SIGNE'].includes(previewDevis.statut) &&
+              (previewDevis.bonCommande.statut !== 'ENVOYE' ||
+                (previewDevis.commandesFournisseur ?? []).some(
+                  (commande) => commande.statutLivraison === 'CREEE',
+                ))
               ? async () => {
-                  await validateBonCommandeAndSendMutation.mutateAsync(
-                    previewDevis.id,
-                  );
-                }
+                await validateBonCommandeAndSendMutation.mutateAsync(
+                  previewDevis.id,
+                );
+              }
               : undefined
           }
           validateBonCommandeLabel={

@@ -11,10 +11,15 @@ import {
   Plus,
   Search,
   Trash2,
-  X,
+  Edit3,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Select, Input, TextArea, SubmitButton } from '@/components/ui/Form';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 import api from '@/lib/api';
 import { cn, formatDate } from '@/lib/utils';
+import PageHero from '@/components/PageHero';
 import type {
   Chantier,
   ChantierAutoStatut,
@@ -92,11 +97,13 @@ function toEditForm(task: TacheChantier): TaskFormState {
 
 export default function TasksChantierPage() {
   const queryClient = useQueryClient();
+  const toast = useToast();
   const [search, setSearch] = useState('');
   const [selectedChantierId, setSelectedChantierId] = useState<number | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<TacheChantier | null>(null);
   const [form, setForm] = useState<TaskFormState>(emptyForm);
+  const [deleteTarget, setDeleteTarget] = useState<TacheChantier | null>(null);
 
   const chantiersQuery = useQuery({
     queryKey: ['task-page-chantiers', search],
@@ -161,6 +168,10 @@ export default function TasksChantierPage() {
       setShowModal(false);
       setEditingTask(null);
       setForm(emptyForm);
+      toast.success('Tâche créée', 'La tâche a été ajoutée avec succès.');
+    },
+    onError: (error) => {
+      toast.error('Échec de la création', getErrorMessage(error, 'Erreur lors de la création.'));
     },
   });
 
@@ -192,6 +203,10 @@ export default function TasksChantierPage() {
       setShowModal(false);
       setEditingTask(null);
       setForm(emptyForm);
+      toast.success('Tâche mise à jour avec succès');
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Erreur lors de la mise à jour de la tâche'));
     },
   });
 
@@ -216,8 +231,18 @@ export default function TasksChantierPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chantier-taches'] });
       queryClient.invalidateQueries({ queryKey: ['task-page-chantiers'] });
+      setDeleteTarget(null);
+      toast.success('Tâche supprimée avec succès');
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err, 'Erreur lors de la suppression de la tâche'));
     },
   });
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteMutation.mutate(deleteTarget.id);
+  };
 
   const submitMutation = editingTask ? updateMutation : createMutation;
   const taskList = tasksQuery.data?.tasks ?? [];
@@ -246,21 +271,15 @@ export default function TasksChantierPage() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.15),_transparent_25%),linear-gradient(135deg,#ffffff_0%,#f8fafc_55%,#eef2ff_100%)] p-4 shadow-sm ring-1 ring-stone-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Gestion taches chantier
-        </p>
-        <h1 className="mt-2 text-xl font-bold text-slate-900 md:text-2xl">
-          Taches par chantier et affectation
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Admin et chef de chantier peuvent ajouter, modifier, supprimer et cocher les taches
-          (do / not do).
-        </p>
-      </section>
+      <PageHero
+        icon={<CheckSquare size={22} />}
+        title="Tâches par chantier et affectation"
+        subtitle="Admin et chef de chantier peuvent ajouter, modifier, supprimer et cocher les tâches (do / not do)."
+        accent="amber"
+      />
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-3.5 shadow-sm border border-slate-200">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-slate-900">Chantiers</h2>
@@ -269,17 +288,17 @@ export default function TasksChantierPage() {
               </p>
             </div>
             {chantiersQuery.isLoading ? (
-              <Loader2 size={17} className="animate-spin text-sky-700" />
+              <Loader2 size={17} className="animate-spin text-amber-600" />
             ) : null}
           </div>
 
           <div className="relative mb-3">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Rechercher client ou reference chantier"
-              className="w-full rounded-xl border border-stone-200 bg-stone-50 px-10 py-1.5 text-sm outline-none focus:border-sky-400 focus:bg-white"
+              placeholder="Rechercher client ou référence chantier..."
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-1.5 text-sm outline-none focus:border-amber-400 focus:bg-white transition-all"
             />
           </div>
 
@@ -291,8 +310,8 @@ export default function TasksChantierPage() {
                 className={cn(
                   'w-full rounded-xl border p-3 text-left transition-all',
                   activeChantierId === chantier.id
-                    ? 'border-sky-300 bg-sky-50/60'
-                    : 'border-stone-200 bg-white hover:bg-stone-50',
+                    ? 'border-amber-300 bg-amber-50/60'
+                    : 'border-slate-200 bg-white hover:bg-slate-50',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -324,24 +343,24 @@ export default function TasksChantierPage() {
             ))}
 
             {!chantiersQuery.isLoading && (chantiersQuery.data?.data ?? []).length === 0 ? (
-              <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
-                Aucun chantier trouve.
+              <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 border border-slate-100">
+                Aucun chantier trouvé.
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-3.5 shadow-sm border border-slate-200">
           {!activeChantier ? (
-            <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
-              Selectionnez un chantier.
+            <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-8 text-center text-sm text-slate-500">
+              Sélectionnez un chantier.
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 pb-3.5">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 pb-3.5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <HardHat size={18} className="text-sky-700" />
+                    <HardHat size={18} className="text-amber-600" />
                     <h2 className="text-lg font-bold text-slate-900">{activeChantier.reference}</h2>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
@@ -351,16 +370,16 @@ export default function TasksChantierPage() {
                 </div>
                 <button
                   onClick={openCreate}
-                  className="inline-flex items-center gap-2 rounded-xl bg-sky-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-sky-800"
+                  className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-amber-700 transition-colors shadow-sm"
                 >
-                  <Plus size={16} /> Ajouter tache
+                  <Plus size={16} /> Ajouter tâche
                 </button>
               </div>
 
               {tasksQuery.isLoading ? (
-                <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
+                <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-8 text-center text-sm text-slate-500">
                   <span className="inline-flex items-center gap-2">
-                    <Loader2 size={16} className="animate-spin" /> Chargement des taches...
+                    <Loader2 size={16} className="animate-spin" /> Chargement des tâches...
                   </span>
                 </div>
               ) : (
@@ -413,13 +432,13 @@ export default function TasksChantierPage() {
                   </div>
 
                   {taskList.length === 0 ? (
-                    <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
-                      Aucune tache pour ce chantier.
+                    <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500 border border-slate-100">
+                      Aucune tâche pour ce chantier.
                     </div>
                   ) : (
                     <div className="space-y-2.5">
                       {taskList.map((task) => (
-                        <div key={task.id} className="rounded-xl border border-stone-200 bg-white p-3">
+                        <div key={task.id} className="rounded-xl border border-slate-200 bg-white p-3 hover:border-amber-200 transition-colors">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="flex min-w-[260px] flex-1 items-start gap-3">
                               <input
@@ -431,7 +450,7 @@ export default function TasksChantierPage() {
                                     done: event.target.checked,
                                   })
                                 }
-                                className="mt-1 h-4 w-4 rounded border-stone-300 text-sky-700 focus:ring-sky-500"
+                                className="mt-1 h-4 w-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500"
                               />
                               <div>
                                 <p className="text-sm font-semibold text-slate-900">{task.libelle}</p>
@@ -472,17 +491,13 @@ export default function TasksChantierPage() {
                               </span>
                               <button
                                 onClick={() => openEdit(task)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 text-slate-600 hover:bg-stone-50"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-amber-50 hover:text-amber-600 transition-colors"
                                 title="Modifier"
                               >
                                 <Pencil size={15} />
                               </button>
                               <button
-                                onClick={() => {
-                                  if (window.confirm(`Supprimer la tache "${task.libelle}" ?`)) {
-                                    deleteMutation.mutate(task.id);
-                                  }
-                                }}
+                                onClick={() => setDeleteTarget(task)}
                                 className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50"
                                 title="Supprimer"
                               >
@@ -501,202 +516,133 @@ export default function TasksChantierPage() {
         </div>
       </section>
 
-      {showModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-4 shadow-2xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900">
-                {editingTask ? 'Modifier tache' : 'Nouvelle tache'}
-              </h3>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setEditingTask(null);
-                  setForm(emptyForm);
-                }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-500 hover:bg-stone-50"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Libelle tache
-                  </span>
-                  <input
-                    required
-                    value={form.libelle}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, libelle: event.target.value }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Affectation
-                  </span>
-                  <select
-                    value={form.assigneeType}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        assigneeType: event.target.value as TaskAssigneeType,
-                        sousTraitantId: '',
-                        equipeId: '',
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  >
-                    <option value="AUCUNE">Non affectee</option>
-                    <option value="SOUS_TRAITANT">Sous-traitant</option>
-                    <option value="EQUIPE_INTERNE">Equipe interne</option>
-                  </select>
-                </label>
-              </div>
-
-              {form.assigneeType === 'SOUS_TRAITANT' ? (
-                <label className="space-y-1 block">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Choisir sous-traitant
-                  </span>
-                  <select
-                    required
-                    value={form.sousTraitantId}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        sousTraitantId: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  >
-                    <option value="">Selectionner</option>
-                    {(assignmentOptionsQuery.data?.sousTraitants ?? []).map((st) => (
-                      <option key={st.id} value={st.id}>
-                        {st.prenom} {st.nom}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-
-              {form.assigneeType === 'EQUIPE_INTERNE' ? (
-                <label className="space-y-1 block">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Choisir equipe interne
-                  </span>
-                  <select
-                    required
-                    value={form.equipeId}
-                    onChange={(event) =>
-                      setForm((current) => ({
-                        ...current,
-                        equipeId: event.target.value,
-                      }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  >
-                    <option value="">Selectionner</option>
-                    {(assignmentOptionsQuery.data?.equipesInternes ?? []).map((eq) => (
-                      <option key={eq.id} value={eq.id}>
-                        {eq.nom}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : null}
-
-              <label className="space-y-1 block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  Description
-                </span>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, description: event.target.value }))
-                  }
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                />
-              </label>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Date debut
-                  </span>
-                  <input
-                    type="date"
-                    value={form.dateDebut}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, dateDebut: event.target.value }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  />
-                </label>
-                <label className="space-y-1">
-                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                    Date fin
-                  </span>
-                  <input
-                    type="date"
-                    value={form.dateFin}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, dateFin: event.target.value }))
-                    }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
-                  />
-                </label>
-              </div>
-
-              {submitMutation.error ? (
-                <p className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {getApiErrorMessage(
-                    submitMutation.error,
-                    'Impossible d enregistrer cette tache.',
-                  )}
-                </p>
-              ) : null}
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setEditingTask(null);
-                    setForm(emptyForm);
-                  }}
-                  className="rounded-2xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
-                >
-                  {submitMutation.isPending ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <CheckSquare size={16} />
-                  )}
-                  {editingTask ? 'Mettre a jour' : 'Ajouter'}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); setEditingTask(null); setForm(emptyForm); }}
+        title={editingTask ? 'Modifier tâche' : 'Nouvelle tâche'}
+        icon={editingTask ? Edit3 : CheckSquare}
+        accent="amber"
+        maxWidth="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              label="Libellé tâche"
+              required
+              value={form.libelle}
+              onChange={(event) => setForm((current) => ({ ...current, libelle: event.target.value }))}
+            />
+            <Select
+              label="Affectation"
+              value={form.assigneeType}
+              onChange={(event) => setForm((current) => ({
+                ...current,
+                assigneeType: event.target.value as TaskAssigneeType,
+                sousTraitantId: '',
+                equipeId: '',
+              }))}
+              options={[
+                { value: 'AUCUNE', label: 'Non affectée' },
+                { value: 'SOUS_TRAITANT', label: 'Sous-traitant' },
+                { value: 'EQUIPE_INTERNE', label: 'Équipe interne' }
+              ]}
+            />
           </div>
-        </div>
-      ) : null}
+
+          {form.assigneeType === 'SOUS_TRAITANT' && (
+            <Select
+              label="Choisir sous-traitant"
+              required
+              value={form.sousTraitantId}
+              onChange={(event) => setForm((current) => ({ ...current, sousTraitantId: event.target.value }))}
+              options={[
+                { value: '', label: 'Sélectionner' },
+                ...(assignmentOptionsQuery.data?.sousTraitants ?? []).map((st) => ({
+                  value: st.id,
+                  label: `${st.prenom} ${st.nom}`
+                }))
+              ]}
+            />
+          )}
+
+          {form.assigneeType === 'EQUIPE_INTERNE' && (
+            <Select
+              label="Choisir équipe interne"
+              required
+              value={form.equipeId}
+              onChange={(event) => setForm((current) => ({ ...current, equipeId: event.target.value }))}
+              options={[
+                { value: '', label: 'Sélectionner' },
+                ...(assignmentOptionsQuery.data?.equipesInternes ?? []).map((eq) => ({
+                  value: eq.id,
+                  label: eq.nom
+                }))
+              ]}
+            />
+          )}
+
+          <TextArea
+            label="Description"
+            rows={3}
+            value={form.description}
+            onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
+          />
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input
+              label="Date début"
+              type="date"
+              value={form.dateDebut}
+              onChange={(event) => setForm((current) => ({ ...current, dateDebut: event.target.value }))}
+            />
+            <Input
+              label="Date fin"
+              type="date"
+              value={form.dateFin}
+              onChange={(event) => setForm((current) => ({ ...current, dateFin: event.target.value }))}
+            />
+          </div>
+
+          {submitMutation.error && (
+            <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 border border-rose-100">
+              {getApiErrorMessage(submitMutation.error, 'Impossible d\'enregistrer cette tâche.')}
+            </p>
+          )}
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => { setShowModal(false); setEditingTask(null); setForm(emptyForm); }}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={submitMutation.isPending} icon={editingTask ? Edit3 : CheckSquare}>
+              {editingTask ? 'Mettre à jour' : 'Ajouter'}
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
 
       {tasksQuery.error ? (
         <section className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {getApiErrorMessage(tasksQuery.error, 'Impossible de charger les taches du chantier.')}
         </section>
       ) : null}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Supprimer la tâche"
+        message={
+          deleteTarget
+            ? `Êtes-vous sûr de vouloir supprimer la tâche "${deleteTarget.libelle}" ? Cette action est irréversible.`
+            : ''
+        }
+        confirmLabel="Supprimer"
+        loading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onClose={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

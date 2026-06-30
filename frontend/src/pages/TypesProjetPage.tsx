@@ -3,9 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { CategoriePrestation, TypeProjet } from '@/types';
 import { cn } from '@/lib/utils';
+import PageHero from '@/components/PageHero';
 import {
-  Plus, Search, Edit, Trash2, X, FolderKanban, Loader2, CheckSquare, Square, AlertCircle,
+  Plus, Search, Edit, Trash2, FolderKanban, Loader2, CheckSquare, Square, AlertCircle, Edit3,
 } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
+import { Input, TextArea, SubmitButton } from '@/components/ui/Form';
+import { useToast, getErrorMessage } from '@/components/ui/Toast';
 
 interface TypeProjetForm {
   nom: string;
@@ -87,12 +91,16 @@ export default function TypesProjetPage() {
     new Map<number, { clients: number; linkedTypeIds: number[] }>(),
   );
 
+  const toast = useToast();
+
   const createMutation = useMutation({
     mutationFn: (body: TypeProjetForm) => api.post('/types-projet', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Type de projet créé', 'Le type a été ajouté avec succès.');
     },
+    onError: (err) => { toast.error('Échec de la création', getErrorMessage(err)); },
   });
 
   const updateMutation = useMutation({
@@ -100,7 +108,9 @@ export default function TypesProjetPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Type de projet modifié', 'Les modifications ont été enregistrées.');
     },
+    onError: (err) => { toast.error('Échec de la modification', getErrorMessage(err)); },
   });
 
   const deleteMutation = useMutation({
@@ -108,7 +118,9 @@ export default function TypesProjetPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       setDeleteId(null);
+      toast.success('Type de projet supprimé', 'Le type a été retiré définitivement.');
     },
+    onError: (err) => { toast.error('Échec de la suppression', getErrorMessage(err)); },
   });
 
   const createSimpleTaskMutation = useMutation({
@@ -135,7 +147,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeModal();
+      toast.success('Tâche simple créée', 'La tâche a été ajoutée avec succès.');
     },
+    onError: (err) => { toast.error('Échec de la création', getErrorMessage(err)); },
   });
 
   const updateSimpleTaskMutation = useMutation({
@@ -165,7 +179,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       closeSimpleTaskModal();
+      toast.success('Tâche simple modifiée', 'Les modifications ont été enregistrées.');
     },
+    onError: (err) => { toast.error('Échec de la modification', getErrorMessage(err)); },
   });
 
   const deleteSimpleTaskMutation = useMutation({
@@ -179,7 +195,9 @@ export default function TypesProjetPage() {
       queryClient.invalidateQueries({ queryKey: ['types-projet-categories'] });
       queryClient.invalidateQueries({ queryKey: ['types-projet'] });
       setDeleteSimpleTask(null);
+      toast.success('Tâche simple supprimée', 'La tâche a été retirée définitivement.');
     },
+    onError: (err) => { toast.error('Échec de la suppression', getErrorMessage(err)); },
   });
 
   function extractCategorieIds(item: TypeProjet) {
@@ -299,7 +317,7 @@ export default function TypesProjetPage() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <div className="w-9 h-9 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center">
                       <FolderKanban size={16} />
                     </div>
                     <span className="font-semibold text-gray-900 text-[14px]">{item.nom}</span>
@@ -316,7 +334,7 @@ export default function TypesProjetPage() {
                       {(item.categories ?? []).slice(0, 3).map((link) => (
                         <span
                           key={`${item.id}-${link.categorieId}`}
-                          className="inline-flex items-center rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700"
+                          className="inline-flex items-center rounded-lg bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700"
                         >
                           {link.categorie?.nom ?? `#${link.categorieId}`}
                         </span>
@@ -447,34 +465,33 @@ export default function TypesProjetPage() {
   const invalidComplexSelection = isComplexMode && form.categorieIds.length < 2;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <FolderKanban size={24} className="text-indigo-600" />
-            Types de Projet
-          </h1>
-          <p className="text-gray-500 text-sm mt-0.5">
-            {complexTypes.length} tache(s) complexe(s) / {simpleTasks.length} tache(s) simple(s)
-          </p>
-        </div>
-        <button
-          onClick={openCreate}
-          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
-        >
-          <Plus size={17} /> Nouveau type
-        </button>
-      </div>
+    <div className="space-y-4">
+      <PageHero
+        icon={<FolderKanban size={22} />}
+        title="Types de Projet"
+        subtitle={`${complexTypes.length} tâche(s) complexe(s) · ${simpleTasks.length} tâche(s) simple(s)`}
+        accent="indigo"
+        actions={
+          <button
+            onClick={openCreate}
+            className="inline-flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-all font-medium text-sm shadow-sm"
+          >
+            <Plus size={16} /> Nouveau type
+          </button>
+        }
+      />
 
-      <div className="relative max-w-md">
-        <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Rechercher un type de projet..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
-        />
+      <div className="flex flex-col sm:flex-row gap-3 bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Rechercher un type de projet..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-2.5 text-sm outline-none focus:border-slate-400 focus:bg-white focus:ring-2 focus:ring-slate-400/20 transition-all"
+          />
+        </div>
       </div>
 
       {isLoading ? (
@@ -514,12 +531,12 @@ export default function TypesProjetPage() {
       ) : (
         <div className="space-y-5">
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-indigo-50/40">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-slate-50/40">
               <div>
                 <h2 className="text-sm font-bold text-gray-900">Taches complexes</h2>
                 <p className="text-xs text-gray-500">Un grand projet avec plusieurs categories</p>
               </div>
-              <span className="inline-flex items-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+              <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                 {complexTypes.length}
               </span>
             </div>
@@ -551,304 +568,282 @@ export default function TypesProjetPage() {
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-              <h2 className="text-lg font-bold text-gray-900">
-                {editingItem ? 'Modifier le type complexe' : 'Nouveau type de projet'}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <form id="type-projet-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+      {/* Create / Edit Complex Type Modal */}
+      <Modal
+        isOpen={showModal}
+        onClose={closeModal}
+        title={editingItem ? 'Modifier le type complexe' : 'Nouveau type de projet'}
+        icon={editingItem ? Edit3 : FolderKanban}
+        accent="slate"
+        maxWidth="lg"
+      >
+        <div className="flex flex-col max-h-[70vh]">
+          <form id="type-projet-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
+            <Input
+              label="Nom du type"
+              required
+              value={form.nom}
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+              placeholder="Ex: Rénovation salle de bain"
+            />
+            <TextArea
+              label="Description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+              placeholder="Description optionnelle du type de travaux..."
+            />
+
+            {!editingItem && (
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Nom du type *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.nom}
-                  onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                  placeholder="Ex: Renovation salle de bain"
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  rows={3}
-                  placeholder="Description optionnelle du type de travaux..."
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all resize-none"
-                />
-              </div>
-
-              {!editingItem && (
-                <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Type de projet *</label>
-                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
-                    <button
-                      type="button"
-                      onClick={() => setCreateMode('COMPLEXE')}
-                      className={cn(
-                        'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
-                        createMode === 'COMPLEXE'
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'bg-white text-gray-600 hover:bg-indigo-50',
-                      )}
-                    >
-                      Complexe
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCreateMode('SIMPLE');
-                        setForm((current) => ({ ...current, categorieIds: [] }));
-                      }}
-                      className={cn(
-                        'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
-                        createMode === 'SIMPLE'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-white text-gray-600 hover:bg-emerald-50',
-                      )}
-                    >
-                      Simple
-                    </button>
-                  </div>
-                  <p className="mt-2 text-xs text-gray-400">
-                    Complexe = plusieurs categories. Simple = nom + description seulement.
-                  </p>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Type de projet</label>
+                <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
+                  <button
+                    type="button"
+                    onClick={() => setCreateMode('COMPLEXE')}
+                    className={cn(
+                      'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
+                      createMode === 'COMPLEXE'
+                        ? 'bg-slate-600 text-white shadow-sm'
+                        : 'bg-white text-gray-600 hover:bg-slate-50',
+                    )}
+                  >
+                    Complexe
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCreateMode('SIMPLE');
+                      setForm((current) => ({ ...current, categorieIds: [] }));
+                    }}
+                    className={cn(
+                      'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
+                      createMode === 'SIMPLE'
+                        ? 'bg-emerald-600 text-white shadow-sm'
+                        : 'bg-white text-gray-600 hover:bg-emerald-50',
+                    )}
+                  >
+                    Simple
+                  </button>
                 </div>
-              )}
-
-              {isComplexMode ? (
-                <div>
-                <div className="flex items-center justify-between gap-3 mb-2">
-                  <label className="block text-[13px] font-semibold text-gray-700">Categories compatibles</label>
-                  <span className="text-[11px] font-semibold text-indigo-600">
-                    {form.categorieIds.length} selectionnee{form.categorieIds.length > 1 ? 's' : ''}
-                  </span>
-                </div>
-                {loadingCategories ? (
-                  <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 py-6">
-                    <Loader2 size={18} className="animate-spin text-indigo-600" />
-                  </div>
-                ) : categoriesError ? (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-600">
-                    Impossible de charger les categories pour le moment.
-                  </div>
-                ) : categoriesList.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
-                    Aucune categorie active disponible.
-                  </div>
-                ) : (
-                  <div className="grid gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-3 md:grid-cols-2">
-                    {categoriesList.map((categorie) => {
-                      const selected = form.categorieIds.includes(categorie.id);
-
-                      return (
-                        <button
-                          key={categorie.id}
-                          type="button"
-                          onClick={() => toggleCategorie(categorie.id)}
-                          className={cn(
-                            'flex items-start gap-2 rounded-xl border px-3 py-3 text-left transition-all',
-                            selected
-                              ? 'border-indigo-300 bg-indigo-50 text-indigo-900'
-                              : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-200',
-                          )}
-                        >
-                          <span className="mt-0.5 text-indigo-600">
-                            {selected ? <CheckSquare size={16} /> : <Square size={16} />}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block text-sm font-semibold">{categorie.nom}</span>
-                            <span className="mt-0.5 block text-xs text-gray-500">
-                              {categorie.description || 'Categorie metier existante'}
-                            </span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
                 <p className="mt-2 text-xs text-gray-400">
-                  Selectionnez au moins 2 categories pour un type complexe.
+                  Complexe = plusieurs catégories. Simple = nom + description seulement.
                 </p>
-                {invalidComplexSelection && (
-                  <p className="mt-2 text-xs text-red-600">
-                    Un type complexe doit avoir au minimum 2 categories.
-                  </p>
-                )}
               </div>
+            )}
+
+            {isComplexMode ? (
+              <div>
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <label className="block text-[13px] font-semibold text-gray-700">Catégories compatibles</label>
+                <span className="text-[11px] font-semibold text-slate-600">
+                  {form.categorieIds.length} sélectionnée{form.categorieIds.length > 1 ? 's' : ''}
+                </span>
+              </div>
+              {loadingCategories ? (
+                <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 py-6">
+                  <Loader2 size={18} className="animate-spin text-slate-600" />
+                </div>
+              ) : categoriesError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-600">
+                  Impossible de charger les catégories pour le moment.
+                </div>
+              ) : categoriesList.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
+                  Aucune catégorie active disponible.
+                </div>
               ) : (
-                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-                  En mode simple, la tache sera creee avec nom + description.
+                <div className="grid gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-3 md:grid-cols-2">
+                  {categoriesList.map((categorie) => {
+                    const selected = form.categorieIds.includes(categorie.id);
+
+                    return (
+                      <button
+                        key={categorie.id}
+                        type="button"
+                        onClick={() => toggleCategorie(categorie.id)}
+                        className={cn(
+                          'flex items-start gap-2 rounded-xl border px-6 py-4 text-left transition-all',
+                          selected
+                            ? 'border-slate-300 bg-slate-50 text-slate-900'
+                            : 'border-gray-200 bg-white text-gray-700 hover:border-slate-200',
+                        )}
+                      >
+                        <span className="mt-0.5 text-slate-600">
+                          {selected ? <CheckSquare size={16} /> : <Square size={16} />}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold">{categorie.nom}</span>
+                          <span className="mt-0.5 block text-xs text-gray-500">
+                            {categorie.description || 'Catégorie métier existante'}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
-
-              {(createMutation.error || createSimpleTaskMutation.error || updateMutation.error) && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Une erreur est survenue. Veuillez reessayer.
+              <p className="mt-2 text-xs text-gray-400">
+                Sélectionnez au moins 2 catégories pour un type complexe.
+              </p>
+              {invalidComplexSelection && (
+                <p className="mt-2 text-xs text-red-600">
+                  Un type complexe doit avoir au minimum 2 catégories.
                 </p>
               )}
-            </form>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                form="type-projet-form"
-                disabled={saving || invalidComplexSelection}
-                className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
-              >
-                {saving && <Loader2 size={16} className="animate-spin" />}
-                {editingItem ? 'Enregistrer' : 'Creer'}
-              </button>
             </div>
-          </div>
-        </div>
-      )}
+            ) : (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-xs text-emerald-700">
+                En mode simple, la tâche sera créée avec nom + description.
+              </div>
+            )}
 
-      {showSimpleTaskModal && editingSimpleTask && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Modifier la tache simple</h2>
-              <button
-                onClick={closeSimpleTaskModal}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <form id="simple-task-form" onSubmit={handleSimpleTaskSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Nom *</label>
-                <input
-                  type="text"
-                  required
-                  value={simpleTaskForm.nom}
-                  onChange={(e) => setSimpleTaskForm((current) => ({ ...current, nom: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Description</label>
-                <textarea
-                  value={simpleTaskForm.description}
-                  onChange={(e) =>
-                    setSimpleTaskForm((current) => ({ ...current, description: e.target.value }))
-                  }
-                  rows={3}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all resize-none"
-                />
-              </div>
-              {updateSimpleTaskMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Echec de modification de la tache simple.
-                </p>
-              )}
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={closeSimpleTaskModal}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  form="simple-task-form"
-                  disabled={simpleTaskSaving}
-                  className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
-                >
-                  {simpleTaskSaving && <Loader2 size={16} className="animate-spin" />}
-                  Enregistrer
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {deleteSimpleTask && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
-            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="text-red-600" size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer cette tache simple ?</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              La categorie "{deleteSimpleTask.category.nom}" et ses elements associes seront desactives.
-            </p>
-            {deleteSimpleTaskMutation.error && (
-              <p className="mb-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Echec de suppression. Verifiez les dependances puis reessayez.
+            {(createMutation.error || createSimpleTaskMutation.error || updateMutation.error) && (
+              <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+                Une erreur est survenue. Veuillez réessayer.
               </p>
             )}
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteSimpleTask(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={() =>
-                  deleteSimpleTaskMutation.mutate({
-                    categoryId: deleteSimpleTask.category.id,
-                    linkedTypeIds: deleteSimpleTask.linkedTypeIds,
-                  })
-                }
-                disabled={deleteSimpleTaskMutation.isPending}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {deleteSimpleTaskMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </button>
-            </div>
+          </form>
+          <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
+            <button
+              type="button"
+              onClick={closeModal}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton
+              isLoading={saving}
+              icon={editingItem ? Edit3 : Plus}
+              disabled={saving || invalidComplexSelection}
+              type="submit"
+              form="type-projet-form"
+            >
+              {editingItem ? 'Enregistrer' : 'Créer'}
+            </SubmitButton>
           </div>
         </div>
-      )}
+      </Modal>
 
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
-            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="text-red-600" size={24} />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer ce type ?</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Ce type de projet sera supprime definitivement de la base de donnees.
+      {/* Edit Simple Task Modal */}
+      <Modal
+        isOpen={showSimpleTaskModal && !!editingSimpleTask}
+        onClose={closeSimpleTaskModal}
+        title="Modifier la tâche simple"
+        icon={Edit3}
+        accent="green"
+        maxWidth="lg"
+      >
+        <form id="simple-task-form" onSubmit={handleSimpleTaskSubmit} className="p-6 space-y-5">
+          <Input
+            label="Nom"
+            required
+            value={simpleTaskForm.nom}
+            onChange={(e) => setSimpleTaskForm((current) => ({ ...current, nom: e.target.value }))}
+          />
+          <TextArea
+            label="Description"
+            value={simpleTaskForm.description}
+            onChange={(e) => setSimpleTaskForm((current) => ({ ...current, description: e.target.value }))}
+            rows={3}
+          />
+          {updateSimpleTaskMutation.error && (
+            <p className="text-sm font-medium text-red-600 bg-red-50 px-4 py-3 rounded-xl border border-red-100">
+              Échec de modification de la tâche simple.
             </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteId(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={() => deleteMutation.mutate(deleteId)}
-                disabled={deleteMutation.isPending}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
-              >
-                {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </button>
-            </div>
+          )}
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={closeSimpleTaskModal}
+              className="px-5 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+            >
+              Annuler
+            </button>
+            <SubmitButton isLoading={simpleTaskSaving} icon={Edit3}>
+              Enregistrer
+            </SubmitButton>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Simple Task Confirmation */}
+      <Modal
+        isOpen={!!deleteSimpleTask}
+        onClose={() => setDeleteSimpleTask(null)}
+        title="Supprimer cette tâche simple ?"
+        icon={Trash2}
+        accent="slate"
+        maxWidth="sm"
+      >
+        <div className="p-6 text-center">
+          <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="text-red-600" size={24} />
+          </div>
+          <p className="text-sm text-gray-500 mb-6">
+            La catégorie "{deleteSimpleTask?.category.nom}" et ses éléments associés seront désactivés.
+          </p>
+          {deleteSimpleTaskMutation.error && (
+            <p className="mb-4 text-sm font-medium text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+              Échec de suppression. Vérifiez les dépendances puis réessayez.
+            </p>
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteSimpleTask(null)}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() =>
+                deleteSimpleTask && deleteSimpleTaskMutation.mutate({
+                  categoryId: deleteSimpleTask.category.id,
+                  linkedTypeIds: deleteSimpleTask.linkedTypeIds,
+                })
+              }
+              disabled={deleteSimpleTaskMutation.isPending}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              {deleteSimpleTaskMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
+
+      {/* Delete Complex Type Confirmation */}
+      <Modal
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        title="Supprimer ce type ?"
+        icon={Trash2}
+        accent="slate"
+        maxWidth="sm"
+      >
+        <div className="p-6 text-center">
+          <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Trash2 className="text-red-600" size={24} />
+          </div>
+          <p className="text-sm text-gray-500 mb-6">
+            Ce type de projet sera supprimé définitivement de la base de données.
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDeleteId(null)}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-600 border border-slate-200 rounded-xl bg-white hover:bg-slate-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => deleteId && deleteMutation.mutate(deleteId)}
+              disabled={deleteMutation.isPending}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
