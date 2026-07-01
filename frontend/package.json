@@ -12,10 +12,12 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.6",
+    "chart.js": "^4.5.1",
     "clsx": "^2.1.1",
     "crm-batiment": "file:..",
     "lucide-react": "^0.576.0",
     "react": "^19.2.0",
+    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
     "tailwind-merge": "^3.5.0",

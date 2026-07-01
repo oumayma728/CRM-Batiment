@@ -24,7 +24,8 @@ import { AssistantModule } from './assistant/assistant.module.js';
 import { RagModule } from './rag/rag.module.js';
 // TODO: Fix imports in CatalogueModule
 // import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
-
+import { DashboardModule } from './dashboard/dashboard.module.js';
+import { AuditModule } from './audit/audit.module.js';
 @Module({
   imports: [
     // Configuration globale (.env)
@@ -57,6 +58,8 @@ import { RagModule } from './rag/rag.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
+    DashboardModule,
+    AuditModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

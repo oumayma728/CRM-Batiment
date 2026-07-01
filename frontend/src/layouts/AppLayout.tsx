@@ -1,4 +1,6 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NavLink, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
@@ -11,10 +13,10 @@ import {
   Truck,
   Shield,
   LogOut,
-  Search,
   Building2,
   Settings,
   Menu,
+  History,
   X,
   FolderKanban,
   PackageCheck,
@@ -22,133 +24,293 @@ import {
   CheckSquare,
   Receipt,
   Database,
+  ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
-import { useState } from 'react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 
 interface NavItem {
   to: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   roles: Role[];
   badge?: string;
   section?: string;
 }
 
 const navItems: NavItem[] = [
-  { to: '/admin', label: 'Tableau de bord', icon: <LayoutDashboard size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'] },
-  // Module 1: Clients & Devis
-  { to: '/admin/clients', label: 'Clients', icon: <Users size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'], section: 'Clients & Devis' },
-  { to: '/admin/demandes-devis', label: 'Demandes', icon: <FileText size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/devis', label: 'Devis', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/factures', label: 'Mes factures', icon: <Receipt size={19} />, roles: ['ADMIN', 'ASSISTANTE'] },
-  { to: '/admin/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Clients & Devis' },
-  // Module 2: Bibliothèque de prix
-  { to: '/admin/prestations', label: 'Prestations', icon: <List size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Bibliothèque Prix' },
-  { to: '/admin/prestations-compositions', label: 'Prestations et leurs compositions', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/materiaux', label: 'Matériaux', icon: <Box size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/services-mo', label: 'Main d\'œuvre', icon: <Wrench size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  // Module 3: Fournisseurs
-  { to: '/admin/fournisseurs', label: 'Fournisseurs', icon: <Truck size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Fournisseurs' },
-  { to: '/admin/chantiers', label: 'Chantiers', icon: <HardHat size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Chantiers' },
-  { to: '/admin/taches-chantier', label: 'Taches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'], section: 'Chantiers' },
-  // Administration
-  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: <Shield size={19} />, roles: ['ADMIN'], section: 'Administration' },
-  { to: '/admin/types-projet', label: 'Types de projet', icon: <FolderKanban size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/base-ia', label: 'Base IA / RAG', icon: <Database size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/parametres-chiffrage', label: 'Paramètres chiffrage', icon: <Settings size={19} />, roles: ['ADMIN'] },
+  {
+    to: '/admin',
+    label: 'Tableau de bord',
+    icon: <LayoutDashboard size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'],
+  },
+  {
+    to: '/admin/clients',
+    label: 'Clients',
+    icon: <Users size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
+    section: 'Gestion commerciale',
+  },
+  {
+    to: '/admin/demandes-devis',
+    label: 'Demandes',
+    icon: <FileText size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/devis',
+    label: 'Devis',
+    icon: <FileSpreadsheet size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/factures',
+    label: 'Factures',
+    icon: <Receipt size={17} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/commandes-fournisseur',
+    label: 'Commandes fournisseur',
+    icon: <PackageCheck size={17} />,
+    roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/fournisseurs',
+    label: 'Fournisseurs',
+    icon: <Truck size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    section: 'Pilotage chantier',
+  },
+  {
+    to: '/admin/chantiers',
+    label: 'Chantiers',
+    icon: <HardHat size={17} />,
+    roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/taches-chantier',
+    label: 'Tâches chantier',
+    icon: <CheckSquare size={17} />,
+    roles: ['ADMIN', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/prestations',
+    label: 'Prestations',
+    icon: <List size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    section: 'Catalogue & référentiels',
+  },
+  {
+    to: '/admin/prestations-compositions',
+    label: 'Compositions',
+    icon: <FileSpreadsheet size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/materiaux',
+    label: 'Matériaux',
+    icon: <Box size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/services-mo',
+    label: 'Main d’œuvre',
+    icon: <Wrench size={17} />,
+    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+  },
+  {
+    to: '/admin/utilisateurs',
+    label: 'Utilisateurs',
+    icon: <Shield size={17} />,
+    roles: ['ADMIN'],
+    section: 'Administration',
+  },
+  {
+    to: '/admin/types-projet',
+    label: 'Types de projet',
+    icon: <FolderKanban size={17} />,
+    roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/base-ia',
+    label: 'Base IA / RAG',
+    icon: <Database size={17} />,
+    roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/parametres-chiffrage',
+    label: 'Paramètres',
+    icon: <Settings size={17} />,
+    roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/audit',
+    label: 'Audit',
+    icon: <History size={17} />,
+    roles: ['ADMIN'],
+  },
 ];
 
-const roleBadgeStyles: Record<Role, { bg: string; text: string; label: string }> = {
-  ADMIN: { bg: 'bg-red-500/10', text: 'text-red-400', label: 'Administrateur' },
-  TECHNICO: { bg: 'bg-blue-500/10', text: 'text-blue-400', label: 'Technico-Commercial' },
-  ASSISTANTE: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', label: 'Assistante' },
-  CHEF_CHANTIER: { bg: 'bg-orange-500/10', text: 'text-orange-400', label: 'Chef de chantier' },
-  SOUS_TRAITANT: { bg: 'bg-purple-500/10', text: 'text-purple-400', label: 'Sous-traitant' },
+const roleLabels: Record<Role, string> = {
+  ADMIN: 'Administrateur',
+  TECHNICO: 'Technico-commercial',
+  ASSISTANTE: 'Assistante',
+  CHEF_CHANTIER: 'Chef de chantier',
+  SOUS_TRAITANT: 'Sous-traitant',
 };
 
-const roleHeaderStyles: Record<Role, string> = {
-  ADMIN: 'bg-red-50 text-red-700 border-red-200',
-  TECHNICO: 'bg-blue-50 text-blue-700 border-blue-200',
-  ASSISTANTE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  CHEF_CHANTIER: 'bg-orange-50 text-orange-700 border-orange-200',
-  SOUS_TRAITANT: 'bg-purple-50 text-purple-700 border-purple-200',
+const routeLabels: Record<string, string> = {
+  admin: 'Admin',
+  clients: 'Clients',
+  'demandes-devis': 'Demandes',
+  devis: 'Devis',
+  factures: 'Factures',
+  'commandes-fournisseur': 'Commandes fournisseur',
+  fournisseurs: 'Fournisseurs',
+  chantiers: 'Chantiers',
+  'taches-chantier': 'Tâches chantier',
+  prestations: 'Prestations',
+  'prestations-compositions': 'Compositions',
+  materiaux: 'Matériaux',
+  'services-mo': 'Main d’œuvre',
+  utilisateurs: 'Utilisateurs',
+  'types-projet': 'Types de projet',
+  'base-ia': 'Base IA / RAG',
+  'parametres-chiffrage': 'Paramètres',
+  audit: 'Audit',
 };
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const visibleItems = navItems.filter((item) => user && item.roles.includes(user.role));
+
+  const currentPage =
+    [...visibleItems]
+      .sort((a, b) => b.to.length - a.to.length)
+      .find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ??
+    visibleItems[0];
+
+  const breadcrumbs = useMemo(() => {
+    const parts = location.pathname.split('/').filter(Boolean);
+
+    if (!parts.length) {
+      return [{ label: 'Bâtiflow', to: '/admin' }];
+    }
+
+    return parts.map((part, index) => ({
+      label: routeLabels[part] ?? formatPathLabel(part),
+      to: `/${parts.slice(0, index + 1).join('/')}`,
+    }));
+  }, [location.pathname]);
+
+  const initials = user
+    ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase()
+    : 'SA';
+
+  const displayName = user ? `${user.prenom ?? ''} ${user.nom ?? ''}`.trim() : 'Super Admin';
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+    };
+  }, []);
 
   const handleLogout = () => {
+    setUserMenuOpen(false);
     logout();
     navigate('/login');
   };
 
-  const visibleItems = navItems.filter((item) => user && item.roles.includes(user.role));
-  const initials = user ? (user.prenom?.charAt(0) ?? '') + (user.nom?.charAt(0) ?? '') : 'U';
-  const roleInfo = roleBadgeStyles[user?.role ?? 'ADMIN'];
-
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-surface-alt">
-      {/* Mobile overlay */}
+    <div className="flex min-h-screen overflow-x-hidden bg-[#f6f9ff] text-slate-900">
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
+        <button
+          type="button"
+          aria-label="Fermer le menu"
+          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
       )}
 
-      {/* SIDEBAR */}
-      <aside className={cn(
-        'w-[232px] sidebar-gradient text-gray-400 flex flex-col fixed h-full z-50 transition-transform duration-300',
-        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      )}>
-        {/* Brand */}
-        <div className="px-5 py-5 border-b border-white/[0.06]">
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-50 flex w-[244px] flex-col border-r border-slate-200 bg-white text-slate-600 shadow-[8px_0_30px_rgba(15,23,42,0.04)] transition-transform duration-300',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+        )}
+      >
+        <div className="px-5 py-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 batiflow-gradient rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <Building2 className="text-white w-5 h-5" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
+
             <div>
-              <h2 className="text-white font-bold text-[17px] leading-tight tracking-tight">BÂTIFLOW</h2>
-              <p className="text-[11px] text-gray-500 font-medium">Gestion Bâtiment Pro</p>
+              <h2 className="text-[18px] font-semibold leading-tight tracking-tight text-slate-950">
+                BÂTIFLOW
+              </h2>
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                Gestion bâtiment
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {visibleItems.map((item, index) => {
-            const prevItems = visibleItems.slice(0, index);
-            const prevSection = [...prevItems].reverse().find((i) => i.section)?.section;
-            const showSection = item.section && item.section !== prevSection;
+            const previousSection = visibleItems
+              .slice(0, index)
+              .reverse()
+              .find((previous) => previous.section)?.section;
+
+            const showSection = item.section && item.section !== previousSection;
 
             return (
               <div key={item.to}>
                 {showSection && (
-                  <div className="flex items-center gap-2 px-3 pt-5 pb-2">
-                    <p className="text-[10px] font-bold text-gray-500/80 uppercase tracking-[0.12em]">
+                  <div className="px-3 pb-2 pt-5">
+                    <p className="text-[11px] font-medium text-slate-500">
                       {item.section}
                     </p>
-                    <div className="flex-1 h-px bg-white/[0.04]" />
                   </div>
                 )}
+
                 <NavLink
                   to={item.to}
                   end={item.to === '/admin'}
+                  onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group text-[13.5px] font-medium',
+                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
                       isActive
-                        ? 'bg-primary-600/20 text-white shadow-sm'
-                        : 'hover:bg-white/[0.05] hover:text-gray-200',
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950',
                     )
                   }
                 >
-                  <span className="opacity-80 group-hover:opacity-100 transition-opacity">{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span className="transition group-hover:scale-105">{item.icon}</span>
+                  <span className="truncate">{item.label}</span>
+
                   {item.badge && (
-                    <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold min-w-[18px] text-center">
+                    <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
                       {item.badge}
                     </span>
                   )}
@@ -158,69 +320,162 @@ export default function AppLayout() {
           })}
         </nav>
 
+        <div className="border-t border-slate-100 p-4">
+          <button
+            type="button"
+            onClick={() => setUserMenuOpen((open) => !open)}
+            className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left transition hover:bg-slate-50"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
+              {initials || 'SA'}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-slate-950">
+                {displayName || 'Super Admin'}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                {roleLabels[user?.role ?? 'ADMIN']}
+              </p>
+            </div>
+
+            <ChevronDown
+              size={14}
+              className={cn('text-slate-400 transition', userMenuOpen && 'rotate-180')}
+            />
+          </button>
+        </div>
       </aside>
 
-      {/* MAIN */}
-      <main className="min-w-0 flex-1 overflow-x-hidden lg:ml-[232px]">
-        {/* Top Header */}
-        <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200/60 px-4 lg:px-8 py-3 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            {/* Mobile toggle */}
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 -ml-2 rounded-lg text-gray-500 hover:bg-gray-100"
-            >
-              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+      <main className="min-w-0 flex-1 lg:ml-[244px]">
+        <header className="fixed left-0 right-0 top-0 z-[90] border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-xl lg:left-[244px] lg:px-7">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+              >
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
 
-            {/* Search bar */}
-            <div className="hidden sm:flex items-center gap-2 bg-gray-100/80 rounded-xl px-4 py-2 w-72 group focus-within:ring-2 focus-within:ring-primary-500/30 focus-within:bg-white focus-within:border-gray-200 transition-all">
-              <Search size={16} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="bg-transparent text-sm text-gray-700 placeholder:text-gray-400 outline-none w-full"
-              />
-              <kbd className="hidden md:inline text-[10px] text-gray-400 bg-gray-200/80 px-1.5 py-0.5 rounded font-mono">⌘K</kbd>
-            </div>
-          </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-400">
+                  <Link to="/admin" className="transition hover:text-blue-600">
+                    Bâtiflow
+                  </Link>
 
-          <div className="flex items-center gap-3">
-            <InternalNotificationsBell />
+                  {breadcrumbs
+                    .filter((crumb) => crumb.label !== 'Admin')
+                    .map((crumb) => (
+                      <span key={crumb.to} className="flex items-center gap-1">
+                        <span>/</span>
+                        <Link to={crumb.to} className="transition hover:text-blue-600">
+                          {crumb.label}
+                        </Link>
+                      </span>
+                    ))}
+                </div>
 
-            {/* Settings */}
-            <button className="w-9 h-9 rounded-xl bg-gray-100/80 flex items-center justify-center text-gray-500 hover:bg-gray-200/80 hover:text-gray-700 transition-colors">
-              <Settings size={18} />
-            </button>
-
-            <button
-              onClick={handleLogout}
-              className="inline-flex h-9 items-center gap-2 rounded-xl bg-red-50 px-3 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
-              title="Se deconnecter"
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Deconnexion</span>
-            </button>
-
-            <div className="w-px h-7 bg-gray-200" />
-
-            {/* User info */}
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 batiflow-gradient rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm">
-                {initials}
+                <h1 className="mt-0.5 truncate text-[18px] font-semibold text-slate-950">
+                  {currentPage?.label ?? 'Tableau de bord'}
+                </h1>
               </div>
-              <div className="hidden md:block">
-                <p className="text-[13px] font-semibold text-gray-800 leading-none">{user?.prenom} {user?.nom}</p>
-                <span className={cn('text-[10px] font-bold uppercase mt-0.5 inline-block px-1.5 py-0.5 rounded', roleHeaderStyles[user?.role ?? 'ADMIN'])}>
-                  {roleInfo.label}
-                </span>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <InternalNotificationsBell />
+
+              <div ref={userMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition hover:bg-slate-50"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
+                    {initials || 'SA'}
+                  </div>
+
+                  <div className="hidden text-left md:block">
+                    <p className="text-[13px] font-semibold leading-none text-slate-800">
+                      {displayName || 'Super Admin'}
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                      {roleLabels[user?.role ?? 'ADMIN']}
+                    </p>
+                  </div>
+
+                  <ChevronDown
+                    size={15}
+                    className={cn(
+                      'hidden text-slate-400 transition md:block',
+                      userMenuOpen && 'rotate-180',
+                    )}
+                  />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.16)]">
+                    <div className="border-b border-slate-100 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white">
+                          {initials || 'SA'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {displayName || 'Super Admin'}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            {roleLabels[user?.role ?? 'ADMIN']}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate('/admin/parametres-chiffrage');
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <Settings size={17} />
+                        Paramètres
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate('/admin/audit');
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <History size={17} />
+                        Audit
+                      </button>
+
+                      <div className="my-2 h-px bg-slate-100" />
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                      >
+                        <LogOut size={17} />
+                        Déconnexion
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
-        <div className="min-w-0 overflow-x-hidden p-3 sm:p-4 lg:p-6">
+        <div className="min-w-0 overflow-x-hidden p-4 pt-[92px] lg:p-6 lg:pt-[96px]">
           <Outlet />
         </div>
       </main>
@@ -228,3 +483,9 @@ export default function AppLayout() {
   );
 }
 
+function formatPathLabel(value: string) {
+  return value
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
