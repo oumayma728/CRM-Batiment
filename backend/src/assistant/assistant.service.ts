@@ -716,8 +716,13 @@ export class AssistantService {
       projectType: projectMatch.known ? projectType : undefined,
       limit: 4,
     });
-    let answeredByRag = false;
     let responseMessage = '';
+    let answeredByRag = false;
+    console.log('🔍 RAG CHECK —',
+      'question:', JSON.stringify(dto.message),
+      '| isInfoQuestion:', isInformationalQuestion,
+      '| topScore:', ragRetrieval.snippets[0]?.score,
+      '| topTitre:', ragRetrieval.snippets[0]?.title);
     // Si le client a deja confirme une demande mais exprime une NOUVELLE intention
     // (rendez-vous, nouveau devis, suivi), on repart sur un nouveau parcours
     // tout en gardant ses infos (nom, telephone, email).
@@ -770,14 +775,16 @@ export class AssistantService {
     } else if (
       isInformationalQuestion &&
       ragRetrieval.snippets.length > 0 &&
-      ragRetrieval.snippets[0].score >= 0.6
-    ) {
+      ragRetrieval.snippets[0].score >= 0.4
+    ) 
+    {
       // ========== REPONSE DIRECTE PAR LE RAG (PRIORITAIRE) ==========
       // Question informative + document pertinent => on repond avec le RAG complet,
       // avant toute autre logique (clarification, parcours devis...).
       responseMessage = ragRetrieval.snippets[0].fullText
         .replace(/^Document RAG:\s*[^.]*\.\s*/i, '')
         .replace(/^Cat[ée]gorie:\s*[^.]*\.\s*/i, '')
+        .replace(/\s*Mots-cles\s*:.*$/is, '')
         .trim();
       answeredByRag = true;
     } else if (sessionState.confirmed) {

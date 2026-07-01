@@ -339,7 +339,7 @@ export class AssistantRagService {
 
     const coverage = overlap.length / input.queryTokens.length;
     const density = overlap.length / Math.max(input.chunk.tokens.length, 1);
-    let score = coverage * 0.72 + density * 0.28;
+    let score = coverage * 0.9 + density * 0.1;
 
     const normalizedQuery = this.normalize(input.query);
     if (
