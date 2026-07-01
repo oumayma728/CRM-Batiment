@@ -23,6 +23,7 @@ export type RagSnippet = {
   sourceId: number;
   title: string;
   excerpt: string;
+  fullText: string;
   score: number;
 };
 
@@ -145,6 +146,7 @@ export class AssistantRagService {
       sourceId: chunk.sourceId,
       title: chunk.title,
       excerpt: this.toExcerpt(chunk.text),
+      fullText: chunk.text,
       score: Number(score.toFixed(3)),
     }));
 

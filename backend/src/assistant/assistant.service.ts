@@ -405,6 +405,7 @@ export class AssistantService {
       aiIntentHint,
     );
     let intent = intentDetection.intent;
+
     // FIX: si on est en parcours devis guidé (step > 0) et que le client répond
     // avec un type de travaux, on FORCE demande_devis au lieu de basculer vers info_service.
     if (
@@ -414,6 +415,26 @@ export class AssistantService {
       !intentDetection.detectedIntents.includes('demande_rdv')
     ) {
       intent = 'demande_devis';
+    }
+
+    // FIX RAG: si le message est une QUESTION informative (ex: "quelle difference
+    // entre devis et facture ?"), on force info_service pour que le RAG reponde,
+    // au lieu de lancer le parcours devis. On ne le fait PAS en plein parcours guidé.
+    const messageForQuestionCheck = this.normalizeForMatch(dto.message);
+    const isInformationalQuestion =
+      /\?/.test(dto.message) &&
+      /\b(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut)\b/.test(
+        messageForQuestionCheck,
+      ) &&
+      !/\b(je veux|j aimerais|je voudrais|creer|faire|preparer|calculer)\b[\s\S]*\bdevis\b/.test(
+        messageForQuestionCheck,
+      );
+    if (
+      isInformationalQuestion &&
+      intent === 'demande_devis' &&
+      (state.currentGuidedStep ?? 0) === 0
+    ) {
+      intent = 'demande_info_service';
     }
 
     const detectedIntents = intentDetection.detectedIntents;
@@ -695,9 +716,9 @@ export class AssistantService {
       projectType: projectMatch.known ? projectType : undefined,
       limit: 4,
     });
-
+    let answeredByRag = false;
     let responseMessage = '';
-        // Si le client a deja confirme une demande mais exprime une NOUVELLE intention
+    // Si le client a deja confirme une demande mais exprime une NOUVELLE intention
     // (rendez-vous, nouveau devis, suivi), on repart sur un nouveau parcours
     // tout en gardant ses infos (nom, telephone, email).
     const expressesNewIntent =
@@ -746,6 +767,19 @@ export class AssistantService {
       tokensPolite.every((w) => politeWords.includes(w));
     if (isPolitenessOnly) {
       responseMessage = 'Avec plaisir ! 😊 Bonne journee et a bientot.';
+    } else if (
+      isInformationalQuestion &&
+      ragRetrieval.snippets.length > 0 &&
+      ragRetrieval.snippets[0].score >= 0.6
+    ) {
+      // ========== REPONSE DIRECTE PAR LE RAG (PRIORITAIRE) ==========
+      // Question informative + document pertinent => on repond avec le RAG complet,
+      // avant toute autre logique (clarification, parcours devis...).
+      responseMessage = ragRetrieval.snippets[0].fullText
+        .replace(/^Document RAG:\s*[^.]*\.\s*/i, '')
+        .replace(/^Cat[ée]gorie:\s*[^.]*\.\s*/i, '')
+        .trim();
+      answeredByRag = true;
     } else if (sessionState.confirmed) {
       responseMessage = this.buildClosureMessage(sessionState);
     } else if (awaitingProjectTypeChangeConfirmation && pendingProjectType) {
@@ -849,8 +883,9 @@ export class AssistantService {
     }
 
     const shouldExposeProjectTypes =
-      intent === 'demande_info_service' ||
-      (intent === 'demande_devis' && !projectMatch.known);
+      !answeredByRag &&
+      (intent === 'demande_info_service' ||
+        (intent === 'demande_devis' && !projectMatch.known));
 
     const result: AssistantResult = {
       intent,
@@ -4234,12 +4269,7 @@ export class AssistantService {
       ],
       validator: (value) => this.isLikelyName(value),
     });
-    console.log('🔬 DEBUG NOM —',
-      'aiName brut:', JSON.stringify(input.aiExtracted?.nom),
-      '| aiName nettoye:', JSON.stringify(aiName),
-      '| isLikelyName(aiName):', this.isLikelyName(aiName),
-      '| nameAudit choisi:', JSON.stringify(nameAudit));
-
+  
     const aiPhone = this.sanitizePhone(input.aiExtracted?.telephone || '');
     const regexPhone = this.sanitizePhone(input.regexExtracted.telephone || '');
     const phoneAudit = this.pickBestCandidate({
