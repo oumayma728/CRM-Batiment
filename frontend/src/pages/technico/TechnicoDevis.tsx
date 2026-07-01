@@ -152,6 +152,7 @@ export default function TechnicoDevis() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const [showCreate, setShowCreate] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [pendingDevisId, setPendingDevisId] = useState<number | null>(null);
@@ -302,6 +303,16 @@ export default function TechnicoDevis() {
   });
 
   const devisList: Devis[] = data?.data ?? [];
+  const sortedDevisList = [...devisList].sort((a, b) => {
+    if (sortBy === 'amount') return (b.totalTTC ?? 0) - (a.totalTTC ?? 0);
+    if (sortBy === 'reference') return (a.reference ?? '').localeCompare(b.reference ?? '');
+    if (sortBy === 'client') {
+      const clientA = a.client ? `${a.client.nom} ${a.client.prenom ?? ''}` : '';
+      const clientB = b.client ? `${b.client.nom} ${b.client.prenom ?? ''}` : '';
+      return clientA.localeCompare(clientB);
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const meta = data?.meta ?? { total: 0, page: 1, totalPages: 1 };
   const allStatuts: DevisStatut[] = ['BROUILLON', 'ENVOYE', 'ACCEPTE', 'REFUSE', 'REVISE', 'RENVOYE', 'SIGNE'];
   const listErrorText = isError
@@ -487,23 +498,36 @@ export default function TechnicoDevis() {
         })}
       </div>
 
-      <div className="flex max-w-md items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
-        <Search size={18} className="text-slate-400" />
-        <input
-          type="text"
-          placeholder="Rechercher par reference..."
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setPage(1);
-          }}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-slate-300 transition hover:text-slate-500">
-            <X size={16} />
-          </button>
-        )}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex max-w-md flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
+          <Search size={18} className="text-slate-400" />
+          <input
+            type="text"
+            placeholder="Rechercher par reference..."
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-slate-300 transition hover:text-slate-500">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-sm outline-none"
+          aria-label="Trier les devis"
+        >
+          <option value="recent">Tri: plus recent</option>
+          <option value="amount">Tri: montant decroissant</option>
+          <option value="reference">Tri: reference A-Z</option>
+          <option value="client">Tri: client A-Z</option>
+        </select>
       </div>
 
       {isLoading ? (
@@ -524,7 +548,7 @@ export default function TechnicoDevis() {
         </div>
       ) : (
         <div className="space-y-3">
-          {devisList.map((devis) => {
+          {sortedDevisList.map((devis) => {
             const config = statutConfig[devis.statut] ?? statutConfig.BROUILLON;
             const actions = statutActions[devis.statut] ?? [];
             const clientName = devis.client
@@ -858,4 +882,3 @@ function MenuAction({
     </button>
   );
 }
-

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Bot,
   Building2,
@@ -83,6 +84,7 @@ interface QuickSuggestion {
   label: string;
   message: string;
   icon: React.ReactNode;
+  actionPath?: string;
 }
 
 /* ============================================================
@@ -103,10 +105,12 @@ const internalSuggestionsByRole: Record<string, QuickSuggestion[]> = {
     { label: 'Voir les chantiers', message: 'Montre-moi l\'état de mes chantiers en cours', icon: <HardHat size={12} /> },
   ],
   TECHNICO: [
-    { label: 'Mes devis', message: 'Quels sont mes devis en attente ?', icon: <FileText size={12} /> },
-    { label: 'Nouveau client', message: 'Je veux ajouter un nouveau client', icon: <Users size={12} /> },
-    { label: 'Catalogue prix', message: 'Montre-moi le catalogue des prestations', icon: <Search size={12} /> },
-    { label: 'Aide rapide', message: 'Comment fonctionne le processus de devis ?', icon: <Zap size={12} /> },
+    { label: 'Mes devis', message: 'Ouvre mes devis', icon: <FileText size={12} />, actionPath: '/technico/devis' },
+    { label: 'Nouveau client', message: 'Ouvre mes clients pour ajouter un client', icon: <Users size={12} />, actionPath: '/technico/clients' },
+    { label: 'Creer devis', message: 'Ouvre la checklist pour creer un devis', icon: <Zap size={12} />, actionPath: '/technico/checklist' },
+    { label: 'Catalogue prix', message: 'Ouvre le catalogue des prestations', icon: <Search size={12} />, actionPath: '/technico/catalogue' },
+    { label: 'Factures', message: 'Ouvre mes factures', icon: <BarChart3 size={12} />, actionPath: '/technico/factures' },
+    { label: 'Prospects IA', message: 'Ouvre les prospects de l assistant IA', icon: <Bot size={12} />, actionPath: '/technico/assistant-ia' },
   ],
   ASSISTANTE: [
     { label: 'Demandes en cours', message: 'Quelles sont les demandes de devis en cours ?', icon: <FileText size={12} /> },
@@ -148,12 +152,79 @@ function getApiErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+const technicoLocalActions = [
+  {
+    path: '/technico',
+    label: 'Tableau de bord technico',
+    keywords: ['dashboard', 'tableau', 'accueil', 'statistique', 'stats'],
+  },
+  {
+    path: '/technico/clients',
+    label: 'Mes clients',
+    keywords: ['client', 'clients', 'prospect', 'contact', 'ajouter client', 'nouveau client'],
+  },
+  {
+    path: '/technico/demandes',
+    label: 'Demandes devis',
+    keywords: ['demande', 'demandes', 'message client', 'messages client', 'devis recu'],
+  },
+  {
+    path: '/technico/devis',
+    label: 'Mes devis',
+    keywords: ['devis', 'offre', 'signature devis', 'mes devis'],
+  },
+  {
+    path: '/technico/checklist',
+    label: 'Checklist devis',
+    keywords: ['creer devis', 'generer devis', 'checklist', 'diagnostic', 'nouveau devis'],
+  },
+  {
+    path: '/technico/factures',
+    label: 'Mes factures',
+    keywords: ['facture', 'factures', 'impaye', 'impayee', 'paiement'],
+  },
+  {
+    path: '/technico/commandes-fournisseur',
+    label: 'Commandes fournisseur',
+    keywords: ['commande', 'commandes', 'fournisseur', 'reception', 'achat'],
+  },
+  {
+    path: '/technico/assistant-ia',
+    label: 'Assistant IA prospects',
+    keywords: ['assistant ia', 'prospect ia', 'chatbot', 'prospects chatbot'],
+  },
+  {
+    path: '/technico/prestations',
+    label: 'Prestations',
+    keywords: ['prestation', 'prestations', 'catalogue prestation'],
+  },
+  {
+    path: '/technico/catalogue',
+    label: 'Catalogue expert',
+    keywords: ['catalogue', 'prix', 'materiaux', 'prestations prix'],
+  },
+  {
+    path: '/technico/profil',
+    label: 'Mon profil',
+    keywords: ['profil', 'signature', 'mot de passe', 'compte'],
+  },
+];
+
+function normalizeCommand(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 /* ============================================================
    COMPONENT
    ============================================================ */
 
 export default function ChatbotWidget() {
   const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   /* ---------- State ---------- */
   const [isOpen, setIsOpen] = useState(false);
@@ -181,6 +252,7 @@ export default function ChatbotWidget() {
   const userInitials = user
     ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase() || 'U'
     : 'V';
+  const isTechnicoScope = isInternal && user?.role === 'TECHNICO' && location.pathname.startsWith('/technico');
 
   /* ---------- Auto-scroll ---------- */
   useEffect(() => {
@@ -248,6 +320,11 @@ export default function ChatbotWidget() {
     };
     setMessages((prev) => [...prev, userMsg]);
 
+    if (tryHandleLocalAction(userMessage)) {
+      setIsSending(false);
+      return;
+    }
+
     try {
       const res = await api.post<AssistantApiResult>(
         `/assistant/session/${sessionId}/message`,
@@ -275,6 +352,12 @@ export default function ChatbotWidget() {
   }
 
   function handleSuggestionClick(suggestion: QuickSuggestion) {
+    if (suggestion.actionPath) {
+      setShowSuggestions(false);
+      runLocalNavigation(suggestion.actionPath, suggestion.label, suggestion.message);
+      return;
+    }
+
     setInput(suggestion.message);
     setShowSuggestions(false);
 
@@ -363,6 +446,60 @@ export default function ChatbotWidget() {
       .finally(() => {
         setIsSending(false);
       });
+  }
+
+  function runLocalNavigation(path: string, label: string, userContent?: string) {
+    const userMsg: ChatMessage | null = userContent
+      ? {
+          id: generateMsgId(),
+          role: 'USER',
+          content: userContent,
+          timestamp: new Date(),
+        }
+      : null;
+
+    const assistantMsg: ChatMessage = {
+      id: generateMsgId(),
+      role: 'ASSISTANT',
+      content: `J'ouvre "${label}". Vous pouvez continuer votre tache depuis cette page.`,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, ...(userMsg ? [userMsg] : []), assistantMsg]);
+    navigate(path);
+  }
+
+  function tryHandleLocalAction(command: string) {
+    if (!isTechnicoScope) return false;
+
+    const cleanCommand = normalizeCommand(command);
+    const wantsAction = [
+      'ouvrir',
+      'aller',
+      'afficher',
+      'voir',
+      'lancer',
+      'creer',
+      'generer',
+      'ajouter',
+    ].some((verb) => cleanCommand.includes(verb));
+
+    const action = technicoLocalActions.find((item) =>
+      item.keywords.some((keyword) => cleanCommand.includes(normalizeCommand(keyword))),
+    );
+
+    if (!action || !wantsAction) return false;
+
+    const assistantMsg: ChatMessage = {
+      id: generateMsgId(),
+      role: 'ASSISTANT',
+      content: `C'est fait, j'ouvre "${action.label}".`,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMsg]);
+    navigate(action.path);
+    return true;
   }
 
   async function handleOpen() {

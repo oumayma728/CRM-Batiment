@@ -34,7 +34,7 @@ export class CreateUserDto {
   })
   @IsEnum(Role, {
     message:
-      'Le rôle doit être valide (ADMIN, TECHNICO, ASSISTANTE, CHEF_CHANTIER, SOUS_TRAITANT)',
+      'Le rôle doit être valide (ADMIN, TECHNICO, ASSISTANTE, CHEF_CHANTIER, SOUS_TRAITANT, CLIENT)',
   })
   @IsNotEmpty({ message: 'Le rôle est obligatoire' })
   role: Role;

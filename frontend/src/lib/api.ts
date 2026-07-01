@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { authManager } from './auth';
+import { createDemoApiResponse } from './demoApi';
+import { isDemoToken } from './demoMode';
 
-export const API_BASE_URL = 'http://localhost:3000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,38 +11,35 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// Intercepteur pour ajouter le token automatiquement
 api.interceptors.request.use((config) => {
   const token = authManager.getToken();
-  
+  const url = config.url ?? '';
+  const isAuthEndpoint =
+    url === '/auth/login' ||
+    url === '/auth/change-password' ||
+    url.startsWith('/auth/login?') ||
+    url.startsWith('/auth/change-password?');
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('✅ Token ajouté à la requête:', config.url);
-  } else {
-    console.warn('⚠️ Pas de token pour:', config.url);
   }
-  
+
+  if (isDemoToken(token) && !isAuthEndpoint) {
+    config.adapter = createDemoApiResponse;
+  }
+
   return config;
 });
 
-// Intercepteur pour gérer les erreurs
 api.interceptors.response.use(
-  (response) => {
-    console.log('✅ Succès:', response.config.url, response.status);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      console.error('🔒 Erreur 401 - Non autorisé');
-      
-      // Ne pas rediriger en boucle
-      if (!window.location.pathname.includes('/login')) {
-        authManager.logout();
-      }
+    if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+      authManager.logout();
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

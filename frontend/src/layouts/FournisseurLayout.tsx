@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import WorkAssistant from '@/components/WorkAssistant';
+import DemoModeBanner from '@/components/DemoModeBanner';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { cn } from '@/lib/utils';
 
@@ -170,6 +171,8 @@ export default function FournisseurLayout() {
             </div>
           </div>
         </header>
+
+        <DemoModeBanner />
 
         <div className="app-content px-4 py-5 lg:px-8 lg:py-8">
           <Outlet />

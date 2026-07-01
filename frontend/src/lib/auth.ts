@@ -1,5 +1,12 @@
 // src/lib/auth.ts
-const SESSION_KEY = 'baticrm_session';
+import {
+  DEMO_TOKEN,
+  SESSION_KEY,
+  demoUser,
+  demoUsersByRole,
+  isDemoToken,
+} from '@/lib/demoMode';
+import type { Role } from '@/types';
 
 interface User {
   id: number;
@@ -128,6 +135,19 @@ class AuthManager {
     // Déclencher un événement pour notifier les composants
     window.dispatchEvent(new Event('auth-change'));
   }
+
+  startDemoSession(role: Role = 'ADMIN'): void {
+    const user = demoUsersByRole[role] ?? demoUser;
+    this.setSession(DEMO_TOKEN, user);
+
+    const stored = sessionStorage.getItem(SESSION_KEY);
+    if (stored) {
+      sessionStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({ ...JSON.parse(stored), demo: true, readonly: true }),
+      );
+    }
+  }
   
   // Récupérer le token
   getToken(): string | null {
@@ -147,6 +167,10 @@ class AuthManager {
     
     console.log('🔍 Vérification auth - Token:', hasToken, '- User:', hasUser, '- Valide:', isValid);
     return isValid;
+  }
+
+  isDemo(): boolean {
+    return isDemoToken(this.session?.token);
   }
   
   // Déconnexion

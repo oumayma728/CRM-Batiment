@@ -19,6 +19,8 @@ import {
 } from '@nestjs/swagger';
 import { ClientsService } from './clients.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
+import { CreateClientAccountDto } from './dto/create-client-account.dto.js';
+import { CreateClientPortalDemandeDto } from './dto/create-client-portal-demande.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 import { QueryClientDto } from './dto/query-client.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -55,6 +57,22 @@ export class ClientsController {
     return this.clientsService.create(dto, user);
   }
 
+  @Post('account')
+  @Roles(Role.ADMIN, Role.ASSISTANTE)
+  @ApiOperation({
+    summary: 'Creer une fiche client et un compte utilisateur client',
+    description:
+      'Cree une fiche client et un utilisateur avec le role CLIENT automatiquement.',
+  })
+  @ApiResponse({ status: 201, description: 'Client et compte crees' })
+  @ApiResponse({ status: 409, description: 'Email deja utilise' })
+  async createClientAccount(
+    @Body() dto: CreateClientAccountDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.clientsService.createClientAccount(dto, user);
+  }
+
   // ──────────────────────────────────────────────
   // GET /api/clients — Liste paginée + recherche
   // ──────────────────────────────────────────────
@@ -76,6 +94,29 @@ export class ClientsController {
   // ──────────────────────────────────────────────
   // GET /api/clients/:id — Détail d'un client
   // ──────────────────────────────────────────────
+
+  @Get('me/portal')
+  @Roles(Role.CLIENT)
+  @ApiOperation({
+    summary: 'Espace client connecte',
+    description:
+      'Retourne le profil client, ses demandes de devis, ses chantiers et ses factures.',
+  })
+  async getMyClientPortal(@CurrentUser() user: CurrentUserPayload) {
+    return this.clientsService.getClientPortal(user);
+  }
+
+  @Post('me/demandes-devis')
+  @Roles(Role.CLIENT)
+  @ApiOperation({
+    summary: 'Creer une demande de devis depuis l espace client',
+  })
+  async createMyDemandeDevis(
+    @Body() dto: CreateClientPortalDemandeDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.clientsService.createClientPortalDemande(dto, user);
+  }
 
   @Get(':id')
   @ApiOperation({ summary: "Détail d'un client" })
@@ -125,5 +166,23 @@ export class ClientsController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.clientsService.remove(id, user);
+  }
+}
+
+@ApiTags('Clients Public')
+@Controller('clients')
+export class ClientsPublicController {
+  constructor(private readonly clientsService: ClientsService) {}
+
+  @Post('public-account')
+  @ApiOperation({
+    summary: 'Inscription publique client',
+    description:
+      'Cree une fiche client et un utilisateur avec le role CLIENT sans connexion prealable.',
+  })
+  @ApiResponse({ status: 201, description: 'Client et compte crees' })
+  @ApiResponse({ status: 409, description: 'Email deja utilise' })
+  async createPublicClientAccount(@Body() dto: CreateClientAccountDto) {
+    return this.clientsService.createPublicClientAccount(dto);
   }
 }

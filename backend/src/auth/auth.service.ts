@@ -48,9 +48,11 @@ export class AuthService {
   // ──────────────────────────────────────────────
 
   async createUser(dto: CreateUserDto, admin: CurrentUserPayload) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
     // Vérifier que l'email n'existe pas déjà
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const existing = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
     });
     if (existing) {
       throw new ConflictException('Un utilisateur avec cet email existe déjà');
@@ -65,7 +67,7 @@ export class AuthService {
     // Créer le compte dans la base
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         nom: dto.nom,
         prenom: dto.prenom,
         role: dto.role,
@@ -91,7 +93,7 @@ export class AuthService {
 
     // Envoyer l'email avec le mot de passe temporaire
     await this.mailService.sendTemporaryPassword(
-      dto.email,
+      normalizedEmail,
       dto.nom,
       dto.prenom,
       tempPassword,
@@ -124,7 +126,7 @@ export class AuthService {
     
     const user = await this.prisma.user.findFirst({
       where: {
-        email: normalizedEmail,
+        email: { equals: normalizedEmail, mode: 'insensitive' },
         companyId: admin.companyId,
       },
       select: {
@@ -191,11 +193,15 @@ export class AuthService {
   // Étape 2 & 4 : Login (premier login ou normal)
   // ──────────────────────────────────────────────
 
+  private normalizePhoneForPassword(value: string | null | undefined) {
+    return (value ?? '').replace(/\D/g, '');
+  }
+
   async login(dto: LoginDto) {
     const normalizedEmail = dto.email.trim().toLowerCase();
     // Rechercher l'utilisateur
-    const user = await this.prisma.user.findUnique({
-      where: { email: normalizedEmail },
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
     });
 
     if (!user) {
@@ -211,12 +217,18 @@ export class AuthService {
 
     // Vérifier le mot de passe
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) {
+    const isClientPhonePasswordValid =
+      user.role === 'CLIENT' &&
+      this.normalizePhoneForPassword(dto.password) !== '' &&
+      this.normalizePhoneForPassword(dto.password) ===
+        this.normalizePhoneForPassword(user.telephone);
+
+    if (!isPasswordValid && !isClientPhonePasswordValid) {
       throw new UnauthorizedException('Email ou mot de passe incorrect');
     }
 
     // Si mustChangePassword = true → premier login
-    if (user.mustChangePassword) {
+    if (user.mustChangePassword && !isClientPhonePasswordValid) {
       // Générer un token temporaire limité au changement de mot de passe
       const tempPayload: JwtPayload = {
         sub: user.id,

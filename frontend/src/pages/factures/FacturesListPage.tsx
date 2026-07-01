@@ -34,6 +34,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const [pageDevis, setPageDevis] = useState(1);
   const [pageFactures, setPageFactures] = useState(1);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
@@ -99,10 +100,18 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     },
   });
 
-  const devisData = devisSourcesQuery.data?.data ?? [];
+  const devisData = [...(devisSourcesQuery.data?.data ?? [])].sort((a, b) => {
+    if (sortBy === 'amount') return (b.totalTTC ?? 0) - (a.totalTTC ?? 0);
+    if (sortBy === 'client') return getClientLabel(a).localeCompare(getClientLabel(b));
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const devisMeta = devisSourcesQuery.data?.meta;
 
-  const facturesData = facturesQuery.data?.data ?? [];
+  const facturesData = [...(facturesQuery.data?.data ?? [])].sort((a, b) => {
+    if (sortBy === 'amount') return (b.montantTTC ?? 0) - (a.montantTTC ?? 0);
+    if (sortBy === 'reference') return a.reference.localeCompare(b.reference);
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
   const facturesMeta = facturesQuery.data?.meta;
 
   return (
@@ -118,18 +127,31 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
           </p>
         </div>
 
-        <div className="relative w-full sm:w-96">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPageDevis(1);
-              setPageFactures(1);
-            }}
-            placeholder="Rechercher devis, facture ou client"
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-          />
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <div className="relative w-full sm:w-96">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPageDevis(1);
+                setPageFactures(1);
+              }}
+              placeholder="Rechercher devis, facture ou client"
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+            />
+          </div>
+          <select
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-sm outline-none"
+            aria-label="Trier les factures"
+          >
+            <option value="recent">Tri: plus recent</option>
+            <option value="amount">Tri: montant decroissant</option>
+            <option value="reference">Tri: reference A-Z</option>
+            <option value="client">Tri: client A-Z</option>
+          </select>
         </div>
       </div>
 

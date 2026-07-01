@@ -2,7 +2,7 @@
 // Types partagés — CRM Bâtiment
 // ============================
 
-export type Role = 'ADMIN' | 'TECHNICO' | 'ASSISTANTE' | 'CHEF_CHANTIER' | 'SOUS_TRAITANT';
+export type Role = 'ADMIN' | 'TECHNICO' | 'ASSISTANTE' | 'CHEF_CHANTIER' | 'SOUS_TRAITANT' | 'CLIENT';
 
 export interface User {
   id: number;

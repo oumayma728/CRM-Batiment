@@ -12,6 +12,7 @@ const defaultRouteByRole: Record<Role, string> = {
   ASSISTANTE: '/admin',
   CHEF_CHANTIER: '/admin',
   SOUS_TRAITANT: '/fournisseur',
+  CLIENT: '/profile',
 };
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {

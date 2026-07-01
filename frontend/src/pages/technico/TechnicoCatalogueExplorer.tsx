@@ -69,6 +69,7 @@ type DeletableEntity = {
 export default function TechnicoCatalogueExplorer() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
   const [currentCatId, setCurrentCatId] = useState<number | null>(null);
   const [currentScId, setCurrentScId] = useState<number | null>(null);
   const [currentPrestId, setCurrentPrestId] = useState<number | null>(null);
@@ -330,10 +331,10 @@ export default function TechnicoCatalogueExplorer() {
 
   // ───── Search filter (global — categories level only) ─────
   const filteredCatalogue = useMemo(() => {
-    if (!catalogue || !search) return catalogue ?? [];
+    if (!catalogue) return [];
     const lc = search.toLowerCase();
-    return catalogue
-      .map((cat) => {
+    const baseCatalogue = search
+      ? catalogue.map((cat) => {
         const filteredSubs =
           cat.sousCategories
             ?.map((sc) => {
@@ -350,8 +351,21 @@ export default function TechnicoCatalogueExplorer() {
             .filter((sc) => sc.prestations.length > 0) ?? [];
         return { ...cat, sousCategories: filteredSubs };
       })
-      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0);
-  }, [catalogue, search]);
+      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0)
+      : [...catalogue];
+
+    return baseCatalogue
+      .sort((a, b) => {
+        const countA =
+          (a.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (a.prestations?.length ?? 0);
+        const countB =
+          (b.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (b.prestations?.length ?? 0);
+        if (sortBy === 'count') return countB - countA;
+        return a.nom.localeCompare(b.nom);
+      });
+  }, [catalogue, search, sortBy]);
 
   // ───── Stats ─────
   const stats = useMemo(() => {

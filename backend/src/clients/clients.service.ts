@@ -1,16 +1,27 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
+  Logger,
 } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateClientDto } from './dto/create-client.dto.js';
+import { CreateClientAccountDto } from './dto/create-client-account.dto.js';
+import { CreateClientPortalDemandeDto } from './dto/create-client-portal-demande.dto.js';
 import { UpdateClientDto } from './dto/update-client.dto.js';
 import { QueryClientDto } from './dto/query-client.dto.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
+import { LeadSource, Prisma, Role } from '../../generated/prisma/client.js';
+
+const BCRYPT_ROUNDS = 12;
 
 @Injectable()
 export class ClientsService {
+  private readonly logger = new Logger(ClientsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   private readonly typeProjetInclude = {
@@ -158,6 +169,316 @@ export class ClientsService {
     });
 
     return this.serializeClient(client);
+  }
+
+  async createClientAccount(
+    dto: CreateClientAccountDto,
+    currentUser: CurrentUserPayload,
+  ) {
+    return this.createClientAccountForCompany(
+      dto,
+      currentUser.companyId,
+      `utilisateur #${currentUser.userId}`,
+    );
+  }
+
+  async createPublicClientAccount(dto: CreateClientAccountDto) {
+    const company = await this.prisma.company.findFirst({
+      orderBy: { id: 'asc' },
+      select: { id: true },
+    });
+
+    if (!company) {
+      throw new NotFoundException('Aucune entreprise configuree');
+    }
+
+    return this.createClientAccountForCompany(
+      dto,
+      company.id,
+      'inscription publique',
+    );
+  }
+
+  private async createClientAccountForCompany(
+    dto: CreateClientAccountDto,
+    companyId: number,
+    actorLabel: string,
+  ) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Un utilisateur avec cet email existe deja');
+    }
+
+    const clientPassword = dto.telephone.trim();
+    const hashedPassword = await bcrypt.hash(clientPassword, BCRYPT_ROUNDS);
+
+    const result = (await this.createClientAndUserAccount(
+      dto,
+      companyId,
+      normalizedEmail,
+      hashedPassword,
+    )) as {
+      client: Record<string, unknown>;
+      user: {
+        id: number;
+        email: string;
+        nom: string;
+        prenom: string;
+        role: Role;
+        telephone: string | null;
+        actif: boolean;
+        mustChangePassword: boolean;
+        companyId: number;
+        createdAt: Date;
+      };
+    };
+
+    this.logger.log(
+      `Compte client cree : ${result.user.email} par ${actorLabel}`,
+    );
+
+    return {
+      message:
+        'Client cree avec succes avec le role CLIENT. Le numero de telephone est son mot de passe.',
+      ...result,
+    };
+  }
+
+  private async createClientAndUserAccount(
+    dto: CreateClientAccountDto,
+    companyId: number,
+    normalizedEmail: string,
+    hashedPassword: string,
+  ) {
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const client = await tx.client.create({
+          data: {
+            companyId,
+            nom: dto.nom.trim(),
+            prenom: dto.prenom.trim(),
+            telephone: dto.telephone.trim(),
+            email: normalizedEmail,
+            adresseClient: dto.adresseClient.trim(),
+            source: 'SITE_WEB',
+          },
+          include: this.buildClientInclude(),
+        });
+
+        const user = await tx.user.create({
+          data: {
+            companyId,
+            nom: dto.nom.trim(),
+            prenom: dto.prenom.trim(),
+            telephone: dto.telephone.trim(),
+            email: normalizedEmail,
+            role: Role.CLIENT,
+            password: hashedPassword,
+            mustChangePassword: false,
+            actif: true,
+          },
+          select: {
+            id: true,
+            email: true,
+            nom: true,
+            prenom: true,
+            role: true,
+            telephone: true,
+            actif: true,
+            mustChangePassword: true,
+            companyId: true,
+            createdAt: true,
+          },
+        });
+
+        return {
+          client: this.serializeClient(client),
+          user,
+        };
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('Un utilisateur avec cet email existe deja');
+      }
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        ['P2021', 'P2022'].includes(error.code)
+      ) {
+        throw new BadRequestException(
+          'Base de donnees incomplete. Lancez les migrations Prisma avant de creer un compte client.',
+        );
+      }
+
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2010' &&
+        String(error.meta?.message ?? '').includes('InvalidInputValue')
+      ) {
+        throw new BadRequestException(
+          "Base de donnees incomplete: le role CLIENT n'existe pas encore. Appliquez la migration add_client_role.",
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  private async getClientForUser(currentUser: CurrentUserPayload) {
+    const client = await this.prisma.client.findFirst({
+      where: {
+        companyId: currentUser.companyId,
+        email: { equals: currentUser.email, mode: 'insensitive' },
+      },
+      include: this.buildClientInclude(),
+    });
+
+    if (!client) {
+      throw new NotFoundException(
+        'Aucune fiche client associee a ce compte utilisateur.',
+      );
+    }
+
+    return client;
+  }
+
+  async getClientPortal(currentUser: CurrentUserPayload) {
+    const client = await this.getClientForUser(currentUser);
+    const clientId = client.id;
+    const companyId = currentUser.companyId;
+
+    const [demandes, chantiers, factures] = await Promise.all([
+      this.prisma.demandeDevis.findMany({
+        where: { companyId, clientId },
+        orderBy: { date: 'desc' },
+        take: 8,
+        include: {
+          devis: {
+            select: {
+              id: true,
+              reference: true,
+              statut: true,
+              totalTTC: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      }),
+      this.prisma.chantier.findMany({
+        where: { companyId, clientId },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        include: {
+          chefChantier: {
+            select: { id: true, nom: true, prenom: true, email: true },
+          },
+          taches: {
+            select: {
+              id: true,
+              libelle: true,
+              statut: true,
+              avancement: true,
+              dateDebut: true,
+              dateFin: true,
+            },
+            orderBy: { ordre: 'asc' },
+          },
+          devis: {
+            select: {
+              id: true,
+              reference: true,
+              statut: true,
+              totalTTC: true,
+            },
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      }),
+      this.prisma.facture.findMany({
+        where: {
+          devis: {
+            is: {
+              companyId,
+              clientId,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        include: {
+          lignes: {
+            orderBy: { ordre: 'asc' },
+          },
+          devis: {
+            select: {
+              id: true,
+              reference: true,
+              statut: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      client: this.serializeClient(client),
+      demandes,
+      chantiers,
+      factures,
+      stats: {
+        demandes: demandes.length,
+        chantiers: chantiers.length,
+        factures: factures.length,
+        facturesImpayees: factures.filter((facture) => facture.statut !== 'PAYEE')
+          .length,
+      },
+    };
+  }
+
+  async createClientPortalDemande(
+    dto: CreateClientPortalDemandeDto,
+    currentUser: CurrentUserPayload,
+  ) {
+    const client = await this.getClientForUser(currentUser);
+
+    const demande = await this.prisma.demandeDevis.create({
+      data: {
+        companyId: currentUser.companyId,
+        clientId: client.id,
+        createurId: currentUser.userId,
+        description: dto.description.trim(),
+        source: LeadSource.SITE_WEB,
+      },
+      include: {
+        client: {
+          select: { id: true, nom: true, prenom: true, email: true, telephone: true },
+        },
+        devis: {
+          select: {
+            id: true,
+            reference: true,
+            statut: true,
+            totalTTC: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return {
+      message: 'Votre demande de devis a ete creee avec succes.',
+      demande,
+    };
   }
 
   /**

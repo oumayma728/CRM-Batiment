@@ -77,6 +77,7 @@ const inputClass =
   'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 transition placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500';
 
 const labelClass = 'text-sm font-medium text-gray-700 dark:text-gray-300';
+const phonePattern = String.raw`(?:[0-9]|\+|\(|\)| |\.|-){6,20}`;
 
 const buildPayload = (form: ClientForm) =>
   Object.fromEntries(
@@ -330,7 +331,7 @@ export default function ClientsPage() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => setDarkMode((current) => !current)}
+            onClick={() => setDarkMode((current: boolean) => !current)}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
           >
@@ -576,7 +577,7 @@ export default function ClientsPage() {
                     value={form.telephone}
                     onChange={(e) => updateForm('telephone', e.target.value)}
                     maxLength={20}
-                    pattern="[+()0-9 .-]{6,20}"
+                    pattern={phonePattern}
                     placeholder="+216 00 000 000"
                     className={inputClass}
                   />

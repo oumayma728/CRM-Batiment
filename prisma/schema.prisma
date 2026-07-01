@@ -772,6 +772,7 @@ enum Role {
   ASSISTANTE
   CHEF_CHANTIER
   SOUS_TRAITANT
+  CLIENT
 }
 
 enum LeadSource {

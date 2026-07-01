@@ -14,8 +14,10 @@ import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
 import DashboardPage from '@/pages/DashboardPage';
 import ChantiersPage from '@/pages/ChantiersPage';
 import ClientsPage from '@/pages/ClientsPage';
+import CreateClientAccountPage from '@/pages/CreateClientAccountPage';
 import CommandesFournisseurPage from '@/pages/CommandesFournisseurPage';
 import ChefDashboardPage from '@/pages/chef/ChefDashboardPage';
+import ChefProfilePage from '@/pages/chef/ChefProfilePage';
 import DemandesDevisPage from '@/pages/DemandesDevisPage';
 import DevisPage from '@/pages/DevisPage';
 import FacturesPage from '@/pages/FacturesPage';
@@ -60,6 +62,10 @@ function RoleRouter() {
 
   if (user?.role === 'SOUS_TRAITANT') {
     return <Navigate to="/fournisseur" replace />;
+  }
+
+  if (user?.role === 'CLIENT') {
+    return <Navigate to="/profile" replace />;
   }
 
   return <Navigate to="/admin" replace />;
@@ -121,6 +127,10 @@ export default function App() {
           path="/login"
           element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
         />
+        <Route
+          path="/creer-compte"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <CreateClientAccountPage />}
+        />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
@@ -139,6 +149,7 @@ export default function App() {
               <Route index element={<AdminDashboardRouter />} />
               <Route path="chantiers" element={<ChantiersPage />} />
               <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="profil" element={<ChefProfilePage />} />
 
               <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'CHEF_CHANTIER']} />}>
                 <Route path="taches-chantier" element={<TasksChantierPage />} />
@@ -146,6 +157,7 @@ export default function App() {
 
               <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE']} />}>
                 <Route path="clients" element={<ClientsPage />} />
+                <Route path="creation-client" element={<CreateClientAccountPage />} />
                 <Route path="demandes-devis" element={<DemandesDevisPage />} />
                 <Route path="devis" element={<DevisPage />} />
                 <Route path="factures" element={<FacturesPage />} />

@@ -372,30 +372,34 @@ export default function CommandesFournisseurPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[30px] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_26%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_48%,#eff6ff_100%)] p-6 shadow-sm ring-1 ring-stone-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Reception chantier</p>
-        <div className="mt-2 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Bons d achat fournisseur et receptions materiaux</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Toutes les commandes fournisseur generees automatiquement depuis les devis valides apparaissent ici. L admin ou le chef de chantier peut ajuster, valider, puis envoyer automatiquement aux fournisseurs.
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_52%,#eff6ff_100%)] p-5 lg:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Reception chantier</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">
+              Bons d achat fournisseur et receptions materiaux
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              Controlez les commandes issues des devis valides, confirmez les envois et saisissez
+              les quantites recues sur chantier avec un suivi par fournisseur.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3 lg:w-[420px]">
+
+          <div className="grid grid-cols-2 gap-3 border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className="rounded-3xl bg-white/85 p-4 ring-1 ring-stone-200">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white">
+              <div key={kpi.label} className="rounded-lg border border-white/10 bg-white/10 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
                   {kpi.icon}
                 </div>
-                <p className="text-2xl font-bold text-slate-900">{kpi.value}</p>
-                <p className="text-sm text-slate-500">{kpi.label}</p>
+                <p className="text-2xl font-bold text-white">{kpi.value}</p>
+                <p className="text-sm text-slate-300">{kpi.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-stone-200">
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-xl flex-1">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -404,7 +408,7 @@ export default function CommandesFournisseurPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher par chantier, devis, fournisseur ou client"
-              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -413,8 +417,8 @@ export default function CommandesFournisseurPage() {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition-all',
-                  statusFilter === status ? 'bg-emerald-700 text-white' : 'bg-stone-100 text-slate-600 hover:bg-stone-200',
+                  'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                  statusFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                 )}
               >
                 {status === 'ALL' ? 'Tous' : statusMeta[status].label}
@@ -425,16 +429,16 @@ export default function CommandesFournisseurPage() {
       </section>
 
       {queryError ? (
-        <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700">
+        <section className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
           {getApiErrorMessage(queryError, 'Impossible de charger les commandes fournisseur.')}
         </section>
       ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Par chantier</h2>
+              <h2 className="text-lg font-bold text-slate-950">Par chantier</h2>
               <p className="text-sm text-slate-500">{ordersQuery.data?.meta.total ?? 0} bon(s) d achat</p>
             </div>
             {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-emerald-700" /> : null}
@@ -443,15 +447,15 @@ export default function CommandesFournisseurPage() {
           <div className="space-y-4">
             {ordersQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-32 animate-pulse rounded-3xl bg-stone-100" />
+                <div key={index} className="h-32 animate-pulse rounded-lg bg-slate-100" />
               ))
             ) : groupedOrders.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-5 py-12 text-center text-sm text-slate-500">
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-12 text-center text-sm text-slate-500">
                 Aucune commande fournisseur a afficher.
               </div>
             ) : (
               groupedOrders.map((group) => (
-                <div key={group.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
+                <div key={group.key} className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
                   <div className="mb-3">
                     <p className="text-sm font-semibold text-slate-900">{group.chantierRef}</p>
                     <p className="text-sm text-slate-500">{group.chantierAdresse}</p>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
@@ -9,9 +9,11 @@ import {
   Loader2,
   Mail,
   Phone,
+  Search,
   Sparkles,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react';
 
 interface ProspectItem {
@@ -88,6 +90,8 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 
 export default function TechnicoAssistantIA() {
   const queryClient = useQueryClient();
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
 
   const prospectsQuery = useQuery({
     queryKey: ['technico-assistant-prospects'],
@@ -129,6 +133,36 @@ export default function TechnicoAssistantIA() {
 
   const prospects = prospectsQuery.data?.items ?? [];
   const futureProjects = futureProjectsQuery.data?.items ?? [];
+  const cleanSearch = search.trim().toLowerCase();
+  const visibleProspects = prospects
+    .filter((item) => {
+      if (!cleanSearch) return true;
+      return [
+        item.nom,
+        item.prenom,
+        item.email,
+        item.telephone,
+        item.besoin,
+        item.notes,
+        item.typeProjet?.nom,
+      ].some((value) => value?.toLowerCase().includes(cleanSearch));
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return `${a.nom} ${a.prenom ?? ''}`.localeCompare(`${b.nom} ${b.prenom ?? ''}`);
+      if (sortBy === 'project') return (a.typeProjet?.nom ?? '').localeCompare(b.typeProjet?.nom ?? '');
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  const visibleFutureProjects = futureProjects
+    .filter((item) => {
+      if (!cleanSearch) return true;
+      return [item.label, item.suggestedType, item.latestDescription, item.latestProspect.nom]
+        .some((value) => value?.toLowerCase().includes(cleanSearch));
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') return a.label.localeCompare(b.label);
+      if (sortBy === 'frequency') return b.frequence - a.frequence;
+      return new Date(b.lastDetectedAt).getTime() - new Date(a.lastDetectedAt).getTime();
+    });
 
   const pendingCount = useMemo(
     () => prospects.filter((item) => !item.latestDemandeDevis).length,
@@ -160,6 +194,35 @@ export default function TechnicoAssistantIA() {
         <MetricCard label="Prospects chatbot" value={prospects.length} />
         <MetricCard label="A qualifier" value={pendingCount} />
         <MetricCard label="Projets non classes" value={futureProjects.length} />
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
+          <Search size={17} className="text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher prospect, besoin ou projet..."
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 outline-none"
+          aria-label="Trier l assistant IA"
+        >
+          <option value="recent">Tri: plus recent</option>
+          <option value="name">Tri: nom A-Z</option>
+          <option value="project">Tri: type projet</option>
+          <option value="frequency">Tri: frequence projet</option>
+        </select>
       </div>
 
       {queryErrorMessage && (
@@ -199,13 +262,13 @@ export default function TechnicoAssistantIA() {
       <section className="space-y-3">
         <h3 className="text-base font-bold text-gray-900">Prospects chatbot</h3>
 
-        {prospects.length === 0 ? (
+        {visibleProspects.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
             Aucun prospect chatbot a gerer pour le moment.
           </div>
         ) : (
           <div className="space-y-3">
-            {prospects.map((prospect) => {
+            {visibleProspects.map((prospect) => {
               const hasTypeProjet = Boolean(prospect.typeProjet?.id);
               const disableActions =
                 qualifyMutation.isPending ||
@@ -323,13 +386,13 @@ export default function TechnicoAssistantIA() {
           Projets futurs detectes
         </h3>
 
-        {futureProjects.length === 0 ? (
+        {visibleFutureProjects.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
             Aucun projet non classe detecte.
           </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {futureProjects.map((item) => (
+            {visibleFutureProjects.map((item) => (
               <div
                 key={`${item.label}-${item.lastDetectedAt}`}
                 className="rounded-2xl border border-amber-100 bg-amber-50/40 p-4"

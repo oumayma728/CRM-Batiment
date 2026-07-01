@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import {
   Calendar,
+  CalendarClock,
   CheckSquare,
   ClipboardList,
   HardHat,
@@ -245,25 +246,38 @@ export default function TasksChantierPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-lg border border-sky-100 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_58%,#eef6ff_100%)] p-5 shadow-sm">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
-          Gestion taches chantier
-        </p>
-        <h1 className="mt-2 text-xl font-bold text-slate-900 md:text-2xl">
-          Taches par chantier et affectation
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Admin et chef de chantier peuvent ajouter, modifier, supprimer et suivre les taches
-          par chantier.
-        </p>
+    <div className="space-y-5">
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(14,165,233,0.16),transparent_30%),linear-gradient(135deg,#ffffff_0%,#f8fafc_54%,#fff7ed_100%)] p-5 lg:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
+              Planning terrain
+            </p>
+            <h1 className="mt-2 text-2xl font-bold text-slate-950 md:text-3xl">
+              Taches par chantier et affectation
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Ajoutez les travaux a faire, affectez les equipes et marquez l avancement sans
+              quitter le contexte du chantier selectionne.
+            </p>
+          </div>
+          <div className="border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
+            <div className="rounded-lg border border-white/10 bg-white/10 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-sky-200">
+                <CalendarClock size={16} /> Charge visible
+              </div>
+              <p className="mt-3 text-3xl font-bold">{chantiersQuery.data?.meta.total ?? 0}</p>
+              <p className="text-sm text-slate-300">chantier(s) avec planning</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
           <div className="mb-3 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-900">Chantiers</h2>
+              <h2 className="text-base font-bold text-slate-950">Chantiers</h2>
               <p className="text-xs text-slate-500">
                 {chantiersQuery.data?.meta.total ?? 0} chantier(s)
               </p>
@@ -279,7 +293,7 @@ export default function TasksChantierPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher client ou reference chantier"
-              className="w-full rounded-xl border border-stone-200 bg-stone-50 px-10 py-1.5 text-sm outline-none focus:border-sky-400 focus:bg-white"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-10 py-2 text-sm outline-none focus:border-sky-400 focus:bg-white focus:ring-4 focus:ring-sky-500/10"
             />
           </div>
 
@@ -289,10 +303,10 @@ export default function TasksChantierPage() {
                 key={chantier.id}
                 onClick={() => setSelectedChantierId(chantier.id)}
                 className={cn(
-                  'w-full rounded-xl border p-3 text-left transition-all',
+                  'w-full rounded-lg border p-3 text-left transition-all',
                   activeChantierId === chantier.id
-                    ? 'border-sky-300 bg-sky-50/60'
-                    : 'border-stone-200 bg-white hover:bg-stone-50',
+                    ? 'border-sky-300 bg-sky-50 shadow-sm'
+                    : 'border-slate-200 bg-white hover:bg-slate-50',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -331,18 +345,20 @@ export default function TasksChantierPage() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
           {!activeChantier ? (
             <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
               Selectionnez un chantier.
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 pb-3.5">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3.5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <HardHat size={18} className="text-sky-700" />
-                    <h2 className="text-lg font-bold text-slate-900">{activeChantier.reference}</h2>
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 text-sky-700">
+                      <HardHat size={18} />
+                    </span>
+                    <h2 className="text-lg font-bold text-slate-950">{activeChantier.reference}</h2>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     Client: {activeChantier.client?.prenom} {activeChantier.client?.nom}
@@ -351,7 +367,7 @@ export default function TasksChantierPage() {
                 </div>
                 <button
                   onClick={openCreate}
-                  className="inline-flex items-center gap-2 rounded-xl bg-sky-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-sky-800"
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-semibold text-white hover:bg-slate-800"
                 >
                   <Plus size={16} /> Ajouter tache
                 </button>
@@ -366,25 +382,25 @@ export default function TasksChantierPage() {
               ) : (
                 <>
                   <div className="grid gap-2 sm:grid-cols-4">
-                    <article className="rounded-xl bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
+                    <article className="rounded-lg bg-slate-50 px-3 py-2.5 ring-1 ring-slate-200">
                       <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Total</p>
                       <p className="text-lg font-bold text-slate-900">
                         {tasksQuery.data?.resumeTaches.total ?? 0}
                       </p>
                     </article>
-                    <article className="rounded-xl bg-emerald-50 px-3 py-2.5 ring-1 ring-emerald-200">
+                    <article className="rounded-lg bg-emerald-50 px-3 py-2.5 ring-1 ring-emerald-200">
                       <p className="text-xs uppercase tracking-[0.14em] text-emerald-700">Terminees</p>
                       <p className="text-lg font-bold text-emerald-800">
                         {tasksQuery.data?.resumeTaches.done ?? 0}
                       </p>
                     </article>
-                    <article className="rounded-xl bg-amber-50 px-3 py-2.5 ring-1 ring-amber-200">
+                    <article className="rounded-lg bg-amber-50 px-3 py-2.5 ring-1 ring-amber-200">
                       <p className="text-xs uppercase tracking-[0.14em] text-amber-700">A faire</p>
                       <p className="text-lg font-bold text-amber-800">
                         {tasksQuery.data?.resumeTaches.pending ?? 0}
                       </p>
                     </article>
-                    <article className="rounded-xl bg-rose-50 px-3 py-2.5 ring-1 ring-rose-200">
+                    <article className="rounded-lg bg-rose-50 px-3 py-2.5 ring-1 ring-rose-200">
                       <p className="text-xs uppercase tracking-[0.14em] text-rose-700">Retard</p>
                       <p className="text-lg font-bold text-rose-800">
                         {tasksQuery.data?.resumeTaches.overdue ?? 0}
@@ -419,7 +435,7 @@ export default function TasksChantierPage() {
                   ) : (
                     <div className="space-y-2.5">
                       {taskList.map((task) => (
-                        <div key={task.id} className="rounded-xl border border-stone-200 bg-white p-3">
+                        <div key={task.id} className="rounded-lg border border-slate-200 bg-white p-3 transition hover:border-slate-300 hover:bg-slate-50/60">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="flex min-w-[260px] flex-1 items-start gap-3">
                               <input

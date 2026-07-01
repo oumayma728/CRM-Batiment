@@ -80,6 +80,7 @@ export default function TechnicoClients() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const [showModal, setShowModal] = useState(false);
   const [editClient, setEditClient] = useState<Client | null>(null);
   const [selectedTypeProjetIds, setSelectedTypeProjetIds] = useState<number[]>([]);
@@ -105,6 +106,11 @@ export default function TechnicoClients() {
   });
 
   const clients: Client[] = data?.data ?? [];
+  const sortedClients = [...clients].sort((a, b) => {
+    if (sortBy === 'name') return `${a.nom} ${a.prenom ?? ''}`.localeCompare(`${b.nom} ${b.prenom ?? ''}`);
+    if (sortBy === 'source') return (a.source ?? '').localeCompare(b.source ?? '');
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
 
   // Fetch types de projet for dropdown
@@ -353,6 +359,18 @@ export default function TechnicoClients() {
             <option value="AUTRE">Autre</option>
           </select>
         </div>
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-transparent text-sm outline-none text-gray-600"
+            aria-label="Trier les clients"
+          >
+            <option value="recent">Tri: plus recent</option>
+            <option value="name">Tri: nom A-Z</option>
+            <option value="source">Tri: source</option>
+          </select>
+        </div>
       </div>
 
       {/* Client cards grid */}
@@ -380,7 +398,7 @@ export default function TechnicoClients() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {clients.map((client) => (
+          {sortedClients.map((client) => (
             <div
               key={client.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 group"

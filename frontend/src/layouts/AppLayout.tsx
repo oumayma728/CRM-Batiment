@@ -22,12 +22,15 @@ import {
   Settings,
   Sun,
   Users,
+  UserPlus,
   UserCog,
+  UserCircle2,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 import WorkAssistant from '@/components/WorkAssistant';
+import DemoModeBanner from '@/components/DemoModeBanner';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
@@ -69,6 +72,14 @@ const adminNavItems: AdminNavItem[] = [
     description: 'Fiches clients',
     group: 'Commercial',
     icon: <Users size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/creation-client',
+    label: 'Creation client',
+    description: 'Compte client',
+    group: 'Commercial',
+    icon: <UserPlus size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
@@ -174,6 +185,13 @@ const adminNavItems: AdminNavItem[] = [
     group: 'Administration',
     icon: <Calculator size={18} />,
     roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/profil',
+    label: 'Profil',
+    description: 'Compte et securite',
+    group: 'Compte',
+    icon: <UserCircle2 size={18} />,
   },
 ];
 
@@ -363,6 +381,8 @@ export default function AppLayout() {
             </div>
           </div>
         </header>
+
+        <DemoModeBanner />
 
         <div className="app-content px-4 py-5 transition-colors duration-300 lg:px-8 lg:py-8">
           <Outlet />

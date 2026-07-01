@@ -16,9 +16,10 @@ const roleConfig: Record<Role, { bg: string; text: string; dot: string; label: s
   ASSISTANTE: { bg: 'bg-menthe-50', text: 'text-emerald-700', dot: 'bg-menthe-400', label: 'Assistante' },
   CHEF_CHANTIER: { bg: 'bg-jaune-50', text: 'text-yellow-700', dot: 'bg-yellow-400', label: 'Chef de chantier' },
   SOUS_TRAITANT: { bg: 'bg-pervenche-50', text: 'text-pervenche-700', dot: 'bg-pervenche-400', label: 'Sous-traitant' },
+  CLIENT: { bg: 'bg-sky-50', text: 'text-sky-700', dot: 'bg-sky-400', label: 'Client' },
 };
 
-const roles: Role[] = ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'];
+const roles: Role[] = ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT', 'CLIENT'];
 
 interface UserForm {
   email: string;

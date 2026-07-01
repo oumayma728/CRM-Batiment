@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  CalendarClock,
   HardHat,
   Loader2,
+  MapPin,
   Pencil,
   Plus,
   RefreshCcw,
@@ -252,40 +254,57 @@ export default function ChantiersPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-orange-100 bg-[linear-gradient(135deg,#fffaf2_0%,#ffffff_58%,#efffff_100%)] p-6 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">Chef Chantier</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Liste des chantiers</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Les chantiers sont synchronises automatiquement a partir des devis acceptes/signes.
-              Vous pouvez aussi ajouter, modifier et supprimer des elements manuellement.
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.35fr_0.65fr]">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(245,158,11,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#fff7ed_56%,#f0fdfa_100%)] p-5 lg:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700">Suivi terrain</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">Liste des chantiers</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              Les chantiers sont synchronises depuis les devis acceptes ou signes. Vous pouvez
+              completer les informations terrain, suivre les statuts et garder les adresses pretes
+              pour les equipes.
             </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                onClick={() => syncMutation.mutate()}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                disabled={syncMutation.isPending}
+              >
+                {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
+                Synchroniser
+              </button>
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              >
+                <Plus size={16} /> Nouveau chantier
+              </button>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => syncMutation.mutate()}
-              className="inline-flex items-center gap-2 rounded-lg border border-orange-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-orange-50"
-              disabled={syncMutation.isPending}
-            >
-              {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
-              Synchroniser depuis devis
-            </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700"
-            >
-              <Plus size={16} /> Nouveau chantier
-            </button>
+
+          <div className="border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
+            <div className="grid h-full content-between gap-4">
+              <div className="rounded-lg border border-white/10 bg-white/10 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-200">
+                  <HardHat size={16} /> Portefeuille terrain
+                </div>
+                <p className="mt-3 text-3xl font-bold">{meta.total}</p>
+                <p className="text-sm text-slate-300">chantier(s) suivi(s)</p>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <CalendarClock size={17} className="text-emerald-300" />
+                Mise a jour selon devis et saisies chantier.
+              </div>
+            </div>
           </div>
         </div>
 
         {syncMessage ? (
-          <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700">{syncMessage}</p>
+          <p className="border-t border-emerald-100 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-700">{syncMessage}</p>
         ) : null}
       </section>
 
-      <section className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-stone-200">
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-xl flex-1">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -296,7 +315,7 @@ export default function ChantiersPage() {
                 setSearch(event.target.value);
               }}
               placeholder="Rechercher client, reference chantier, adresse ou description"
-              className="w-full rounded-lg border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-12 py-3 text-sm outline-none focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-500/10"
             />
           </div>
 
@@ -306,7 +325,7 @@ export default function ChantiersPage() {
               setPage(1);
               setStatusFilter(event.target.value as ChantierStatusFilter);
             }}
-            className="rounded-lg border border-stone-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-orange-400"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-amber-400"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -317,10 +336,10 @@ export default function ChantiersPage() {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
+      <section className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[980px] text-sm">
-            <thead className="bg-stone-50 text-slate-500">
+            <thead className="bg-slate-50 text-slate-500">
               <tr>
                 <th className="px-5 py-3 text-left font-semibold">Client</th>
                 <th className="px-5 py-3 text-left font-semibold">Chantier</th>
@@ -347,7 +366,7 @@ export default function ChantiersPage() {
                 </tr>
               ) : (
                 rows.map((chantier) => (
-                  <tr key={chantier.id} className="border-t border-stone-100 align-top">
+                  <tr key={chantier.id} className="border-t border-slate-100 align-top transition hover:bg-slate-50/70">
                     <td className="px-5 py-4">
                       <p className="font-semibold text-slate-900">
                         {chantier.client?.prenom} {chantier.client?.nom}
@@ -356,7 +375,10 @@ export default function ChantiersPage() {
                     </td>
                     <td className="px-5 py-4">
                       <p className="font-semibold text-slate-900">{chantier.reference}</p>
-                      <p className="mt-1 text-slate-600">{chantier.adresse}</p>
+                      <p className="mt-1 inline-flex items-start gap-1.5 text-slate-600">
+                        <MapPin size={14} className="mt-0.5 shrink-0 text-amber-600" />
+                        {chantier.adresse}
+                      </p>
                     </td>
                     <td className="px-5 py-4">
                       <p className="max-w-[520px] leading-6 text-slate-700" title={chantier.description ?? ''}>

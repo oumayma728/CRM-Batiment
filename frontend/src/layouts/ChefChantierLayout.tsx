@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  Bell,
   CheckSquare,
   ClipboardCheck,
   HardHat,
@@ -8,7 +9,9 @@ import {
   LogOut,
   Menu,
   Moon,
+  Radio,
   Sun,
+  UserCircle2,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,22 +24,32 @@ const navItems = [
   {
     to: '/admin',
     label: 'Tableau de bord',
+    description: 'Priorites du jour',
     icon: <LayoutDashboard size={18} />,
   },
   {
     to: '/admin/chantiers',
     label: 'Chantiers',
+    description: 'Sites et statuts',
     icon: <HardHat size={18} />,
   },
   {
     to: '/admin/taches-chantier',
     label: 'Taches chantier',
+    description: 'Planning equipe',
     icon: <CheckSquare size={18} />,
   },
   {
     to: '/admin/commandes-fournisseur',
     label: 'Receptions',
+    description: 'Materiaux et livraisons',
     icon: <ClipboardCheck size={18} />,
+  },
+  {
+    to: '/admin/profil',
+    label: 'Profil',
+    description: 'Compte et securite',
+    icon: <UserCircle2 size={18} />,
   },
 ];
 
@@ -63,42 +76,54 @@ export default function ChefChantierLayout() {
   };
 
   return (
-    <div className="app-shell flex min-h-screen transition-colors duration-300">
+    <div className="app-shell flex min-h-screen bg-slate-50 transition-colors duration-300 dark:bg-slate-950">
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/55 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          'fixed z-50 flex h-full w-[280px] flex-col text-amber-100 transition-transform duration-300 lg:translate-x-0',
-          'bg-[linear-gradient(180deg,#7c2d12_0%,#9a3412_55%,#b45309_100%)]',
+          'fixed z-50 flex h-full w-[296px] flex-col overflow-hidden text-slate-100 transition-transform duration-300 lg:translate-x-0',
+          'bg-[linear-gradient(180deg,#0f3b74_0%,#1557a6_54%,#1d74d8_100%)] shadow-2xl shadow-blue-950/25',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="border-b border-white/15 px-5 py-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-56 bg-[radial-gradient(circle_at_20%_0%,rgba(96,165,250,0.42),transparent_34%),radial-gradient(circle_at_86%_18%,rgba(16,185,129,0.18),transparent_28%)]" />
+
+        <div className="relative border-b border-white/10 px-5 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white shadow-lg">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-blue-700 shadow-lg shadow-blue-950/20">
               <HardHat size={22} />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/90">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-100">
                 Espace terrain
               </p>
               <h1 className="text-lg font-bold text-white">Chef de chantier</h1>
             </div>
             <button
               onClick={() => setMobileOpen(false)}
-              className="ml-auto rounded-lg p-1 text-amber-100/70 hover:bg-white/10 hover:text-white lg:hidden"
+              className="ml-auto rounded-lg p-1 text-slate-200/80 hover:bg-white/10 hover:text-white lg:hidden"
             >
               <X size={18} />
             </button>
           </div>
+
+          <div className="mt-5 rounded-xl border border-white/10 bg-white/10 p-3 backdrop-blur">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-sky-100">
+              <Radio size={14} />
+              Poste operationnel
+            </div>
+            <p className="mt-2 text-sm leading-5 text-slate-200">
+              Suivi chantiers, taches terrain et receptions fournisseurs.
+            </p>
+          </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="relative flex-1 space-y-1.5 px-3 py-4">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -107,23 +132,46 @@ export default function ChefChantierLayout() {
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
+                  'group relative flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all',
                   isActive
-                    ? 'bg-white/18 text-white shadow-sm'
-                    : 'text-amber-100/80 hover:bg-white/10 hover:text-white',
+                    ? 'bg-white text-slate-950 shadow-lg shadow-slate-950/15'
+                    : 'text-slate-200/82 hover:bg-white/10 hover:text-white',
                 )
               }
             >
-              {item.icon}
-              <span>{item.label}</span>
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={cn(
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors',
+                      isActive
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white/10 text-sky-100 group-hover:bg-white/15',
+                    )}
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate">{item.label}</span>
+                    <span
+                      className={cn(
+                        'mt-0.5 block truncate text-xs font-normal',
+                        isActive ? 'text-slate-500' : 'text-slate-300/70',
+                      )}
+                    >
+                      {item.description}
+                    </span>
+                  </span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="border-t border-white/15 px-4 py-4">
-          <div className="rounded-2xl bg-white/10 p-4">
+        <div className="relative border-t border-white/10 px-4 py-4">
+          <div className="rounded-xl border border-white/10 bg-white/10 p-3 backdrop-blur">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 font-bold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-100 font-bold text-blue-800">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">
@@ -134,7 +182,7 @@ export default function ChefChantierLayout() {
               </div>
               <button
                 onClick={handleLogout}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-red-500/25"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-colors hover:bg-red-500/25"
                 title="Se deconnecter"
               >
                 <LogOut size={16} />
@@ -144,21 +192,21 @@ export default function ChefChantierLayout() {
         </div>
       </aside>
 
-      <main className="flex-1 lg:ml-[280px]">
-        <header className="app-main-header sticky top-0 z-30 backdrop-blur transition-colors duration-300">
+      <main className="flex-1 lg:ml-[296px]">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/86 backdrop-blur transition-colors duration-300 dark:border-slate-800 dark:bg-slate-950/86">
           <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-8">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileOpen((value) => !value)}
-                className="rounded-xl p-2 text-slate-600 hover:bg-amber-100 lg:hidden"
+                className="rounded-lg p-2 text-slate-600 hover:bg-amber-100 lg:hidden dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-700">
-                  Interface dediee
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                  Espace terrain
                 </p>
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                <p className="text-base font-bold text-slate-900 dark:text-slate-100">
                   {currentItem?.label ?? 'Espace chef de chantier'}
                 </p>
               </div>
@@ -169,18 +217,21 @@ export default function ChefChantierLayout() {
               <button
                 type="button"
                 onClick={toggleDarkMode}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-200 bg-white text-slate-600 transition-colors hover:bg-amber-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                 title={darkMode ? 'Mode clair' : 'Mode sombre'}
                 aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
               >
                 {darkMode ? <Sun size={17} /> : <Moon size={17} />}
               </button>
-              <InternalNotificationsBell />
+              <div className="relative">
+                <Bell size={14} className="pointer-events-none absolute -right-1 -top-1 z-10 rounded-full bg-amber-400 p-0.5 text-slate-950" />
+                <InternalNotificationsBell />
+              </div>
             </div>
           </div>
         </header>
 
-        <div className="app-content px-4 py-5 lg:px-8 lg:py-8">
+        <div className="px-4 py-5 lg:px-8 lg:py-8">
           <Outlet />
         </div>
       </main>

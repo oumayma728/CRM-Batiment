@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 import WorkAssistant from '@/components/WorkAssistant';
+import ChatbotWidget from '@/components/ChatbotWidget';
+import DemoModeBanner from '@/components/DemoModeBanner';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useDarkMode } from '@/hooks/useDarkMode';
@@ -247,11 +249,14 @@ export default function TechnicoLayout() {
           </div>
         </header>
 
+        <DemoModeBanner />
+
         {/* Page content */}
         <div className="app-content p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>
+      <ChatbotWidget />
     </div>
   );
 }

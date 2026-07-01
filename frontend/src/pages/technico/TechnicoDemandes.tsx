@@ -82,6 +82,7 @@ export default function TechnicoDemandes() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState<DemandeDevisStatut | ''>('');
+  const [sortBy, setSortBy] = useState('recent');
   const [selectedDemande, setSelectedDemande] = useState<DemandeDevis | null>(null);
   const limit = 10;
 
@@ -97,6 +98,14 @@ export default function TechnicoDemandes() {
   });
 
   const demandes: DemandeDevis[] = data?.data ?? [];
+  const sortedDemandes = [...demandes].sort((a, b) => {
+    if (sortBy === 'client') return getClientLabel(a).localeCompare(getClientLabel(b));
+    if (sortBy === 'statut') {
+      return statutOrder.indexOf(normalizeDemandeStatut(a.statut as string)) -
+        statutOrder.indexOf(normalizeDemandeStatut(b.statut as string));
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
 
   const updateStatutMutation = useMutation({
@@ -179,23 +188,35 @@ export default function TechnicoDemandes() {
         })}
       </div>
 
-      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-        <Search size={18} className="text-gray-400" />
-        <input
-          type="text"
-          placeholder="Rechercher une demande..."
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setPage(1);
-          }}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
-            <X size={16} />
-          </button>
-        )}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-1 items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
+          <Search size={18} className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher une demande..."
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 shadow-sm outline-none"
+          aria-label="Trier les demandes"
+        >
+          <option value="recent">Tri: plus recent</option>
+          <option value="client">Tri: client A-Z</option>
+          <option value="statut">Tri: statut</option>
+        </select>
       </div>
 
       {error && (
@@ -225,7 +246,7 @@ export default function TechnicoDemandes() {
         </div>
       ) : (
         <div className="space-y-3">
-          {demandes.map((demande) => {
+          {sortedDemandes.map((demande) => {
             const workflowStatut = normalizeDemandeStatut(demande.statut as string);
             const cfg = statutConfig[workflowStatut];
             const studyButtonLabel =

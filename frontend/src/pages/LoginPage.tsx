@@ -15,6 +15,20 @@ import {
   Home
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getDemoRoleFromCredentials, isDemoEmail } from '@/lib/demoMode';
+
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string) =>
+  typeof error === 'object' && error !== null
+    ? ((error as ApiError).response?.data?.message ?? fallback)
+    : fallback;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -24,6 +38,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [tempToken, setTempToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Charger l'email sauvegardé
   useEffect(() => {
@@ -41,7 +59,48 @@ export default function LoginPage() {
     setSuccessMessage('');
 
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+      const demoRole = getDemoRoleFromCredentials(normalizedEmail, password);
+
+      if (demoRole) {
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', normalizedEmail);
+        } else {
+          localStorage.removeItem('rememberedEmail');
+        }
+
+        authManager.startDemoSession(demoRole);
+        setSuccessMessage('Mode demo active: donnees fictives en lecture seule.');
+
+        setTimeout(() => {
+          window.location.href = getRedirectPath(demoRole);
+        }, 350);
+        return;
+      }
+
+      if (isDemoEmail(normalizedEmail)) {
+        setError('Mot de passe demo incorrect pour ce compte.');
+        setLoading(false);
+        return;
+      }
+
+      const response = await api.post('/auth/login', {
+        email: normalizedEmail,
+        password,
+      });
+
+      if (response.data?.mustChangePassword && response.data?.tempToken) {
+        setMustChangePassword(true);
+        setTempToken(response.data.tempToken);
+        setPassword('');
+        setSuccessMessage(
+          response.data.message ||
+            'Mot de passe temporaire valide. Choisissez votre nouveau mot de passe.',
+        );
+        setLoading(false);
+        return;
+      }
+
       const { user } = response.data;
       const token = response.data.token ?? response.data.accessToken;
 
@@ -50,7 +109,7 @@ export default function LoginPage() {
       }
       
       if (rememberMe) {
-        localStorage.setItem('rememberedEmail', email);
+        localStorage.setItem('rememberedEmail', normalizedEmail);
       } else {
         localStorage.removeItem('rememberedEmail');
       }
@@ -64,9 +123,60 @@ export default function LoginPage() {
         window.location.href = redirectPath;
       }, 800);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erreur de connexion:', err);
-      setError(err.response?.data?.message || 'Email ou mot de passe incorrect');
+      setError(getApiErrorMessage(err, 'Email ou mot de passe incorrect'));
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    if (newPassword.length < 8) {
+      setError('Le nouveau mot de passe doit contenir au moins 8 caracteres.');
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Les deux mots de passe ne correspondent pas.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.post(
+        '/auth/change-password',
+        { newPassword },
+        { headers: { Authorization: `Bearer ${tempToken}` } },
+      );
+      const { user } = response.data;
+      const token = response.data.token ?? response.data.accessToken;
+
+      if (!token || !user) {
+        throw new Error('Reponse de changement de mot de passe invalide');
+      }
+
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email.trim().toLowerCase());
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      authManager.setSession(token, user);
+      setSuccessMessage(`Bienvenue ${user.prenom || ''} ${user.nom || ''} !`);
+
+      setTimeout(() => {
+        const redirectPath = getRedirectPath(user.role);
+        window.location.href = redirectPath;
+      }, 800);
+    } catch (err: unknown) {
+      console.error('Erreur de changement de mot de passe:', err);
+      setError(getApiErrorMessage(err, 'Impossible de changer le mot de passe'));
       setLoading(false);
     }
   };
@@ -76,7 +186,9 @@ export default function LoginPage() {
       'TECHNICO': '/technico',
       'SOUS_TRAITANT': '/fournisseur',
       'CHEF_CHANTIER': '/admin',
-      'ADMIN': '/admin'
+      'ASSISTANTE': '/admin',
+      'ADMIN': '/admin',
+      'CLIENT': '/profile',
     };
     return roleMap[role] || '/admin';
   };
@@ -86,7 +198,7 @@ export default function LoginPage() {
       {/* Navigation retour - Version améliorée */}
       <div className="container mx-auto px-4 py-6">
         <Link 
-          to="http://localhost:5173"
+          to="/"
           className="inline-flex items-center gap-3 px-5 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md"
         >
           <div className="relative">
@@ -139,7 +251,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={mustChangePassword ? handleChangePassword : handleLogin} className="space-y-5">
               {/* Champ Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -153,6 +265,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    disabled={mustChangePassword}
                     className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     placeholder="vous@entreprise.fr"
                     required
@@ -160,8 +273,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Champ Mot de passe */}
-              <div>
+              {!mustChangePassword ? (
+                <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">
                   Mot de passe
                 </label>
@@ -189,7 +302,64 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Client : utilisez votre numero de telephone comme mot de passe.
+                </p>
               </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Nouveau mot de passe
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Minimum 8 caracteres"
+                        minLength={8}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Confirmer le nouveau mot de passe
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder="Repeter le mot de passe"
+                        minLength={8}
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Options */}
               <div className="flex items-center justify-between">
@@ -233,18 +403,19 @@ export default function LoginPage() {
                     Connexion en cours...
                   </>
                 ) : (
-                  'Se connecter'
+                  mustChangePassword ? 'Enregistrer le mot de passe' : 'Se connecter'
                 )}
               </button>
+
             </form>
 
             {/* Lien d'inscription */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
                 Pas encore de compte ?{' '}
-                <a href="#" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
+                <Link to="/creer-compte" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
                   Créer un compte
-                </a>
+                </Link>
               </p>
             </div>
           </div>
