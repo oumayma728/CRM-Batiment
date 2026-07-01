@@ -137,6 +137,7 @@ model DemandeDevis {
   description     String
   besoinStructure Json?
   statut          DemandeStatut @default(NOUVEAU)
+  reference       String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   client          Client        @relation(fields: [clientId], references: [id])
@@ -147,6 +148,7 @@ model DemandeDevis {
   @@index([companyId])
   @@index([clientId])
   @@index([statut])
+  @@index([reference])
   @@map("demandes_devis")
 }
 

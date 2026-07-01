@@ -60,7 +60,7 @@ type ConversationSessionState = {
   confirmed: boolean;
   pendingRdv: boolean;
   pendingSuivi: boolean;
-  lastDemandeId: number | null;
+  lastReference: string | null;
 };
 
 type AssistantLanguage = 'fr' | 'ar';
@@ -470,7 +470,7 @@ export class AssistantService {
     // Detection / maintien du parcours SUIVI (par mot-cle ou reference DEM-X).
     const mentionsSuiviDirect =
       /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage) ||
-      /dem[\s-]?\d+/i.test(normalizedMessage);
+      /dem-[a-z0-9]{4,10}/i.test(normalizedMessage);
     const wasPendingSuivi = Boolean(state.sessionState?.pendingSuivi);
     const switchesAwayFromSuivi =
       /\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage);
@@ -768,11 +768,32 @@ export class AssistantService {
     if (isPolitenessOnly) {
       responseMessage = 'Avec plaisir ! 😊 Bonne journee et a bientot.';
     } else if (
+      /dem-[a-z0-9]{4,10}/i.test(normalizedMessage) ||
+      (sessionState.pendingSuivi &&
+        !/\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage))
+    ) {
+      // ========== PARCOURS SUIVI (PRIORITAIRE) ==========
+      // Une reference DEM-XXX (ou un suivi en cours) => on va au suivi directement,
+      // quel que soit l'etat de session (client qui tape la reference sans "bonjour").
+      const suiviDirect = await this.buildSuiviResponse({
+        companyId: dto.companyId,
+        message: normalizedMessage,
+        email: sessionState.email,
+      });
+      if (suiviDirect) {
+        responseMessage = suiviDirect;
+        answeredByRag = true; // reutilise le flag pour bloquer la liste des projets
+      } else {
+        responseMessage =
+          "Bien sur, je peux verifier l'avancement de votre demande. 📋\n" +
+          "Donnez-moi votre reference de suivi ou l'email utilise lors de votre demande.";
+      }
+    } else if (
       isInformationalQuestion &&
       ragRetrieval.snippets.length > 0 &&
       ragRetrieval.snippets[0].score >= 0.4
-    ) 
-    {
+    )
+      {
       // ========== REPONSE DIRECTE PAR LE RAG (PRIORITAIRE) ==========
       // Question informative + document pertinent => on repond avec le RAG complet,
       // avant toute autre logique (clarification, parcours devis...).
@@ -1085,7 +1106,7 @@ export class AssistantService {
         });
         if (draftResult) {
           devisId = draftResult.devisId;
-          sessionState.lastDemandeId = draftResult.demandeId;
+          sessionState.lastReference = draftResult.reference ?? null;
           if (isAffirmative && sessionState.confirmed) {
             // On regenere le message AVEC la reference, et on met a jour le resultat.
             responseMessage = this.buildClosureMessage(sessionState);
@@ -1331,6 +1352,7 @@ export class AssistantService {
                 prospect_id: prospect.id,
               },
               statut: 'EN_COURS',
+              reference: this.generateReference(),
             },
             select: {
               id: true,
@@ -2892,9 +2914,9 @@ export class AssistantService {
       confirmed: Boolean(rawSessionState.confirmed),
       pendingRdv: Boolean(rawSessionState.pendingRdv),
       pendingSuivi: Boolean(rawSessionState.pendingSuivi),
-      lastDemandeId:
-        typeof rawSessionState.lastDemandeId === 'number'
-          ? rawSessionState.lastDemandeId
+      lastReference:
+        typeof rawSessionState.lastReference === 'string'
+          ? rawSessionState.lastReference
           : null,
     });
 
@@ -2977,8 +2999,8 @@ export class AssistantService {
       confirmed: Boolean(input?.confirmed),
       pendingRdv: Boolean(input?.pendingRdv),
       pendingSuivi: Boolean(input?.pendingSuivi),
-      lastDemandeId:
-        typeof input?.lastDemandeId === 'number' ? input.lastDemandeId : null,
+      lastReference:
+        typeof input?.lastReference === 'string' ? input.lastReference : null,
     };
   }
 
@@ -3200,8 +3222,8 @@ export class AssistantService {
     const delai = state.delai ?? '48h';
     // Si une demande a ete enregistree, on donne sa reference au client
     // pour qu'il puisse suivre l'avancement plus tard.
-    const reference = state.lastDemandeId
-      ? `\n\n📎 Votre reference de suivi : DEM-${state.lastDemandeId} (gardez-la pour suivre votre demande).`
+    const reference = state.lastReference
+      ? `\n\n📎 Votre reference de suivi : ${state.lastReference} (gardez-la pour suivre votre demande).`
       : '';
     return `Merci ${nom} ! ✅\n\nVotre dossier est transmis a notre equipe. Vous recevrez votre devis detaille a ${email} sous ${delai}.${reference}\n\nN'hesitez pas a revenir si vous avez des questions. Bonne journee ! 😊`;
   }
@@ -4395,7 +4417,16 @@ export class AssistantService {
       valid: false,
     };
   }
-
+  // Genere une reference de suivi aleatoire et non devinable (ex: DEM-A7X9K2).
+  // On evite les caracteres ambigus (I, O, 0, 1) pour la lisibilite.
+  private generateReference(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return `DEM-${code}`;
+  }
   private sanitizeName(value: string): string {
     let cleaned = value
       .replace(/\d+/g, ' ')
@@ -4997,23 +5028,30 @@ export class AssistantService {
   }): Promise<string | null> {
     const message = (input.message || '').trim();
     const email = (input.email || '').toLowerCase().trim();
+    const refMatchDebug = message.match(/dem[\s-]?([a-z0-9]{4,10})/i);
 
-    // 1. On cherche une reference de demande dans le message (ex: "DEM-14" ou "14")
-    const refMatch = message.match(/dem[\s-]?(\d+)/i) || message.match(/\b(\d{1,6})\b/);
-    const demandeId = refMatch ? parseInt(refMatch[1], 10) : null;
+    // 1. On cherche une reference aleatoire dans le message (ex: "DEM-2J488F")
+    // Une reference ressemble a DEM-2J488F : tiret obligatoire + 6 caracteres alphanumeriques.
+    const refMatch = message.match(/dem-([a-z0-9]{5,8})/i);
+    const reference = refMatch ? `DEM-${refMatch[1].toUpperCase()}` : null;
 
     // Il faut au moins une reference OU un email pour identifier la demande
-    if (!demandeId && !email) {
+    if (!reference && !email) {
       return null;
     }
 
-    // 2. On cherche la demande
+    // 2. On cherche la demande par reference aleatoire (secrete, non devinable).
+    //    Plus besoin de l'email : la reference aleatoire prouve deja l'identite.
     let demande = null;
-    if (demandeId) {
+    if (reference) {
       demande = await this.prisma.demandeDevis.findFirst({
-        where: { id: demandeId, companyId: input.companyId },
+        where: {
+          reference,
+          companyId: input.companyId,
+        },
         select: {
           id: true,
+          reference: true,
           statut: true,
           description: true,
           client: { select: { nom: true } },
@@ -5062,7 +5100,7 @@ export class AssistantService {
 
     return (
       `Bonjour ${nomClient} ! 📋\n\n` +
-      `Voici l'etat de votre demande DEM-${demande.id} :\n` +
+      `Voici l'etat de votre demande ${demande.reference || 'DEM-' + demande.id} :\n` +
       `- ${demande.description}\n` +
       `- Statut : ${statutLisible}\n\n` +
       `Notre equipe reste a votre disposition pour toute question. 😊`
@@ -5861,7 +5899,7 @@ export class AssistantService {
     prospectId: number;
     description: string;
     typeProjetId: number | null;
-  }): Promise<{ devisId: number; demandeId: number } | null> {
+  }): Promise<{ devisId: number; demandeId: number; reference: string | null } | null> {
     try {
       const existingDemande = await this.prisma.demandeDevis.findFirst({
         where: {
@@ -5871,31 +5909,32 @@ export class AssistantService {
           statut: { in: ['NOUVEAU', 'EN_COURS'] },
         },
         orderBy: { createdAt: 'desc' },
-        select: { id: true },
+        select: { id: true, reference: true },
       });
 
-      const demandeId = existingDemande
-        ? existingDemande.id
-        : (
-            await this.prisma.demandeDevis.create({
-              data: {
-                companyId: input.companyId,
-                clientId: input.prospectId,
-                createurId: input.actorUserId,
-                source: LeadSource.CHATBOT,
-                description:
-                  input.description ||
-                  'Demande qualifiee automatiquement par assistant IA',
-                statut: 'EN_COURS',
-                besoinStructure: {
-                  origin: 'assistant-ia-auto',
-                  created_by: input.actorUserId,
-                  created_at: new Date().toISOString(),
-                },
+      const demandeRecord = existingDemande
+        ? existingDemande
+        : await this.prisma.demandeDevis.create({
+            data: {
+              companyId: input.companyId,
+              clientId: input.prospectId,
+              createurId: input.actorUserId,
+              source: LeadSource.CHATBOT,
+              description:
+                input.description ||
+                'Demande qualifiee automatiquement par assistant IA',
+              statut: 'EN_COURS',
+              besoinStructure: {
+                origin: 'assistant-ia-auto',
+                created_by: input.actorUserId,
+                created_at: new Date().toISOString(),
               },
-              select: { id: true },
-            })
-          ).id;
+              reference: this.generateReference(),
+            },
+            select: { id: true, reference: true },
+          });
+      const demandeId = demandeRecord.id;
+      const demandeReference = demandeRecord.reference;
 
       const devis = await this.devisService.create(
         {
@@ -5914,7 +5953,7 @@ export class AssistantService {
         typeProjetId: input.typeProjetId,
       });
 
-      return { devisId: devis.id, demandeId };
+      return { devisId: devis.id, demandeId, reference: demandeReference };
     } catch {
       return null;
     }
