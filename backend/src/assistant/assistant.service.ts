@@ -423,7 +423,7 @@ export class AssistantService {
     const messageForQuestionCheck = this.normalizeForMatch(dto.message);
     const isInformationalQuestion =
       /\?/.test(dto.message) &&
-      /\b(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut)\b/.test(
+      /(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut|puis[\s-]?je|peut[\s-]?on|est[\s-]?il possible|est[\s-]?ce possible|comment faire|ou puis[\s-]?je|ou trouver|peut[\s-]?elle|peut[\s-]?il)/.test(
         messageForQuestionCheck,
       ) &&
       !/\b(je veux|j aimerais|je voudrais|creer|faire|preparer|calculer)\b[\s\S]*\bdevis\b/.test(
@@ -436,7 +436,6 @@ export class AssistantService {
     ) {
       intent = 'demande_info_service';
     }
-
     const detectedIntents = intentDetection.detectedIntents;
     const commercialIntentsFallback = this.detectCommercialIntents({
       message: normalizedMessage,
@@ -718,11 +717,7 @@ export class AssistantService {
     });
     let responseMessage = '';
     let answeredByRag = false;
-    console.log('🔍 RAG CHECK —',
-      'question:', JSON.stringify(dto.message),
-      '| isInfoQuestion:', isInformationalQuestion,
-      '| topScore:', ragRetrieval.snippets[0]?.score,
-      '| topTitre:', ragRetrieval.snippets[0]?.title);
+
     // Si le client a deja confirme une demande mais exprime une NOUVELLE intention
     // (rendez-vous, nouveau devis, suivi), on repart sur un nouveau parcours
     // tout en gardant ses infos (nom, telephone, email).
