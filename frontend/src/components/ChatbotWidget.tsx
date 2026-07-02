@@ -91,8 +91,10 @@ interface QuickSuggestion {
 
 const publicSuggestions: QuickSuggestion[] = [
   { label: 'Demander un devis', message: 'Je souhaite demander un devis pour des travaux', icon: <FileText size={12} /> },
-  { label: 'Services disponibles', message: 'Quels sont les services disponibles ?', icon: <Search size={12} /> },
-  { label: 'Tarifs', message: 'Je voudrais connaitre les tarifs', icon: <BarChart3 size={12} /> },
+  { label: 'Prendre rendez-vous', message: 'Je voudrais prendre un rendez-vous', icon: <Users size={12} /> },
+  { label: 'Suivre ma demande', message: 'Je veux suivre ma demande', icon: <Search size={12} /> },
+  { label: 'Nos services', message: 'Quels sont les services disponibles ?', icon: <HardHat size={12} /> },
+  { label: 'Questions fréquentes', message: 'Quelle est la différence entre un devis et une facture ?', icon: <Zap size={12} /> },
 ];
 
 const internalSuggestionsByRole: Record<string, QuickSuggestion[]> = {
