@@ -332,7 +332,7 @@ export class AssistantService {
       session_id: session.id,
       company_id: dto.companyId,
       response_message:
-        "Bonjour ! 👋 Je suis l'assistant BatiCRM. Je peux vous aider a :\n- Connaitre nos services et tarifs\n- Preparer un devis personnalise\n- Repondre a vos questions sur vos projets\n\nComment puis-je vous aider aujourd'hui ?",
+        "Bonjour ! 👋 Je suis **Léa**, votre assistante BatiCRM.\n\nJe peux vous aider pour un devis, un rendez-vous, le suivi de votre demande ou toute question sur nos services.\n\nCliquez sur une suggestion ci-dessous, ou écrivez-moi directement ! 😊",
     };
   }
 
@@ -4033,7 +4033,7 @@ export class AssistantService {
       !hasClearBusinessKeyword &&
       !hasIdentityOnlySignal
     ) {
-      return 'Je veux bien vous aider. Est-ce pour un devis, un prix, un suivi, un rendez-vous, ou la liste de nos services ?';
+      return 'Je serais ravie de vous aider ! 😊 Que souhaitez-vous faire ?\n- **Demander un devis**\n- **Prendre rendez-vous**\n- **Suivre votre demande**\n- **Découvrir nos services**';
     }
 
     if (
@@ -6323,7 +6323,7 @@ export class AssistantService {
 
     // Si on a tout mais pas en mode devis
     if (!isDevisFlow && data.nom) {
-      return `Merci ${data.nom} ! Je suis la pour vous aider. Souhaitez-vous :\n- 📋 Voir nos services disponibles\n- 💰 Connaitre nos tarifs\n- 📝 Preparer un devis\n\nDites-moi ce qui vous interesse !`;
+      return `Merci ${data.nom} ! Je suis là pour vous aider. Souhaitez-vous :\n- 📋 **Découvrir nos services** disponibles\n- 📝 **Préparer un devis** personnalisé\n- 📅 **Prendre rendez-vous** avec notre équipe\n\nDites-moi ce qui vous intéresse !`;
     }
 
     // Si le message est court et sans contexte

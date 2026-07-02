@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
   Bot,
   Building2,
@@ -214,7 +215,7 @@ export default function ChatbotWidget() {
       const welcomeContent = isInternal
         ? `Bonjour ${user?.prenom ?? ''} 👋\nJe suis votre assistant BatiCRM. Je peux vous aider à naviguer, obtenir des informations ou effectuer des actions rapides.\n\nQue puis-je faire pour vous ?`
         : (res.data.response_message as string) ||
-          'Bonjour ! 👋 Je suis l\'assistant BatiCRM. Comment puis-je vous aider ?';
+          'Bonjour ! 👋 Je suis Léa, votre assistante BatiCRM. Je peux vous aider pour un devis, un rendez-vous, le suivi de votre demande, ou répondre à vos questions. Comment puis-je vous aider ?';
 
       setMessages([
         {
@@ -269,6 +270,10 @@ export default function ChatbotWidget() {
         structuredWorkflow: res.data.structured_workflow,
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      // Si le bot propose les choix principaux, on reaffiche les suggestions cliquables
+      if (res.data.response_message?.includes('Que souhaitez-vous faire')) {
+        setShowSuggestions(true);
+      }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Echec d\'envoi. Veuillez réessayer.'));
     } finally {
@@ -313,9 +318,22 @@ export default function ChatbotWidget() {
             structuredWorkflow: res.data.structured_workflow,
           };
           setMessages((prev) => [...prev, assistantMsg]);
+          // Si le bot propose les choix principaux, on reaffiche les suggestions cliquables
+          if (res.data.response_message?.includes('Que souhaitez-vous faire')) {
+            setShowSuggestions(true);
+          }
         })
         .catch((err) => {
           setError(getApiErrorMessage(err, 'Echec d\'envoi.'));
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: generateMsgId(),
+              role: 'ASSISTANT',
+              content: 'Désolée, une erreur est survenue. Pouvez-vous réessayer ? 🙏',
+              timestamp: new Date(),
+            },
+          ]);
         })
         .finally(() => {
           setIsSending(false);
@@ -415,11 +433,11 @@ export default function ChatbotWidget() {
           <div className="chatbot-header">
             <div className="chatbot-header-left">
               <div className="chatbot-header-avatar">
-                <Bot size={18} />
+                <span style={{ fontWeight: 700, fontSize: '15px' }}>L</span>
               </div>
               <div className="chatbot-header-info">
                 <h3>
-                  Assistant BatiCRM
+                  Léa · Assistant BatiCRM
                 </h3>
                 <div className="chatbot-header-status">
                   <span className="chatbot-status-dot" />
@@ -513,7 +531,11 @@ export default function ChatbotWidget() {
                 </div>
                 <div>
                   <div className="chatbot-msg-bubble">
-                    {msg.content}
+                    {msg.role === 'USER' ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )}
 
                     {/* Project Types */}
                     {msg.projectTypes && msg.projectTypes.length > 0 && (

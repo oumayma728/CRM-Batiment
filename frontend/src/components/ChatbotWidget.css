@@ -660,3 +660,170 @@
     padding: 0.75rem 1rem;
   }
 }
+/* ═══════════════════════════════════════════════
+   ✨ DESIGN MODERNE — Léa (bleu, épuré, élégant)
+   Ajouté à la fin : surcharge le style précédent
+   ═══════════════════════════════════════════════ */
+
+/* Variables de couleurs */
+:root {
+  --lea-blue-deep: #1e3a8a;
+  --lea-blue: #2563eb;
+  --lea-blue-light: #3b82f6;
+  --lea-blue-soft: #eff6ff;
+  --lea-shadow: rgba(37, 99, 235, 0.15);
+}
+
+/* ---------- EN-TÊTE : dégradé bleu élégant ---------- */
+.chatbot-header {
+  background: linear-gradient(135deg, var(--lea-blue-deep) 0%, var(--lea-blue) 55%, var(--lea-blue-light) 100%);
+  padding: 16px 18px;
+  box-shadow: 0 2px 12px var(--lea-shadow);
+}
+
+/* Avatar de Léa : cercle avec dégradé + ombre douce */
+.chatbot-header-avatar {
+  background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%);
+  color: var(--lea-blue-deep);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.25s ease;
+}
+.chatbot-header-avatar:hover {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.chatbot-header-info h3 {
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+/* Point "En ligne" qui pulse doucement */
+.chatbot-status-dot {
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  animation: leaPulse 2s infinite;
+}
+@keyframes leaPulse {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6); }
+  70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* ---------- BULLES DE MESSAGES ---------- */
+.chatbot-msg {
+  animation: leaFadeIn 0.35s ease both;
+}
+@keyframes leaFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bulle de Léa : blanc, arrondi, ombre douce */
+.chatbot-msg--assistant .chatbot-msg-bubble {
+  background: #ffffff;
+  border: 1px solid #e5edff;
+  border-radius: 4px 16px 16px 16px;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.06);
+  color: #1e293b;
+  line-height: 1.5;
+}
+
+/* Bulle du client : dégradé bleu, texte blanc */
+.chatbot-msg--user .chatbot-msg-bubble {
+  background: linear-gradient(135deg, var(--lea-blue) 0%, var(--lea-blue-light) 100%);
+  border-radius: 16px 4px 16px 16px;
+  box-shadow: 0 2px 8px var(--lea-shadow);
+  color: #ffffff;
+}
+
+/* Avatar dans les messages */
+.chatbot-msg-avatar--bot {
+  background: linear-gradient(135deg, var(--lea-blue-deep), var(--lea-blue-light));
+  color: #fff;
+}
+
+/* ---------- BOUTONS DE SUGGESTIONS ---------- */
+.chatbot-suggestion-btn {
+  background: #ffffff;
+  border: 1.5px solid #dbeafe;
+  border-radius: 12px;
+  color: var(--lea-blue-deep);
+  font-weight: 600;
+  padding: 8px 12px;
+  transition: all 0.22s ease;
+}
+.chatbot-suggestion-btn:hover {
+  background: linear-gradient(135deg, var(--lea-blue) 0%, var(--lea-blue-light) 100%);
+  color: #ffffff;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px var(--lea-shadow);
+}
+
+/* ---------- BOUTON FLOTTANT (FAB) ---------- */
+.chatbot-fab {
+  background: linear-gradient(135deg, var(--lea-blue-deep) 0%, var(--lea-blue) 100%);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+  animation: leaBounceIn 0.5s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.chatbot-fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.45);
+}
+@keyframes leaBounceIn {
+  0% { opacity: 0; transform: scale(0.5); }
+  60% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- PANNEAU GLOBAL ---------- */
+.chatbot-panel {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(30, 58, 138, 0.18);
+  border: 1px solid #e5edff;
+}
+
+/* Zone de saisie plus douce */
+.chatbot-input-area {
+  border-top: 1px solid #eef2ff;
+  background: #fafbff;
+}
+/* ---------- Rendu Markdown compact dans les bulles de Léa ---------- */
+.chatbot-msg-bubble p {
+  margin: 0 0 4px 0;
+}
+.chatbot-msg-bubble p:last-child {
+  margin-bottom: 0;
+}
+.chatbot-msg-bubble ul,
+.chatbot-msg-bubble ol {
+  margin: 2px 0;
+  padding-left: 16px;
+  list-style: disc;          /* remet les puces visibles */
+}
+.chatbot-msg-bubble li {
+  margin: 1px 0;
+}
+.chatbot-msg-bubble li p {
+  margin: 0;                 /* évite le double espacement des <p> dans les <li> */
+}
+.chatbot-msg-bubble strong {
+  color: #1e293b;            /* gras sombre, pas bleu : évite l'effet "faux lien" */
+  font-weight: 700;
+}
+/* Badge PUBLIC plus lisible dans l'en-tête */
+.chatbot-mode-badge--public {
+  background: rgba(255, 255, 255, 0.92);
+  color: #1e40af;
+  font-weight: 700;
+}
