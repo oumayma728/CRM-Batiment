@@ -30,6 +30,7 @@ import { UpdateStatutDto } from './dto/update-statut.dto.js';
 @ApiTags('Demandes de Devis')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN', 'TECHNICO', 'ASSISTANTE') // <-- AJOUTE 
 @Controller('demandes-devis')
 export class DemandesDevisController {
   constructor(private readonly service: DemandesDevisService) {}
