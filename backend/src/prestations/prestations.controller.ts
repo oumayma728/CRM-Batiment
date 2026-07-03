@@ -46,6 +46,7 @@ import { Role } from '../../generated/prisma/client.js';
 @ApiTags('Prestations')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE) // <-- AJOUTEE : restrict access to these roles for all endpoints in this controller
 @Controller('prestations')
 export class PrestationsController {
   constructor(private readonly prestationsService: PrestationsService) {}
