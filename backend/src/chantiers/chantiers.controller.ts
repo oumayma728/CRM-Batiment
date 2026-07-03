@@ -33,11 +33,12 @@ import { UpdateTacheDto } from './dto/update-tache.dto.js';
 @ApiTags('Chantiers')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)
+@Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER, Role.TECHNICO, Role.SOUS_TRAITANT) // <-- AJOUTE
 @Controller('chantiers')
 export class ChantiersController {
   constructor(private readonly service: ChantiersService) {}
 
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO) // <-- AJOUTE
   @Post('sync-from-devis')
   @ApiOperation({
     summary:
@@ -48,6 +49,7 @@ export class ChantiersController {
     return this.service.syncFromAcceptedDevis(user);
   }
 
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)//ajoutee pour que les 3 roles puissent acceder a cette route
   @Post('refresh-descriptions-from-devis')
   @ApiOperation({
     summary:
@@ -58,6 +60,7 @@ export class ChantiersController {
     return this.service.refreshDescriptionsFromLinkedDevis(user);
   }
 
+  @Roles(Role.ADMIN, Role.ASSISTANTE)//ajoutee pour que les 2 roles puissent acceder a cette route
   @Post()
   @ApiOperation({ summary: 'Creer un chantier' })
   @ApiResponse({ status: 201, description: 'Chantier cree.' })
@@ -93,7 +96,8 @@ export class ChantiersController {
   }
 
   @Get(':id/taches')
-  @Roles(Role.ADMIN, Role.CHEF_CHANTIER)
+  //@Roles(Role.ADMIN, Role.CHEF_CHANTIER)
+  @Roles(Role.ADMIN, Role.CHEF_CHANTIER, Role.SOUS_TRAITANT)//ajoutee pour que les 3 roles puissent acceder a cette route
   @ApiOperation({ summary: 'Lister les taches d un chantier' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Liste des taches retournee.' })
@@ -157,6 +161,7 @@ export class ChantiersController {
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN, Role.ASSISTANTE)//ajoutee pour que les 2 roles puissent acceder a cette route
   @ApiOperation({ summary: 'Modifier un chantier' })
   @ApiParam({ name: 'id', type: Number })
   update(
@@ -168,6 +173,7 @@ export class ChantiersController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)//ajoutee pour que que le role admin puisse acceder a cette route
   @ApiOperation({ summary: 'Supprimer un chantier' })
   @ApiParam({ name: 'id', type: Number })
   remove(

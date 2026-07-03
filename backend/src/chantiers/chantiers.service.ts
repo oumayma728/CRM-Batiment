@@ -540,11 +540,30 @@ export class ChantiersService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const search = query.search?.trim();
-
+    //avant //
+    //const where: Prisma.ChantierWhereInput = {
+    // companyId: currentUser.companyId,
+    //};
+    //apres : //
     const where: Prisma.ChantierWhereInput = {
       companyId: currentUser.companyId,
     };
 
+    // Filtrer les chantiers selon le rôle de l'utilisateur
+    if (currentUser.role === Role.CHEF_CHANTIER) {
+      where.chefChantierId = currentUser.userId;
+    } else if (currentUser.role === Role.SOUS_TRAITANT) {
+      where.taches = {
+        some: {
+          affectations: {
+            some: {
+              userId: currentUser.userId,
+            },
+          },
+        },
+      };
+    } 
+    // fin apres 
     if (query.statut) {
       where.statut = query.statut;
     }
@@ -634,7 +653,7 @@ export class ChantiersService {
     };
   }
 
-  async findOne(id: number, currentUser: CurrentUserPayload) {
+  /*async findOne(id: number, currentUser: CurrentUserPayload) {
     const chantier = await this.prisma.chantier.findFirst({
       where: { id, companyId: currentUser.companyId },
       include: {
@@ -694,6 +713,103 @@ export class ChantiersService {
       resumeTaches: this.buildTaskSummary(chantier.taches),
     };
   }
+  */
+
+  //apres modif //
+  async findOne(id: number, currentUser: CurrentUserPayload) {
+    const where: Prisma.ChantierWhereInput = {
+      id,
+      companyId: currentUser.companyId,
+    };
+
+    //restriction d'acces selon le role 
+    if (currentUser.role === Role.CHEF_CHANTIER) {
+      where.chefChantierId = currentUser.userId;
+    } else if (currentUser.role === Role.SOUS_TRAITANT) {
+      where.taches = {
+        some: {
+          affectations: {
+            some: {
+              userId: currentUser.userId,
+            },
+          },
+        },
+      };
+    }
+
+    const chantier = await this.prisma.chantier.findFirst({
+      where,
+      include: {
+        client: true,
+        chefChantier: {
+          select: {
+            id: true,
+            nom: true,
+            prenom: true,
+            email: true,
+            role: true,
+          },
+        },
+        devis: {
+          select: {
+            id: true,
+            reference: true,
+            statut: true,
+            totalTTC: true,
+            dateValidation: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        taches: {
+          orderBy: { ordre: 'asc' },
+          include: {
+            affectations: {
+              include: {
+                user: {
+                  select: { id: true, nom: true, prenom: true, email: true },
+                },
+                equipe: {
+                  select: { id: true, nom: true, type: true },
+                },
+              },
+            },
+          },
+        },
+        documents: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!chantier) {
+      throw new NotFoundException(`Chantier #${id} introuvable.`);
+    }
+
+    const mappedTasks = chantier.taches.map((task) =>
+      this.mapTaskWithAssignment(task),
+    );
+
+    //verification des acces aux données financieres du chantier selon le role de l'utilisateur
+    const isCommercialAllowed =
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.ASSISTANTE ||
+      currentUser.role === Role.TECHNICO;
+
+    const response = {
+      ...chantier,
+      taches: mappedTasks,
+      statutAuto: this.computeChantierAutoStatus(chantier.taches),
+      resumeTaches: this.buildTaskSummary(chantier.taches),
+    };
+    
+    //masquage des devis si pas commercial ou admin 
+    if (!isCommercialAllowed) {
+      delete (response as any).devis;
+    }
+
+    return response;
+  }
+  // fin modif // 
 
   async create(dto: CreateChantierDto, currentUser: CurrentUserPayload) {
     await this.ensureClientInCompany(dto.clientId, currentUser.companyId);
