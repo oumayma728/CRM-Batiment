@@ -33,6 +33,7 @@ import { SendClientSignatureDto } from './dto/send-client-signature.dto.js';
 @ApiTags('Devis')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN', 'TECHNICO', 'ASSISTANTE') // <-- AJOUTE
 @Controller('devis')
 export class DevisController {
   constructor(private readonly service: DevisService) {}
