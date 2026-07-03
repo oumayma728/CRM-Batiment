@@ -34,7 +34,7 @@ import { FacturesService } from './factures.service.js';
 @ApiTags('Factures')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+@Roles('ADMIN', 'ASSISTANTE') //j'ai retiré technico pour que le technico ne puisse pas créer de facture
 @Controller('factures')
 export class FacturesController {
   constructor(private readonly facturesService: FacturesService) {}
@@ -58,6 +58,7 @@ export class FacturesController {
   }
 
   @Post('from-devis/:devisId')
+  @Roles('ADMIN') // ajoutee 
   @ApiOperation({ summary: 'Creer une facture pre-remplie depuis un devis' })
   @ApiParam({ name: 'devisId', type: Number })
   createFromDevis(
@@ -79,6 +80,7 @@ export class FacturesController {
   }
 
   @Patch(':id')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Mettre a jour une facture (champs + lignes)' })
   @ApiParam({ name: 'id', type: Number })
   update(
@@ -90,6 +92,7 @@ export class FacturesController {
   }
 
   @Patch(':id/statut')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Changer le statut d une facture' })
   @ApiParam({ name: 'id', type: Number })
   updateStatut(
@@ -101,6 +104,7 @@ export class FacturesController {
   }
 
   @Post(':id/lignes')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Ajouter une ligne facture' })
   @ApiParam({ name: 'id', type: Number })
   addLigne(
@@ -112,6 +116,7 @@ export class FacturesController {
   }
 
   @Patch(':id/lignes/:ligneId')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Modifier une ligne facture' })
   @ApiParam({ name: 'id', type: Number })
   @ApiParam({ name: 'ligneId', type: Number })
@@ -125,6 +130,7 @@ export class FacturesController {
   }
 
   @Delete(':id/lignes/:ligneId')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Supprimer une ligne facture' })
   @ApiParam({ name: 'id', type: Number })
   @ApiParam({ name: 'ligneId', type: Number })
@@ -137,6 +143,7 @@ export class FacturesController {
   }
 
   @Post(':id/send-client')
+  @Roles('ADMIN')
   @ApiOperation({ summary: 'Envoyer une facture au client par email' })
   @ApiParam({ name: 'id', type: Number })
   sendToClient(
