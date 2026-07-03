@@ -4,9 +4,11 @@ import { MailModule } from '../mail/mail.module.js';
 import { DevisService } from './devis.service.js';
 import { DevisController } from './devis.controller.js';
 import { DevisPublicController } from './devis-public.controller.js';
+// P0.5 — Import du module commun contenant WorkflowStateService
+import { CommonModule } from '../common/common.module.js';
 
 @Module({
-  imports: [AuthModule, MailModule],
+  imports: [AuthModule, MailModule, CommonModule], // Ajout de CommonModule
   controllers: [DevisController, DevisPublicController],
   providers: [DevisService],
   exports: [DevisService],

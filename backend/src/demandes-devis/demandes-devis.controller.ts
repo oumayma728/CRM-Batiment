@@ -108,4 +108,18 @@ export class DemandesDevisController {
   ) {
     return this.service.remove(id, user.companyId);
   }
+
+
+
+  /* ───────── POST /:id/convertir-en-devis ───────── */
+@Post(':id/convertir-en-devis')
+@Roles('ADMIN', 'TECHNICO')
+@ApiOperation({ summary: 'Convertir une demande de devis en devis éditable (BROUILLON)' })
+@ApiParam({ name: 'id', type: Number })
+convertirEnDevis(
+  @Param('id', ParseIntPipe) id: number,
+  @CurrentUser() user: CurrentUserPayload,
+) {
+  return this.service.convertirEnDevis(id, user.userId, user.companyId);
+}
 }

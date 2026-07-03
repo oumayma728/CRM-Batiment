@@ -374,7 +374,8 @@ export class DevisService {
           notes: devis.notes,
           lignes: devis.lignes,
         }),
-        statut: 'DEVIS_VALIDE',
+        statut: 'PLANIFIE', //ici j'ai changé le statut à planifié suite au cahier de charge
+
       },
       select: { id: true },
     });
@@ -637,21 +638,43 @@ export class DevisService {
       devis.id,
       companyId,
     );
-
+    // ── AVANT MODIFICATION ──────────────────────────────────────────
+    // let facture = await this.prisma.facture.findFirst({ where: { devisId } });
+    // if (!facture) {
+    //   facture = await this.prisma.facture.create({
+    //     data: {
+    //       devisId,
+    //       reference: await this.generateDocumentReference('FAC', 'facture'),
+    //       montantHT: this.round2(devis.totalHT),
+    //       montantTVA: this.round2(devis.totalTVA),
+    //       montantTTC: this.round2(devis.totalTTC),
+    //       statut: 'BROUILLON',
+    //     },
+    //   });
+    // }
+    // ── APRÈS MODIFICATION (P0.3 — Facture Acompte 30%) ─────────────
     let facture = await this.prisma.facture.findFirst({ where: { devisId } });
     if (!facture) {
-      facture = await this.prisma.facture.create({
-        data: {
-          devisId,
-          reference: await this.generateDocumentReference('FAC', 'facture'),
-          montantHT: this.round2(devis.totalHT),
-          montantTVA: this.round2(devis.totalTVA),
-          montantTTC: this.round2(devis.totalTTC),
-          statut: 'BROUILLON',
-        },
-      });
-    }
+     // Acompte 30% selon cahier des charges
+     const acomptePercent = 30;
+     const acompteMontantHT = this.round2(devis.totalHT * acomptePercent / 100);
+     const acompteMontantTVA = this.round2(acompteMontantHT * (devis.tauxTVA / 100));
+  const acompteMontantTTC = this.round2(acompteMontantHT + acompteMontantTVA);
 
+  facture = await this.prisma.facture.create({
+    data: {
+      devisId,
+      reference: await this.generateDocumentReference('FAC', 'facture'),
+      montantHT: acompteMontantHT,
+      montantTVA: acompteMontantTVA,
+      montantTTC: acompteMontantTTC,
+      statut: 'BROUILLON',
+      typeFacture: 'ACOMPTE',
+      acomptePercent,
+      acompteMontant: acompteMontantTTC,
+    },
+  });
+}
     let bonCommande = await this.prisma.bonCommande.findUnique({
       where: { devisId },
     });
