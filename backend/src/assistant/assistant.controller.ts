@@ -15,7 +15,7 @@ import { StartAssistantSessionDto } from './dto/start-assistant-session.dto.js';
 import { PostAssistantMessageDto } from './dto/post-assistant-message.dto.js';
 import { GetAssistantSessionDto } from './dto/get-assistant-session.dto.js';
 import { SubmitStructuredAssistantDto } from './dto/submit-structured-assistant.dto.js';
-
+import { AssistantFeedbackDto } from './dto/assistant-feedback.dto.js';
 @ApiTags('Assistant IA Public')
 @Controller('assistant')
 export class AssistantController {
@@ -41,6 +41,15 @@ export class AssistantController {
     @Body() dto: PostAssistantMessageDto,
   ) {
     return this.assistantService.postMessage(sessionId, dto);
+  }
+
+  @Post('feedback')
+  @ApiOperation({
+    summary: 'Enregistrer un feedback utilisateur',
+    description: 'Sauvegarde un avis (pouce haut/bas) sur une reponse du chatbot.',
+  })
+  saveFeedback(@Body() dto: AssistantFeedbackDto) {
+    return this.assistantService.saveFeedback(dto);
   }
 
   @Post('session/:sessionId/structured')

@@ -38,6 +38,7 @@ model Company {
   @@map("companies")
 }
 
+
 model User {
   id                 Int                @id @default(autoincrement())
   companyId          Int
@@ -747,7 +748,18 @@ model RagDocument {
   @@index([actif])
   @@map("rag_documents")
 }
+model AssistantFeedback {
+  id             Int      @id @default(autoincrement())
+  companyId      Int
+  sessionId      Int?
+  messageExcerpt String?
+  rating         String
+  createdAt      DateTime @default(now())
 
+  @@index([companyId])
+  @@index([rating])
+  @@map("assistant_feedbacks")
+}
 model AuditLog {
   id             Int      @id @default(autoincrement())
   companyId      Int

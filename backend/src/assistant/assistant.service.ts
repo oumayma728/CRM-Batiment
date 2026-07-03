@@ -1450,7 +1450,22 @@ export class AssistantService {
       deleted: true,
     };
   }
-
+  async saveFeedback(input: {
+    companyId: number;
+    sessionId?: number;
+    messageExcerpt?: string;
+    rating: string;
+  }) {
+    const feedback = await this.prisma.assistantFeedback.create({
+      data: {
+        companyId: input.companyId,
+        sessionId: input.sessionId ?? null,
+        messageExcerpt: (input.messageExcerpt || '').slice(0, 300) || null,
+        rating: input.rating,
+      },
+    });
+    return { id: feedback.id, status: 'saved' };
+  }
   private async autoPopulateDraftDevisFromCatalogue(input: {
     devisId: number;
     companyId: number;
