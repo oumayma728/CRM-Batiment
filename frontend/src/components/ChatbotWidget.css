@@ -827,3 +827,35 @@
   color: #1e40af;
   font-weight: 700;
 }
+/* ---------- Boutons d'action sous les messages de Léa ---------- */
+.chatbot-msg-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+.chatbot-msg-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.chatbot-msg-actions button:hover {
+  background: #eff6ff;
+  color: var(--lea-blue);
+  transform: translateY(-1px);
+}
+.chatbot-msg-actions button.is-active-up {
+  color: #16a34a;
+  background: #f0fdf4;
+}
+.chatbot-msg-actions button.is-active-down {
+  color: #dc2626;
+  background: #fef2f2;
+}

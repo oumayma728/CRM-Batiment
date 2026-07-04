@@ -11,6 +11,9 @@ import {
   Sparkles,
   User,
   X,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
   BarChart3,
   FileText,
   HardHat,
@@ -168,6 +171,7 @@ export default function ChatbotWidget() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<string, 'UP' | 'DOWN'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -390,7 +394,24 @@ export default function ChatbotWidget() {
     setIsMinimized(false);
     await initSession(false);
   }
+  function handleCopy(content: string) {
+    void navigator.clipboard.writeText(content);
+  }
 
+  function handleFeedback(msg: ChatMessage, rating: 'UP' | 'DOWN') {
+    // On memorise le vote pour colorer le bouton (et eviter le double vote)
+    setFeedbackGiven((prev) => ({ ...prev, [msg.id]: rating }));
+    api
+      .post('/assistant/feedback', {
+        companyId: 1,
+        sessionId: sessionId ?? undefined,
+        messageExcerpt: msg.content.slice(0, 300),
+        rating,
+      })
+      .catch(() => {
+        // Silencieux : un echec de feedback ne doit jamais gener le client
+      });
+  }
   async function handleReset() {
     await initSession(true);
   }
@@ -600,6 +621,33 @@ export default function ChatbotWidget() {
                     )}
 
                   </div>
+                  {msg.role === 'ASSISTANT' && (
+                    <div className="chatbot-msg-actions">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(msg.content)}
+                        title="Copier la réponse"
+                      >
+                        <Copy size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFeedback(msg, 'UP')}
+                        className={feedbackGiven[msg.id] === 'UP' ? 'is-active-up' : ''}
+                        title="Réponse utile"
+                      >
+                        <ThumbsUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFeedback(msg, 'DOWN')}
+                        className={feedbackGiven[msg.id] === 'DOWN' ? 'is-active-down' : ''}
+                        title="Réponse pas utile"
+                      >
+                        <ThumbsDown size={13} />
+                      </button>
+                    </div>
+                  )}
                   <div className="chatbot-msg-time">{formatTime(msg.timestamp)}</div>
                 </div>
               </div>
