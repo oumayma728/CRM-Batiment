@@ -26,6 +26,8 @@ import { RagModule } from './rag/rag.module.js';
 // import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 import { DashboardModule } from './dashboard/dashboard.module.js';
 import { AuditModule } from './audit/audit.module.js';
+import { SavModule } from './sav/sav.module.js';
+import { DemoRequestsModule } from './demo-requests/demo-requests.module.js';
 @Module({
   imports: [
     // Configuration globale (.env)
@@ -60,6 +62,8 @@ import { AuditModule } from './audit/audit.module.js';
     AssistantModule,
     DashboardModule,
     AuditModule,
+    SavModule,
+    DemoRequestsModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

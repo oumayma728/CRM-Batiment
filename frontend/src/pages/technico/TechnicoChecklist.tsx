@@ -199,7 +199,7 @@ function getTypeIcon(type: string) {
 
 function getInfoIcon(type: string) {
   switch (type) {
-    case 'MESURE': return <Ruler size={12} className="text-violet-500" />;
+    case 'MESURE': return <Ruler size={12} className="text-blue-500" />;
     case 'PHOTO': return <Camera size={12} className="text-pink-500" />;
     case 'OBSERVATION': return <Eye size={12} className="text-sky-500" />;
     case 'CHOIX': return <ListChecks size={12} className="text-amber-500" />;
@@ -944,7 +944,7 @@ export default function TechnicoChecklist() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-4">
             {activeProjectMatches && (
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                 {filteredProjectCategoryCount} categorie
                 {filteredProjectCategoryCount > 1 ? 's' : ''}{' '}
                 {usesMappedProjectCategories ? 'configuree' : 'proposee'}
@@ -956,16 +956,16 @@ export default function TechnicoChecklist() {
 
             {/* Search */}
             <div className="relative">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Rechercher une catégorie ou prestation..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm outline-none focus:border-[#9683EC] focus:ring-2 focus:ring-[#CCCCFF]"
+                className="w-full pl-10 pr-10 py-3 bg-white border border-slate-200 rounded-2xl text-sm outline-none focus:border-[#9683EC] focus:ring-2 focus:ring-[#CCCCFF]"
               />
               {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                   <X size={16} />
                 </button>
               )}
@@ -975,8 +975,8 @@ export default function TechnicoChecklist() {
               <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-[#5A4FCF]" size={32} /></div>
             ) : filteredCatalogue.length === 0 ? (
               <div className="rounded-2xl border border-amber-100 bg-white px-5 py-8 text-center shadow-sm">
-                <p className="text-sm font-semibold text-gray-900">Aucune categorie ne correspond</p>
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="text-sm font-semibold text-slate-950">Aucune categorie ne correspond</p>
+                <p className="mt-1 text-sm text-slate-500">
                   Essaie une autre recherche ou affiche tout le catalogue.
                 </p>
               </div>
@@ -998,17 +998,17 @@ export default function TechnicoChecklist() {
                       }}
                       className={cn(
                         'bg-white rounded-2xl border shadow-sm p-5 text-left hover:shadow-md hover:border-[#CCCCFF] transition-all group',
-                        checkedInCat > 0 ? 'border-[#5A4FCF] bg-[#CCCCFF]/30' : 'border-gray-100',
+                        checkedInCat > 0 ? 'border-[#5A4FCF] bg-[#CCCCFF]/30' : 'border-slate-100',
                       )}
                     >
                       <div className="flex items-start justify-between">
-                        <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#9683EC] transition">{cat.nom}</h3>
-                        <ChevronRight size={16} className="text-gray-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
+                        <h3 className="text-sm font-bold text-slate-950 group-hover:text-[#9683EC] transition">{cat.nom}</h3>
+                        <ChevronRight size={16} className="text-slate-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
                       </div>
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {nbSousCat > 0 && <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{nbSousCat} sous-cat.</span>}
+                        {nbSousCat > 0 && <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{nbSousCat} sous-cat.</span>}
                         <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{allPrestas.length} prestations</span>
-                        {nbQuestions > 0 && <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{nbQuestions} questions</span>}
+                        {nbQuestions > 0 && <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{nbQuestions} questions</span>}
                       </div>
                       {checkedInCat > 0 && (
                         <div className="mt-2 flex items-center gap-1.5">
@@ -1066,16 +1066,16 @@ export default function TechnicoChecklist() {
                     }}
                     className={cn(
                       'bg-white rounded-2xl border shadow-sm p-5 text-left hover:shadow-md hover:border-[#CCCCFF] transition-all group',
-                      checkedInSc > 0 ? 'border-[#5A4FCF] bg-[#CCCCFF]/30' : 'border-gray-100',
+                      checkedInSc > 0 ? 'border-[#5A4FCF] bg-[#CCCCFF]/30' : 'border-slate-100',
                     )}
                   >
                     <div className="flex items-start justify-between">
-                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#9683EC] transition">{sc.nom}</h3>
-                      <ChevronRight size={16} className="text-gray-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
+                      <h3 className="text-sm font-bold text-slate-950 group-hover:text-[#9683EC] transition">{sc.nom}</h3>
+                      <ChevronRight size={16} className="text-slate-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
                     </div>
                     <div className="flex flex-wrap gap-2 mt-3">
                       <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{(sc.prestations ?? []).length} prestations</span>
-                      {nbQuestions > 0 && <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">{nbQuestions} questions</span>}
+                      {nbQuestions > 0 && <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{nbQuestions} questions</span>}
                     </div>
                   </button>
                 );
@@ -1087,11 +1087,11 @@ export default function TechnicoChecklist() {
                     setSelectedSousCatId('direct');
                     setStep('prestations');
                   }}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:shadow-md hover:border-[#CCCCFF] transition-all group"
+                  className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 text-left hover:shadow-md hover:border-[#CCCCFF] transition-all group"
                 >
                   <div className="flex items-start justify-between">
-                    <h3 className="text-sm font-bold text-gray-900 group-hover:text-[#9683EC] transition">Prestations générales</h3>
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
+                    <h3 className="text-sm font-bold text-slate-950 group-hover:text-[#9683EC] transition">Prestations générales</h3>
+                    <ChevronRight size={16} className="text-slate-300 group-hover:text-[#5A4FCF] transition mt-0.5" />
                   </div>
                   <div className="flex flex-wrap gap-2 mt-3">
                     <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">{directPrestas.length} prestations</span>
@@ -1131,9 +1131,9 @@ export default function TechnicoChecklist() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-4">
             {currentScopePrestas.length === 0 ? (
-              <p className="text-sm text-gray-400 italic p-6">Aucune prestation dans ce niveau.</p>
+              <p className="text-sm text-slate-400 italic p-6">Aucune prestation dans ce niveau.</p>
             ) : (
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-100">
                 {currentScopePrestas.map((presta) => (
                   <PrestationRow
                     key={presta.id}
@@ -1155,7 +1155,7 @@ export default function TechnicoChecklist() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('sous-categories')}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-2xl text-sm font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-2xl text-sm font-semibold hover:bg-slate-200 transition flex items-center justify-center gap-2"
               >
                 <Layers size={16} />
                 Changer de sous-catégorie
@@ -1196,7 +1196,7 @@ export default function TechnicoChecklist() {
                 {missingRequiredOptions.map(({ presta, option }) => (
                   <div key={`${presta.id}-${option.id}`} className="bg-white border border-amber-100 rounded-xl p-3">
                     <p className="text-xs font-semibold text-gray-800">{presta.nom}</p>
-                    <p className="text-xs text-gray-500 mb-2">Sélectionnez une réponse guidée pour « {option.nom} »</p>
+                    <p className="text-xs text-slate-500 mb-2">Sélectionnez une réponse guidée pour « {option.nom} »</p>
                     <div className="flex flex-wrap gap-1.5">
                       {(option.choix ?? []).filter(c => c.actif).map((choix) => (
                         <button
@@ -1205,11 +1205,11 @@ export default function TechnicoChecklist() {
                             if (!checkedItems.has(presta.id)) return;
                             toggleChoix(presta.id, option.id, choix.id, false);
                           }}
-                          className="px-2.5 py-1 rounded-lg text-xs font-medium border transition bg-white text-gray-700 border-gray-200 hover:border-[#5A4FCF]"
+                          className="px-2.5 py-1 rounded-lg text-xs font-medium border transition bg-white text-slate-700 border-slate-200 hover:border-[#5A4FCF]"
                         >
                           {choix.nom}
                           {choix.impactPrix !== 0 && (
-                            <span className="ml-1 text-gray-400">{choix.impactPrix > 0 ? '+' : ''}{choix.impactPrix}€</span>
+                            <span className="ml-1 text-slate-400">{choix.impactPrix > 0 ? '+' : ''}{choix.impactPrix}€</span>
                           )}
                         </button>
                       ))}
@@ -1220,7 +1220,7 @@ export default function TechnicoChecklist() {
             )}
 
             {clarificationQuestions.length === 0 ? (
-              <p className="text-sm text-gray-400 italic p-6">Aucune question de clarification à ce niveau.</p>
+              <p className="text-sm text-slate-400 italic p-6">Aucune question de clarification à ce niveau.</p>
             ) : (
               clarificationQuestions.map((q) => (
                 <QuestionCard
@@ -1236,7 +1236,7 @@ export default function TechnicoChecklist() {
             <div className="flex gap-3">
               <button
                 onClick={() => setStep('prestations')}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-2xl text-sm font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-slate-100 text-slate-700 rounded-2xl text-sm font-semibold hover:bg-slate-200 transition flex items-center justify-center gap-2"
               >
                 <ChevronRight size={16} className="rotate-180" />
                 Retour aux détails
@@ -1293,8 +1293,8 @@ export default function TechnicoChecklist() {
       {selectedDevisCard}
 
       {checkedCount === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-          <p className="text-gray-400 text-sm">Aucune prestation sélectionnée</p>
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-10 text-center">
+          <p className="text-slate-400 text-sm">Aucune prestation sélectionnée</p>
           <button onClick={() => setStep('categories')} className="mt-3 text-[#5A4FCF] text-sm font-semibold hover:underline">
             Parcourir le catalogue
           </button>
@@ -1321,26 +1321,26 @@ export default function TechnicoChecklist() {
               const totalLigne = item.quantite * prixVente;
 
               return (
-                <div key={prestationId} className="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all">
+                <div key={prestationId} className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg transition-all">
                   {/* En-tête ligne */}
                   <div className="p-5 border-b border-gray-50">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                       <div className="flex-1">
-                        <h4 className="text-base font-bold text-gray-900">{presta.nom}</h4>
-                        <p className="text-xs text-gray-500 mt-1">{presta.description}</p>
+                        <h4 className="text-base font-bold text-slate-950">{presta.nom}</h4>
+                        <p className="text-xs text-slate-500 mt-1">{presta.description}</p>
                       </div>
                       <div className="flex justify-between md:justify-end gap-6 text-right">
                         <div>
-                          <p className="text-xs text-gray-500 mb-0.5">Quantité</p>
-                          <p className="text-lg font-bold text-gray-900">{item.quantite}</p>
+                          <p className="text-xs text-slate-500 mb-0.5">Quantité</p>
+                          <p className="text-lg font-bold text-slate-950">{item.quantite}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 mb-0.5">Prix/unité</p>
+                          <p className="text-xs text-slate-500 mb-0.5">Prix/unité</p>
                           <p className="text-base font-semibold text-[#5A4FCF]">{formatCurrency(prixVente)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 mb-0.5">Sous-total</p>
-                          <p className="text-lg font-extrabold text-gray-900">{formatCurrency(totalLigne)}</p>
+                          <p className="text-xs text-slate-500 mb-0.5">Sous-total</p>
+                          <p className="text-lg font-extrabold text-slate-950">{formatCurrency(totalLigne)}</p>
                         </div>
                       </div>
                     </div>
@@ -1350,15 +1350,15 @@ export default function TechnicoChecklist() {
                   <div className="px-5 py-4 space-y-4">
                     {/* Contrôles quantité */}
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-600 mr-2">Ajuster quantité :</span>
-                      <button onClick={() => updateQuantite(prestationId, item.quantite - 1)} className="p-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100"><Minus size={14} /></button>
+                      <span className="text-xs font-medium text-slate-600 mr-2">Ajuster quantité :</span>
+                      <button onClick={() => updateQuantite(prestationId, item.quantite - 1)} className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"><Minus size={14} /></button>
                       <input
                         type="number" min="0.01" step={presta.unite === 'PIECE' || presta.unite === 'FORFAIT' ? '1' : '0.5'} value={item.quantite}
                         onChange={(e) => updateQuantite(prestationId, parseFloat(e.target.value) || 1)}
-                        className="w-16 text-center text-sm font-semibold border border-gray-200 rounded-lg py-1 outline-none focus:border-[#9683EC]"
+                        className="w-16 text-center text-sm font-semibold border border-slate-200 rounded-lg py-1 outline-none focus:border-[#9683EC]"
                       />
-                      <button onClick={() => updateQuantite(prestationId, item.quantite + 1)} className="p-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100"><Plus size={14} /></button>
-                      <span className="text-xs text-gray-400 ml-1">{presta.unite}</span>
+                      <button onClick={() => updateQuantite(prestationId, item.quantite + 1)} className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"><Plus size={14} /></button>
+                      <span className="text-xs text-slate-400 ml-1">{presta.unite}</span>
                       <button onClick={() => toggleItem(prestationId)} className="ml-auto text-red-400 hover:text-red-600 text-xs font-semibold">✕ Supprimer</button>
                     </div>
 
@@ -1386,8 +1386,8 @@ export default function TechnicoChecklist() {
 
                     {/* Détail matériaux et main d'œuvre */}
                     {item && item.quantite > 0 && getCompositionsForItem(presta, item).length > 0 && (
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-[11px] font-bold text-gray-700 uppercase mb-3">Détail des matériaux & main d'œuvre</p>
+                      <div className="bg-slate-50 rounded-lg p-3">
+                        <p className="text-[11px] font-bold text-slate-700 uppercase mb-3">Détail des matériaux & main d'œuvre</p>
                         <div className="space-y-2">
                           {getCompositionsForItem(presta, item).map(comp => {
                             if (comp.materiau) {
@@ -1399,12 +1399,12 @@ export default function TechnicoChecklist() {
                                     <Package size={12} className="text-blue-500 mt-0.5 shrink-0" />
                                     <div>
                                       <p className="font-medium text-gray-800">{comp.materiau.nom}</p>
-                                      <p className="text-[11px] text-gray-500">{comp.quantiteParUnite} {comp.materiau.unite}/unité × {item.quantite} = <strong>{qteTotal} {comp.materiau.unite}</strong></p>
+                                      <p className="text-[11px] text-slate-500">{comp.quantiteParUnite} {comp.materiau.unite}/unité × {item.quantite} = <strong>{qteTotal} {comp.materiau.unite}</strong></p>
                                     </div>
                                   </div>
                                   <div className="text-right ml-2">
                                     <p className="font-semibold text-blue-600">{formatCurrency(coutMat)}</p>
-                                    <p className="text-[10px] text-gray-400">{formatCurrency(comp.materiau.prixAchatFixe)}/{comp.materiau.unite}</p>
+                                    <p className="text-[10px] text-slate-400">{formatCurrency(comp.materiau.prixAchatFixe)}/{comp.materiau.unite}</p>
                                   </div>
                                 </div>
                               );
@@ -1416,12 +1416,12 @@ export default function TechnicoChecklist() {
                                     <Wrench size={12} className="text-[#5A4FCF] mt-0.5 shrink-0" />
                                     <div>
                                       <p className="font-medium text-gray-800">{comp.serviceMainOeuvre.nom}</p>
-                                      <p className="text-[11px] text-gray-500">{comp.quantiteParUnite} {comp.serviceMainOeuvre.unite}/unité × {item.quantite} = <strong>{comp.quantiteParUnite * item.quantite} {comp.serviceMainOeuvre.unite}</strong></p>
+                                      <p className="text-[11px] text-slate-500">{comp.quantiteParUnite} {comp.serviceMainOeuvre.unite}/unité × {item.quantite} = <strong>{comp.quantiteParUnite * item.quantite} {comp.serviceMainOeuvre.unite}</strong></p>
                                     </div>
                                   </div>
                                   <div className="text-right ml-2">
                                     <p className="font-semibold text-[#5A4FCF]">{formatCurrency(coutMO)}</p>
-                                    <p className="text-[10px] text-gray-400">{formatCurrency(comp.serviceMainOeuvre.prixUnitaire)}/{comp.serviceMainOeuvre.unite}</p>
+                                    <p className="text-[10px] text-slate-400">{formatCurrency(comp.serviceMainOeuvre.prixUnitaire)}/{comp.serviceMainOeuvre.unite}</p>
                                   </div>
                                 </div>
                               );
@@ -1439,7 +1439,7 @@ export default function TechnicoChecklist() {
 
           {/* ── SIDEBAR : TOTAUX + ACTIONS ── */}
           <div>
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden sticky top-6">
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-lg overflow-hidden sticky top-6">
               {/* En-tête */}
               <div className="technico-gradient text-white px-5 py-4">
                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1451,7 +1451,7 @@ export default function TechnicoChecklist() {
               {/* Contenu */}
               <div className="p-5 space-y-4">
                 {/* Détail coûts */}
-                <div className="space-y-2 pb-4 border-b border-gray-100">
+                <div className="space-y-2 pb-4 border-b border-slate-100">
                   <Row label="Nombre de lignes" value={`${checkedCount}`} size="xs" />
                   <Row label="Total quantités" value={Array.from(checkedItems.values()).reduce((s, i) => s + i.quantite, 0).toFixed(2)} size="xs" />
                 </div>
@@ -1459,8 +1459,8 @@ export default function TechnicoChecklist() {
                 {/* Totaux */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-700 font-medium">Total HT</span>
-                    <span className="font-bold text-gray-900">{formatCurrency(totaux.totalVenteHT)}</span>
+                    <span className="text-slate-700 font-medium">Total HT</span>
+                    <span className="font-bold text-slate-950">{formatCurrency(totaux.totalVenteHT)}</span>
                   </div>
                   {totaux.questionImpact !== 0 && (
                     <div className="flex justify-between text-xs bg-orange-50 -mx-2 px-3 py-2 rounded-lg">
@@ -1468,30 +1468,30 @@ export default function TechnicoChecklist() {
                       <span className="font-semibold text-orange-700">{formatCurrency(totaux.questionImpact)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xs text-gray-600">
+                  <div className="flex justify-between text-xs text-slate-600">
                     <span>TVA {selectedDevisTauxTVA}%</span>
                     <span>{formatCurrency(totaux.totalTVA)}</span>
                   </div>
-                  <div className="flex justify-between text-lg bg-[#CCCCFF]/40 -mx-3 px-3 py-3 rounded-lg border-t border-gray-100 mt-3">
+                  <div className="flex justify-between text-lg bg-[#CCCCFF]/40 -mx-3 px-3 py-3 rounded-lg border-t border-slate-100 mt-3">
                     <span className="font-bold text-[#9683EC]">Total TTC</span>
                     <span className="font-extrabold text-[#9683EC]">{formatCurrency(totaux.totalTTC)}</span>
                   </div>
                 </div>
 
                 {/* Marges (info interne) */}
-                <div className="space-y-1 text-xs pt-3 border-t border-gray-100 bg-gray-50 -mx-3 px-3 py-3 rounded-lg">
+                <div className="space-y-1 text-xs pt-3 border-t border-slate-100 bg-slate-50 -mx-3 px-3 py-3 rounded-lg">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Coût total</span>
+                    <span className="text-slate-600">Coût total</span>
                     <span className="font-medium text-gray-800">{formatCurrency(totaux.totalCout)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Bénéfice</span>
+                    <span className="text-slate-600">Bénéfice</span>
                     <span className={`font-semibold ${totaux.profit >= 0 ? 'text-[#5A4FCF]' : 'text-red-600'}`}> 
                       {formatCurrency(totaux.profit)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Marge</span>
+                    <span className="text-slate-600">Marge</span>
                     <span className={`font-bold ${totaux.marge >= 20 ? 'text-[#5A4FCF]' : totaux.marge >= 10 ? 'text-orange-500' : 'text-red-600'}`}> 
                       {totaux.marge}%
                     </span>
@@ -1501,8 +1501,8 @@ export default function TechnicoChecklist() {
                 {/* Actions */}
                 <div className="space-y-3 pt-3">
                   {submitted ? (
-                    <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-                      <div className="flex items-center gap-2 text-emerald-700">
+                    <div className="space-y-3 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                      <div className="flex items-center gap-2 text-blue-700">
                         <CheckCircle2 size={18} />
                         <span className="text-sm font-semibold">
                           Devis enregistre dans Mes Devis.
@@ -1511,14 +1511,14 @@ export default function TechnicoChecklist() {
                       <div className="grid gap-2 sm:grid-cols-2">
                         <button
                           onClick={() => navigate(devisListPath)}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
                         >
                           <Eye size={14} />
                           Voir Mes Devis
                         </button>
                         <button
                           onClick={resetStudyAfterSubmit}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
                         >
                           Continuer l'etude
                         </button>
@@ -1533,7 +1533,7 @@ export default function TechnicoChecklist() {
                           'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border',
                           effectiveSelectedDevisId && checkedCount > 0
                             ? 'border-[#5A4FCF] bg-[#CCCCFF]/40 hover:bg-[#CCCCFF]/60 text-[#9683EC]'
-                            : 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed',
+                            : 'border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed',
                         )}
                       >
                         <Eye size={14} />
@@ -1547,7 +1547,7 @@ export default function TechnicoChecklist() {
                           'w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
                           canSubmitChecklist
                             ? 'technico-gradient hover:opacity-90 text-white shadow-lg hover:-translate-y-0.5'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed',
+                            : 'bg-slate-100 text-slate-400 cursor-not-allowed',
                         )}
                       >
                         {submitMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
@@ -1608,11 +1608,11 @@ export default function TechnicoChecklist() {
 function Header() {
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+      <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2">
         <CheckSquare className="text-[#5A4FCF]" size={24} />
         Checklist Devis
       </h2>
-      <p className="text-sm text-gray-400 mt-0.5">
+      <p className="text-sm text-slate-400 mt-0.5">
         Parcourez le catalogue, répondez aux questions, sélectionnez les prestations → le devis se génère automatiquement
       </p>
     </div>
@@ -1622,12 +1622,12 @@ function Header() {
 function StepHeader({ title, subtitle, onBack }: { title: string; subtitle: string; onBack: () => void }) {
   return (
     <div className="flex items-center gap-4">
-      <button onClick={onBack} className="p-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 transition">
-        <ChevronRight size={18} className="rotate-180 text-gray-600" />
+      <button onClick={onBack} className="p-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition">
+        <ChevronRight size={18} className="rotate-180 text-slate-600" />
       </button>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-400">{subtitle}</p>
+        <h2 className="text-xl font-bold text-slate-950">{title}</h2>
+        <p className="text-sm text-slate-400">{subtitle}</p>
       </div>
     </div>
   );
@@ -1709,11 +1709,11 @@ function LinkedDevisCard({
   const clientLabel = getClientDisplayName(client, demande.clientId);
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-gray-900">Devis cible</p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="text-sm font-semibold text-slate-950">Devis cible</p>
+          <p className="mt-1 text-sm text-slate-500">
             {selectedDevis
               ? `Le devis ${selectedDevis.reference} est lie a cette demande.`
               : 'Le devis brouillon sera cree a la validation du checklist.'}
@@ -1725,19 +1725,19 @@ function LinkedDevisCard({
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <div className="rounded-xl bg-gray-50 px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-gray-400">Client</p>
-          <p className="mt-1 text-sm font-semibold text-gray-900">{clientLabel}</p>
+        <div className="rounded-xl bg-slate-50 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Client</p>
+          <p className="mt-1 text-sm font-semibold text-slate-950">{clientLabel}</p>
         </div>
-        <div className="rounded-xl bg-gray-50 px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-gray-400">Projet</p>
-          <p className="mt-1 text-sm font-semibold text-gray-900">
+        <div className="rounded-xl bg-slate-50 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Projet</p>
+          <p className="mt-1 text-sm font-semibold text-slate-950">
             {projectTypeLabel || 'Type non renseigne'}
           </p>
         </div>
-        <div className="rounded-xl bg-gray-50 px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-gray-400">Etat</p>
-          <p className="mt-1 text-sm font-semibold text-gray-900">
+        <div className="rounded-xl bg-slate-50 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Etat</p>
+          <p className="mt-1 text-sm font-semibold text-slate-950">
             {isLoading && !selectedDevis
               ? 'Chargement...'
               : selectedDevis
@@ -1756,12 +1756,12 @@ function DevisSelector({ devisData, selectedDevisId, setSelectedDevisId }: {
   setSelectedDevisId: (id: number | null) => void;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-      <label className="block text-sm font-semibold text-gray-700 mb-2">Devis cible</label>
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+      <label className="block text-sm font-semibold text-slate-700 mb-2">Devis cible</label>
       <select
         value={selectedDevisId ?? ''}
         onChange={(e) => setSelectedDevisId(parseInt(e.target.value) || null)}
-        className="w-full max-w-md border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#9683EC] focus:ring-2 focus:ring-[#CCCCFF]"
+        className="w-full max-w-md border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#9683EC] focus:ring-2 focus:ring-[#CCCCFF]"
       >
         <option value="">Sélectionner un devis BROUILLON...</option>
         {devisData.map((d) => (
@@ -1790,17 +1790,17 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 p-1.5 rounded-lg bg-purple-50 text-purple-600">
+        <div className="mt-0.5 p-1.5 rounded-lg bg-blue-50 text-blue-600">
           {getTypeIcon(question.typeReponse)}
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-900">
+          <p className="text-sm font-semibold text-slate-950">
             {question.question}
             {question.obligatoire && <span className="text-red-500 ml-1">*</span>}
           </p>
-          {question.aide && <p className="text-xs text-gray-400 mt-0.5">{question.aide}</p>}
+          {question.aide && <p className="text-xs text-slate-400 mt-0.5">{question.aide}</p>}
 
           <div className="mt-3">
             {question.typeReponse === 'BOOLEEN' && (
@@ -1813,7 +1813,7 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
                       'px-4 py-2 rounded-xl text-sm font-medium border transition',
                       value === (opt === 'Oui')
                         ? 'bg-[#5A4FCF] text-white border-[#5A4FCF]'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#5A4FCF]',
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-[#5A4FCF]',
                     )}
                   >
                     {opt}
@@ -1834,12 +1834,12 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
                         'px-3 py-1.5 rounded-xl text-sm font-medium border transition',
                         value === choix.nom
                           ? 'bg-[#5A4FCF] text-white border-[#5A4FCF]'
-                          : 'bg-white text-gray-600 border-gray-200 hover:border-[#5A4FCF]',
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-[#5A4FCF]',
                       )}
                     >
                       {choix.nom}
                       {choix.impactPrix !== 0 && (
-                        <span className={cn('ml-1', value === choix.nom ? 'text-[#CCCCFF]' : 'text-gray-400')}>
+                        <span className={cn('ml-1', value === choix.nom ? 'text-[#CCCCFF]' : 'text-slate-400')}>
                           {choix.impactPrix > 0 ? '+' : ''}{choix.impactPrix}€
                         </span>
                       )}
@@ -1862,13 +1862,13 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
                         'px-3 py-1.5 rounded-xl text-sm font-medium border transition flex items-center gap-1.5',
                         selected
                           ? 'bg-[#5A4FCF] text-white border-[#5A4FCF]'
-                          : 'bg-white text-gray-600 border-gray-200 hover:border-[#5A4FCF]',
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-[#5A4FCF]',
                       )}
                     >
                       {selected ? <CheckSquare size={14} /> : <Square size={14} />}
                       {choix.nom}
                       {choix.impactPrix !== 0 && (
-                        <span className={cn('ml-1', selected ? 'text-[#CCCCFF]' : 'text-gray-400')}>
+                        <span className={cn('ml-1', selected ? 'text-[#CCCCFF]' : 'text-slate-400')}>
                           {choix.impactPrix > 0 ? '+' : ''}{choix.impactPrix}€
                         </span>
                       )}
@@ -1883,7 +1883,7 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
                 value={(value as string) ?? ''}
                 onChange={(e) => onChange(e.target.value)}
                 rows={2}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#9683EC] resize-none"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#9683EC] resize-none"
                 placeholder="Votre réponse..."
               />
             )}
@@ -1893,13 +1893,13 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
                 type="number"
                 value={(value as string) ?? ''}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-32 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#9683EC]"
+                className="w-32 border border-slate-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#9683EC]"
                 placeholder="0"
               />
             )}
 
             {question.typeReponse === 'PHOTO' && (
-              <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-50 rounded-xl px-4 py-3">
+              <div className="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 rounded-xl px-4 py-3">
                 <Camera size={16} />
                 <span>Prise de photo (fonctionnalité à venir)</span>
               </div>
@@ -1947,13 +1947,13 @@ function PrestationRow({
       <div className="flex items-center gap-3 px-5 py-3">
         {/* Checkbox */}
         <button onClick={() => toggleItem(presta.id)} className="shrink-0 text-[#5A4FCF] hover:text-[#9683EC] transition">
-          {isChecked ? <CheckSquare size={20} /> : <Square size={20} className="text-gray-300" />}
+          {isChecked ? <CheckSquare size={20} /> : <Square size={20} className="text-slate-300" />}
         </button>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={cn('text-sm font-medium', isChecked ? 'text-gray-900' : 'text-gray-600')}>{presta.nom}</span>
+            <span className={cn('text-sm font-medium', isChecked ? 'text-slate-950' : 'text-slate-600')}>{presta.nom}</span>
             {hasDetails && (
               <button
                 onClick={() => setExpandedDetail(isDetailOpen ? null : presta.id)}
@@ -1963,7 +1963,7 @@ function PrestationRow({
               </button>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-0.5 text-xs text-gray-400">
+          <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-400">
             <span>{r2(prix.minUnitPrice)}–{r2(prix.maxUnitPrice)} €/{presta.unite}</span>
             {prix.optionImpactParUnite !== 0 && (
               <span className={cn('font-semibold', prix.optionImpactParUnite > 0 ? 'text-[#5A4FCF]' : 'text-rose-600')}>
@@ -1971,30 +1971,30 @@ function PrestationRow({
               </span>
             )}
             {prix.coutParUnite > 0 && <span className="text-orange-500">coût: {prix.coutParUnite.toFixed(2)} €/{presta.unite}</span>}
-            {(presta.options?.length ?? 0) > 0 && <span className="text-purple-500">{presta.options!.length} options</span>}
-            {(presta.infosRequises?.length ?? 0) > 0 && <span className="text-violet-500">{presta.infosRequises!.length} infos</span>}
+            {(presta.options?.length ?? 0) > 0 && <span className="text-blue-500">{presta.options!.length} options</span>}
+            {(presta.infosRequises?.length ?? 0) > 0 && <span className="text-blue-500">{presta.infosRequises!.length} infos</span>}
           </div>
         </div>
 
         {/* Quantité */}
         {isChecked && item && (
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={() => updateQuantite(presta.id, item.quantite - 1)} className="p-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100"><Minus size={14} /></button>
+            <button onClick={() => updateQuantite(presta.id, item.quantite - 1)} className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"><Minus size={14} /></button>
             <input
               type="number" min="0.01" step={presta.unite === 'PIECE' || presta.unite === 'FORFAIT' ? '1' : '0.5'}
               value={item.quantite}
               onChange={(e) => updateQuantite(presta.id, parseFloat(e.target.value) || 1)}
-              className="w-16 text-center text-sm font-semibold border border-gray-200 rounded-lg py-1 outline-none focus:border-[#9683EC]"
+              className="w-16 text-center text-sm font-semibold border border-slate-200 rounded-lg py-1 outline-none focus:border-[#9683EC]"
             />
-            <button onClick={() => updateQuantite(presta.id, item.quantite + 1)} className="p-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100"><Plus size={14} /></button>
-            <span className="text-xs text-gray-400 ml-1">{presta.unite}</span>
+            <button onClick={() => updateQuantite(presta.id, item.quantite + 1)} className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100"><Plus size={14} /></button>
+            <span className="text-xs text-slate-400 ml-1">{presta.unite}</span>
           </div>
         )}
 
         {/* Sous-total */}
         {isChecked && item && (
           <div className="text-right shrink-0 hidden sm:block">
-            <p className="text-sm font-bold text-gray-900">{formatCurrency(item.quantite * prix.prixVente)}</p>
+            <p className="text-sm font-bold text-slate-950">{formatCurrency(item.quantite * prix.prixVente)}</p>
           </div>
         )}
       </div>
@@ -2005,8 +2005,8 @@ function PrestationRow({
           {/* Compositions (matériaux + MO) */}
           {getCompositionsForItem(presta, item).length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">Matériaux et Main d'œuvre</p>
-              <div className="space-y-1.5 bg-gray-50 rounded-lg p-2">
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Matériaux et Main d'œuvre</p>
+              <div className="space-y-1.5 bg-slate-50 rounded-lg p-2">
                 {getCompositionsForItem(presta, item).map(comp => {
                   if (comp.materiau) {
                     const qteTotal = comp.quantiteParUnite * item.quantite;
@@ -2015,9 +2015,9 @@ function PrestationRow({
                       <div key={comp.id} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <Package size={12} className="text-blue-400" />
-                          <span className="font-medium text-gray-700">{comp.materiau.nom}</span>
+                          <span className="font-medium text-slate-700">{comp.materiau.nom}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-slate-600">
                           <span>{comp.quantiteParUnite} × {item.quantite} = {qteTotal} {comp.materiau.unite}</span>
                           <span className="font-semibold text-orange-600">{formatCurrency(coutMat)}</span>
                         </div>
@@ -2029,9 +2029,9 @@ function PrestationRow({
                       <div key={comp.id} className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-2">
                           <Wrench size={12} className="text-[#5A4FCF]" />
-                          <span className="font-medium text-gray-700">{comp.serviceMainOeuvre.nom}</span>
+                          <span className="font-medium text-slate-700">{comp.serviceMainOeuvre.nom}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-slate-600">
                           <span>{comp.quantiteParUnite} × {item.quantite} = {comp.quantiteParUnite * item.quantite} {comp.serviceMainOeuvre.unite}</span>
                           <span className="font-semibold text-[#5A4FCF]">{formatCurrency(coutMO)}</span>
                         </div>
@@ -2047,7 +2047,7 @@ function PrestationRow({
           {/* Options avec choix cliquables */}
           {isChecked && (presta.options?.length ?? 0) > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Options</p>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Options</p>
               <div className="space-y-3">
                 {presta.options!.map(option => (
                   <OptionBlock
@@ -2065,12 +2065,12 @@ function PrestationRow({
           {/* Infos requises */}
           {isChecked && (presta.infosRequises?.length ?? 0) > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Informations requises</p>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Informations requises</p>
               <div className="space-y-2">
                 {presta.infosRequises!.map(info => (
                   <div key={info.id} className="flex items-center gap-2">
                     {getInfoIcon(info.typeInfo)}
-                    <span className="text-xs text-gray-600 min-w-[120px]">
+                    <span className="text-xs text-slate-600 min-w-[120px]">
                       {info.nom}{info.obligatoire && <span className="text-red-500">*</span>}
                     </span>
                     <input
@@ -2078,9 +2078,9 @@ function PrestationRow({
                       placeholder={info.aide ?? info.nom}
                       value={item?.infosValues.get(info.nom) ?? ''}
                       onChange={(e) => setInfoValue(presta.id, info.nom, e.target.value)}
-                      className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:border-[#9683EC]"
+                      className="flex-1 text-xs border border-slate-200 rounded-lg px-2 py-1.5 outline-none focus:border-[#9683EC]"
                     />
-                    {info.unite && <span className="text-[10px] text-gray-400">{info.unite}</span>}
+                    {info.unite && <span className="text-[10px] text-slate-400">{info.unite}</span>}
                   </div>
                 ))}
               </div>
@@ -2101,7 +2101,7 @@ function OptionBlock({ presta, option, selectedChoixIds, onToggle }: {
 }) {
   return (
     <div>
-      <p className="text-xs font-medium text-gray-700 mb-1">
+      <p className="text-xs font-medium text-slate-700 mb-1">
         {option.nom}
         {option.obligatoire && <span className="text-red-500 ml-0.5">*</span>}
       </p>
@@ -2115,12 +2115,12 @@ function OptionBlock({ presta, option, selectedChoixIds, onToggle }: {
               onClick={() => onToggle(choix.id)}
               className={cn(
                 'px-2.5 py-1 rounded-lg text-xs font-medium border transition',
-                selected ? 'bg-[#5A4FCF] text-white border-[#5A4FCF]' : 'bg-white text-gray-600 border-gray-200 hover:border-[#5A4FCF]',
+                selected ? 'bg-[#5A4FCF] text-white border-[#5A4FCF]' : 'bg-white text-slate-600 border-slate-200 hover:border-[#5A4FCF]',
               )}
             >
               {choix.nom}
               {impact !== 0 && (
-                <span className={cn('ml-1', selected ? 'text-[#CCCCFF]' : 'text-gray-400')}>
+                <span className={cn('ml-1', selected ? 'text-[#CCCCFF]' : 'text-slate-400')}>
                   {impact > 0 ? '+' : ''}{impact}€
                 </span>
               )}
@@ -2158,14 +2158,14 @@ function RecapSidebar({
 }) {
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-6">
-        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sticky top-6">
+        <h3 className="text-sm font-bold text-slate-950 flex items-center gap-2 mb-4">
           <Calculator size={16} className="text-[#5A4FCF]" />
           Récapitulatif
         </h3>
 
         {checkedCount === 0 ? (
-          <p className="text-sm text-gray-400 italic">Aucune prestation cochée</p>
+          <p className="text-sm text-slate-400 italic">Aucune prestation cochée</p>
         ) : (
           <>
             <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
@@ -2175,14 +2175,14 @@ function RecapSidebar({
                 const { prixVente } = calcPrixPresta(presta, item);
                 return (
                   <div key={prestationId} className="flex items-center justify-between text-xs">
-                    <span className="text-gray-600 truncate max-w-[55%]">{presta.nom}</span>
-                    <span className="font-semibold text-gray-900">{item.quantite} × {formatCurrency(prixVente)}</span>
+                    <span className="text-slate-600 truncate max-w-[55%]">{presta.nom}</span>
+                    <span className="font-semibold text-slate-950">{item.quantite} × {formatCurrency(prixVente)}</span>
                   </div>
                 );
               })}
             </div>
 
-            <div className="border-t border-gray-100 pt-3 space-y-2">
+            <div className="border-t border-slate-100 pt-3 space-y-2">
               <Row label="Total HT" value={formatCurrency(totaux.totalVenteHT)} bold />
               <Row
                 label="Fourchette HT"
@@ -2190,7 +2190,7 @@ function RecapSidebar({
                 size="xs"
               />
               {(totaux.questionImpact ?? 0) !== 0 && (
-                <Row label="Surcoût" value={formatCurrency(totaux.questionImpact ?? 0)} color={(totaux.questionImpact ?? 0) > 0 ? 'text-orange-600' : 'text-emerald-600'} size="xs" />
+                <Row label="Surcoût" value={formatCurrency(totaux.questionImpact ?? 0)} color={(totaux.questionImpact ?? 0) > 0 ? 'text-orange-600' : 'text-blue-600'} size="xs" />
               )}
               <Row label="TVA" value={formatCurrency(totaux.totalTVA)} />
               <div className="flex justify-between text-sm bg-[#CCCCFF]/40 -mx-2 px-2 py-1.5 rounded-lg">
@@ -2199,7 +2199,7 @@ function RecapSidebar({
               </div>
             </div>
 
-            <div className="border-t border-gray-100 pt-3 mt-3 space-y-1.5">
+            <div className="border-t border-slate-100 pt-3 mt-3 space-y-1.5">
               <Row label="Coût" value={formatCurrency(totaux.totalCout)} color="text-orange-600" size="xs" />
               <Row label="Bénéfice" value={formatCurrency(totaux.profit)} color={totaux.profit >= 0 ? 'text-[#5A4FCF]' : 'text-red-600'} size="xs" bold />
               <Row label="Marge" value={`${totaux.marge}%`} color={totaux.marge >= 20 ? 'text-[#5A4FCF]' : totaux.marge >= 10 ? 'text-orange-500' : 'text-red-600'} size="xs" bold />
@@ -2222,8 +2222,8 @@ function RecapSidebar({
 function Row({ label, value, bold, color, size = 'sm' }: { label: string; value: string; bold?: boolean; color?: string; size?: 'xs' | 'sm' }) {
   return (
     <div className={cn('flex justify-between', size === 'xs' ? 'text-xs' : 'text-sm')}>
-      <span className="text-gray-500">{label}</span>
-      <span className={cn(bold ? 'font-bold' : 'font-medium', color ?? 'text-gray-900')}>{value}</span>
+      <span className="text-slate-500">{label}</span>
+      <span className={cn(bold ? 'font-bold' : 'font-medium', color ?? 'text-slate-950')}>{value}</span>
     </div>
   );
 }

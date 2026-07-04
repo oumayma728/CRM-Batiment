@@ -222,14 +222,14 @@ export default function UsersPage() {
   );
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="max-w-full space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Shield size={24} className="text-red-600" />
+          <h1 className="text-2xl font-semibold text-slate-950 flex items-center gap-2">
+            <Shield size={24} className="text-blue-600" />
             Gestion des Utilisateurs
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">{list.length} utilisateur(s) enregistré(s)</p>
+          <p className="text-slate-500 text-sm mt-0.5">{list.length} utilisateur(s) enregistré(s)</p>
         </div>
         <button
           onClick={() => {
@@ -237,57 +237,57 @@ export default function UsersPage() {
             setCreateFeedback(null);
             setShowModal(true);
           }}
-          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
+          className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
         >
           <Plus size={17} /> Nouvel utilisateur
         </button>
       </div>
 
-      <div className="mb-4">
+      <div className="">
         <div className="relative max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher un utilisateur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Rechercher un utilisateur..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none" />
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-600" size={32} /></div>
+          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={32} /></div>
         ) : list.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <Shield size={48} className="mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-20 text-slate-500">
+            <Shield size={48} className="mx-auto  text-slate-300" />
             <p className="text-lg font-medium">Aucun utilisateur trouvé</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-100">
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Utilisateur</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Contact</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Rôle</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Statut</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Créé le</th>
-                  <th className="text-right px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Actions</th>
+                <tr className="bg-slate-50/80 border-b border-slate-200">
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Utilisateur</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Contact</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Rôle</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Statut</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Créé le</th>
+                  <th className="text-right px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {list.map((u) => (
-                  <tr key={u.id} className="hover:bg-primary-50/30 transition-colors group">
+                  <tr key={u.id} className="hover:bg-blue-50/30 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 batiflow-gradient rounded-xl flex items-center justify-center font-bold text-white text-sm shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center font-bold text-white text-sm shadow-sm">
                           {getInitials(`${u.prenom} ${u.nom}`)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{u.prenom} {u.nom}</p>
+                          <p className="font-medium text-slate-950">{u.prenom} {u.nom}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-600 flex items-center gap-1.5"><Mail size={13} /> {u.email}</p>
-                        {u.telephone && <p className="text-sm text-gray-600 flex items-center gap-1.5"><Phone size={13} /> {u.telephone}</p>}
+                        <p className="text-sm text-slate-600 flex items-center gap-1.5"><Mail size={13} /> {u.email}</p>
+                        {u.telephone && <p className="text-sm text-slate-600 flex items-center gap-1.5"><Phone size={13} /> {u.telephone}</p>}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -301,18 +301,18 @@ export default function UsersPage() {
                     <td className="px-6 py-4">
                       <span className={cn(
                         'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold',
-                        u.actif ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-50 text-gray-600',
+                        u.actif ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-600',
                       )}>
-                        <span className={cn('w-1.5 h-1.5 rounded-full', u.actif ? 'bg-emerald-500' : 'bg-gray-400')} />
+                        <span className={cn('w-1.5 h-1.5 rounded-full', u.actif ? 'bg-emerald-500' : 'bg-slate-400')} />
                         {u.actif ? 'Actif' : 'Inactif'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{formatDate(u.createdAt)}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500">{formatDate(u.createdAt)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => openEditModal(u)}
-                          className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                          className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                           title="Modifier l utilisateur"
                         >
                           <Edit size={16} />
@@ -330,7 +330,7 @@ export default function UsersPage() {
                             });
                           }}
                           disabled={resetTempPasswordMutation.isPending || deleteMutation.isPending}
-                          className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                          className="p-2 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
                           title="Reinitialiser le mot de passe temporaire"
                         >
                           {resetTempPasswordMutation.isPending &&
@@ -355,7 +355,7 @@ export default function UsersPage() {
                                 ? 'Compte deja inactif'
                                 : 'Desactiver le compte'
                           }
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                          className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:hover:text-slate-400 disabled:hover:bg-transparent"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -367,7 +367,7 @@ export default function UsersPage() {
                             'mt-2 text-xs',
                             resetFeedback.type === 'success'
                               ? 'text-emerald-700'
-                              : 'text-red-600',
+                              : 'text-blue-600',
                           )}
                         >
                           {resetFeedback.message}
@@ -382,7 +382,7 @@ export default function UsersPage() {
         )}
 
         {deleteMutation.error && (
-          <p className="px-6 pb-4 text-sm text-red-600">
+          <p className="px-6 pb-4 text-sm text-blue-600">
             {getApiErrorMessage(deleteMutation.error, 'Erreur lors de la desactivation.')}
           </p>
         )}
@@ -391,15 +391,15 @@ export default function UsersPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouvel utilisateur</h2>
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-950">Nouvel utilisateur</h2>
               <button
                 onClick={() => {
                   setShowModal(false);
                   setCreateFeedback(null);
                 }}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
               >
                 <X size={18} />
               </button>
@@ -407,17 +407,17 @@ export default function UsersPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom *</label>
-                  <input type="text" required value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prénom *</label>
+                  <input type="text" required value={form.prenom} onChange={(e) => setForm({ ...form, prenom: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                  <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom *</label>
+                  <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-                <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email *</label>
+                <input type="email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
               </div>
               <div>
                 <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
@@ -426,17 +426,17 @@ export default function UsersPage() {
                 </p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
-                <input type="text" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all" />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Téléphone</label>
+                <input type="text" value={form.telephone} onChange={(e) => setForm({ ...form, telephone: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Rôle *</label>
-                <select required value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Rôle *</label>
+                <select required value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
                   {roles.map((r) => <option key={r} value={r}>{roleConfig[r].label}</option>)}
                 </select>
               </div>
               {createMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">
                   {getApiErrorMessage(createMutation.error, 'Erreur lors de la creation.')}
                 </p>
               )}
@@ -446,7 +446,7 @@ export default function UsersPage() {
                     'text-sm px-4 py-2 rounded-lg',
                     createFeedback.type === 'success'
                       ? 'text-emerald-700 bg-emerald-50'
-                      : 'text-red-600 bg-red-50',
+                      : 'text-blue-600 bg-red-50',
                   )}
                 >
                   {createFeedback.message}
@@ -459,11 +459,11 @@ export default function UsersPage() {
                     setShowModal(false);
                     setCreateFeedback(null);
                   }}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Annuler
                 </button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Créer
                 </button>
@@ -476,15 +476,15 @@ export default function UsersPage() {
       {/* Edit Modal */}
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Modifier utilisateur</h2>
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-950">Modifier utilisateur</h2>
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   setEditingUser(null);
                 }}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
               >
                 <X size={18} />
               </button>
@@ -492,55 +492,55 @@ export default function UsersPage() {
 
             <form onSubmit={handleUpdateSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
                 <input
                   type="email"
                   value={editingUser.email}
                   disabled
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-500"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-slate-50 text-slate-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prénom *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prénom *</label>
                   <input
                     type="text"
                     required
                     value={editForm.prenom}
                     onChange={(e) => setEditForm({ ...editForm, prenom: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom *</label>
                   <input
                     type="text"
                     required
                     value={editForm.nom}
                     onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Téléphone</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Téléphone</label>
                 <input
                   type="text"
                   value={editForm.telephone}
                   onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Rôle *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Rôle *</label>
                 <select
                   required
                   value={editForm.role}
                   onChange={(e) => setEditForm({ ...editForm, role: e.target.value as Role })}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
                 >
                   {roles.map((r) => (
                     <option key={r} value={r}>
@@ -550,8 +550,8 @@ export default function UsersPage() {
                 </select>
               </div>
 
-              <label className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-                <span className="text-sm font-medium text-gray-700">Compte actif</span>
+              <label className="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3">
+                <span className="text-sm font-medium text-slate-700">Compte actif</span>
                 <input
                   type="checkbox"
                   checked={editForm.actif}
@@ -561,7 +561,7 @@ export default function UsersPage() {
               </label>
 
               {updateMutation.error && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">
                   {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise a jour.')}
                 </p>
               )}
@@ -573,14 +573,14 @@ export default function UsersPage() {
                     setShowEditModal(false);
                     setEditingUser(null);
                   }}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
+                  className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
                 >
                   {updateMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Enregistrer

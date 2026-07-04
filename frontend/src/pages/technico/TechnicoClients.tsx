@@ -27,9 +27,9 @@ const sourceLabels: Record<string, { label: string; color: string }> = {
   CHATBOT: { label: 'Chatbot', color: 'bg-cyan-100 text-cyan-700' },
   TECHNICO_COMMERCIAL: { label: 'Technico-Commercial', color: 'bg-blue-100 text-blue-700' },
   APPEL: { label: 'Appel', color: 'bg-blue-100 text-blue-700' },
-  SITE_WEB: { label: 'Site web', color: 'bg-purple-100 text-purple-700' },
+  SITE_WEB: { label: 'Site web', color: 'bg-blue-100 text-blue-700' },
   RECOMMANDATION: { label: 'Recommandation', color: 'bg-green-100 text-green-700' },
-  AUTRE: { label: 'Autre', color: 'bg-gray-100 text-gray-600' },
+  AUTRE: { label: 'Autre', color: 'bg-slate-100 text-slate-600' },
 };
 
 function getApiErrorMessage(error: unknown, fallback: string) {
@@ -273,8 +273,8 @@ export default function TechnicoClients() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Mes Clients</h2>
-          <p className="text-sm text-gray-400 mt-0.5">{meta.total} client{meta.total > 1 ? 's' : ''} au total</p>
+          <h2 className="text-xl font-bold text-slate-950">Mes Clients</h2>
+          <p className="text-sm text-slate-400 mt-0.5">{meta.total} client{meta.total > 1 ? 's' : ''} au total</p>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -288,7 +288,7 @@ export default function TechnicoClients() {
             type="button"
             onClick={() => importInputRef.current?.click()}
             disabled={isImporting}
-            className="inline-flex items-center gap-2 border border-gray-200 bg-white px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+            className="inline-flex items-center gap-2 border border-slate-200 bg-white px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
             {isImporting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {isImporting ? 'Import en cours...' : 'Importer Excel'}
@@ -299,7 +299,7 @@ export default function TechnicoClients() {
               setSelectedTypeProjetIds([]);
               setShowModal(true);
             }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-teal-600/20 transition-all"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-lg shadow-blue-600/20 transition-all"
           >
             <UserPlus size={18} />
             Nouveau client
@@ -311,7 +311,7 @@ export default function TechnicoClients() {
         <div
           className={cn(
             'rounded-xl border px-4 py-2.5 text-sm',
-            importFeedback.type === 'success' && 'border-emerald-200 bg-emerald-50 text-emerald-700',
+            importFeedback.type === 'success' && 'border-blue-200 bg-blue-50 text-blue-700',
             importFeedback.type === 'warning' && 'border-amber-200 bg-amber-50 text-amber-700',
             importFeedback.type === 'error' && 'border-red-200 bg-red-50 text-red-700',
           )}
@@ -322,27 +322,27 @@ export default function TechnicoClients() {
 
       {/* Filters bar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-          <Search size={18} className="text-gray-400" />
+        <div className="flex-1 flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+          <Search size={18} className="text-slate-400" />
           <input
             type="text"
             placeholder="Rechercher par nom, email, téléphone..."
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
+            <button onClick={() => setSearch('')} className="text-slate-300 hover:text-slate-500">
               <X size={16} />
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
-          <Filter size={16} className="text-gray-400" />
+        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
+          <Filter size={16} className="text-slate-400" />
           <select
             value={sourceFilter}
             onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }}
-            className="bg-transparent text-sm outline-none text-gray-600"
+            className="bg-transparent text-sm outline-none text-slate-600"
           >
             <option value="">Toutes les sources</option>
             <option value="CHATBOT">Chatbot</option>
@@ -359,69 +359,69 @@ export default function TechnicoClients() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-2xl border border-slate-100 p-6 animate-pulse">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
+                <div className="w-12 h-12 bg-slate-200 rounded-full" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-3 bg-gray-100 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                  <div className="h-3 bg-slate-100 rounded w-1/3" />
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : clients.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <UserPlus size={28} className="text-gray-400" />
+        <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+            <UserPlus size={28} className="text-slate-400" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900">Aucun client trouvé</h3>
-          <p className="text-sm text-gray-400 mt-1">Commencez par ajouter votre premier client.</p>
+          <h3 className="text-lg font-semibold text-slate-950">Aucun client trouvé</h3>
+          <p className="text-sm text-slate-400 mt-1">Commencez par ajouter votre premier client.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {clients.map((client) => (
             <div
               key={client.id}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 group"
+              className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all p-5 group"
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-full flex items-center justify-center text-teal-700 font-bold text-sm shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-sm shrink-0">
                   {(client.prenom?.charAt(0) ?? '') + (client.nom?.charAt(0) ?? '')}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-gray-900">
+                    <h3 className="font-bold text-slate-950">
                       {client.prenom} {client.nom}
                     </h3>
                     {client.source && (
-                      <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold', sourceLabels[client.source]?.color ?? 'bg-gray-100 text-gray-600')}>
+                      <span className={cn('px-2 py-0.5 rounded-full text-[11px] font-semibold', sourceLabels[client.source]?.color ?? 'bg-slate-100 text-slate-600')}>
                         {sourceLabels[client.source]?.label ?? client.source}
                       </span>
                     )}
                   </div>
                   {getClientProjectTypes(client).length > 0 && (
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       {getClientProjectLabel(client)}
                     </p>
                   )}
 
                   <div className="mt-3 space-y-1.5">
                     {client.email && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Mail size={13} className="text-gray-400" />
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Mail size={13} className="text-slate-400" />
                         <span>{client.email}</span>
                       </div>
                     )}
                     {client.telephone && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Phone size={13} className="text-gray-400" />
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Phone size={13} className="text-slate-400" />
                         <span>{client.telephone}</span>
                       </div>
                     )}
                     {(client.adresseClient || client.adresseChantier) && (
-                      <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <MapPin size={13} className="text-gray-400" />
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <MapPin size={13} className="text-slate-400" />
                         <span className="truncate">{client.adresseChantier ?? client.adresseClient}</span>
                       </div>
                     )}
@@ -429,18 +429,18 @@ export default function TechnicoClients() {
                 </div>
                 <button
                   onClick={() => openEdit(client)}
-                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-teal-50 text-gray-400 hover:text-teal-600 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all"
                 >
                   <Edit3 size={16} />
                 </button>
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
-                <span className="text-[11px] text-gray-400">
+              <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+                <span className="text-[11px] text-slate-400">
                   Ajouté le {formatDate(client.createdAt)}
                 </span>
                 <button
                   onClick={() => openDemandeModal(client)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-teal-50 px-3 py-2 text-xs font-semibold text-teal-700 transition hover:bg-teal-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
                 >
                   <FileText size={14} />
                   Créer demande
@@ -457,17 +457,17 @@ export default function TechnicoClients() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
+            className="p-2 rounded-lg border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition"
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-sm text-gray-600 font-medium px-3">
+          <span className="text-sm text-slate-600 font-medium px-3">
             Page {page} / {meta.totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
             disabled={page >= meta.totalPages}
-            className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
+            className="p-2 rounded-lg border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition"
           >
             <ChevronRight size={18} />
           </button>
@@ -478,13 +478,13 @@ export default function TechnicoClients() {
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-950">
                 {editClient ? 'Modifier le client' : 'Nouveau client'}
               </h3>
               <button
                 onClick={closeClientModal}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"
               >
                 <X size={20} />
               </button>
@@ -505,14 +505,14 @@ export default function TechnicoClients() {
                 typesProjet={typesProjet ?? []}
                 selectedIds={selectedTypeProjetIds}
                 onToggle={toggleProjectType}
-                accent="teal"
+                accent="primary"
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Source</label>
                 <select
                   name="source"
                   defaultValue={editClient?.source ?? ''}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="">-- Choisir --</option>
                   <option value="CHATBOT">Chatbot</option>
@@ -524,26 +524,26 @@ export default function TechnicoClients() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
                 <textarea
                   name="notes"
                   rows={2}
                   defaultValue={editClient?.notes ?? ''}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 resize-none"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"
                 />
               </div>
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={closeClientModal}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 shadow-lg shadow-teal-600/20 disabled:opacity-50 transition-all"
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-600 text-white hover:from-blue-700 hover:to-blue-700 shadow-lg shadow-blue-600/20 disabled:opacity-50 transition-all"
                 >
                   {editClient ? 'Enregistrer' : 'Créer'}
                 </button>
@@ -556,16 +556,16 @@ export default function TechnicoClients() {
       {demandeClient && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Créer une demande de devis</h3>
-                <p className="text-sm text-gray-500 mt-1">
+                <h3 className="text-lg font-bold text-slate-950">Créer une demande de devis</h3>
+                <p className="text-sm text-slate-500 mt-1">
                   Client : {demandeClient.prenom} {demandeClient.nom}
                 </p>
               </div>
               <button
                 onClick={closeDemandeModal}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"
               >
                 <X size={20} />
               </button>
@@ -573,16 +573,16 @@ export default function TechnicoClients() {
 
             <div className="p-6 space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                     Type de projet
                   </p>
                   <p className="mt-1 text-sm font-medium text-gray-800">
                     {getClientProjectLabel(demandeClient, 'Non renseigné')}
                   </p>
                 </div>
-                <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gray-400">
+                <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                     Source
                   </p>
                   <p className="mt-1 text-sm font-medium text-gray-800">
@@ -592,7 +592,7 @@ export default function TechnicoClients() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   Description de la demande
                 </label>
                 <textarea
@@ -600,9 +600,9 @@ export default function TechnicoClients() {
                   value={demandeDescription}
                   onChange={(event) => setDemandeDescription(event.target.value)}
                   placeholder="Décrivez le besoin du client..."
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 resize-none"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-none"
                 />
-                <p className="mt-2 text-xs text-gray-400">
+                <p className="mt-2 text-xs text-slate-400">
                   Cette demande sera créée avec le statut initial `NOUVEAU`.
                 </p>
               </div>
@@ -620,7 +620,7 @@ export default function TechnicoClients() {
                 <button
                   type="button"
                   onClick={closeDemandeModal}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-100 transition"
                 >
                   Annuler
                 </button>
@@ -628,7 +628,7 @@ export default function TechnicoClients() {
                   type="button"
                   onClick={handleCreateDemande}
                   disabled={createDemandeMutation.isPending}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 shadow-lg shadow-teal-600/20 disabled:opacity-50 transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-blue-600 text-white hover:from-blue-700 hover:to-blue-700 shadow-lg shadow-blue-600/20 disabled:opacity-50 transition-all"
                 >
                   {createDemandeMutation.isPending ? (
                     <Loader2 size={16} className="animate-spin" />
@@ -661,13 +661,13 @@ function FormField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
       <input
         type={type}
         name={name}
         defaultValue={defaultValue ?? ''}
         required={required}
-        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition"
+        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
       />
     </div>
   );

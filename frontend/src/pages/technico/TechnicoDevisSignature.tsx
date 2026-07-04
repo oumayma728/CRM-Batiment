@@ -192,7 +192,7 @@ export default function TechnicoDevisSignature() {
 
       {overviewQuery.isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={28} className="animate-spin text-teal-600" />
+          <Loader2 size={28} className="animate-spin text-blue-600" />
         </div>
       ) : overviewQuery.isError || !devis ? (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
@@ -218,7 +218,7 @@ export default function TechnicoDevisSignature() {
             <div
               className={
                 feedback.type === 'success'
-                  ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
+                  ? 'rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'
                   : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
               }
             >
@@ -242,7 +242,7 @@ export default function TechnicoDevisSignature() {
                 </p>
               )}
               {devis.signatureClientDate && (
-                <p className="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                <p className="mt-2 inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700">
                   <CheckCircle2 size={14} />
                   Client signe le {formatDate(devis.signatureClientDate)}
                 </p>
@@ -270,7 +270,7 @@ export default function TechnicoDevisSignature() {
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2">
-                <Signature size={18} className="text-violet-600" />
+                <Signature size={18} className="text-blue-600" />
                 <h3 className="text-lg font-bold text-slate-900">Signature conseiller</h3>
               </div>
 
@@ -297,7 +297,7 @@ export default function TechnicoDevisSignature() {
                   <button
                     onClick={() => saveConseillerSignatureMutation.mutate()}
                     disabled={saveConseillerSignatureMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
                   >
                     {saveConseillerSignatureMutation.isPending && (
                       <Loader2 size={15} className="animate-spin" />
@@ -315,7 +315,7 @@ export default function TechnicoDevisSignature() {
               <button
                 onClick={() => apposeMutation.mutate()}
                 disabled={!canAppose || apposeMutation.isPending}
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {apposeMutation.isPending ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -337,7 +337,7 @@ export default function TechnicoDevisSignature() {
               )}
 
               {devis.signatureConseillerDate && (
-                <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-medium text-blue-700">
                   <CheckCircle2 size={14} />
                   Conseiller signe le {formatDate(devis.signatureConseillerDate)}
                 </p>

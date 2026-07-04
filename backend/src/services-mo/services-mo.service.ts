@@ -8,10 +8,14 @@ import { CreateServiceMoDto } from './dto/create-service-mo.dto.js';
 import { UpdateServiceMoDto } from './dto/update-service-mo.dto.js';
 import { QueryServiceMoDto } from './dto/query-service-mo.dto.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
+import { AuditService } from '../audit/audit.service.js';
 
 @Injectable()
 export class ServicesMoService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   /**
    * Créer un service de main d'œuvre (ADMIN uniquement)
@@ -92,12 +96,42 @@ export class ServicesMoService {
     dto: UpdateServiceMoDto,
     currentUser: CurrentUserPayload,
   ) {
-    await this.findOne(id, currentUser);
+    const previous = await this.findOne(id, currentUser);
 
-    return this.prisma.serviceMainOeuvre.update({
+    const updated = await this.prisma.serviceMainOeuvre.update({
       where: { id },
       data: dto,
     });
+
+    if (dto.prixUnitaire !== undefined && previous.prixUnitaire !== updated.prixUnitaire) {
+      await this.auditService.logPriceChange({
+        companyId: currentUser.companyId,
+        userId: currentUser.userId,
+        entite: 'ServiceMainOeuvre',
+        entiteId: updated.id,
+        field: 'prixUnitaire',
+        label: updated.nom,
+        oldValue: previous.prixUnitaire,
+        newValue: updated.prixUnitaire,
+        metadata: { unite: updated.unite },
+      });
+    }
+
+    if (dto.coutJournalier !== undefined && previous.coutJournalier !== updated.coutJournalier) {
+      await this.auditService.logPriceChange({
+        companyId: currentUser.companyId,
+        userId: currentUser.userId,
+        entite: 'ServiceMainOeuvre',
+        entiteId: updated.id,
+        field: 'coutJournalier',
+        label: updated.nom,
+        oldValue: previous.coutJournalier,
+        newValue: updated.coutJournalier,
+        metadata: { unite: updated.unite },
+      });
+    }
+
+    return updated;
   }
 
   /**

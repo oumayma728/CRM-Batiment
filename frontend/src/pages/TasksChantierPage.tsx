@@ -56,7 +56,7 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 }
 
 function statusBadgeClass(status: ChantierAutoStatut) {
-  if (status === 'CLOTURE') return 'bg-emerald-100 text-emerald-700';
+  if (status === 'CLOTURE') return 'bg-emerald-100 text-blue-700';
   if (status === 'EN_RETARD') return 'bg-rose-100 text-rose-700';
   if (status === 'EN_COURS') return 'bg-amber-100 text-amber-700';
   return 'bg-slate-100 text-slate-700';
@@ -246,8 +246,8 @@ export default function TasksChantierPage() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.15),_transparent_25%),linear-gradient(135deg,#ffffff_0%,#f8fafc_55%,#eef2ff_100%)] p-4 shadow-sm ring-1 ring-stone-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
+      <section className="rounded-2xl bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.12),_transparent_25%),linear-gradient(135deg,#ffffff_0%,#f8fafc_55%,#eef2ff_100%)] p-4 shadow-sm ring-1 ring-slate-200">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
           Gestion taches chantier
         </p>
         <h1 className="mt-2 text-xl font-bold text-slate-900 md:text-2xl">
@@ -260,7 +260,7 @@ export default function TasksChantierPage() {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-slate-200">
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h2 className="text-base font-bold text-slate-900">Chantiers</h2>
@@ -269,17 +269,17 @@ export default function TasksChantierPage() {
               </p>
             </div>
             {chantiersQuery.isLoading ? (
-              <Loader2 size={17} className="animate-spin text-sky-700" />
+              <Loader2 size={17} className="animate-spin text-blue-700" />
             ) : null}
           </div>
 
           <div className="relative mb-3">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher client ou reference chantier"
-              className="w-full rounded-xl border border-stone-200 bg-stone-50 px-10 py-1.5 text-sm outline-none focus:border-sky-400 focus:bg-white"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-10 py-1.5 text-sm outline-none focus:border-blue-400 focus:bg-white"
             />
           </div>
 
@@ -291,8 +291,8 @@ export default function TasksChantierPage() {
                 className={cn(
                   'w-full rounded-xl border p-3 text-left transition-all',
                   activeChantierId === chantier.id
-                    ? 'border-sky-300 bg-sky-50/60'
-                    : 'border-stone-200 bg-white hover:bg-stone-50',
+                    ? 'border-blue-300 bg-blue-50/60'
+                    : 'border-slate-200 bg-white hover:bg-slate-50',
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -324,24 +324,24 @@ export default function TasksChantierPage() {
             ))}
 
             {!chantiersQuery.isLoading && (chantiersQuery.data?.data ?? []).length === 0 ? (
-              <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
+              <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
                 Aucun chantier trouve.
               </div>
             ) : null}
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-slate-200">
           {!activeChantier ? (
-            <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
+            <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
               Selectionnez un chantier.
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-stone-200 pb-3.5">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 pb-3.5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <HardHat size={18} className="text-sky-700" />
+                    <HardHat size={18} className="text-blue-700" />
                     <h2 className="text-lg font-bold text-slate-900">{activeChantier.reference}</h2>
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
@@ -351,14 +351,14 @@ export default function TasksChantierPage() {
                 </div>
                 <button
                   onClick={openCreate}
-                  className="inline-flex items-center gap-2 rounded-xl bg-sky-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-sky-800"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-3.5 py-1.5 text-sm font-semibold text-white hover:bg-blue-800"
                 >
                   <Plus size={16} /> Ajouter tache
                 </button>
               </div>
 
               {tasksQuery.isLoading ? (
-                <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
+                <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
                   <span className="inline-flex items-center gap-2">
                     <Loader2 size={16} className="animate-spin" /> Chargement des taches...
                   </span>
@@ -372,9 +372,9 @@ export default function TasksChantierPage() {
                         {tasksQuery.data?.resumeTaches.total ?? 0}
                       </p>
                     </article>
-                    <article className="rounded-xl bg-emerald-50 px-3 py-2.5 ring-1 ring-emerald-200">
-                      <p className="text-xs uppercase tracking-[0.14em] text-emerald-700">Do</p>
-                      <p className="text-lg font-bold text-emerald-800">
+                    <article className="rounded-xl bg-blue-50 px-3 py-2.5 ring-1 ring-emerald-200">
+                      <p className="text-xs uppercase tracking-[0.14em] text-blue-700">Do</p>
+                      <p className="text-lg font-bold text-blue-800">
                         {tasksQuery.data?.resumeTaches.done ?? 0}
                       </p>
                     </article>
@@ -413,13 +413,13 @@ export default function TasksChantierPage() {
                   </div>
 
                   {taskList.length === 0 ? (
-                    <div className="rounded-xl bg-stone-50 px-4 py-8 text-center text-sm text-slate-500">
+                    <div className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
                       Aucune tache pour ce chantier.
                     </div>
                   ) : (
                     <div className="space-y-2.5">
                       {taskList.map((task) => (
-                        <div key={task.id} className="rounded-xl border border-stone-200 bg-white p-3">
+                        <div key={task.id} className="rounded-xl border border-slate-200 bg-white p-3">
                           <div className="flex flex-wrap items-start justify-between gap-3">
                             <div className="flex min-w-[260px] flex-1 items-start gap-3">
                               <input
@@ -431,7 +431,7 @@ export default function TasksChantierPage() {
                                     done: event.target.checked,
                                   })
                                 }
-                                className="mt-1 h-4 w-4 rounded border-stone-300 text-sky-700 focus:ring-sky-500"
+                                className="mt-1 h-4 w-4 rounded border-slate-300 text-blue-700 focus:ring-blue-500"
                               />
                               <div>
                                 <p className="text-sm font-semibold text-slate-900">{task.libelle}</p>
@@ -464,7 +464,7 @@ export default function TasksChantierPage() {
                                 className={cn(
                                   'rounded-full px-2.5 py-1 text-[11px] font-semibold',
                                   task.done
-                                    ? 'bg-emerald-100 text-emerald-700'
+                                    ? 'bg-emerald-100 text-blue-700'
                                     : 'bg-amber-100 text-amber-700',
                                 )}
                               >
@@ -472,7 +472,7 @@ export default function TasksChantierPage() {
                               </span>
                               <button
                                 onClick={() => openEdit(task)}
-                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 text-slate-600 hover:bg-stone-50"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
                                 title="Modifier"
                               >
                                 <Pencil size={15} />
@@ -514,7 +514,7 @@ export default function TasksChantierPage() {
                   setEditingTask(null);
                   setForm(emptyForm);
                 }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-500 hover:bg-stone-50"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50"
               >
                 <X size={16} />
               </button>
@@ -532,7 +532,7 @@ export default function TasksChantierPage() {
                     onChange={(event) =>
                       setForm((current) => ({ ...current, libelle: event.target.value }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
                 <label className="space-y-1">
@@ -549,7 +549,7 @@ export default function TasksChantierPage() {
                         equipeId: '',
                       }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   >
                     <option value="AUCUNE">Non affectee</option>
                     <option value="SOUS_TRAITANT">Sous-traitant</option>
@@ -572,7 +572,7 @@ export default function TasksChantierPage() {
                         sousTraitantId: event.target.value,
                       }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   >
                     <option value="">Selectionner</option>
                     {(assignmentOptionsQuery.data?.sousTraitants ?? []).map((st) => (
@@ -598,7 +598,7 @@ export default function TasksChantierPage() {
                         equipeId: event.target.value,
                       }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   >
                     <option value="">Selectionner</option>
                     {(assignmentOptionsQuery.data?.equipesInternes ?? []).map((eq) => (
@@ -620,7 +620,7 @@ export default function TasksChantierPage() {
                   onChange={(event) =>
                     setForm((current) => ({ ...current, description: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                  className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                 />
               </label>
 
@@ -635,7 +635,7 @@ export default function TasksChantierPage() {
                     onChange={(event) =>
                       setForm((current) => ({ ...current, dateDebut: event.target.value }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
                 <label className="space-y-1">
@@ -648,7 +648,7 @@ export default function TasksChantierPage() {
                     onChange={(event) =>
                       setForm((current) => ({ ...current, dateFin: event.target.value }))
                     }
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-sky-400"
+                    className="w-full rounded-2xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
               </div>
@@ -670,14 +670,14 @@ export default function TasksChantierPage() {
                     setEditingTask(null);
                     setForm(emptyForm);
                   }}
-                  className="rounded-2xl border border-stone-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-stone-50"
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={submitMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-sky-700 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {submitMutation.isPending ? (
                     <Loader2 size={16} className="animate-spin" />

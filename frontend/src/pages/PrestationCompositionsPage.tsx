@@ -406,11 +406,11 @@ export default function PrestationCompositionsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <BookOpen size={24} className="text-blue-600" />
             Prestations et leurs compositions
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <p className="text-slate-500 text-sm mt-0.5">
             Table prestations_compositions: {filteredRows.length} ligne(s)
           </p>
           {!isAdmin && (
@@ -432,96 +432,96 @@ export default function PrestationCompositionsPage() {
         <div className="relative max-w-md">
           <Search
             size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
           />
           <input
             type="text"
             placeholder="Rechercher une composition..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-sm transition-all"
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-primary-600" size={32} />
+            <Loader2 className="animate-spin text-blue-600" size={32} />
           </div>
         ) : isError ? (
-          <div className="text-center py-20 text-gray-500">
-            <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-20 text-slate-500">
+            <BookOpen size={48} className="mx-auto mb-4 text-slate-500" />
             <p className="text-lg font-medium">
               Impossible de charger les compositions
             </p>
           </div>
         ) : filteredRows.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
+          <div className="text-center py-20 text-slate-500">
+            <BookOpen size={48} className="mx-auto mb-4 text-slate-500" />
             <p className="text-lg font-medium">Aucune composition trouvee</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1200px]">
               <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     ID
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Prestation
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Categorie
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Sous-categorie
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Type composant
                   </th>
-                  <th className="text-left px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Composant
                   </th>
-                  <th className="text-right px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Qte / unite presta
                   </th>
-                  <th className="text-right px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Cout unitaire
                   </th>
-                  <th className="text-right px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                     Cout total / unite presta
                   </th>
                   {isAdmin && (
-                    <th className="text-right px-4 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                    <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
                       Actions
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100">
                 {filteredRows.map((row) => (
-                  <tr key={row.key} className="hover:bg-primary-50/30 transition-colors">
-                    <td className="px-4 py-3 text-sm text-gray-600">#{row.compositionId}</td>
+                  <tr key={row.key} className="hover:bg-blue-50/30 transition-colors">
+                    <td className="px-4 py-3 text-sm text-slate-600">#{row.compositionId}</td>
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-gray-900">{row.prestationNom}</p>
-                      <p className="text-xs text-gray-500">ID prestation: {row.prestationId}</p>
+                      <p className="text-sm font-medium text-slate-900">{row.prestationNom}</p>
+                      <p className="text-xs text-slate-500">ID prestation: {row.prestationId}</p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.categorieNom}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.sousCategorieNom}</td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{row.typeComposant}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{row.categorieNom}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{row.sousCategorieNom}</td>
+                    <td className="px-4 py-3 text-sm text-slate-700">{row.typeComposant}</td>
                     <td className="px-4 py-3">
-                      <p className="text-sm text-gray-900">{row.composantNom}</p>
-                      <p className="text-xs text-gray-500">Unite: {row.composantUnite}</p>
+                      <p className="text-sm text-slate-900">{row.composantNom}</p>
+                      <p className="text-xs text-slate-500">Unite: {row.composantUnite}</p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-700">
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">
                       {row.quantiteParUnite} / {row.prestationUnite}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right text-gray-700">
+                    <td className="px-4 py-3 text-sm text-right text-slate-700">
                       {row.coutUnitaire === null ? '-' : formatCurrency(row.coutUnitaire)}
                     </td>
-                    <td className="px-4 py-3 text-sm text-right font-medium text-gray-900">
+                    <td className="px-4 py-3 text-sm text-right font-medium text-slate-900">
                       {row.coutParUnite === null ? '-' : formatCurrency(row.coutParUnite)}
                     </td>
                     {isAdmin && (
@@ -529,7 +529,7 @@ export default function PrestationCompositionsPage() {
                         <div className="inline-flex items-center gap-1">
                           <button
                             onClick={() => openEditEditor(row)}
-                            className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
                             title="Modifier"
                           >
                             <Pencil size={14} />
@@ -537,7 +537,7 @@ export default function PrestationCompositionsPage() {
                           <button
                             onClick={() => handleDelete(row)}
                             disabled={deleteMutation.isPending}
-                            className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
+                            className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40"
                             title="Supprimer"
                           >
                             <Trash2 size={14} />
@@ -556,13 +556,13 @@ export default function PrestationCompositionsPage() {
       {showEditor && isAdmin && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900">
                 {editingRow ? 'Modifier la composition' : 'Nouvelle composition'}
               </h2>
               <button
                 onClick={closeEditor}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -570,12 +570,12 @@ export default function PrestationCompositionsPage() {
 
             <form onSubmit={handleEditorSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Prestation</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Prestation</label>
                 <select
                   value={form.prestationId}
                   onChange={(e) => setForm((current) => ({ ...current, prestationId: e.target.value }))}
                   disabled={Boolean(editingRow)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 bg-white disabled:bg-gray-50"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 bg-white disabled:bg-slate-50"
                 >
                   <option value="">Choisir une prestation</option>
                   {prestationChoices.map((prestation) => (
@@ -589,11 +589,11 @@ export default function PrestationCompositionsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Materiau (optionnel)</label>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Materiau (optionnel)</label>
                   <select
                     value={form.materiauId}
                     onChange={(e) => setForm((current) => ({ ...current, materiauId: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 bg-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 bg-white"
                   >
                     <option value="">Aucun matériau</option>
                     {materiaux.map((materiau) => (
@@ -605,13 +605,13 @@ export default function PrestationCompositionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Main d'oeuvre (optionnel)</label>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Main d'oeuvre (optionnel)</label>
                   <select
                     value={form.serviceMainOeuvreId}
                     onChange={(e) =>
                       setForm((current) => ({ ...current, serviceMainOeuvreId: e.target.value }))
                     }
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 bg-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 bg-white"
                   >
                     <option value="">Aucun service MO</option>
                     {servicesMo.map((service) => (
@@ -624,7 +624,7 @@ export default function PrestationCompositionsPage() {
               </div>
 
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Quantite par unite de prestation</label>
+                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Quantite par unite de prestation</label>
                 <input
                   type="number"
                   min="0.0001"
@@ -633,7 +633,7 @@ export default function PrestationCompositionsPage() {
                   onChange={(e) =>
                     setForm((current) => ({ ...current, quantiteParUnite: e.target.value }))
                   }
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
                 />
               </div>
 
@@ -647,7 +647,7 @@ export default function PrestationCompositionsPage() {
                 <button
                   type="button"
                   onClick={closeEditor}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Annuler
                 </button>

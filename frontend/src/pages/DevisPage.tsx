@@ -37,7 +37,7 @@ const statutConfig: Record<
   SIGNE: { bg: 'bg-emerald-100', text: 'text-emerald-800', dot: 'bg-emerald-600', label: 'Signe' },
   REFUSE: { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-500', label: 'Refuse' },
   ANNULE: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'Annule' },
-  REVISE: { bg: 'bg-violet-50', text: 'text-violet-700', dot: 'bg-violet-500', label: 'Revise' },
+  REVISE: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Revise' },
   RENVOYE: { bg: 'bg-cyan-50', text: 'text-cyan-700', dot: 'bg-cyan-500', label: 'Renvoye' },
 };
 
@@ -60,7 +60,7 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
   ],
   ENVOYE: [
     { label: 'Marquer signe', value: 'SIGNE', color: 'text-emerald-700' },
-    { label: 'Marquer accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer accepte', value: 'ACCEPTE', color: 'text-blue-600' },
     { label: 'Marquer refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
@@ -70,7 +70,7 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
   ],
   SIGNE: [],
   REFUSE: [
-    { label: 'Passer en revise', value: 'REVISE', color: 'text-violet-600' },
+    { label: 'Passer en revise', value: 'REVISE', color: 'text-blue-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ANNULE: [],
@@ -80,7 +80,7 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
   ],
   RENVOYE: [
     { label: 'Marquer signe', value: 'SIGNE', color: 'text-emerald-700' },
-    { label: 'Marquer accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer accepte', value: 'ACCEPTE', color: 'text-blue-600' },
     { label: 'Marquer refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
@@ -354,11 +354,11 @@ export default function DevisPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-full space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-            <FileSpreadsheet size={24} className="text-primary-600" />
+          <h1 className="flex items-center gap-2 text-2xl font-semibold text-slate-900">
+            <FileSpreadsheet size={24} className="text-blue-600" />
             Gestion des devis
           </h1>
           <p className="mt-1 text-sm text-slate-500">{meta.total} devis enregistres</p>
@@ -389,7 +389,7 @@ export default function DevisPage() {
               setSearch(event.target.value);
               setPage(1);
             }}
-            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+            className="w-full rounded-2xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
           />
         </div>
       </div>
@@ -397,7 +397,7 @@ export default function DevisPage() {
       <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="animate-spin text-primary-600" size={32} />
+            <Loader2 className="animate-spin text-blue-600" size={32} />
           </div>
         ) : devisList.length === 0 ? (
           <div className="py-24 text-center text-slate-500">
@@ -430,7 +430,7 @@ export default function DevisPage() {
                     : 'Client non renseigne';
 
                   return (
-                    <tr key={devis.id} className="group transition hover:bg-primary-50/30">
+                    <tr key={devis.id} className="group transition hover:bg-blue-50/30">
                       <td className="px-6 py-4">
                         <span className="text-sm font-semibold text-slate-900">{devis.reference}</span>
                       </td>
@@ -496,14 +496,14 @@ export default function DevisPage() {
 
                           <button
                             onClick={() => setPreviewDevisId(devis.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                             title="Apercu"
                           >
                             <Eye size={15} />
                           </button>
                           <button
                             onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600"
+                            className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-blue-600"
                             title="Transformer en facture"
                           >
                             {createFactureFromDevisMutation.isPending ? (
@@ -539,14 +539,14 @@ export default function DevisPage() {
               <button
                 onClick={() => setPage((current) => Math.max(1, current - 1))}
                 disabled={page === 1}
-                className="rounded-xl border border-slate-200 p-2 text-slate-600 transition hover:bg-white disabled:opacity-40"
+                className="rounded-2xl border border-slate-200 p-2 text-slate-600 transition hover:bg-white disabled:opacity-40"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
                 disabled={page === meta.totalPages}
-                className="rounded-xl border border-slate-200 p-2 text-slate-600 transition hover:bg-white disabled:opacity-40"
+                className="rounded-2xl border border-slate-200 p-2 text-slate-600 transition hover:bg-white disabled:opacity-40"
               >
                 <ChevronRight size={16} />
               </button>
@@ -575,7 +575,7 @@ export default function DevisPage() {
                   required
                   value={form.clientId}
                   onChange={(event) => setForm({ ...form, clientId: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 >
                   <option value="">Selectionner un client</option>
                   {(clientsList ?? []).map((client) => (
@@ -594,7 +594,7 @@ export default function DevisPage() {
                   step="0.1"
                   value={form.tauxTVA}
                   onChange={(event) => setForm({ ...form, tauxTVA: event.target.value })}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 />
               </div>
 
@@ -604,7 +604,7 @@ export default function DevisPage() {
                   value={form.notes}
                   rows={4}
                   onChange={(event) => setForm({ ...form, notes: event.target.value })}
-                  className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+                  className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-2.5 text-sm transition focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
                 />
               </div>
 
@@ -639,7 +639,7 @@ export default function DevisPage() {
       {loadingPreview && previewDevisId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-xl">
-            <Loader2 size={18} className="animate-spin text-primary-600" />
+            <Loader2 size={18} className="animate-spin text-blue-600" />
             <span className="text-sm font-medium text-slate-700">Chargement du devis...</span>
           </div>
         </div>

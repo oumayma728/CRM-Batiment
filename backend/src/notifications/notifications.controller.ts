@@ -24,18 +24,18 @@ export class NotificationsController {
 
   @Get('internal')
   @ApiOperation({
-    summary: 'Notifications internes recentes',
+    summary: 'Notifications internes P0',
     description:
-      'Retourne les notifications internes generees apres mise a jour fournisseur et reception chantier.',
+      'Retourne les alertes P0, signatures de devis, modifications de prix et notifications internes recentes.',
   })
   @ApiResponse({ status: 200, description: 'Notifications retournees.' })
   listInternal(
     @Query() query: QueryInternalNotificationsDto,
     @CurrentUser() user: CurrentUserPayload,
-  ) {
+  ): Promise<unknown> {
     return this.notificationsService.listInternalNotifications(
       user,
-      query.limit ?? 8,
+      query.limit ?? 10,
     );
   }
 }

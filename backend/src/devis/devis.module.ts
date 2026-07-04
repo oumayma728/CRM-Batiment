@@ -4,9 +4,10 @@ import { MailModule } from '../mail/mail.module.js';
 import { DevisService } from './devis.service.js';
 import { DevisController } from './devis.controller.js';
 import { DevisPublicController } from './devis-public.controller.js';
+import { AuditModule } from '../audit/audit.module.js';
 
 @Module({
-  imports: [AuthModule, MailModule],
+  imports: [AuthModule, MailModule, AuditModule],
   controllers: [DevisController, DevisPublicController],
   providers: [DevisService],
   exports: [DevisService],

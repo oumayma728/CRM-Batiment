@@ -250,12 +250,12 @@ export default function ChantiersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-[28px] bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.20),_transparent_30%),linear-gradient(135deg,#fff7ed_0%,#ffffff_55%,#ecfeff_100%)] p-6 shadow-sm ring-1 ring-orange-200">
+    <div className="max-w-full space-y-5">
+      <section className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.14),_transparent_30%),linear-gradient(135deg,#eff6ff_0%,#ffffff_58%,#f8fafc_100%)] p-6 shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-700">Chef Chantier</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">Liste des chantiers</h1>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">Chef Chantier</p>
+            <h1 className="mt-2 text-3xl font-semibold text-slate-900">Liste des chantiers</h1>
             <p className="mt-2 text-sm text-slate-600">
               Les chantiers sont synchronises automatiquement a partir des devis acceptes/signes.
               Vous pouvez aussi ajouter, modifier et supprimer des elements manuellement.
@@ -264,7 +264,7 @@ export default function ChantiersPage() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={() => syncMutation.mutate()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-orange-50"
+              className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-blue-50"
               disabled={syncMutation.isPending}
             >
               {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
@@ -272,7 +272,7 @@ export default function ChantiersPage() {
             </button>
             <button
               onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
             >
               <Plus size={16} /> Nouveau chantier
             </button>
@@ -295,7 +295,7 @@ export default function ChantiersPage() {
                 setSearch(event.target.value);
               }}
               placeholder="Rechercher client, reference chantier, adresse ou description"
-              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-500/10"
+              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
             />
           </div>
 
@@ -305,7 +305,7 @@ export default function ChantiersPage() {
               setPage(1);
               setStatusFilter(event.target.value as ChantierStatusFilter);
             }}
-            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-orange-400"
+            className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none focus:border-blue-400"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -448,7 +448,7 @@ export default function ChantiersPage() {
                     required
                     value={form.clientId}
                     onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   >
                     <option value="">Selectionner un client</option>
                     {(clientsQuery.data ?? []).map((client) => (
@@ -465,7 +465,7 @@ export default function ChantiersPage() {
                     value={form.reference}
                     onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))}
                     placeholder="Auto si vide"
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
               </div>
@@ -476,7 +476,7 @@ export default function ChantiersPage() {
                   required
                   value={form.adresse}
                   onChange={(event) => setForm((current) => ({ ...current, adresse: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                 />
               </label>
 
@@ -486,7 +486,7 @@ export default function ChantiersPage() {
                   rows={4}
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                 />
               </label>
 
@@ -496,7 +496,7 @@ export default function ChantiersPage() {
                   <select
                     value={form.statut}
                     onChange={(event) => setForm((current) => ({ ...current, statut: event.target.value as ChantierStatut }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   >
                     {statusOptions
                       .filter((status): status is ChantierStatut => status !== 'ALL')
@@ -514,7 +514,7 @@ export default function ChantiersPage() {
                     type="date"
                     value={form.dateDebut}
                     onChange={(event) => setForm((current) => ({ ...current, dateDebut: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
 
@@ -524,7 +524,7 @@ export default function ChantiersPage() {
                     type="date"
                     value={form.dateFin}
                     onChange={(event) => setForm((current) => ({ ...current, dateFin: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                   />
                 </label>
               </div>
@@ -535,7 +535,7 @@ export default function ChantiersPage() {
                   rows={2}
                   value={form.notes}
                   onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-blue-400"
                 />
               </label>
 
@@ -559,7 +559,7 @@ export default function ChantiersPage() {
                 <button
                   type="submit"
                   disabled={submitMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60"
                 >
                   {submitMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <HardHat size={16} />}
                   {editing ? 'Mettre a jour' : 'Ajouter chantier'}

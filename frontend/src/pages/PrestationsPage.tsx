@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import api from '@/lib/api';
@@ -398,15 +398,15 @@ export default function PrestationsPage() {
   });
 
   return (
-    <div>
+    <div className="max-w-full space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BookOpen size={24} className="text-emerald-600" />
+          <h1 className="text-2xl font-semibold text-slate-950 flex items-center gap-2">
+            <BookOpen size={24} className="text-blue-600" />
             Catalogue des Prestations
           </h1>
-          <p className="text-gray-500 text-sm mt-0.5">
+          <p className="text-slate-500 text-sm mt-0.5">
             {catalogue?.length ?? 0} catÃ©gories Â· {totalSousCategories} sous-catÃ©gories Â· {totalPrestations} prestations Â· {totalOptions} options
           </p>
           {!isAdmin && (
@@ -416,11 +416,11 @@ export default function PrestationsPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium">
+          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium">
             <Download size={16} /> Exporter
           </button>
           {isAdmin && (
-            <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
+            <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
               <Plus size={17} /> Nouvelle prestation
             </button>
           )}
@@ -428,26 +428,26 @@ export default function PrestationsPage() {
       </div>
 
       {/* Search + expand/collapse */}
-      <div className="flex items-center gap-3 mb-5">
+      <div className="flex items-center gap-3 ">
         <div className="relative flex-1 max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
             placeholder="Rechercher dans le catalogue..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none"
           />
           {search && (
-            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+            <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-500">
               <X size={16} />
             </button>
           )}
         </div>
-        <button onClick={expandAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+        <button onClick={expandAll} className="px-3 py-2 text-xs font-medium text-slate-500 hover:text-blue-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
           Tout dÃ©plier
         </button>
-        <button onClick={collapseAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+        <button onClick={collapseAll} className="px-3 py-2 text-xs font-medium text-slate-500 hover:text-blue-600 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
           Tout replier
         </button>
       </div>
@@ -455,21 +455,21 @@ export default function PrestationsPage() {
       {/* Catalogue tree */}
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-primary-600" size={32} />
+          <Loader2 className="animate-spin text-blue-600" size={32} />
         </div>
       ) : filteredCatalogue.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">Aucun rÃ©sultat</p>
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
+          <BookOpen size={48} className="mx-auto  text-slate-500" />
+          <p className="text-lg font-medium text-slate-500">Aucun rÃ©sultat</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredCatalogue.map((cat) => (
-            <div key={cat.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div key={cat.id} className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
               {/* CatÃ©gorie header */}
               <div
                 className={cn(
-                  'w-full flex items-center gap-2 px-5 py-3.5 hover:bg-gray-50/50 transition-colors',
+                  'w-full flex items-center gap-2 px-5 py-3.5 hover:bg-slate-50/50 transition-colors',
                   selectedCatId === cat.id && 'bg-red-50/40',
                 )}
               >
@@ -480,17 +480,17 @@ export default function PrestationsPage() {
                   }}
                   className="flex-1 min-w-0 flex items-center gap-3 text-left"
                 >
-                  {expandedCats.has(cat.id) ? <ChevronDown size={18} className="text-primary-500" /> : <ChevronRight size={18} className="text-gray-400" />}
-                  <div className="w-9 h-9 bg-gradient-to-br from-primary-100 to-blue-100 rounded-xl flex items-center justify-center">
-                    <Layers size={18} className="text-primary-600" />
+                  {expandedCats.has(cat.id) ? <ChevronDown size={18} className="text-blue-500" /> : <ChevronRight size={18} className="text-slate-500" />}
+                  <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl flex items-center justify-center">
+                    <Layers size={18} className="text-blue-600" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
-                    <h3 className="text-sm font-bold text-gray-900 truncate">{cat.nom}</h3>
-                    {cat.description && <p className="text-xs text-gray-500 truncate">{cat.description}</p>}
+                    <h3 className="text-sm font-bold text-slate-950 truncate">{cat.nom}</h3>
+                    {cat.description && <p className="text-xs text-slate-500 truncate">{cat.description}</p>}
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                  <div className="flex items-center gap-3 text-xs text-slate-500">
                     <span>{cat.sousCategories?.length ?? 0} sous-cat.</span>
-                    <span className="text-gray-300">Â·</span>
+                    <span className="text-slate-500">Â·</span>
                     <span>
                       {(cat.sousCategories?.reduce((acc, sc) => acc + (sc.prestations?.length ?? 0), 0) ?? 0) + (cat.prestations?.length ?? 0)} prestations
                     </span>
@@ -507,8 +507,8 @@ export default function PrestationsPage() {
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-colors',
                       deleteSelectedCategoryMutation.isPending
-                        ? 'text-gray-300 border-gray-200 cursor-not-allowed'
-                        : 'text-gray-600 border-gray-300 hover:bg-gray-100',
+                        ? 'text-slate-500 border-slate-200 cursor-not-allowed'
+                        : 'text-slate-600 border-slate-300 hover:bg-slate-100',
                     )}
                     title={`Supprimer la catÃ©gorie ${cat.nom}`}
                   >
@@ -520,10 +520,10 @@ export default function PrestationsPage() {
 
               {/* Sous-catÃ©gories */}
               {expandedCats.has(cat.id) && (
-                <div className="border-t border-gray-100">
+                <div className="border-t border-slate-200">
                   {/* Direct prestations (without sous-catÃ©gorie) */}
                   {(cat.prestations?.length ?? 0) > 0 && (
-                    <div className="ml-8 border-l-2 border-gray-100">
+                    <div className="ml-8 border-l-2 border-slate-200">
                       {cat.prestations.map(p => (
                         <PrestationRow
                           key={p.id}
@@ -543,15 +543,15 @@ export default function PrestationsPage() {
                       {/* Sous-catÃ©gorie header */}
                       <button
                         onClick={() => toggleSub(sc.id)}
-                        className="w-full flex items-center gap-3 pl-12 pr-5 py-3 hover:bg-gray-50/50 transition-colors border-t border-gray-50"
+                        className="w-full flex items-center gap-3 pl-12 pr-5 py-3 hover:bg-slate-50/50 transition-colors border-t border-slate-50"
                       >
-                        {expandedSubs.has(sc.id) ? <ChevronDown size={16} className="text-emerald-500" /> : <ChevronRight size={16} className="text-gray-400" />}
+                        {expandedSubs.has(sc.id) ? <ChevronDown size={16} className="text-emerald-500" /> : <ChevronRight size={16} className="text-slate-500" />}
                         <FolderOpen size={16} className="text-emerald-500" />
                         <div className="flex-1 text-left">
-                          <span className="text-sm font-semibold text-gray-800">{sc.nom}</span>
-                          {sc.description && <span className="text-xs text-gray-400 ml-2">â€” {sc.description}</span>}
+                          <span className="text-sm font-semibold text-slate-800">{sc.nom}</span>
+                          {sc.description && <span className="text-xs text-slate-500 ml-2">â€” {sc.description}</span>}
                         </div>
-                        <span className="text-xs text-gray-400">{sc.prestations?.length ?? 0} prestations</span>
+                        <span className="text-xs text-slate-500">{sc.prestations?.length ?? 0} prestations</span>
                       </button>
 
                       {/* Prestations dans la sous-catÃ©gorie */}
@@ -578,39 +578,39 @@ export default function PrestationsPage() {
       {/* Create Modal */}
       {showModal && isAdmin && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouvelle prestation</h2>
+          <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+              <h2 className="text-lg font-bold text-slate-950">Nouvelle prestation</h2>
               <button
                 onClick={() => {
                   setShowModal(false);
                   setForm(createEmptyPrestationForm());
                   setOptionsForm([]);
                 }}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
+                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
               >
                 <X size={18} />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Nom *</label>
-                <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Nom *</label>
+                <input type="text" required value={form.nom} onChange={(e) => setForm({ ...form, nom: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Categorie</label>
-                <select required value={form.categorieId} onChange={(e) => setForm({ ...form, categorieId: e.target.value, sousCategorieId: '' })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Categorie</label>
+                <select required value={form.categorieId} onChange={(e) => setForm({ ...form, categorieId: e.target.value, sousCategorieId: '' })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                   <option value="">Selectionner une categorie</option>
                   {(catalogue ?? []).map((c) => <option key={c.id} value={c.id}>{c.nom}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Sous-categorie</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Sous-categorie</label>
                 <select
                   value={form.sousCategorieId}
                   onChange={(e) => setForm({ ...form, sousCategorieId: e.target.value })}
                   disabled={!form.categorieId || selectedSubCategories.length === 0}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-slate-50 disabled:text-slate-500"
                 >
                   <option value="">
                     {!form.categorieId
@@ -628,34 +628,34 @@ export default function PrestationsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix vente min *</label>
-                  <input type="number" step="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix vente min *</label>
+                  <input type="number" step="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix vente max *</label>
-                  <input type="number" step="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix vente max *</label>
+                  <input type="number" step="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">UnitÃ©</label>
-                  <input type="text" placeholder="mÂ², ml, u..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">UnitÃ©</label>
+                  <input type="text" placeholder="mÂ², ml, u..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
+                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" />
               </div>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">Choix de prestation</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm font-semibold text-slate-800">Choix de prestation</p>
+                    <p className="text-xs text-slate-500">
                       Ajouter un ou plusieurs choix. Si optionnelle, saisir le prix de l option.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={addOptionBlock}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                   >
                     <Plus size={14} />
                     Ajouter choix
@@ -663,21 +663,21 @@ export default function PrestationsPage() {
                 </div>
 
                 {optionsForm.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-3 text-xs text-gray-500">
+                  <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-3 text-xs text-slate-500">
                     Aucun choix ajoute. Vous pouvez creer la prestation sans choix.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {optionsForm.map((option, optionIndex) => (
-                      <div key={optionIndex} className="rounded-xl border border-gray-200 bg-white p-3 space-y-3">
+                      <div key={optionIndex} className="rounded-2xl border border-slate-200 bg-white p-3 space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             Option #{optionIndex + 1}
                           </p>
                           <button
                             type="button"
                             onClick={() => removeOptionBlock(optionIndex)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-red-50"
                             title="Supprimer cette option"
                           >
                             <Trash2 size={14} />
@@ -686,29 +686,29 @@ export default function PrestationsPage() {
 
                         <div className="grid md:grid-cols-2 gap-3">
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Nom de l option *</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Nom de l option *</label>
                             <input
                               type="text"
                               value={option.nom}
                               onChange={(e) => updateOptionBlock(optionIndex, { nom: e.target.value })}
                               placeholder="Ex: Type de finition"
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                            <label className="block text-xs font-medium text-slate-700 mb-1">Description</label>
                             <input
                               type="text"
                               value={option.description}
                               onChange={(e) => updateOptionBlock(optionIndex, { description: e.target.value })}
                               placeholder="Description optionnelle"
-                              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
                         </div>
 
                         <div className="flex items-center gap-4">
-                          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                             <input
                               type="radio"
                               checked={option.obligatoire}
@@ -716,7 +716,7 @@ export default function PrestationsPage() {
                             />
                             Obligatoire
                           </label>
-                          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                             <input
                               type="radio"
                               checked={!option.obligatoire}
@@ -728,11 +728,11 @@ export default function PrestationsPage() {
 
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold text-gray-600">Valeurs possibles</p>
+                            <p className="text-xs font-semibold text-slate-600">Valeurs possibles</p>
                             <button
                               type="button"
                               onClick={() => addChoiceToOption(optionIndex)}
-                              className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
                             >
                               <Plus size={12} />
                               Ajouter valeur
@@ -741,7 +741,7 @@ export default function PrestationsPage() {
                           {option.choix.map((choice, choiceIndex) => (
                             <div key={choiceIndex} className="grid md:grid-cols-12 gap-2 items-end">
                               <div className={option.obligatoire ? 'md:col-span-10' : 'md:col-span-7'}>
-                                <label className="block text-xs text-gray-600 mb-1">Nom *</label>
+                                <label className="block text-xs text-slate-600 mb-1">Nom *</label>
                                 <input
                                   type="text"
                                   value={choice.nom}
@@ -749,12 +749,12 @@ export default function PrestationsPage() {
                                     updateChoiceInOption(optionIndex, choiceIndex, { nom: e.target.value })
                                   }
                                   placeholder="Ex: Standard"
-                                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                               </div>
                               {!option.obligatoire && (
                                 <div className="md:col-span-3">
-                                  <label className="block text-xs text-gray-600 mb-1">Prix option (EUR)</label>
+                                  <label className="block text-xs text-slate-600 mb-1">Prix option (EUR)</label>
                                   <input
                                     type="number"
                                     step="0.01"
@@ -763,7 +763,7 @@ export default function PrestationsPage() {
                                       updateChoiceInOption(optionIndex, choiceIndex, { impactPrix: e.target.value })
                                     }
                                     placeholder="0.00"
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   />
                                 </div>
                               )}
@@ -772,7 +772,7 @@ export default function PrestationsPage() {
                                   type="button"
                                   onClick={() => removeChoiceFromOption(optionIndex, choiceIndex)}
                                   disabled={option.choix.length <= 1}
-                                  className="w-full px-2 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:text-red-600 hover:border-red-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="w-full px-2 py-2 rounded-lg border border-slate-200 text-xs font-medium text-slate-500 hover:text-blue-600 hover:border-red-200 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                   Retirer
                                 </button>
@@ -785,7 +785,7 @@ export default function PrestationsPage() {
                   </div>
                 )}
               </div>
-              {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la creation.</p>}
+              {createMutation.error && <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la creation.</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -794,11 +794,11 @@ export default function PrestationsPage() {
                     setForm(createEmptyPrestationForm());
                     setOptionsForm([]);
                   }}
-                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Annuler
                 </button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Creer
                 </button>
@@ -834,37 +834,37 @@ function PrestationRow({
   const paddingLeft = indent === 1 ? 'pl-14' : 'pl-20';
 
   return (
-    <div className="border-t border-gray-50">
+    <div className="border-t border-slate-50">
       <div className={cn('flex items-center gap-3 pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
         {hasOptions ? (
           <button onClick={onToggle} className="shrink-0">
-            {expanded ? <ChevronDown size={14} className="text-amber-500" /> : <ChevronRight size={14} className="text-gray-400" />}
+            {expanded ? <ChevronDown size={14} className="text-amber-500" /> : <ChevronRight size={14} className="text-slate-500" />}
           </button>
         ) : (
           <span className="w-3.5 shrink-0" />
         )}
-        <div className="w-7 h-7 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center shrink-0">
+        <div className="w-7 h-7 bg-gradient-to-br from-blue-50 to-slate-50 rounded-lg flex items-center justify-center shrink-0">
           <BookOpen size={14} className="text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900">{p.nom}</span>
-            <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-500 rounded">{p.unite}</span>
+            <span className="text-sm font-medium text-slate-950">{p.nom}</span>
+            <span className="px-1.5 py-0.5 bg-slate-100 text-[10px] font-medium text-slate-500 rounded">{p.unite}</span>
             {hasOptions && (
               <span className="px-1.5 py-0.5 bg-amber-50 text-[10px] font-medium text-amber-600 rounded border border-amber-100">
                 {p.options!.length} option{p.options!.length > 1 ? 's' : ''}
               </span>
             )}
           </div>
-          {p.description && <p className="text-xs text-gray-400 truncate max-w-lg">{p.description}</p>}
+          {p.description && <p className="text-xs text-slate-500 truncate max-w-lg">{p.description}</p>}
         </div>
-        <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+        <span className="text-sm font-semibold text-slate-700 whitespace-nowrap">
           {formatCurrency(p.prixVenteMin)} â€“ {formatCurrency(p.prixVenteMax)}
         </span>
         {canEdit && (
           <div className="flex items-center gap-1 ml-2">
-            <button className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"><Edit size={14} /></button>
-            <button onClick={onDelete} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
+            <button className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50"><Edit size={14} /></button>
+            <button onClick={onDelete} className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-red-50"><Trash2 size={14} /></button>
           </div>
         )}
       </div>
@@ -887,24 +887,24 @@ function PrestationRow({
 
 function OptionBlock({ option }: { option: OptionPrestation }) {
   return (
-    <div className="mt-2 bg-gray-50/80 rounded-xl border border-gray-100 p-3">
+    <div className="mt-2 bg-slate-50/80 rounded-2xl border border-slate-200 p-3">
       <div className="flex items-center gap-2 mb-2">
         <Settings2 size={13} className="text-amber-500" />
-        <span className="text-xs font-bold text-gray-700">{option.nom}</span>
+        <span className="text-xs font-bold text-slate-700">{option.nom}</span>
         {option.obligatoire && (
           <span className="px-1.5 py-0.5 bg-red-50 text-[10px] font-semibold text-red-500 rounded border border-red-100">
             Obligatoire
           </span>
         )}
-        {option.description && <span className="text-[11px] text-gray-400 ml-1">â€” {option.description}</span>}
+        {option.description && <span className="text-[11px] text-slate-500 ml-1">â€” {option.description}</span>}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {option.choix.map(ch => (
-          <div key={ch.id} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-gray-200 text-xs hover:border-primary-300 transition-colors">
+          <div key={ch.id} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs hover:border-blue-300 transition-colors">
             <CheckCircle2 size={12} className="text-emerald-400" />
-            <span className="font-medium text-gray-700">{ch.nom}</span>
+            <span className="font-medium text-slate-700">{ch.nom}</span>
             {ch.impactPrix !== 0 && (
-              <span className={cn('font-semibold', ch.impactPrix > 0 ? 'text-emerald-600' : 'text-red-500')}>
+              <span className={cn('font-semibold', ch.impactPrix > 0 ? 'text-blue-600' : 'text-red-500')}>
                 {ch.impactPrix > 0 ? '+' : ''}{formatCurrency(ch.impactPrix)}
               </span>
             )}

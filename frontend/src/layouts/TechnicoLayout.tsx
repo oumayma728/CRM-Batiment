@@ -1,248 +1,390 @@
-import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  FileSpreadsheet,
-  BookOpen,
-  LogOut,
-  ChevronRight,
-  Briefcase,
-  Search,
-  Menu,
-  X,
-  CheckSquare,
-  Signature,
-  Receipt,
-  Bot,
-  PackageCheck,
-} from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
+import {
+  BookOpen,
+  Bot,
+  Building2,
+  CheckSquare,
+  ChevronDown,
+  FileSpreadsheet,
+  FileText,
+  LayoutDashboard,
+  LifeBuoy,
+  LogOut,
+  Menu,
+  PackageCheck,
+  PackageSearch,
+  Receipt,
+  Search,
+  Settings,
+  Signature,
+  Users,
+  X,
+} from 'lucide-react';
 
 interface TechNavItem {
   to: string;
   label: string;
-  icon: React.ReactNode;
-  description: string;
-  group?: string;
+  icon: ReactNode;
+  section?: string;
 }
 
 const techNavItems: TechNavItem[] = [
-  { to: '/technico', label: 'Tableau de bord', icon: <LayoutDashboard size={20} />, description: 'Vue d\'ensemble' },
-  { to: '/technico/clients', label: 'Mes Clients', icon: <Users size={20} />, description: 'Gerer vos clients', group: 'Commercial' },
-  { to: '/technico/demandes', label: 'Demandes Devis', icon: <FileText size={20} />, description: 'Demandes recues', group: 'Commercial' },
-  { to: '/technico/devis', label: 'Mes Devis', icon: <FileSpreadsheet size={20} />, description: 'Creer & suivre', group: 'Commercial' },
-  { to: '/technico/factures', label: 'Mes factures', icon: <Receipt size={20} />, description: 'Facturer & envoyer', group: 'Commercial' },
-  { to: '/technico/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={20} />, description: 'Achats & receptions', group: 'Commercial' },
-  { to: '/technico/checklist', label: 'Checklist Devis', icon: <CheckSquare size={20} />, description: 'Generer un devis', group: 'Commercial' },
-  { to: '/technico/assistant-ia', label: 'Assistant IA', icon: <Bot size={20} />, description: 'Gerer prospects chatbot', group: 'Commercial' },
-  { to: '/technico/prestations', label: 'Prestations', icon: <BookOpen size={20} />, description: 'Catalogue', group: 'Referentiel' },
-  { to: '/technico/catalogue', label: 'Catalogue Expert', icon: <Search size={20} />, description: 'Explorer le catalogue', group: 'Referentiel' },
-  { to: '/technico/profil', label: 'Mon Profil', icon: <Signature size={20} />, description: 'Ma signature', group: 'Compte' },
+  {
+    to: '/technico',
+    label: 'Tableau de bord',
+    icon: <LayoutDashboard size={17} />,
+  },
+  {
+    to: '/technico/clients',
+    label: 'Clients',
+    icon: <Users size={17} />,
+    section: 'Gestion commerciale',
+  },
+  {
+    to: '/technico/demandes',
+    label: 'Demandes',
+    icon: <FileText size={17} />,
+  },
+  {
+    to: '/technico/devis',
+    label: 'Devis',
+    icon: <FileSpreadsheet size={17} />,
+  },
+  {
+    to: '/technico/factures',
+    label: 'Factures',
+    icon: <Receipt size={17} />,
+  },
+  {
+    to: '/technico/commandes-fournisseur',
+    label: 'Commandes fournisseur',
+    icon: <PackageCheck size={17} />,
+  },
+  {
+    to: '/technico/sav',
+    label: 'SAV',
+    icon: <LifeBuoy size={17} />,
+  },
+  {
+    to: '/technico/checklist',
+    label: 'Checklist devis',
+    icon: <CheckSquare size={17} />,
+  },
+  {
+    to: '/technico/assistant-ia',
+    label: 'Assistant IA',
+    icon: <Bot size={17} />,
+  },
+  {
+    to: '/technico/prestations',
+    label: 'Prestations',
+    icon: <BookOpen size={17} />,
+    section: 'Catalogue & référentiel',
+  },
+  {
+    to: '/technico/materiaux',
+    label: 'Matériaux',
+    icon: <PackageSearch size={17} />,
+  },
+  {
+    to: '/technico/catalogue',
+    label: 'Catalogue expert',
+    icon: <Search size={17} />,
+  },
+  {
+    to: '/technico/profil',
+    label: 'Mon profil',
+    icon: <Signature size={17} />,
+    section: 'Compte',
+  },
 ];
+
+const routeLabels: Record<string, string> = {
+  technico: 'Technico',
+  clients: 'Clients',
+  demandes: 'Demandes',
+  devis: 'Devis',
+  factures: 'Factures',
+  'commandes-fournisseur': 'Commandes fournisseur',
+  sav: 'SAV',
+  checklist: 'Checklist devis',
+  'assistant-ia': 'Assistant IA',
+  prestations: 'Prestations',
+  materiaux: 'Matériaux',
+  catalogue: 'Catalogue expert',
+  profil: 'Mon profil',
+  signature: 'Signature',
+};
 
 export default function TechnicoLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  const currentPage =
+    [...techNavItems]
+      .sort((a, b) => b.to.length - a.to.length)
+      .find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ??
+    techNavItems[0];
+
+  const breadcrumbs = useMemo(() => {
+    const parts = location.pathname.split('/').filter(Boolean);
+
+    if (!parts.length) {
+      return [{ label: 'Bâtiflow', to: '/technico' }];
+    }
+
+    return parts.map((part, index) => ({
+      label: routeLabels[part] ?? formatPathLabel(part),
+      to: `/${parts.slice(0, index + 1).join('/')}`,
+    }));
+  }, [location.pathname]);
+
+  const initials = user
+    ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase()
+    : 'TC';
+
+  const displayName = user ? `${user.prenom ?? ''} ${user.nom ?? ''}`.trim() : 'Technico';
+
+  useEffect(() => {
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeOnOutsideClick);
+
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick);
+    };
+  }, []);
 
   const handleLogout = () => {
+    setUserMenuOpen(false);
     logout();
     navigate('/login');
   };
 
-  const initials = user
-    ? (user.prenom?.charAt(0) ?? '') + (user.nom?.charAt(0) ?? '')
-    : 'TC';
-
-  // Get current page title
-  const currentItem = techNavItems.find((item) =>
-    item.to === '/technico'
-      ? location.pathname === '/technico'
-      : location.pathname.startsWith(item.to),
-  );
-  const pageTitle = currentItem?.label ?? 'Technico-Commercial';
-
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+    <div className="flex min-h-screen overflow-x-hidden bg-[#f6f9ff] text-slate-900">
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Fermer le menu"
+          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* SIDEBAR - Technico palette gradient */}
       <aside
         className={cn(
-          'fixed h-full z-40 w-72 flex flex-col transition-transform duration-300 lg:translate-x-0',
-          'technico-gradient',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex w-[244px] flex-col border-r border-slate-200 bg-white text-slate-600 shadow-[8px_0_30px_rgba(15,23,42,0.04)] transition-transform duration-300',
+          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         )}
       >
-        {/* Header */}
-        <div className="px-6 py-6">
+        <div className="px-5 py-6">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center border border-white/20">
-              <Briefcase className="text-[#4F8CFF] w-6 h-6" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
+
             <div>
-              <h2 className="text-white font-extrabold text-lg leading-tight tracking-tight drop-shadow-md">
-                Espace Technico
+              <h2 className="text-[18px] font-semibold leading-tight tracking-tight text-slate-950">
+                BÂTIFLOW
               </h2>
-              <p className="text-blue-100 text-xs font-semibold drop-shadow">Commercial</p>
-            </div>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden ml-auto text-white/60 hover:text-white"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* User card */}
-        <div className="mx-4 mb-4 p-3 bg-white/8 backdrop-blur-sm rounded-xl border border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate drop-shadow">
-                {user?.prenom} {user?.nom}
-              </p>
-              <p className="text-xs text-blue-100/80 truncate">{user?.email}</p>
+              <p className="mt-0.5 text-[11px] text-slate-500">Espace technico</p>
             </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {techNavItems.map((item, index) => {
-            const prevItems = techNavItems.slice(0, index);
-            const prevGroup = [...prevItems].reverse().find((i) => i.group)?.group;
-            const showGroup = item.group && item.group !== prevGroup;
-            const isActive =
-              item.to === '/technico'
-                ? location.pathname === '/technico'
-                : location.pathname.startsWith(item.to);
+            const previousSection = techNavItems
+              .slice(0, index)
+              .reverse()
+              .find((previous) => previous.section)?.section;
+
+            const showSection = item.section && item.section !== previousSection;
 
             return (
               <div key={item.to}>
-                {showGroup && (
-                  <p className="px-3 pt-5 pb-2 text-[11px] font-bold text-emerald-400/50 uppercase tracking-widest">
-                    {item.group}
-                  </p>
+                {showSection && (
+                  <div className="px-3 pb-2 pt-5">
+                    <p className="text-[11px] font-medium text-slate-500">{item.section}</p>
+                  </div>
                 )}
+
                 <NavLink
                   to={item.to}
                   end={item.to === '/technico'}
-                  onClick={() => setSidebarOpen(false)}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group',
-                    isActive
-                      ? 'bg-white/20 text-white shadow-lg shadow-black/10 font-bold drop-shadow'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white',
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'w-9 h-9 rounded-lg flex items-center justify-center transition-colors',
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    cn(
+                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
                       isActive
-                        ? 'bg-blue-400/20 text-blue-100'
-                        : 'bg-white/10 text-white/50 group-hover:text-white/80',
-                    )}
-                  >
-                    {item.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="text-sm font-semibold block drop-shadow">{item.label}</span>
-                    <span
-                      className={cn(
-                        'text-[11px]',
-                        isActive ? 'text-blue-100/90 font-bold' : 'text-white/50',
-                      )}
-                    >
-                      {item.description}
-                    </span>
-                  </div>
-                  {isActive && (
-                    <ChevronRight size={16} className="text-emerald-300/60" />
-                  )}
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950',
+                    )
+                  }
+                >
+                  <span className="transition group-hover:scale-105">{item.icon}</span>
+                  <span className="truncate">{item.label}</span>
                 </NavLink>
               </div>
             );
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="px-4 py-4 border-t border-white/10">
+        <div className="border-t border-slate-100 p-4">
           <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-white/70 hover:bg-red-500/20 hover:text-red-200 transition-all font-semibold"
+            type="button"
+            onClick={() => setUserMenuOpen((open) => !open)}
+            className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left transition hover:bg-slate-50"
           >
-            <LogOut size={18} />
-            <span className="text-sm font-semibold">Déconnexion</span>
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
+              {initials || 'TC'}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold text-slate-950">
+                {displayName || 'Technico'}
+              </p>
+              <p className="text-[11px] text-slate-500">Technico-commercial</p>
+            </div>
+
+            <ChevronDown
+              size={14}
+              className={cn('text-slate-400 transition', userMenuOpen && 'rotate-180')}
+            />
           </button>
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 lg:ml-72 min-h-screen">
-        {/* Top bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/60 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
-            >
-              <Menu size={20} />
-            </button>
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">{pageTitle}</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">
-                {new Date().toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
-              <Search size={16} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="bg-transparent text-sm text-gray-600 outline-none w-40 placeholder:text-gray-400"
-              />
-            </div>
-            <InternalNotificationsBell />
-            <div className="w-px h-8 bg-gray-200 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                {initials}
+      <main className="min-w-0 flex-1 lg:ml-[244px]">
+        <header className="fixed left-0 right-0 top-0 z-[90] border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-xl lg:left-[244px] lg:px-7">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+              >
+                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-400">
+                  <Link to="/technico" className="transition hover:text-blue-600">
+                    Bâtiflow
+                  </Link>
+
+                  {breadcrumbs
+                    .filter((crumb) => crumb.label !== 'Technico')
+                    .map((crumb) => (
+                      <span key={crumb.to} className="flex items-center gap-1">
+                        <span>/</span>
+                        <Link to={crumb.to} className="transition hover:text-blue-600">
+                          {crumb.label}
+                        </Link>
+                      </span>
+                    ))}
+                </div>
+
+                <h1 className="mt-0.5 truncate text-[18px] font-semibold text-slate-950">
+                  {currentPage?.label ?? 'Tableau de bord'}
+                </h1>
               </div>
-              <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                {user?.prenom}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
-                Technico
-              </span>
+            </div>
+
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <InternalNotificationsBell />
+
+              <div ref={userMenuRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((open) => !open)}
+                  className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition hover:bg-slate-50"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
+                    {initials || 'TC'}
+                  </div>
+
+                  <div className="hidden text-left md:block">
+                    <p className="text-[13px] font-semibold leading-none text-slate-800">
+                      {displayName || 'Technico'}
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold text-slate-500">
+                      Technico-commercial
+                    </p>
+                  </div>
+
+                  <ChevronDown
+                    size={15}
+                    className={cn(
+                      'hidden text-slate-400 transition md:block',
+                      userMenuOpen && 'rotate-180',
+                    )}
+                  />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.16)]">
+                    <div className="border-b border-slate-100 px-4 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white">
+                          {initials || 'TC'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {displayName || 'Technico'}
+                          </p>
+                          <p className="mt-0.5 text-xs text-slate-500">{user?.email}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate('/technico/profil');
+                        }}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                      >
+                        <Settings size={17} />
+                        Mon profil
+                      </button>
+
+                      <div className="my-2 h-px bg-slate-100" />
+
+                      <button
+                        type="button"
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                      >
+                        <LogOut size={17} />
+                        Déconnexion
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Page content */}
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="min-w-0 overflow-x-hidden p-4 pt-[92px] lg:p-6 lg:pt-[96px]">
           <Outlet />
         </div>
       </main>
@@ -250,4 +392,9 @@ export default function TechnicoLayout() {
   );
 }
 
-
+function formatPathLabel(value: string) {
+  return value
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}

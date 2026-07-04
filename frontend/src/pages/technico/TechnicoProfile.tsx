@@ -97,7 +97,7 @@ export default function TechnicoProfile() {
         <div
           className={
             feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
+              ? 'rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'
               : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
           }
         >
@@ -107,7 +107,7 @@ export default function TechnicoProfile() {
 
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-2">
-          <PenSquare size={18} className="text-violet-600" />
+          <PenSquare size={18} className="text-blue-600" />
           <h3 className="text-lg font-bold text-slate-900">Ma signature</h3>
         </div>
         <p className="mt-2 text-sm text-slate-600">
@@ -156,7 +156,7 @@ export default function TechnicoProfile() {
             type="button"
             onClick={() => saveSignatureMutation.mutate()}
             disabled={saveSignatureMutation.isPending || signatureQuery.isLoading}
-            className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
           >
             {saveSignatureMutation.isPending ? (
               <Loader2 size={15} className="animate-spin" />

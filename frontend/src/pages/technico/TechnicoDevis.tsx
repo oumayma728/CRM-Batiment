@@ -43,11 +43,11 @@ const statutConfig: Record<
 > = {
   BROUILLON: { label: 'Brouillon', color: 'text-slate-700', bg: 'bg-slate-100', icon: <Clock size={14} /> },
   ENVOYE: { label: 'Envoye', color: 'text-blue-700', bg: 'bg-blue-100', icon: <Send size={14} /> },
-  ACCEPTE: { label: 'Accepte', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: <CheckCircle2 size={14} /> },
-  SIGNE: { label: 'Signe conseiller', color: 'text-emerald-800', bg: 'bg-emerald-200', icon: <CheckCircle2 size={14} /> },
+  ACCEPTE: { label: 'Accepte', color: 'text-blue-700', bg: 'bg-blue-100', icon: <CheckCircle2 size={14} /> },
+  SIGNE: { label: 'Signe conseiller', color: 'text-blue-800', bg: 'bg-blue-200', icon: <CheckCircle2 size={14} /> },
   REFUSE: { label: 'Refuse', color: 'text-rose-700', bg: 'bg-rose-100', icon: <XCircle size={14} /> },
   ANNULE: { label: 'Annule', color: 'text-amber-700', bg: 'bg-amber-100', icon: <XCircle size={14} /> },
-  REVISE: { label: 'Revise', color: 'text-violet-700', bg: 'bg-violet-100', icon: <MoreVertical size={14} /> },
+  REVISE: { label: 'Revise', color: 'text-blue-700', bg: 'bg-blue-100', icon: <MoreVertical size={14} /> },
   RENVOYE: { label: 'Renvoye', color: 'text-cyan-700', bg: 'bg-cyan-100', icon: <Send size={14} /> },
 };
 
@@ -57,18 +57,18 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ENVOYE: [
-    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
-    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-blue-700' },
+    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-blue-600' },
     { label: 'Marquer Refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ACCEPTE: [
-    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-blue-700' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   SIGNE: [],
   REFUSE: [
-    { label: 'Passer en Revise', value: 'REVISE', color: 'text-violet-600' },
+    { label: 'Passer en Revise', value: 'REVISE', color: 'text-blue-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ANNULE: [],
@@ -77,8 +77,8 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   RENVOYE: [
-    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
-    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-blue-700' },
+    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-blue-600' },
     { label: 'Marquer Refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
@@ -440,7 +440,7 @@ export default function TechnicoDevis() {
         <div
           className={
             feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
+              ? 'rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'
               : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
           }
         >
@@ -457,7 +457,7 @@ export default function TechnicoDevis() {
           className={cn(
             'whitespace-nowrap rounded-xl border px-4 py-2 text-sm font-medium transition-all',
             !statutFilter
-              ? 'border-teal-200 bg-teal-50 text-teal-700'
+              ? 'border-blue-200 bg-blue-50 text-blue-700'
               : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300',
           )}
         >
@@ -487,7 +487,7 @@ export default function TechnicoDevis() {
         })}
       </div>
 
-      <div className="flex max-w-md items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
+      <div className="flex max-w-md items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100">
         <Search size={18} className="text-slate-400" />
         <input
           type="text"
@@ -508,7 +508,7 @@ export default function TechnicoDevis() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-teal-500" size={32} />
+          <Loader2 className="animate-spin text-blue-500" size={32} />
         </div>
       ) : isError ? (
         <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">
@@ -516,8 +516,8 @@ export default function TechnicoDevis() {
         </div>
       ) : devisList.length === 0 ? (
         <div className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50">
-            <FileSpreadsheet size={28} className="text-teal-400" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
+            <FileSpreadsheet size={28} className="text-blue-400" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900">Aucun devis</h3>
           <p className="mt-1 text-sm text-slate-400">Creez votre premier devis.</p>
@@ -537,7 +537,7 @@ export default function TechnicoDevis() {
                 className="rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:shadow-md"
               >
                 <div className="flex items-center gap-4 p-5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-100 to-emerald-100 text-sm font-bold text-teal-600">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-100 to-blue-100 text-sm font-bold text-blue-600">
                     {devis.reference?.slice(-4) ?? '#'}
                   </div>
 
@@ -581,13 +581,13 @@ export default function TechnicoDevis() {
                     )}
                     <button
                       onClick={() => setPreviewDevisId(devis.id)}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-teal-50 hover:text-teal-600"
+                      className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                     >
                       <Eye size={16} />
                     </button>
                     <button
                       onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600"
+                      className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                       title="Transformer en facture"
                     >
                       {createFactureFromDevisMutation.isPending ? (
@@ -668,7 +668,7 @@ export default function TechnicoDevis() {
               </button>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 transition hover:from-teal-700 hover:to-emerald-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-blue-700 hover:to-blue-700"
                 onClick={handleSaveSignatureAndSign}
               >
                 Enregistrer et signer
@@ -698,7 +698,7 @@ export default function TechnicoDevis() {
                   required
                   value={form.clientId}
                   onChange={(event) => setForm({ ...form, clientId: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 >
                   <option value="">Selectionner un client</option>
                   {(clientsList ?? []).map((client) => (
@@ -717,7 +717,7 @@ export default function TechnicoDevis() {
                   step="0.1"
                   value={form.tauxTVA}
                   onChange={(event) => setForm({ ...form, tauxTVA: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -727,7 +727,7 @@ export default function TechnicoDevis() {
                   value={form.notes}
                   onChange={(event) => setForm({ ...form, notes: event.target.value })}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                  className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
@@ -748,7 +748,7 @@ export default function TechnicoDevis() {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 transition hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-blue-700 hover:to-blue-700 disabled:opacity-50"
                 >
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Creer le devis
@@ -762,7 +762,7 @@ export default function TechnicoDevis() {
       {loadingPreview && previewDevisId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-xl">
-            <Loader2 size={18} className="animate-spin text-teal-600" />
+            <Loader2 size={18} className="animate-spin text-blue-600" />
             <span className="text-sm font-medium text-slate-700">Chargement du devis...</span>
           </div>
         </div>

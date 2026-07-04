@@ -13,6 +13,7 @@ import HomeLandingPage from '@/pages/loginPage2';
 import { LoginTest } from '@/pages/LoginTest';
 import ClientDevisValidationPage from '@/pages/ClientDevisValidationPage';
 import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
+import PublicDemoRequestPage from '@/pages/PublicDemoRequestPage';
 
 // Admin pages
 import DashboardPage from '@/pages/DashboardPage';
@@ -35,6 +36,8 @@ import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import TasksChantierPage from '@/pages/TasksChantierPage';
 import AuditPage from '@/pages/AuditPage';
+import SavPage from '@/pages/SavPage';
+import DemoRequestsPage from '@/pages/DemoRequestsPage';
 
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
@@ -100,6 +103,7 @@ export default function App() {
         />
 
         <Route path="/test-connection" element={<LoginTest />} />
+        <Route path="/demo" element={<PublicDemoRequestPage />} />
         <Route path="/validation-devis" element={<ClientDevisValidationPage />} />
         <Route path="/sign/:token" element={<ClientDevisSignaturePage />} />
 
@@ -113,6 +117,7 @@ export default function App() {
               <Route index element={<AdminDashboardRouter />} />
               <Route path="chantiers" element={<ChantiersPage />} />
               <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="sav" element={<SavPage />} />
 
               <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'CHEF_CHANTIER']} />}>
                 <Route path="taches-chantier" element={<TasksChantierPage />} />
@@ -121,6 +126,7 @@ export default function App() {
               <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE']} />}>
                 <Route path="clients" element={<ClientsPage />} />
                 <Route path="demandes-devis" element={<DemandesDevisPage />} />
+                <Route path="demo-requests" element={<DemoRequestsPage />} />
                 <Route path="devis" element={<DevisPage />} />
                 <Route path="factures" element={<FacturesPage />} />
                 <Route path="factures/:id" element={<FactureDetailPage />} />
@@ -151,6 +157,7 @@ export default function App() {
               <Route path="factures" element={<TechnicoFactures />} />
               <Route path="factures/:id" element={<TechnicoFactureDetail />} />
               <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="sav" element={<SavPage />} />
               <Route path="devis/:id/signature" element={<TechnicoDevisSignature />} />
               <Route path="checklist" element={<TechnicoChecklist />} />
               <Route path="assistant-ia" element={<TechnicoAssistantIA />} />

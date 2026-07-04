@@ -146,10 +146,10 @@ export default function ClientDevisSignaturePage() {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef2ff_100%)] px-4 py-8 md:px-8">
       <div className="mx-auto max-w-3xl space-y-6">
-        <div className="rounded-[28px] bg-slate-900 px-6 py-6 text-white shadow-xl">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Signature client</p>
+        <div className="rounded-[28px] border border-blue-100 bg-white px-6 py-6 text-slate-950 shadow-[0_16px_45px_rgba(30,64,175,0.08)]">
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Signature client</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight">Validation securisee du devis</h1>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-2 text-sm text-slate-500">
             Identifiez-vous par OTP puis dessinez votre signature.
           </p>
         </div>
@@ -178,7 +178,7 @@ export default function ClientDevisSignaturePage() {
               <div
                 className={
                   feedback.type === 'success'
-                    ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
+                    ? 'rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700'
                     : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
                 }
               >
@@ -260,7 +260,7 @@ export default function ClientDevisSignaturePage() {
                   <button
                     onClick={() => submitSignatureMutation.mutate()}
                     disabled={submitSignatureMutation.isPending}
-                    className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:opacity-60"
                   >
                     {submitSignatureMutation.isPending && (
                       <Loader2 size={16} className="animate-spin" />
@@ -272,7 +272,7 @@ export default function ClientDevisSignaturePage() {
             )}
 
             {preview.isSigned && (
-              <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-800 shadow-sm">
+              <div className="rounded-3xl border border-blue-200 bg-blue-50 p-6 text-blue-800 shadow-sm">
                 <p className="inline-flex items-center gap-2 text-lg font-semibold">
                   <CheckCircle2 size={20} />
                   Signature client enregistree

@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AuditService } from '../audit/audit.service.js';
 import { CreateCategoriePrestationDto } from './dto/create-categorie-prestation.dto.js';
 import { UpdateCategoriePrestationDto } from './dto/update-categorie-prestation.dto.js';
 import { CreateSousCategorieDto } from './dto/create-sous-categorie.dto.js';
@@ -51,7 +52,10 @@ const DEFAULT_CHIFFRAGE_SETTINGS = {
 
 @Injectable()
 export class PrestationsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   private async assertMateriauAccess(
     materiauId: number,
@@ -551,7 +555,7 @@ export class PrestationsService {
     currentUser: CurrentUserPayload,
   ) {
     // Vérifier existence + isolation SaaS
-    await this.findOnePrestation(id, currentUser);
+    const previous = await this.findOnePrestation(id, currentUser);
 
     // Si on change de catégorie, vérifier que la nouvelle appartient à la même company
     if (dto.categorieId) {
@@ -570,13 +574,36 @@ export class PrestationsService {
       }
     }
 
-    return this.prisma.prestation.update({
+    const updated = await this.prisma.prestation.update({
       where: { id },
       data: dto,
       include: {
         categorie: true,
       },
     });
+
+    const priceFields = [
+      { field: 'prixVenteMin', oldValue: previous.prixVenteMin, newValue: updated.prixVenteMin },
+      { field: 'prixVenteMax', oldValue: previous.prixVenteMax, newValue: updated.prixVenteMax },
+    ];
+
+    for (const item of priceFields) {
+      if (item.oldValue !== item.newValue) {
+        await this.auditService.logPriceChange({
+          companyId: currentUser.companyId,
+          userId: currentUser.userId,
+          entite: 'Prestation',
+          entiteId: updated.id,
+          field: item.field,
+          label: updated.nom,
+          oldValue: item.oldValue,
+          newValue: item.newValue,
+          metadata: { unite: updated.unite },
+        });
+      }
+    }
+
+    return updated;
   }
 
   /**

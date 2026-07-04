@@ -594,8 +594,8 @@ function HeroBanner({
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-[#eaf4ff]" />
         </div>
 
-        <div className="flex flex-col justify-center px-6 py-8 text-center lg:px-10">
-          <div className="mx-auto inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-white/75 px-3 py-1.5 text-xs font-medium text-blue-700 shadow-sm">
+        <div className="flex flex-col justify-center px-6 py-8 text-left lg:px-10">
+  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-blue-100 bg-white/75 px-3 py-1.5 text-xs font-medium text-blue-700 shadow-sm">
             <ShieldCheck size={14} />
             Espace administrateur
           </div>

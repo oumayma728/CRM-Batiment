@@ -461,7 +461,7 @@ export interface InternalNotification {
   title: string;
   message: string;
   category: string;
-  level: 'info' | 'success' | 'warning';
+  level: 'info' | 'success' | 'warning' | 'danger';
   metadata: Record<string, unknown>;
   actor?: {
     id: number;
@@ -476,6 +476,21 @@ export interface InternalNotificationsResponse {
   items: InternalNotification[];
   summary: {
     total: number;
+    unreadPotential?: number;
+    alerts?: number;
+    facturesImpayees?: number;
+    montantFacturesImpayees?: number;
+    chantiersEnRetard?: number;
+    commandesEnAttente?: number;
+    signatures?: number;
+    modificationsPrix?: number;
+    savOuverts?: number;
+    savEnCours?: number;
+    savUrgents?: number;
+    savNotifications?: number;
+    demoPending?: number;
+    demoScheduledSoon?: number;
+    demoNotifications?: number;
     supplierUpdates: number;
     receptionsPartielles: number;
     receptionsCompletes: number;
@@ -667,6 +682,45 @@ export interface LigneDevis {
   prestation?: { id: number; nom: string };
   materiau?: { id: number; nom: string };
   serviceMainOeuvre?: { id: number; nom: string };
+}
+
+
+export type DemoRequestStatut = 'PENDING' | 'CONTACTED' | 'SCHEDULED' | 'DONE' | 'CANCELED';
+
+export interface DemoRequest {
+  id: number;
+  companyId?: number | null;
+  assignedToId?: number | null;
+  nom: string;
+  prenom?: string | null;
+  email: string;
+  telephone?: string | null;
+  entreprise?: string | null;
+  message?: string | null;
+  statut: DemoRequestStatut;
+  source: string;
+  dateContact?: string | null;
+  dateDemo?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  company?: {
+    id: number;
+    nom: string;
+    email?: string | null;
+    telephone?: string | null;
+  } | null;
+  assignedTo?: Pick<User, 'id' | 'nom' | 'prenom' | 'email' | 'role'> | null;
+}
+
+export interface DemoRequestsSummary {
+  total: number;
+  pending: number;
+  contacted: number;
+  scheduled: number;
+  done: number;
+  canceled: number;
+  scheduledSoon: number;
 }
 
 // Pagination
