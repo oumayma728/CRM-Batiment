@@ -14,10 +14,17 @@ export class AppService {
   async seedDatabase() {
     console.log('🌱 Seeding database...');
 
-    // Create company
+    // Create or update company
     const company = await this.prisma.company.upsert({
       where: { siret: '12345678901234' },
-      update: {},
+      update: {
+        nom: 'Bâtiment Pro SARL',
+        adresse: '123 Rue de la Construction, 75001 Paris',
+        telephone: '0145678900',
+        email: 'contact@batiment-pro.fr',
+        tvaDefaut: 20.0,
+        devise: 'EUR',
+      },
       create: {
         nom: 'Bâtiment Pro SARL',
         siret: '12345678901234',
@@ -28,51 +35,95 @@ export class AppService {
         devise: 'EUR',
       },
     });
-    console.log(`✅ Company created: ${company.nom}`);
 
-    // Create Admin user
-    const adminPassword = await bcrypt.hash('Admin@2026!', 12);
-    const admin = await this.prisma.user.upsert({
-      where: { email: 'admin@crm.local' },
-      update: {},
-      create: {
-        companyId: company.id,
+    console.log(`✅ Company created/updated: ${company.nom}`);
+
+    const users = [
+      {
         nom: 'Admin',
         prenom: 'Super',
-        email: 'admin@crm.local',
-        password: adminPassword,
-        role: 'ADMIN',
-        actif: true,
-        mustChangePassword: false,
+        email: 'admin@batiment-pro.fr',
+        password: 'Admin@2026!',
+        role: 'ADMIN' as const,
+        telephone: '0600000001',
       },
-    });
-    console.log(`✅ Admin user created: ${admin.email}`);
-
-    // Create Technico user
-    const technicoPassword = await bcrypt.hash('Technico@2026!', 12);
-    const technico = await this.prisma.user.upsert({
-      where: { email: 'technico@crm.local' },
-      update: {},
-      create: {
-        companyId: company.id,
+      {
         nom: 'Dupont',
         prenom: 'Marc',
-        email: 'technico@crm.local',
-        password: technicoPassword,
-        role: 'TECHNICO',
-        telephone: '0678901234',
-        actif: true,
-        mustChangePassword: false,
+        email: 'technico@batiment-pro.fr',
+        password: 'Technico@2026!',
+        role: 'TECHNICO' as const,
+        telephone: '0600000002',
       },
-    });
-    console.log(`✅ Technico user created: ${technico.email}`);
+      {
+        nom: 'Martin',
+        prenom: 'Sophie',
+        email: 'assistante@batiment-pro.fr',
+        password: 'Assistante@2026!',
+        role: 'ASSISTANTE' as const,
+        telephone: '0600000003',
+      },
+      {
+        nom: 'Bernard',
+        prenom: 'Karim',
+        email: 'chef.chantier@batiment-pro.fr',
+        password: 'Chantier@2026!',
+        role: 'CHEF_CHANTIER' as const,
+        telephone: '0600000004',
+      },
+      {
+        nom: 'Sous-traitant',
+        prenom: 'Nabil',
+        email: 'sous.traitant@batiment-pro.fr',
+        password: 'SousTraitant@2026!',
+        role: 'SOUS_TRAITANT' as const,
+        telephone: '0600000005',
+      },
+    ];
+
+    const seededUsers = [];
+
+    for (const userData of users) {
+      const hashedPassword = await bcrypt.hash(userData.password, 12);
+
+      const user = await this.prisma.user.upsert({
+        where: { email: userData.email },
+        update: {
+          companyId: company.id,
+          nom: userData.nom,
+          prenom: userData.prenom,
+          password: hashedPassword,
+          role: userData.role,
+          telephone: userData.telephone,
+          actif: true,
+          mustChangePassword: false,
+        },
+        create: {
+          companyId: company.id,
+          nom: userData.nom,
+          prenom: userData.prenom,
+          email: userData.email,
+          password: hashedPassword,
+          role: userData.role,
+          telephone: userData.telephone,
+          actif: true,
+          mustChangePassword: false,
+        },
+      });
+
+      seededUsers.push({
+        email: user.email,
+        password: userData.password,
+        role: user.role,
+      });
+
+      console.log(`✅ User created/updated: ${user.email} (${user.role})`);
+    }
 
     return {
       message: '✅ Database seeded successfully!',
-      users: [
-        { email: admin.email, password: 'Admin@2026!', role: 'ADMIN' },
-        { email: technico.email, password: 'Technico@2026!', role: 'TECHNICO' },
-      ],
+      company: company.nom,
+      users: seededUsers,
     };
   }
 
@@ -96,23 +147,30 @@ export class AppService {
     });
 
     // ── 2. Devis envoyés / acceptés / refusés (tous temps pour graphique)
-    const [devisEnvoyes, devisAcceptes, devisRefuses, devisBrouillons, devisSigne] =
-      await Promise.all([
-        this.prisma.devis.count({ where: { companyId, statut: 'ENVOYE' } }),
-        this.prisma.devis.count({ where: { companyId, statut: 'ACCEPTE' } }),
-        this.prisma.devis.count({ where: { companyId, statut: 'REFUSE' } }),
-        this.prisma.devis.count({ where: { companyId, statut: 'BROUILLON' } }),
-        this.prisma.devis.count({ where: { companyId, statut: 'SIGNE' } }),
-      ]);
+    const [
+      devisEnvoyes,
+      devisAcceptes,
+      devisRefuses,
+      devisBrouillons,
+      devisSigne,
+    ] = await Promise.all([
+      this.prisma.devis.count({ where: { companyId, statut: 'ENVOYE' } }),
+      this.prisma.devis.count({ where: { companyId, statut: 'ACCEPTE' } }),
+      this.prisma.devis.count({ where: { companyId, statut: 'REFUSE' } }),
+      this.prisma.devis.count({ where: { companyId, statut: 'BROUILLON' } }),
+      this.prisma.devis.count({ where: { companyId, statut: 'SIGNE' } }),
+    ]);
 
     // ── 3. Taux de conversion & CA signé du mois
-    const totalDevisEnvoye = devisEnvoyes + devisAcceptes + devisRefuses + devisSigne;
+    const totalDevisEnvoye =
+      devisEnvoyes + devisAcceptes + devisRefuses + devisSigne;
+
     const tauxConversion =
       totalDevisEnvoye > 0
         ? Math.round(((devisAcceptes + devisSigne) / totalDevisEnvoye) * 100)
         : 0;
 
-    // CA signé = somme des totalTTC des devis SIGNE créés ce mois
+    // CA signé = somme des totalTTC des devis SIGNE/ACCEPTE créés ce mois
     const caSigneMoisResult = await this.prisma.devis.aggregate({
       where: {
         companyId,
@@ -121,34 +179,38 @@ export class AppService {
       },
       _sum: { totalTTC: true },
     });
+
     const caSigneMois = caSigneMoisResult._sum.totalTTC ?? 0;
 
-  // ── 4. Factures impayées (statut ENVOYEE)
-  const [facturesImpayeesResult, facturesImpayeesNombre] = await Promise.all([
-    this.prisma.facture.aggregate({
-      where: {
-        statut: 'ENVOYEE',
-        devis: {
-          companyId,
-        },
-      },
-      _sum: {
-        montantTTC: true,
-      },
-    }),
+    // ── 4. Factures impayées (statut ENVOYEE)
+    const [facturesImpayeesResult, facturesImpayeesNombre] =
+      await Promise.all([
+        this.prisma.facture.aggregate({
+          where: {
+            statut: 'ENVOYEE',
+            devis: {
+              companyId,
+            },
+          },
+          _sum: {
+            montantTTC: true,
+          },
+        }),
 
-    this.prisma.facture.count({
-      where: {
-        statut: 'ENVOYEE',
-        devis: {
-          companyId,
-        },
-      },
-    }),
-  ]);
+        this.prisma.facture.count({
+          where: {
+            statut: 'ENVOYEE',
+            devis: {
+              companyId,
+            },
+          },
+        }),
+      ]);
 
-  const facturesImpayeesMontant = facturesImpayeesResult._sum.montantTTC ?? 0;
-    // ── 5. Chantiers en retard : dateFinPrevue dépassée et statut pas TERMINE/CLOTURE
+    const facturesImpayeesMontant =
+      facturesImpayeesResult._sum.montantTTC ?? 0;
+
+    // ── 5. Chantiers en retard : dateFin dépassée et statut pas TERMINE/CLOTURE
     const chantiersEnRetard = await this.prisma.chantier.count({
       where: {
         companyId,
@@ -157,20 +219,19 @@ export class AppService {
       },
     });
 
-    // ── 6. Commandes fournisseur en attente (CREEE ou ENVOYEE)
-    const commandesEnAttente =
-      await this.prisma.commandeFournisseur.count({
-        where: {
-          statutLivraison: {
-            in: ['CREEE', 'ENVOYEE'],
-          },
-          devis: {
-            companyId,
-          },
+    // ── 6. Commandes fournisseur en attente
+    const commandesEnAttente = await this.prisma.commandeFournisseur.count({
+      where: {
+        statutLivraison: {
+          in: ['CREEE', 'ENVOYEE'],
         },
-      });
+        devis: {
+          companyId,
+        },
+      },
+    });
 
-    // ── 7. Marge moyenne par devis (sur tous les devis avec coutTotal > 0)
+    // ── 7. Marge moyenne par devis
     const margeDevisResult = await this.prisma.devis.aggregate({
       where: {
         companyId,
@@ -178,7 +239,10 @@ export class AppService {
       },
       _avg: { margePourcent: true },
     });
-    const margeMoyenneDevis = Math.round(margeDevisResult._avg.margePourcent ?? 0);
+
+    const margeMoyenneDevis = Math.round(
+      margeDevisResult._avg.margePourcent ?? 0,
+    );
 
     return {
       prospectsActifs,
