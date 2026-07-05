@@ -1961,7 +1961,9 @@ export class AssistantService {
                 .map((entry) => entry.trim())
                 .filter((entry) => entry.length > 1);
             }
-          } catch {
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.warn(`[IA] Mots-cles illisibles (JSON invalide): ${message}`);
             motsCles = [];
           }
         }
@@ -5999,7 +6001,11 @@ export class AssistantService {
       });
 
       return { devisId: devis.id, demandeId, reference: demandeReference };
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `[IA] Echec creation devis brouillon assistant (prospect ${input.prospectId}): ${message}`,
+      );
       return null;
     }
   }
