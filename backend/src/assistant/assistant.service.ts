@@ -1421,7 +1421,37 @@ export class AssistantService {
       autoGeneration,
     };
   }
+  async rejectProspect(input: {
+    prospectId: number;
+    companyId: number;
+  }) {
+    const prospect = await this.prisma.client.findFirst({
+      where: {
+        id: input.prospectId,
+        companyId: input.companyId,
+        source: LeadSource.CHATBOT,
+      },
+      select: { id: true },
+    });
 
+    if (!prospect) {
+      throw new NotFoundException(
+        'Prospect chatbot introuvable pour cette societe',
+      );
+    }
+
+    // On marque PERDU les demandes ouvertes de ce prospect (rejet = trace conservee)
+    const updated = await this.prisma.demandeDevis.updateMany({
+      where: {
+        clientId: input.prospectId,
+        companyId: input.companyId,
+        statut: { in: ['NOUVEAU', 'EN_COURS'] },
+      },
+      data: { statut: 'PERDU' },
+    });
+
+    return { status: 'rejected', demandesRejetees: updated.count };
+  }
   async removeProspect(input: {
     prospectId: number;
     currentUser: CurrentUserPayload;

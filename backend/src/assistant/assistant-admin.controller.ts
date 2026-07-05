@@ -67,7 +67,21 @@ export class AssistantAdminController {
       createDevisDraft: dto.createDevisDraft,
     });
   }
-
+  @Post('prospects/:prospectId/reject')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Rejeter un prospect chatbot',
+    description: 'Marque les demandes ouvertes du prospect comme PERDU (trace conservee).',
+  })
+  rejectProspect(
+    @Param('prospectId', ParseIntPipe) prospectId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.rejectProspect({
+      prospectId,
+      companyId: user.companyId,
+    });
+  }
   @Delete('prospects/:prospectId')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({

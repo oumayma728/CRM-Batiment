@@ -12,8 +12,15 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react';
-
+const statutBadges: Record<string, { label: string; className: string }> = {
+  NOUVEAU: { label: 'Nouveau', className: 'bg-blue-100 text-blue-700' },
+  EN_COURS: { label: 'À qualifier', className: 'bg-amber-100 text-amber-700' },
+  QUALIFIE: { label: 'Qualifié', className: 'bg-emerald-100 text-emerald-700' },
+  CONVERTI: { label: 'Converti', className: 'bg-violet-100 text-violet-700' },
+  PERDU: { label: 'Rejeté', className: 'bg-rose-100 text-rose-700' },
+};
 interface ProspectItem {
   id: number;
   nom: string;
@@ -126,7 +133,14 @@ export default function TechnicoAssistantIA() {
       await queryClient.invalidateQueries({ queryKey: ['technico-assistant-future-projects'] });
     },
   });
-
+  const rejectMutation = useMutation({
+    mutationFn: (prospectId: number) =>
+      api.post(`/assistant/admin/prospects/${prospectId}/reject`),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['technico-assistant-prospects'] });
+      await queryClient.invalidateQueries({ queryKey: ['technico-demandes'] });
+    },
+  });
   const prospects = prospectsQuery.data?.items ?? [];
   const futureProjects = futureProjectsQuery.data?.items ?? [];
 
@@ -260,7 +274,9 @@ export default function TechnicoAssistantIA() {
                       <div className="flex flex-wrap gap-2 text-xs">
                         {prospect.latestDemandeDevis ? (
                           <span className="rounded-full bg-violet-50 px-2 py-1 font-semibold text-violet-700">
-                            Demande #{prospect.latestDemandeDevis.id} ({prospect.latestDemandeDevis.statut})
+                            Demande #{prospect.latestDemandeDevis.id} <span className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statutBadges[prospect.latestDemandeDevis.statut]?.className ?? 'bg-gray-100 text-gray-600'}`}>
+                              {statutBadges[prospect.latestDemandeDevis.statut]?.label ?? prospect.latestDemandeDevis.statut}
+                            </span>
                           </span>
                         ) : (
                           <span className="rounded-full bg-gray-100 px-2 py-1 font-semibold text-gray-600">
@@ -293,6 +309,20 @@ export default function TechnicoAssistantIA() {
                           <CheckCircle2 size={13} />
                         )}
                         Qualifier
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const confirmed = window.confirm(
+                            'Rejeter ce prospect ? (il sera conservé avec le statut Rejeté)',
+                          );
+                          if (confirmed) rejectMutation.mutate(prospect.id);
+                        }}
+                        disabled={disableActions}
+                        className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <X size={13} />
+                        Rejeter
                       </button>
 
                       <button
