@@ -468,8 +468,13 @@ export class AssistantService {
     }
 
     // Detection / maintien du parcours SUIVI (par mot-cle ou reference DEM-X).
+    // Une question informative ("comment suivre un chantier ?") n'est PAS une
+    // demande de suivi personnel : on exclut les tournures "comment/quels/que..."
+    const isHowToQuestion =
+      /\b(comment|quels?|quelles?|qu est ce|c est quoi|pourquoi)\b/i.test(normalizedMessage);
     const mentionsSuiviDirect =
-      /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage) ||
+      (!isHowToQuestion &&
+        /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage)) ||
       /dem-[a-z0-9]{4,10}/i.test(normalizedMessage);
     const wasPendingSuivi = Boolean(state.sessionState?.pendingSuivi);
     const switchesAwayFromSuivi =
@@ -517,7 +522,9 @@ export class AssistantService {
       sessionState.pendingRdv = true;
     }
     // Mémorise / maintient le parcours suivi entre les messages.
-    if (detectedIntentsResolved.includes('demande_suivi')) {
+    // Sauf pour les questions informatives ("comment suivre un chantier ?")
+    // qui doivent aller au RAG, pas au suivi personnel.
+    if (detectedIntentsResolved.includes('demande_suivi') && !isHowToQuestion) {
       sessionState.pendingSuivi = true;
     }
     const mergedCollectedData = {
@@ -770,6 +777,7 @@ export class AssistantService {
     } else if (
       /dem-[a-z0-9]{4,10}/i.test(normalizedMessage) ||
       (sessionState.pendingSuivi &&
+        !isInformationalQuestion &&
         !/\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage))
     ) {
       // ========== PARCOURS SUIVI (PRIORITAIRE) ==========
