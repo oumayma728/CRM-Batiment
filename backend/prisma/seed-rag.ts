@@ -100,7 +100,7 @@ const documents = [
     categorie: 'prix',
     priorite: 10,
     contenu:
-      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation, budget maison, budget pour construire, construire une maison, cout construction maison, prix construction, budget appartement, budget studio, renovation complete, cout pour refaire, prix pour refaire, appartement ancien, estimation rapide, chiffrage, devis gratuit, prix approximatif, fourchette de prix, environ combien, quel budget prevoir, 100 m2, 120 m2, 80 m2, surface en m2.",
+      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation, budget maison, budget pour construire, construire une maison, cout construction maison, prix construction, budget appartement, budget studio, renovation complete, cout pour refaire, prix pour refaire, appartement ancien, estimation rapide, chiffrage, devis gratuit, prix approximatif, fourchette de prix, environ combien, quel budget prevoir, 100 m2, 120 m2, 80 m2, , prix estime, prix estimatif, refaire une salle de bain, salle de bain, refaire salle de bain, estimation rapide, studio, renovation studio, main d oeuvre vs materiaux, versus, comparaison main d oeuvre et materiaux, part main d oeuvre, part materiaux, comment calculer un devis, calcul d un devis, comment est calcule un devis, calculer devis peinture.",
   },
   {
     titre: 'Prix au mètre carré',
@@ -114,7 +114,7 @@ const documents = [
     categorie: 'prix',
     priorite: 7,
     contenu:
-      "Le coût de la main-d'œuvre dépend du type de travaux, de leur durée et des compétences nécessaires. Pour une estimation adaptée à votre projet, notre équipe peut préparer un devis détaillé. Souhaitez-vous que je transmette votre demande ? Mots-cles : cout main d oeuvre, prix main d oeuvre, tarif ouvrier, cout horaire, prix de la pose, cout travailleurs, main d oeuvre vs materiaux.",
+      "Le coût de la main-d'œuvre dépend du type de travaux, de leur durée et des compétences nécessaires. Pour une estimation adaptée à votre projet, notre équipe peut préparer un devis détaillé. Souhaitez-vous que je transmette votre demande ? Mots-cles : cout main d oeuvre, prix main d oeuvre, tarif ouvrier, cout horaire, prix de la pose, cout travailleurs, , vs materiaux, versus materiaux, comparaison, difference main d oeuvre materiaux, repartition du cout, part de la main d oeuvre.",
   },
 
   // ================= FACTURES / PAIEMENTS =================

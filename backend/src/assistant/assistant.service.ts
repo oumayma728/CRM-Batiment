@@ -422,7 +422,8 @@ export class AssistantService {
     // au lieu de lancer le parcours devis. On ne le fait PAS en plein parcours guidé.
     const messageForQuestionCheck = this.normalizeForMatch(dto.message);
     const isInformationalQuestion =
-      /\?/.test(dto.message) &&
+      (/\?/.test(dto.message) ||
+        /(prix|tarif|co[uû]te?|budget|estimation)/.test(messageForQuestionCheck)) &&
       /(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut|puis[\s-]?je|peut[\s-]?on|est[\s-]?il possible|est[\s-]?ce possible|comment faire|ou puis[\s-]?je|ou trouver|peut[\s-]?elle|peut[\s-]?il|budget|prix|co[uû]te?|tarif|estimation)/.test(
         messageForQuestionCheck,
       ) &&
