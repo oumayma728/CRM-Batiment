@@ -916,6 +916,13 @@ export class AssistantService {
 
     const shouldExposeProjectTypes =
       !answeredByRag &&
+      // Jamais de liste si le projet est deja identifie, ou pendant les
+      // parcours rdv/suivi, ou pendant la collecte guidee des coordonnees :
+      // la liste ne sert qu'au moment de CHOISIR un type de projet.
+      !sessionState.projectType &&
+      !sessionState.pendingRdv &&
+      !sessionState.pendingSuivi &&
+      !sessionState.confirmed &&
       (intent === 'demande_info_service' ||
         (intent === 'demande_devis' && !projectMatch.known));
 
@@ -4305,7 +4312,6 @@ export class AssistantService {
       (descriptionHasNeedSignal || descriptionCandidate.length >= 18)
         ? descriptionCandidate
         : '';
-    console.log('🔍 DEBUG NOM — brut:', JSON.stringify(nom), '| sanitized:', JSON.stringify(this.sanitizeName(nom)));
     const validatedNom = this.isLikelyName(this.sanitizeName(nom)) ? nom : '';
 
     return {
