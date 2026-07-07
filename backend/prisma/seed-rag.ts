@@ -100,14 +100,14 @@ const documents = [
     categorie: 'prix',
     priorite: 10,
     contenu:
-      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation.",
+      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation, budget maison, budget pour construire, construire une maison, cout construction maison, prix construction, budget appartement, budget studio, renovation complete, cout pour refaire, prix pour refaire, appartement ancien, estimation rapide, chiffrage, devis gratuit, prix approximatif, fourchette de prix, environ combien, quel budget prevoir, 100 m2, 120 m2, 80 m2, surface en m2.",
   },
   {
     titre: 'Prix au mètre carré',
     categorie: 'prix',
     priorite: 9,
     contenu:
-      "Le prix au mètre carré varie selon le type de travaux, les matériaux et la complexité du chantier. Pour vous donner un montant juste plutôt qu'une estimation approximative, le mieux est d'établir un devis personnalisé. Souhaitez-vous que je prépare votre demande de devis ? Mots-cles : prix au metre carre, prix au m2, cout au m2, tarif au metre carre, prix par metre carre, combien le metre carre.",
+      "Le prix au mètre carré varie selon le type de travaux, les matériaux et la complexité du chantier. Pour vous donner un montant juste plutôt qu'une estimation approximative, le mieux est d'établir un devis personnalisé. Souhaitez-vous que je prépare votre demande de devis ? Mots-cles : prix au metre carre, prix au m2, cout au m2, tarif au metre carre, prix par metre carre, combien le metre carre, prix moyen, prix moyen au m2, tarif moyen, cout moyen, prix peinture, prix peinture au m2, prix pose carrelage, prix carrelage au m2, prix faux plafond, prix parquet, prix placo, prix en tunisie, tunisie, dinars, prix du marche, prix actuel, cout des materiaux, prix des materiaux actuellement.",
   },
   {
     titre: "Coût de la main d'œuvre",

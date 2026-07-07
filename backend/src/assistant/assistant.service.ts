@@ -423,7 +423,7 @@ export class AssistantService {
     const messageForQuestionCheck = this.normalizeForMatch(dto.message);
     const isInformationalQuestion =
       /\?/.test(dto.message) &&
-      /(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut|puis[\s-]?je|peut[\s-]?on|est[\s-]?il possible|est[\s-]?ce possible|comment faire|ou puis[\s-]?je|ou trouver|peut[\s-]?elle|peut[\s-]?il)/.test(
+      /(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut|puis[\s-]?je|peut[\s-]?on|est[\s-]?il possible|est[\s-]?ce possible|comment faire|ou puis[\s-]?je|ou trouver|peut[\s-]?elle|peut[\s-]?il|budget|prix|co[uû]te?|tarif|estimation)/.test(
         messageForQuestionCheck,
       ) &&
       !/\b(je veux|j aimerais|je voudrais|creer|faire|preparer|calculer)\b[\s\S]*\bdevis\b/.test(
