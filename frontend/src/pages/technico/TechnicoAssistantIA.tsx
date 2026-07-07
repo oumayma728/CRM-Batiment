@@ -294,12 +294,16 @@ export default function TechnicoAssistantIA() {
 
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <button
-                        onClick={() =>
-                          qualifyMutation.mutate({
-                            prospectId: prospect.id,
-                            createDevisDraft: hasTypeProjet,
-                          })
-                        }
+                        onClick={() => {
+                          const confirmed = window.confirm(
+                            'Qualifier ce prospect en demande de devis ?',
+                          );
+                          if (confirmed)
+                            qualifyMutation.mutate({
+                              prospectId: prospect.id,
+                              createDevisDraft: hasTypeProjet,
+                            });
+                        }}
                         disabled={disableActions}
                         className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
