@@ -91,7 +91,7 @@ const documents = [
     categorie: 'mesures',
     priorite: 4,
     contenu:
-      "L'estimation des quantités de matériaux dépend de la surface à couvrir et du rendement du matériau (par m²). Par exemple, pour de la peinture, on divise la surface par le rendement au litre, en tenant compte du nombre de couches. Pour une estimation adaptée à votre chantier, notre équipe peut préparer un devis détaillé. Mots-cles : quantite de materiaux, combien de peinture, combien de carrelage, estimation materiaux, quantite pour surface, metrage materiaux.",
+      "L'estimation des quantités de matériaux dépend de la surface à couvrir et du rendement du matériau (par m²). Par exemple, pour de la peinture, on divise la surface par le rendement au litre, en tenant compte du nombre de couches. Pour une estimation adaptée à votre chantier, notre équipe peut préparer un devis détaillé. Mots-cles : quantite de materiaux, combien de peinture, combien de carrelage, estimation materiaux, quantite pour surface, metrage materiaux, combien de carrelage, quantite de carrelage, carrelage pour salle de bain, 12 m2, carrelage necessaire, estimation des materiaux, materiaux pour 100 m2, materiaux pour le sol, quantite de materiaux, combien de materiaux, quantite necessaire, calcul des quantites, m2 de sol, combien de sacs, combien de litres, combien de rouleaux.",
   },
 
   // ================= PRIX (jamais de chiffre inventé) =================
@@ -100,7 +100,7 @@ const documents = [
     categorie: 'prix',
     priorite: 10,
     contenu:
-      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation, budget maison, budget pour construire, construire une maison, cout construction maison, prix construction, budget appartement, budget studio, renovation complete, cout pour refaire, prix pour refaire, appartement ancien, estimation rapide, chiffrage, devis gratuit, prix approximatif, fourchette de prix, environ combien, quel budget prevoir, 100 m2, 120 m2, 80 m2, , prix estime, prix estimatif, refaire une salle de bain, salle de bain, refaire salle de bain, estimation rapide, studio, renovation studio, main d oeuvre vs materiaux, versus, comparaison main d oeuvre et materiaux, part main d oeuvre, part materiaux, comment calculer un devis, calcul d un devis, comment est calcule un devis, calculer devis peinture.",
+      "Le prix d'un projet dépend de plusieurs facteurs : la surface, les matériaux choisis, la main-d'œuvre, les délais et l'ampleur des travaux. Je ne peux pas donner de chiffre précis ici, mais pour une estimation fiable et personnalisée, je peux préparer votre demande de devis : notre équipe vous recontactera rapidement. Souhaitez-vous que je lance votre demande de devis ? Mots-cles : prix, budget, cout, combien ca coute, tarif, estimation, montant, quel prix, cout total, prix travaux, budget renovation, budget construction, prix renovation, cout renovation, budget maison, budget pour construire, construire une maison, cout construction maison, prix construction, budget appartement, budget studio, renovation complete, cout pour refaire, prix pour refaire, appartement ancien, estimation rapide, chiffrage, devis gratuit, prix approximatif, fourchette de prix, environ combien, quel budget prevoir, 100 m2, 120 m2, 80 m2, , prix estime, prix estimatif, refaire une salle de bain, salle de bain, refaire salle de bain, estimation rapide, studio, renovation studio, main d oeuvre vs materiaux, versus, comparaison main d oeuvre et materiaux, part main d oeuvre, part materiaux, comment calculer un devis, calcul d un devis, comment est calcule un devis, calculer devis peinture, tarifs exacts, vos tarifs, donne moi vos tarifs, donnez moi vos tarifs, grille tarifaire, liste des prix, liste de prix, tarifs precis, vos prix, montrez moi les prix, catalogue des prix, tarification.",
   },
   {
     titre: 'Prix au mètre carré',
@@ -204,7 +204,13 @@ const documents = [
     contenu:
       "La gestion des fournisseurs se fait depuis BatiCRM : vous pouvez enregistrer vos fournisseurs, suivre les commandes et les réceptions liées à vos chantiers. Notre équipe peut vous accompagner dans la mise en place. Mots-cles : gerer les fournisseurs, gestion fournisseurs, commandes fournisseur, suivi fournisseurs, achats, approvisionnement.",
   },
-
+  {
+    titre: 'Planifier les étapes de construction',
+    categorie: 'chantier',
+    priorite: 8,
+    contenu:
+      "La planification d'un chantier suit généralement l'ordre des corps de métier : gros œuvre (fondations, murs, toiture), puis second œuvre (électricité, plomberie, isolation, plâtrerie), et enfin les finitions (peinture, revêtements, menuiseries). Dans BatiCRM, vous pouvez organiser ces étapes en tâches planifiées avec vos équipes. Notre équipe peut vous accompagner dans la mise en place du planning. Mots-cles : planifier les etapes, etapes de construction, comment planifier, planning de chantier, phases de chantier, ordre des travaux, organisation du chantier, deroulement des travaux, planning construction, etapes d un projet, phases de construction, calendrier des travaux.",
+  },
   // ================= SERVICES / GÉNÉRAL =================
   {
     titre: 'Nos services',

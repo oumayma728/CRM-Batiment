@@ -4305,7 +4305,7 @@ export class AssistantService {
       (descriptionHasNeedSignal || descriptionCandidate.length >= 18)
         ? descriptionCandidate
         : '';
-
+    console.log('🔍 DEBUG NOM — brut:', JSON.stringify(nom), '| sanitized:', JSON.stringify(this.sanitizeName(nom)));
     const validatedNom = this.isLikelyName(this.sanitizeName(nom)) ? nom : '';
 
     return {
@@ -4497,8 +4497,14 @@ export class AssistantService {
     ];
     const words = cleaned.split(' ');
     const result: string[] = [];
-    for (const word of words) {
-      if (stopWords.includes(word.toLowerCase())) {
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const lower = word.toLowerCase();
+      // Particule de nom francais : "la" apres "de" fait partie du nom
+      // (ex: "de la Fontaine"), on ne coupe pas dans ce cas.
+      const isParticleAfterDe =
+        lower === 'la' && i > 0 && words[i - 1].toLowerCase() === 'de';
+      if (stopWords.includes(lower) && !isParticleAfterDe) {
         break; // on s'arrête au premier mot parasite
       }
       result.push(word);
@@ -4596,6 +4602,12 @@ export class AssistantService {
       /\b(merci|accord|ok|oui|non|parfait|bonjour|bonsoir|salut|super|cool|bien|tres bien|d accord)\b/.test(
         normalized,
       );
+    // Mots de refus / negation / minimisation : "pas important", "peu importe",
+    // "c'est pas grave", "rien"... ne sont jamais des noms de personnes.
+    const hasRefusalSignal =
+      /\b(pas|rien|aucun|aucune|jamais|important|importe|grave|egal|osef|sais pas|sait pas|confidentiel|prive|secret|nsp)\b/.test(
+        normalized,
+      );
 
     // Regle metier: exiger nom + prenom pour valider le champ nom.
     return (
@@ -4605,7 +4617,8 @@ export class AssistantService {
       !forbidden.has(normalized) &&
       !hasNonPersonSignal &&
       !hasIntentSignal &&
-      !hasPolitenessSignal
+      !hasPolitenessSignal &&
+      !hasRefusalSignal
     );
   }
 
