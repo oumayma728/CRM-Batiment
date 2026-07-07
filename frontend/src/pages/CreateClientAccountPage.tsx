@@ -1,3 +1,4 @@
+// CreateClientAccountPage.tsx - Version améliorée
 import { useState, type FormEvent } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
@@ -14,6 +15,7 @@ import {
   Phone,
   ShieldCheck,
   UserPlus,
+  AlertCircle,
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -34,7 +36,7 @@ const emptyForm: ClientAccountForm = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20';
+  'w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200';
 const phonePattern = String.raw`(?:[0-9]|\+|\(|\)| |\.|-){6,20}`;
 
 function getApiErrorMessage(error: unknown, fallback: string) {
@@ -157,114 +159,175 @@ export default function CreateClientAccountPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-1.5">
-            <span className="text-sm font-medium text-slate-700">Nom *</span>
-            <input
-              required
-              minLength={2}
-              maxLength={80}
-              value={form.nom}
-              onChange={(event) => updateField('nom', event.target.value)}
-              className={inputClass}
-            />
-          </label>
-
-          <label className="space-y-1.5">
-            <span className="text-sm font-medium text-slate-700">Prenom *</span>
-            <input
-              required
-              minLength={2}
-              maxLength={80}
-              value={form.prenom}
-              onChange={(event) => updateField('prenom', event.target.value)}
-              className={inputClass}
-            />
-          </label>
-
-          <label className="space-y-1.5">
-            <span className="text-sm font-medium text-slate-700">Telephone *</span>
-            <div className="relative">
-              <Phone className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <input
-                required
-                type="tel"
-                inputMode="tel"
-                maxLength={20}
-                pattern={phonePattern}
-                placeholder="+216 00 000 000"
-                value={form.telephone}
-                onChange={(event) => updateField('telephone', event.target.value)}
-                className={`${inputClass} pl-10`}
-              />
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Champ Nom */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Nom *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserPlus className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={form.nom}
+                  onChange={(e) => updateField('nom', e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Dupont"
+                  minLength={2}
+                  maxLength={80}
+                  required
+                />
+              </div>
             </div>
-          </label>
 
-          <label className="space-y-1.5">
-            <span className="text-sm font-medium text-slate-700">Email *</span>
-            <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <input
-                required
-                type="email"
-                maxLength={120}
-                placeholder="client@email.com"
-                value={form.email}
-                onChange={(event) => updateField('email', event.target.value)}
-                className={`${inputClass} pl-10`}
-              />
+            {/* Champ Prénom */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Prénom *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <UserPlus className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={form.prenom}
+                  onChange={(e) => updateField('prenom', e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Jean"
+                  minLength={2}
+                  maxLength={80}
+                  required
+                />
+              </div>
             </div>
-          </label>
 
-          <label className="space-y-1.5 md:col-span-2">
-            <span className="text-sm font-medium text-slate-700">Adresse client *</span>
-            <div className="relative">
-              <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <input
-                required
-                maxLength={180}
-                placeholder="Adresse complete du client"
-                value={form.adresseClient}
-                onChange={(event) => updateField('adresseClient', event.target.value)}
-                className={`${inputClass} pl-10`}
-              />
+            {/* Champ Téléphone */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Téléphone *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Phone className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  value={form.telephone}
+                  onChange={(e) => updateField('telephone', e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="+216 00 000 000"
+                  maxLength={20}
+                  required
+                />
+              </div>
             </div>
-          </label>
-        </div>
 
-        {createClientAccount.error && (
-          <p className="mt-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {getApiErrorMessage(
-              createClientAccount.error,
-              'Impossible de creer le client.',
+            {/* Champ Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Email *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="client@email.com"
+                  maxLength={120}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Champ Adresse */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Adresse client *
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={form.adresseClient}
+                  onChange={(e) => updateField('adresseClient', e.target.value)}
+                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="123 Rue de la Paix, 75001 Paris"
+                  maxLength={180}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Message d'erreur */}
+            {createClientAccount.error && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-3 animate-shake">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                <span>{getApiErrorMessage(createClientAccount.error, 'Impossible de créer le client.')}</span>
+              </div>
             )}
-          </p>
-        )}
 
-        {successMessage && (
-          <p className="mt-5 flex items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            <CheckCircle2 size={16} className="shrink-0" />
-            {successMessage}
-          </p>
-        )}
-
-        <div className="mt-8 flex justify-end border-t border-slate-100 pt-6">
-          <button
-            type="submit"
-            disabled={createClientAccount.isPending}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#185FA5] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0F4780] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {createClientAccount.isPending && (
-              <Loader2 size={16} className="animate-spin" />
+            {/* Message de succès */}
+            {successMessage && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm flex items-center gap-3 animate-slideDown">
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                <span>{successMessage}</span>
+              </div>
             )}
-            Creer le client
-            {!createClientAccount.isPending && <ArrowRight size={16} />}
-          </button>
-        </div>
+
+            {/* Bouton de soumission */}
+            <button
+              type="submit"
+              disabled={createClientAccount.isPending}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium"
+            >
+              {createClientAccount.isPending ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Création en cours...
+                </>
+              ) : (
+                <>
+                  Créer le compte client
+                  <ArrowRight className="w-5 h-5" />
+                </>
+              )}
+            </button>
           </form>
         </section>
       </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+          20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
