@@ -413,7 +413,10 @@ export default function ChatbotWidget() {
       });
   }
   async function handleReset() {
-    await initSession(true);
+    const confirmed = window.confirm(
+      'Commencer une nouvelle conversation ? La conversation actuelle sera effacée.',
+    );
+    if (confirmed) await initSession(true);
   }
 
   function handleClose() {
