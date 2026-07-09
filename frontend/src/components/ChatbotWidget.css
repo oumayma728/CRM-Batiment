@@ -859,3 +859,55 @@
   color: #dc2626;
   background: #fef2f2;
 }
+/* ============================================================
+RENFORCEMENT MOBILE — touch friendly (cibles 44px, anti-zoom iOS)
+============================================================ */
+@media (max-width: 480px) {
+  /* Anti-zoom iOS : un input < 16px declenche un zoom automatique */
+  .chatbot-input {
+    font-size: 16px;
+    padding: 0.75rem 1rem;
+  }
+
+  /* Cibles tactiles : minimum 44x44px (standard accessibilite mobile) */
+  .chatbot-send-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .chatbot-header-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .chatbot-suggestion-btn {
+    padding: 0.6rem 0.9rem;
+    font-size: 0.8rem;
+  }
+  .chatbot-msg-actions button {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Bulles : un peu plus larges sur petit ecran */
+  .chatbot-msg {
+    max-width: 92%;
+  }
+
+  /* La liste des projets dans les bulles : compacte et sans debordement */
+  .chatbot-msg-bubble {
+    font-size: 0.85rem;
+    word-break: break-word;
+  }
+
+  /* Messages : zone de defilement confortable au doigt */
+  .chatbot-messages {
+    padding: 0.75rem;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablette : widget un peu plus large */
+@media (min-width: 481px) and (max-width: 900px) {
+  .chatbot-panel {
+    width: min(90vw, 440px);
+  }
+}
