@@ -156,7 +156,7 @@ export default function DashboardPage() {
         const data = response.data?.data ?? response.data ?? [];
         return { total: Array.isArray(data) ? data.length : 0 };
       } catch (error) {
-        console.error('Erreur chargement fournisseurs:', error);
+        // Silently handle 403 - role may not have access
         return { total: 0 };
       }
     }
@@ -841,10 +841,10 @@ export default function DashboardPage() {
           </h3>
           <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-4`}>
             {filteredModules.map((mod) => (
-              <button
+              <div
                 key={mod.title}
                 onClick={() => navigate(mod.href)}
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5 text-left group hover:shadow-lg transition-all relative overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5 text-left group hover:shadow-lg transition-all relative overflow-hidden cursor-pointer"
               >
                 <button
                   onClick={(e) => {
@@ -874,7 +874,7 @@ export default function DashboardPage() {
                     </div>
                   ))}
                 </div>
-              </button>
+              </div>
             ))}
           </div>
           {filteredModules.length === 0 && (

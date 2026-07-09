@@ -14,6 +14,7 @@ import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interf
 import { MailService } from '../mail/mail.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { CreateCommandeFournisseurDto } from './dto/create-commande-fournisseur.dto.js';
 import { CreateReceptionDto } from './dto/create-reception.dto.js';
 import { QueryCommandesFournisseurDto } from './dto/query-commandes-fournisseur.dto.js';
 import { UpdateCommandeFournisseurDto } from './dto/update-commande-fournisseur.dto.js';
@@ -102,6 +103,17 @@ export class CommandesFournisseurService {
 
   private round2(value: number) {
     return Math.round(value * 100) / 100;
+  }
+
+  private async generateDocumentReference(prefix: 'BAF') {
+    const year = new Date().getFullYear();
+    const start = `${prefix}-${year}`;
+
+    const count = await this.prisma.commandeFournisseur.count({
+      where: { reference: { startsWith: start } },
+    });
+
+    return `${start}-${String(count + 1).padStart(4, '0')}`;
   }
 
   private buildDeliveryDate(delaiLivraison?: number | null) {
@@ -260,6 +272,101 @@ export class CommandesFournisseurService {
         reception: tracking.reception,
       },
       metrics: tracking.metrics,
+    };
+  }
+
+  async create(
+    dto: any,
+    currentUser: CurrentUserPayload,
+  ) {
+    console.log('Creating order with DTO:', JSON.stringify(dto, null, 2));
+    this.ensureRole(currentUser);
+
+    if (!dto.fournisseurId || !dto.devisId || !dto.lignes || !Array.isArray(dto.lignes)) {
+      throw new BadRequestException('Données invalides: fournisseurId, devisId et lignes sont requis.');
+    }
+
+    const fournisseur = await this.prisma.fournisseur.findFirst({
+      where: {
+        id: dto.fournisseurId,
+        companyId: currentUser.companyId,
+        actif: true,
+      },
+    });
+
+    if (!fournisseur) {
+      throw new NotFoundException('Fournisseur introuvable ou inactif.');
+    }
+
+    const devis = await this.prisma.devis.findFirst({
+      where: {
+        id: dto.devisId,
+        companyId: currentUser.companyId,
+      },
+    });
+
+    if (!devis) {
+      throw new NotFoundException('Devis introuvable.');
+    }
+
+    const lignes = dto.lignes.map((line: any) => ({
+      materiauNom: line.materiauNom?.trim() || '',
+      quantite: this.round2(Number(line.quantite) || 0),
+      unite: line.unite || 'PIECE',
+      prixUnitaire: this.round2(Number(line.prixUnitaire) || 0),
+      totalHT: this.round2((Number(line.quantite) || 0) * (Number(line.prixUnitaire) || 0)),
+    }));
+
+    if (lignes.some((line) => !line.materiauNom)) {
+      throw new BadRequestException(
+        'Chaque ligne doit contenir un nom de materiau.',
+      );
+    }
+
+    const reference = await this.generateDocumentReference('BAF');
+
+    const order = await this.prisma.$transaction(async (tx) => {
+      const createdOrder = await tx.commandeFournisseur.create({
+        data: {
+          fournisseurId: dto.fournisseurId,
+          devisId: dto.devisId,
+          reference,
+          statutLivraison: 'CREEE',
+          dateLivraisonPrevue: dto.dateLivraisonPrevue
+            ? new Date(dto.dateLivraisonPrevue)
+            : null,
+          notes: dto.notes?.trim() || null,
+        },
+      });
+
+      for (const ligne of lignes) {
+        await tx.ligneCommandeFournisseur.create({
+          data: {
+            commandeFournisseurId: createdOrder.id,
+            materiauNom: ligne.materiauNom,
+            quantite: ligne.quantite,
+            unite: ligne.unite,
+            prixUnitaire: ligne.prixUnitaire,
+            totalHT: ligne.totalHT,
+          },
+        });
+      }
+
+      const order = await tx.commandeFournisseur.findUnique({
+        where: { id: createdOrder.id },
+        include: commandeInclude,
+      });
+
+      if (!order) {
+        throw new NotFoundException('Erreur lors de la création de la commande');
+      }
+
+      return order as CommandeRecord;
+    });
+
+    return {
+      message: 'Commande fournisseur creee avec succes.',
+      order: this.mapOrder(order as CommandeRecord),
     };
   }
 

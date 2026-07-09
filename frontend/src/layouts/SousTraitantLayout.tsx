@@ -3,9 +3,9 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   HardHat,
   CheckSquare,
-  ClipboardCheck,
-  PackageCheck,
   FileText,
+  Calendar,
+  FileEdit,
   LayoutDashboard,
   LogOut,
   Moon,
@@ -18,7 +18,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { cn } from '@/lib/utils';
 
-interface ChefNavItem {
+interface SousTraitantNavItem {
   to: string;
   label: string;
   description: string;
@@ -26,52 +26,52 @@ interface ChefNavItem {
   icon: ReactNode;
 }
 
-const chefNavItems: ChefNavItem[] = [
+const sousTraitantNavItems: SousTraitantNavItem[] = [
   {
-    to: '/chef',
+    to: '/sous-traitant',
     label: 'Tableau de bord',
     description: 'Vue d\'ensemble',
     group: 'Accueil',
     icon: <LayoutDashboard size={18} />,
   },
   {
-    to: '/chef/chantiers',
+    to: '/sous-traitant/chantiers',
     label: 'Chantiers',
-    description: 'Suivi des sites',
-    group: 'Opérations',
+    description: 'Chantiers attribués',
+    group: 'Missions',
     icon: <HardHat size={18} />,
   },
   {
-    to: '/chef/taches',
+    to: '/sous-traitant/taches',
     label: 'Tâches',
-    description: 'Gestion équipes',
-    group: 'Opérations',
+    description: 'Tâches affectées',
+    group: 'Missions',
     icon: <CheckSquare size={18} />,
   },
   {
-    to: '/chef/receptions',
-    label: 'Réceptions',
-    description: 'Matériaux livraisons',
-    group: 'Opérations',
-    icon: <ClipboardCheck size={18} />,
+    to: '/sous-traitant/interventions',
+    label: 'Interventions',
+    description: 'Dates planning',
+    group: 'Missions',
+    icon: <Calendar size={18} />,
   },
   {
-    to: '/chef/avancement',
-    label: 'Avancement',
-    description: 'Contrôle travaux',
-    group: 'Opérations',
-    icon: <PackageCheck size={18} />,
-  },
-  {
-    to: '/chef/documents',
+    to: '/sous-traitant/documents',
     label: 'Documents',
-    description: 'Gestion chantiers',
-    group: 'Documents',
+    description: 'Documents nécessaires',
+    group: 'Ressources',
     icon: <FileText size={18} />,
+  },
+  {
+    to: '/sous-traitant/rapports',
+    label: 'Rapports',
+    description: 'Comptes rendus',
+    group: 'Ressources',
+    icon: <FileEdit size={18} />,
   },
 ];
 
-const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
+const groupedNavItems = sousTraitantNavItems.reduce<Record<string, SousTraitantNavItem[]>>(
   (acc, item) => {
     if (!acc[item.group]) {
       acc[item.group] = [];
@@ -82,7 +82,7 @@ const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
   {}
 );
 
-export default function ChefChantierLayout() {
+export default function SousTraitantLayout() {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -107,20 +107,20 @@ export default function ChefChantierLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-700 dark:from-blue-900 dark:to-blue-950 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-teal-600 to-cyan-700 dark:from-teal-900 dark:to-cyan-950 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
                 <HardHat size={24} />
               </div>
               <div>
-                <h1 className="font-bold text-lg">Chef de Chantier</h1>
-                <p className="text-xs text-orange-100">Espace terrain</p>
+                <h1 className="font-bold text-base sm:text-lg">Sous-Traitant</h1>
+                <p className="text-xs text-teal-100">Espace partenaire</p>
               </div>
             </div>
             <button
@@ -135,13 +135,13 @@ export default function ChefChantierLayout() {
           <nav className="flex-1 overflow-y-auto p-4 space-y-6">
             {Object.entries(groupedNavItems).map(([group, items]) => (
               <div key={group}>
-                <h3 className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-blue-100">
+                <h3 className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-teal-100">
                   {group}
                 </h3>
                 <div className="space-y-1">
                   {items.map((item) => {
                     const isActive = location.pathname === item.to || 
-                                   (item.to !== '/chef' && location.pathname.startsWith(item.to));
+                                   (item.to !== '/sous-traitant' && location.pathname.startsWith(item.to));
                     return (
                       <NavLink
                         key={item.to}
@@ -155,13 +155,13 @@ export default function ChefChantierLayout() {
                           'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200',
                           isActive
                             ? 'bg-white/20 text-white shadow-lg'
-                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                            : 'text-teal-100 hover:bg-white/10 hover:text-white'
                         )}
                       >
                         {item.icon}
                         <div className="flex-1">
                           <p className="font-medium text-sm">{item.label}</p>
-                          <p className="text-xs text-blue-100/70">{item.description}</p>
+                          <p className="text-xs text-teal-100/70">{item.description}</p>
                         </div>
                         {isActive && <ChevronRight size={16} />}
                       </NavLink>
@@ -182,7 +182,7 @@ export default function ChefChantierLayout() {
                 <p className="font-medium text-sm truncate">
                   {user?.prenom} {user?.nom}
                 </p>
-                <p className="text-xs text-blue-100">Chef de Chantier</p>
+                <p className="text-xs text-teal-100">Sous-Traitant</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

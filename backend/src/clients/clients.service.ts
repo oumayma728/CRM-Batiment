@@ -356,7 +356,7 @@ export class ClientsService {
     const clientId = client.id;
     const companyId = currentUser.companyId;
 
-    const [demandes, chantiers, factures] = await Promise.all([
+    const [demandes, devis, chantiers, factures] = await Promise.all([
       this.prisma.demandeDevis.findMany({
         where: { companyId, clientId },
         orderBy: { date: 'desc' },
@@ -372,6 +372,24 @@ export class ClientsService {
             },
             orderBy: { createdAt: 'desc' },
           },
+        },
+      }),
+      this.prisma.devis.findMany({
+        where: { companyId, clientId },
+        orderBy: { createdAt: 'desc' },
+        take: 8,
+        select: {
+          id: true,
+          reference: true,
+          dateCreation: true,
+          dateEnvoi: true,
+          statut: true,
+          totalHT: true,
+          totalTTC: true,
+          notes: true,
+          signatureClientBase64: true,
+          signatureClientDate: true,
+          createdAt: true,
         },
       }),
       this.prisma.chantier.findMany({
@@ -433,10 +451,12 @@ export class ClientsService {
     return {
       client: this.serializeClient(client),
       demandes,
+      devis,
       chantiers,
       factures,
       stats: {
         demandes: demandes.length,
+        devis: devis.length,
         chantiers: chantiers.length,
         factures: factures.length,
         facturesImpayees: factures.filter((facture) => facture.statut !== 'PAYEE')
@@ -617,6 +637,35 @@ export class ClientsService {
   /**
    * Supprimer un client (hard delete — ADMIN uniquement)
    */
+  async updateClientProfile(
+    dto: Partial<{ nom: string; prenom: string; telephone: string; adresseClient: string }>,
+    user: CurrentUserPayload,
+  ) {
+    const client = await this.prisma.client.findFirst({
+      where: {
+        companyId: user.companyId,
+        email: { equals: user.email, mode: 'insensitive' },
+      },
+    });
+
+    if (!client) {
+      throw new NotFoundException('Client non trouve');
+    }
+
+    const updated = await this.prisma.client.update({
+      where: { id: client.id },
+      data: {
+        ...(dto.nom && { nom: dto.nom }),
+        ...(dto.prenom && { prenom: dto.prenom }),
+        ...(dto.telephone !== undefined && { telephone: dto.telephone }),
+        ...(dto.adresseClient !== undefined && { adresseClient: dto.adresseClient }),
+      },
+      include: this.buildClientInclude(),
+    });
+
+    return this.serializeClient(updated);
+  }
+
   async remove(id: number, currentUser: CurrentUserPayload) {
     await this.findOne(id, currentUser);
 

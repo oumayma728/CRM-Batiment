@@ -118,6 +118,18 @@ export class ClientsController {
     return this.clientsService.createClientPortalDemande(dto, user);
   }
 
+  @Patch('me/profile')
+  @Roles(Role.CLIENT)
+  @ApiOperation({
+    summary: 'Mettre a jour le profil client',
+  })
+  async updateMyProfile(
+    @Body() dto: Partial<{ nom: string; prenom: string; telephone: string; adresseClient: string }>,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.clientsService.updateClientProfile(dto, user);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: "Détail d'un client" })
   @ApiParam({ name: 'id', type: Number })

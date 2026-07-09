@@ -60,9 +60,17 @@ const adminNavItems: AdminNavItem[] = [
     icon: <HardHat size={18} />,
   },
   {
+    to: '/admin/taches-chantier',
+    label: 'Taches chantier',
+    description: 'Planning equipe',
+    group: 'Pilotage',
+    icon: <CheckSquare size={18} />,
+    roles: ['ADMIN', 'CHEF_CHANTIER'],
+  },
+  {
     to: '/admin/commandes-fournisseur',
-    label: 'Commandes fournisseur',
-    description: 'Achats & receptions',
+    label: 'Receptions',
+    description: 'Materiaux et livraisons',
     group: 'Pilotage',
     icon: <PackageCheck size={18} />,
   },
@@ -104,6 +112,22 @@ const adminNavItems: AdminNavItem[] = [
     description: 'Emission & paiement',
     group: 'Commercial',
     icon: <Receipt size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/documents',
+    label: 'Documents',
+    description: 'Gestion documents',
+    group: 'Commercial',
+    icon: <FileText size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+  {
+    to: '/admin/suivi',
+    label: 'Suivi administratif',
+    description: 'Suivi dossiers',
+    group: 'Commercial',
+    icon: <ClipboardList size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
@@ -336,9 +360,9 @@ export default function AppLayout() {
       </aside>
 
       <main className="min-h-screen flex-1 lg:ml-[292px]">
-        <header className="app-main-header sticky top-0 z-30 backdrop-blur transition-colors duration-300">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-8">
-            <div className="flex min-w-0 items-center gap-4">
+        <header className="app-main-header sticky top-0 z-30 backdrop-blur transition-colors duration-300 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 px-4 py-3 lg:px-8">
+            <div className="flex min-w-0 items-center gap-4 w-full lg:w-auto">
               <button
                 onClick={() => setMobileOpen((value) => !value)}
                 className="rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"
@@ -346,7 +370,7 @@ export default function AppLayout() {
               >
                 {mobileOpen ? <X size={20} /> : <Menu size={20} />}
               </button>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1 lg:flex-none">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#185FA5]">
                   Administration
                 </p>
@@ -356,7 +380,7 @@ export default function AppLayout() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto justify-end">
               <WorkAssistant />
               <button
                 type="button"

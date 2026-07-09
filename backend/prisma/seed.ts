@@ -66,7 +66,67 @@ async function main() {
   console.log(`✅ Technico créé : ${technico.email} (ID: ${technico.id})`);
   console.log(`   Mot de passe : Technico@2026!`);
 
-  // 2c. Créer les types de projet (gérés par Admin)
+  // 2c. Créer le compte Assistante Administrative
+  const assistantePassword = await bcrypt.hash('Assistante@2026!', 12);
+  const assistante = await prisma.user.upsert({
+    where: { email: 'assistante@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Martin',
+      prenom: 'Sophie',
+      email: 'assistante@batiment-pro.fr',
+      password: assistantePassword,
+      role: 'ASSISTANTE',
+      telephone: '0612345678',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Assistante créée : ${assistante.email} (ID: ${assistante.id})`);
+  console.log(`   Mot de passe : Assistante@2026!`);
+
+  // 2d. Créer le compte Chef de Chantier
+  const chefPassword = await bcrypt.hash('Chef@2026!', 12);
+  const chef = await prisma.user.upsert({
+    where: { email: 'chef@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Bernard',
+      prenom: 'Pierre',
+      email: 'chef@batiment-pro.fr',
+      password: chefPassword,
+      role: 'CHEF_CHANTIER',
+      telephone: '0698765432',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Chef de chantier créé : ${chef.email} (ID: ${chef.id})`);
+  console.log(`   Mot de passe : Chef@2026!`);
+
+  // 2f. Créer le compte Sous-Traitant
+  const sousTraitantPassword = await bcrypt.hash('SousTraitant@2026!', 12);
+  const sousTraitant = await prisma.user.upsert({
+    where: { email: 'soustraitant@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Petit',
+      prenom: 'Jean',
+      email: 'soustraitant@batiment-pro.fr',
+      password: sousTraitantPassword,
+      role: 'SOUS_TRAITANT',
+      telephone: '0654321098',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Sous-traitant créé : ${sousTraitant.email} (ID: ${sousTraitant.id})`);
+  console.log(`   Mot de passe : SousTraitant@2026!`);
+
+  // 2g. Créer les types de projet (gérés par Admin)
   const typesProjetData = [
     { nom: 'Rénovation salle de bain', description: 'Travaux de rénovation complète ou partielle de salle de bain' },
     { nom: 'Rénovation cuisine', description: 'Travaux de rénovation de cuisine' },

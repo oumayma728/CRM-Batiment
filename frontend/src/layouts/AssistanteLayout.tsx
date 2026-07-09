@@ -1,24 +1,26 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  HardHat,
-  CheckSquare,
-  ClipboardCheck,
-  PackageCheck,
   FileText,
-  LayoutDashboard,
+  FileSpreadsheet,
+  Receipt,
+  Users,
+  UserPlus,
+  ClipboardList,
+  BookOpen,
+  Building2,
   LogOut,
   Moon,
   Sun,
   X,
+  LayoutDashboard,
   ChevronRight,
-  Users,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import { cn } from '@/lib/utils';
 
-interface ChefNavItem {
+interface AssistanteNavItem {
   to: string;
   label: string;
   description: string;
@@ -26,52 +28,73 @@ interface ChefNavItem {
   icon: ReactNode;
 }
 
-const chefNavItems: ChefNavItem[] = [
+const assistanteNavItems: AssistanteNavItem[] = [
   {
-    to: '/chef',
+    to: '/assistante',
     label: 'Tableau de bord',
     description: 'Vue d\'ensemble',
     group: 'Accueil',
     icon: <LayoutDashboard size={18} />,
   },
   {
-    to: '/chef/chantiers',
-    label: 'Chantiers',
-    description: 'Suivi des sites',
-    group: 'Opérations',
-    icon: <HardHat size={18} />,
+    to: '/assistante/clients',
+    label: 'Clients',
+    description: 'Fiches clients',
+    group: 'Commercial',
+    icon: <Users size={18} />,
   },
   {
-    to: '/chef/taches',
-    label: 'Tâches',
-    description: 'Gestion équipes',
-    group: 'Opérations',
-    icon: <CheckSquare size={18} />,
+    to: '/assistante/creation-client',
+    label: 'Création client',
+    description: 'Nouveau compte',
+    group: 'Commercial',
+    icon: <UserPlus size={18} />,
   },
   {
-    to: '/chef/receptions',
-    label: 'Réceptions',
-    description: 'Matériaux livraisons',
-    group: 'Opérations',
-    icon: <ClipboardCheck size={18} />,
-  },
-  {
-    to: '/chef/avancement',
-    label: 'Avancement',
-    description: 'Contrôle travaux',
-    group: 'Opérations',
-    icon: <PackageCheck size={18} />,
-  },
-  {
-    to: '/chef/documents',
-    label: 'Documents',
-    description: 'Gestion chantiers',
-    group: 'Documents',
+    to: '/assistante/demandes-devis',
+    label: 'Demandes de devis',
+    description: 'Prospects entrants',
+    group: 'Commercial',
     icon: <FileText size={18} />,
+  },
+  {
+    to: '/assistante/devis',
+    label: 'Devis',
+    description: 'Suivi administratif',
+    group: 'Commercial',
+    icon: <FileSpreadsheet size={18} />,
+  },
+  {
+    to: '/assistante/factures',
+    label: 'Factures',
+    description: 'Consultation',
+    group: 'Commercial',
+    icon: <Receipt size={18} />,
+  },
+  {
+    to: '/assistante/fournisseurs',
+    label: 'Fournisseurs',
+    description: 'Gestion fournisseurs',
+    group: 'Commercial',
+    icon: <Building2 size={18} />,
+  },
+  {
+    to: '/assistante/documents',
+    label: 'Documents',
+    description: 'Préparation & gestion',
+    group: 'Documents',
+    icon: <BookOpen size={18} />,
+  },
+  {
+    to: '/assistante/suivi',
+    label: 'Suivi administratif',
+    description: 'Suivi des dossiers',
+    group: 'Documents',
+    icon: <ClipboardList size={18} />,
   },
 ];
 
-const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
+const groupedNavItems = assistanteNavItems.reduce<Record<string, AssistanteNavItem[]>>(
   (acc, item) => {
     if (!acc[item.group]) {
       acc[item.group] = [];
@@ -82,7 +105,7 @@ const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
   {}
 );
 
-export default function ChefChantierLayout() {
+export default function AssistanteLayout() {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -107,20 +130,20 @@ export default function ChefChantierLayout() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-700 dark:from-blue-900 dark:to-blue-950 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-blue-600 to-purple-700 dark:from-blue-900 dark:to-purple-900 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                <HardHat size={24} />
+              <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <LayoutDashboard size={24} />
               </div>
               <div>
-                <h1 className="font-bold text-lg">Chef de Chantier</h1>
-                <p className="text-xs text-orange-100">Espace terrain</p>
+                <h1 className="font-bold text-base sm:text-lg">Assistante</h1>
+                <p className="text-xs text-blue-100">Espace administratif</p>
               </div>
             </div>
             <button
@@ -141,7 +164,7 @@ export default function ChefChantierLayout() {
                 <div className="space-y-1">
                   {items.map((item) => {
                     const isActive = location.pathname === item.to || 
-                                   (item.to !== '/chef' && location.pathname.startsWith(item.to));
+                                   (item.to !== '/assistante' && location.pathname.startsWith(item.to));
                     return (
                       <NavLink
                         key={item.to}
@@ -182,7 +205,7 @@ export default function ChefChantierLayout() {
                 <p className="font-medium text-sm truncate">
                   {user?.prenom} {user?.nom}
                 </p>
-                <p className="text-xs text-blue-100">Chef de Chantier</p>
+                <p className="text-xs text-blue-100">Assistante Administrative</p>
               </div>
             </div>
             <div className="flex items-center gap-2">

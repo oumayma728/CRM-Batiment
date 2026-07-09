@@ -257,7 +257,64 @@ export class SeedService {
       });
       this.logger.log(`✅ Technico created: ${technico.email}`);
 
-      // 4. Project types (used by clients)
+      // 4. Create assistante account
+      const assistantePassword = await bcrypt.hash('Assistante@2026!', 12);
+      const assistante = await this.prisma.user.upsert({
+        where: { email: 'assistante@batiment-pro.fr' },
+        update: {},
+        create: {
+          companyId: company.id,
+          nom: 'Martin',
+          prenom: 'Sophie',
+          email: 'assistante@batiment-pro.fr',
+          password: assistantePassword,
+          role: 'ASSISTANTE',
+          telephone: '0612345678',
+          actif: true,
+          mustChangePassword: false,
+        },
+      });
+      this.logger.log(`✅ Assistante created: ${assistante.email}`);
+
+      // 5. Create chef de chantier account
+      const chefPassword = await bcrypt.hash('Chef@2026!', 12);
+      const chef = await this.prisma.user.upsert({
+        where: { email: 'chef@batiment-pro.fr' },
+        update: {},
+        create: {
+          companyId: company.id,
+          nom: 'Bernard',
+          prenom: 'Pierre',
+          email: 'chef@batiment-pro.fr',
+          password: chefPassword,
+          role: 'CHEF_CHANTIER',
+          telephone: '0698765432',
+          actif: true,
+          mustChangePassword: false,
+        },
+      });
+      this.logger.log(`✅ Chef de chantier created: ${chef.email}`);
+
+      // 7. Create sous-traitant account
+      const sousTraitantPassword = await bcrypt.hash('SousTraitant@2026!', 12);
+      const sousTraitant = await this.prisma.user.upsert({
+        where: { email: 'soustraitant@batiment-pro.fr' },
+        update: {},
+        create: {
+          companyId: company.id,
+          nom: 'Petit',
+          prenom: 'Jean',
+          email: 'soustraitant@batiment-pro.fr',
+          password: sousTraitantPassword,
+          role: 'SOUS_TRAITANT',
+          telephone: '0654321098',
+          actif: true,
+          mustChangePassword: false,
+        },
+      });
+      this.logger.log(`✅ Sous-traitant created: ${sousTraitant.email}`);
+
+      // 8. Project types (used by clients)
       const typeProjetNoms = [
         {
           nom: 'Rénovation appartement',
@@ -1702,6 +1759,21 @@ export class SeedService {
             role: 'TECHNICO',
             email: 'technico@batiment-pro.fr',
             password: 'Technico@2026!',
+          },
+          {
+            role: 'ASSISTANTE',
+            email: 'assistante@batiment-pro.fr',
+            password: 'Assistante@2026!',
+          },
+          {
+            role: 'CHEF_CHANTIER',
+            email: 'chef@batiment-pro.fr',
+            password: 'Chef@2026!',
+          },
+          {
+            role: 'SOUS_TRAITANT',
+            email: 'soustraitant@batiment-pro.fr',
+            password: 'SousTraitant@2026!',
           },
         ],
         stats: {

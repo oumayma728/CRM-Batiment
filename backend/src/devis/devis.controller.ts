@@ -158,6 +158,20 @@ export class DevisController {
     );
   }
 
+  @Post(':id/signer')
+  @Roles('CLIENT')
+  @ApiOperation({
+    summary: 'Signer un devis depuis le portail client',
+  })
+  @ApiParam({ name: 'id', type: Number })
+  signDevis(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { signature: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.service.signDevis(id, body.signature, user);
+  }
+
   @Post(':id/lignes')
   @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
   @ApiOperation({ summary: 'Ajouter une ligne au devis' })

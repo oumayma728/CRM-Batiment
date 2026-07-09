@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 
@@ -49,43 +49,139 @@ interface InvoiceEmailPayload {
 }
 
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private readonly appEnv: string;
   private transporter: nodemailer.Transporter | null = null;
+  private readonly ready: Promise<void>;
 
   constructor(private configService: ConfigService) {
     this.appEnv = (
       this.configService.get<string>('APP_ENV') || 'development'
     ).toLowerCase();
+    this.ready = this.initializeTransporter();
+  }
 
-    const host = this.configService.get<string>('MAIL_HOST');
-    const port = this.configService.get<number>('MAIL_PORT');
-    const user = this.configService.get<string>('MAIL_USER');
-    const pass = this.configService.get<string>('MAIL_PASS');
-    const hasPlaceholderCredentials =
-      !user ||
-      !pass ||
-      pass.includes('votre_') ||
-      pass.includes('your_') ||
-      pass.includes('16_caracteres');
+  async onModuleInit() {
+    await this.ready;
+  }
 
-    if (host && port && !hasPlaceholderCredentials) {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-        connectionTimeout: 8000,
-        greetingTimeout: 8000,
-        socketTimeout: 12000,
-      });
-      return;
+  isConfigured() {
+    return this.transporter !== null;
+  }
+
+  private async initializeTransporter(): Promise<void> {
+    const service = this.configService.get<string>('MAIL_SERVICE')?.trim();
+    const host = this.configService.get<string>('MAIL_HOST')?.trim();
+    const port = Number(this.configService.get<string>('MAIL_PORT') ?? 587);
+    const user = this.configService.get<string>('MAIL_USER')?.trim();
+    const pass = this.normalizePassword(
+      this.configService.get<string>('MAIL_PASS'),
+    );
+    const hasValidCredentials =
+      Boolean(user && pass) && !this.hasPlaceholderCredentials(user, pass);
+
+    if (hasValidCredentials && (service || (host && port))) {
+      try {
+        this.transporter = nodemailer.createTransport(
+          service
+            ? {
+                service,
+                auth: { user: user!, pass: pass! },
+                connectionTimeout: 10000,
+                greetingTimeout: 10000,
+                socketTimeout: 15000,
+              }
+            : {
+                host,
+                port,
+                secure: port === 465,
+                requireTLS: port === 587,
+                auth: { user: user!, pass: pass! },
+                tls: { minVersion: 'TLSv1.2' },
+                connectionTimeout: 10000,
+                greetingTimeout: 10000,
+                socketTimeout: 15000,
+              },
+        );
+
+        await this.transporter.verify();
+        this.logger.log(
+          service
+            ? `SMTP configure (service=${service}, user=${user})`
+            : `SMTP configure (${host}:${port}, user=${user})`,
+        );
+        return;
+      } catch (error) {
+        this.transporter = null;
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(
+          `Connexion SMTP impossible (${message}). Verifiez MAIL_HOST, MAIL_USER et MAIL_PASS dans backend/.env`,
+        );
+
+        if (this.appEnv === 'production') {
+          throw error;
+        }
+      }
+    }
+
+    const useEthereal =
+      this.appEnv !== 'production' &&
+      this.configService.get<string>('MAIL_USE_ETHEREAL') === 'true';
+
+    if (useEthereal) {
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        this.transporter = nodemailer.createTransport({
+          host: 'smtp.ethereal.email',
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+        await this.transporter.verify();
+        this.logger.warn(
+          'SMTP Ethereal actif (dev uniquement). Les emails ne partent pas vers une vraie boite mail.',
+        );
+        return;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Initialisation Ethereal impossible (${message})`);
+      }
     }
 
     this.logger.warn(
-      'Configuration email absente ou incomplete, les emails seront affiches dans la console',
+      'Configuration email absente ou incomplete. Ajoutez MAIL_HOST, MAIL_USER et MAIL_PASS dans backend/.env',
     );
+  }
+
+  private normalizePassword(value: string | undefined) {
+    return (value ?? '').replace(/\s/g, '');
+  }
+
+  private hasPlaceholderCredentials(
+    user: string | undefined,
+    pass: string | undefined,
+  ) {
+    const normalizedUser = (user ?? '').toLowerCase();
+    const normalizedPass = (pass ?? '').toLowerCase();
+
+    return (
+      !user ||
+      !pass ||
+      normalizedUser.includes('votre.') ||
+      normalizedUser.includes('your_') ||
+      normalizedPass.includes('votre_') ||
+      normalizedPass.includes('your_') ||
+      normalizedPass.includes('16_caracteres') ||
+      normalizedPass.includes('xxxx')
+    );
+  }
+
+  private async ensureReady() {
+    await this.ready;
   }
 
   async sendTemporaryPassword(
@@ -93,7 +189,7 @@ export class MailService {
     nom: string,
     prenom: string,
     tempPassword: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const subject = 'CRM Batiment - Votre compte a ete cree';
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -111,7 +207,7 @@ export class MailService {
       </div>
     `;
 
-    await this.sendOrLog({
+    return this.sendOrLog({
       to,
       subject,
       html,
@@ -119,9 +215,41 @@ export class MailService {
     });
   }
 
+  async sendForgotPasswordEmail(
+    to: string,
+    nom: string,
+    prenom: string,
+    tempPassword: string,
+  ): Promise<boolean> {
+    const subject = 'CRM Batiment - Reinitialisation de votre mot de passe';
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2c3e50;">Reinitialisation de mot de passe</h2>
+        <p>Bonjour <strong>${prenom} ${nom}</strong>,</p>
+        <p>Vous avez demande la reinitialisation de votre mot de passe. Voici un mot de passe temporaire :</p>
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 5px 0;"><strong>Email :</strong> ${to}</p>
+          <p style="margin: 5px 0;"><strong>Mot de passe temporaire :</strong> <code style="background:#e9ecef; padding:4px 8px; border-radius:4px;">${tempPassword}</code></p>
+        </div>
+        <p style="color: #e74c3c;"><strong>Important :</strong> Vous devrez choisir un nouveau mot de passe lors de votre prochaine connexion.</p>
+        <p>Si vous n'avez pas demande cette reinitialisation, contactez votre administrateur.</p>
+        <p>Connectez-vous a l'adresse : <a href="${this.configService.get('APP_URL', 'http://localhost:5173')}/login">CRM Batiment</a></p>
+        <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+        <p style="color: #999; font-size: 12px;">Cet email a ete envoye automatiquement. Ne repondez pas a ce message.</p>
+      </div>
+    `;
+
+    return this.sendOrLog({
+      to,
+      subject,
+      html,
+      devLogs: [`Mot de passe temporaire (oubli) : ${tempPassword}`],
+    });
+  }
+
   async sendDevisValidationEmail(
     payload: DevisValidationEmailPayload,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const subject = `Votre devis ${payload.devisReference} est pret a etre valide`;
     const totalFormatted = new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -158,7 +286,7 @@ export class MailService {
       </div>
     `;
 
-    await this.sendOrLog({
+    return this.sendOrLog({
       to: payload.to,
       subject,
       html,
@@ -172,7 +300,7 @@ export class MailService {
 
   async sendSupplierOrderEmail(
     payload: SupplierOrderEmailPayload,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const subject = `Nouvelle commande fournisseur ${payload.reference}`;
     const linesHtml = payload.lines
       .map(
@@ -213,7 +341,7 @@ export class MailService {
       </div>
     `;
 
-    await this.sendOrLog({
+    return this.sendOrLog({
       to: payload.to,
       subject,
       html,
@@ -233,7 +361,7 @@ export class MailService {
     });
   }
 
-  async sendInvoiceEmail(payload: InvoiceEmailPayload): Promise<void> {
+  async sendInvoiceEmail(payload: InvoiceEmailPayload): Promise<boolean> {
     const subject = `Facture ${payload.invoiceReference}`;
     const amountFormatted = new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -295,7 +423,7 @@ export class MailService {
       </div>
     `;
 
-    await this.sendOrLog({
+    return this.sendOrLog({
       to: payload.to,
       subject,
       html,
@@ -317,10 +445,12 @@ export class MailService {
     subject: string;
     html: string;
     devLogs?: string[];
-  }) {
+  }): Promise<boolean> {
+    await this.ensureReady();
+
     if (this.transporter) {
       try {
-        await this.transporter.sendMail({
+        const info = await this.transporter.sendMail({
           from: this.configService.get(
             'MAIL_FROM',
             '"CRM Batiment" <noreply@crm-batiment.fr>',
@@ -330,7 +460,13 @@ export class MailService {
           html,
         });
         this.logger.log(`Email envoye a ${to}`);
-        return;
+
+        const previewUrl = nodemailer.getTestMessageUrl(info);
+        if (previewUrl) {
+          this.logger.log(`Apercu Ethereal : ${previewUrl}`);
+        }
+
+        return true;
       } catch (error) {
         if (this.appEnv === 'production') {
           throw error;
@@ -349,5 +485,6 @@ export class MailService {
     this.logger.log(`Sujet        : ${subject}`);
     devLogs.forEach((line) => this.logger.log(line));
     this.logger.log('===============================================');
+    return false;
   }
 }

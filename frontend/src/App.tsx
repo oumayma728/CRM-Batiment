@@ -3,8 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import ChatbotWidget from '@/components/ChatbotWidget';
 import AppLayout from '@/layouts/AppLayout';
+import AssistanteLayout from '@/layouts/AssistanteLayout';
 import ChefChantierLayout from '@/layouts/ChefChantierLayout';
-import FournisseurLayout from '@/layouts/FournisseurLayout';
 import TechnicoLayout from '@/layouts/TechnicoLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import LoginPage from '@/pages/LoginPage';
@@ -22,10 +22,6 @@ import DemandesDevisPage from '@/pages/DemandesDevisPage';
 import DevisPage from '@/pages/DevisPage';
 import FacturesPage from '@/pages/FacturesPage';
 import FactureDetailPage from '@/pages/FactureDetailPage';
-import PrestationsPage from '@/pages/PrestationsPage';
-import PrestationCompositionsPage from '@/pages/PrestationCompositionsPage';
-import MateriauxPage from '@/pages/MateriauxPage';
-import ServicesMoPage from '@/pages/ServicesMoPage';
 import FournisseursPage from '@/pages/FournisseursPage';
 import UsersPage from '@/pages/UsersPage';
 import TypesProjetPage from '@/pages/TypesProjetPage';
@@ -45,8 +41,20 @@ import TechnicoCatalogueExplorer from '@/pages/technico/TechnicoCatalogueExplore
 import TechnicoDevisSignature from '@/pages/technico/TechnicoDevisSignature';
 import TechnicoProfile from '@/pages/technico/TechnicoProfile';
 import TechnicoAssistantIA from '@/pages/technico/TechnicoAssistantIA';
-import FournisseurDashboard from '@/pages/fournisseur/FournisseurDashboard';
 import ProfilePage from '@/pages/ProfilePage';
+import AssistanteDashboard from '@/pages/assistante/AssistanteDashboard';
+import AssistanteDocuments from '@/pages/assistante/AssistanteDocuments';
+import AssistanteSuivi from '@/pages/assistante/AssistanteSuivi';
+import ChefDashboard from '@/pages/chef/ChefDashboard';
+import ChefDocuments from '@/pages/chef/ChefDocuments';
+import ChefAvancement from '@/pages/chef/ChefAvancement';
+import SousTraitantLayout from '@/layouts/SousTraitantLayout';
+import SousTraitantDashboard from '@/pages/sous-traitant/SousTraitantDashboard';
+import SousTraitantChantiers from '@/pages/sous-traitant/SousTraitantChantiers';
+import SousTraitantTaches from '@/pages/sous-traitant/SousTraitantTaches';
+import SousTraitantDocuments from '@/pages/sous-traitant/SousTraitantDocuments';
+import SousTraitantInterventions from '@/pages/sous-traitant/SousTraitantInterventions';
+import SousTraitantRapports from '@/pages/sous-traitant/SousTraitantRapports';
 import { authManager } from '@/lib/auth';
 
 function RoleRouter() {
@@ -61,11 +69,19 @@ function RoleRouter() {
   }
 
   if (user?.role === 'SOUS_TRAITANT') {
-    return <Navigate to="/fournisseur" replace />;
+    return <Navigate to="/sous-traitant" replace />;
   }
 
   if (user?.role === 'CLIENT') {
     return <Navigate to="/profile" replace />;
+  }
+
+  if (user?.role === 'ASSISTANTE') {
+    return <Navigate to="/assistante" replace />;
+  }
+
+  if (user?.role === 'CHEF_CHANTIER') {
+    return <Navigate to="/chef" replace />;
   }
 
   return <Navigate to="/admin" replace />;
@@ -142,7 +158,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route
             element={
-              <ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER']} />
+              <ProtectedRoute allowedRoles={['ADMIN']} />
             }
           >
             <Route path="admin" element={<AdminLayoutRouter />}>
@@ -155,22 +171,16 @@ export default function App() {
                 <Route path="taches-chantier" element={<TasksChantierPage />} />
               </Route>
 
-              <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE']} />}>
+              <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                 <Route path="clients" element={<ClientsPage />} />
                 <Route path="creation-client" element={<CreateClientAccountPage />} />
                 <Route path="demandes-devis" element={<DemandesDevisPage />} />
                 <Route path="devis" element={<DevisPage />} />
                 <Route path="factures" element={<FacturesPage />} />
                 <Route path="factures/:id" element={<FactureDetailPage />} />
-                <Route path="checklist" element={<TechnicoChecklist />} />
-                <Route path="prestations" element={<PrestationsPage />} />
-                <Route
-                  path="prestations-compositions"
-                  element={<PrestationCompositionsPage />}
-                />
-                <Route path="materiaux" element={<MateriauxPage />} />
-                <Route path="services-mo" element={<ServicesMoPage />} />
                 <Route path="fournisseurs" element={<FournisseursPage />} />
+                <Route path="documents" element={<AssistanteDocuments />} />
+                <Route path="suivi" element={<AssistanteSuivi />} />
               </Route>
 
               <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
@@ -205,8 +215,51 @@ export default function App() {
           </Route>
 
           <Route element={<ProtectedRoute allowedRoles={['SOUS_TRAITANT']} />}>
-            <Route path="fournisseur" element={<FournisseurLayout />}>
-              <Route index element={<FournisseurDashboard />} />
+            <Route path="sous-traitant" element={<SousTraitantLayout />}>
+              <Route index element={<SousTraitantDashboard />} />
+              <Route path="chantiers" element={<SousTraitantChantiers />} />
+              <Route path="taches" element={<SousTraitantTaches />} />
+              <Route path="documents" element={<SousTraitantDocuments />} />
+              <Route path="interventions" element={<SousTraitantInterventions />} />
+              <Route path="rapports" element={<SousTraitantRapports />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['ASSISTANTE']} />}>
+            <Route path="assistante" element={<AssistanteLayout />}>
+              <Route index element={<AssistanteDashboard />} />
+              <Route path="clients" element={<ClientsPage />} />
+              <Route path="creation-client" element={<CreateClientAccountPage />} />
+              <Route path="demandes-devis" element={<DemandesDevisPage />} />
+              <Route path="devis" element={<DevisPage />} />
+              <Route path="factures" element={<FacturesPage />} />
+              <Route path="factures/:id" element={<FactureDetailPage />} />
+              <Route path="fournisseurs" element={<FournisseursPage />} />
+              <Route path="documents" element={<AssistanteDocuments />} />
+              <Route path="suivi" element={<AssistanteSuivi />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['CHEF_CHANTIER']} />}>
+            <Route path="chef" element={<ChefChantierLayout />}>
+              <Route index element={<ChefDashboard />} />
+              <Route path="chantiers" element={<ChantiersPage />} />
+              <Route path="taches" element={<TasksChantierPage />} />
+              <Route path="receptions" element={<CommandesFournisseurPage />} />
+              <Route path="avancement" element={<ChefAvancement />} />
+              <Route path="documents" element={<ChefDocuments />} />
+              <Route path="profil" element={<ChefProfilePage />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['SOUS_TRAITANT']} />}>
+            <Route path="sous-traitant" element={<SousTraitantLayout />}>
+              <Route index element={<SousTraitantDashboard />} />
+              <Route path="chantiers" element={<SousTraitantChantiers />} />
+              <Route path="taches" element={<SousTraitantTaches />} />
+              <Route path="interventions" element={<SousTraitantInterventions />} />
+              <Route path="documents" element={<SousTraitantDocuments />} />
+              <Route path="rapports" element={<SousTraitantRapports />} />
             </Route>
           </Route>
         </Route>

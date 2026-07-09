@@ -16,6 +16,7 @@ import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
 import {
   JwtPayload,
@@ -116,14 +117,75 @@ export class AuthService {
     };
   }
 
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const genericMessage =
+      'Si un compte existe avec cet email, un mot de passe temporaire a ete envoye.';
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: normalizedEmail, mode: 'insensitive' },
+        actif: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        nom: true,
+        prenom: true,
+      },
+    });
+
+    if (!user) {
+      this.logger.warn(
+        `Demande mot de passe oublie pour email inconnu ou inactif: ${normalizedEmail}`,
+      );
+      return { message: genericMessage };
+    }
+
+    const tempPassword = randomBytes(6).toString('hex');
+    const hashedPassword = await bcrypt.hash(tempPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: true,
+      },
+    });
+
+    const emailSent = await this.mailService.sendForgotPasswordEmail(
+      user.email,
+      user.nom,
+      user.prenom,
+      tempPassword,
+    );
+
+    const appEnv = (
+      this.configService.get<string>('APP_ENV') || 'development'
+    ).toLowerCase();
+    const exposeTempPassword = appEnv !== 'production' && !emailSent;
+
+    this.logger.log(
+      `Mot de passe reinitialise (oubli) pour ${user.email} (email envoye: ${emailSent})`,
+    );
+
+    return {
+      message: emailSent
+        ? genericMessage
+        : exposeTempPassword
+          ? 'Mot de passe temporaire genere. Utilisez-le pour vous connecter, puis choisissez un nouveau mot de passe.'
+          : genericMessage,
+      temporaryPassword: exposeTempPassword ? tempPassword : undefined,
+      emailSent,
+    };
+  }
+
   async resetTemporaryPassword(
     dto: ResetTemporaryPasswordDto,
     admin: CurrentUserPayload,
   ) {
     const normalizedEmail = dto.email.trim().toLowerCase();
-    console.log('EMAIL:', normalizedEmail);
 
-    
     const user = await this.prisma.user.findFirst({
       where: {
         email: { equals: normalizedEmail, mode: 'insensitive' },

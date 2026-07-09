@@ -33,6 +33,7 @@ import type {
   DevisStatut,
   Unite,
 } from '../../generated/prisma/client.js';
+import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 
 const TRANSITIONS: Record<string, string[]> = {
   BROUILLON: ['ENVOYE', 'ANNULE'],
@@ -1837,27 +1838,56 @@ export class DevisService {
       );
     }
 
-    const signedAt = new Date();
-    const updated = await this.prisma.devis.update({
-      where: { id: devis.id },
+    await this.prisma.devis.update({
+      where: { id },
       data: {
         signatureConseillerBase64: conseiller.signatureBase64,
-        signatureConseillerDate: signedAt,
-        statut: 'SIGNE',
-        dateValidation: signedAt,
-        ...(isValidationVerbale ? { modeValidation: 'VERBAL' } : {}),
-        ...(isValidationVerbale && !devis.signatureClientDate
-          ? { signatureClientDate: signedAt }
-          : {}),
+        signatureConseillerDate: new Date(),
       },
     });
 
-    await this.ensureAcceptedDocumentsGenerated(updated.id, companyId);
+    this.logger.log(
+      `Signature conseiller apposee sur devis #${id} par utilisateur #${conseillerId}`,
+    );
 
     return {
-      message:
-        'Signature conseiller apposee. Statut dossier: signe_conseiller.',
-      devis: await this.findOne(updated.id, companyId),
+      message: 'Signature conseiller apposee avec succes',
+      devis: await this.findOne(id, companyId),
+    };
+  }
+
+  async signDevis(
+    id: number,
+    signature: string,
+    user: CurrentUserPayload,
+  ) {
+    const devis = await this.prisma.devis.findFirst({
+      where: { id, companyId: user.companyId },
+      include: {
+        client: { select: { id: true, nom: true, prenom: true } },
+      },
+    });
+
+    if (!devis) {
+      throw new NotFoundException(`Devis #${id} introuvable`);
+    }
+
+    await this.prisma.devis.update({
+      where: { id },
+      data: {
+        signatureClientBase64: signature,
+        signatureClientDate: new Date(),
+        statut: 'SIGNE',
+      },
+    });
+
+    this.logger.log(
+      `Devis #${id} signe par client ${user.email}`,
+    );
+
+    return {
+      message: 'Devis signe avec succes',
+      devis: await this.findOne(id, user.companyId),
     };
   }
 

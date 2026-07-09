@@ -8,6 +8,8 @@ import {
   Post,
   Query,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -66,6 +68,31 @@ export class CommandesFournisseurController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.commandesFournisseurService.findOne(id, user);
+  }
+
+  @Post()
+  @Roles(Role.ADMIN, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Créer une commande fournisseur manuellement',
+    description:
+      'Permet de créer une commande fournisseur manuellement en sélectionnant un fournisseur et ajoutant des produits.',
+  })
+  @ApiResponse({ status: 201, description: 'Commande créée.' })
+  @ApiResponse({ status: 400, description: 'Données invalides.' })
+  async create(
+    @Body() body: any,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    console.log('Controller: Received body:', body);
+    console.log('Controller: User:', user);
+    try {
+      const result = await this.commandesFournisseurService.create(body, user);
+      console.log('Controller: Service returned successfully');
+      return result;
+    } catch (error) {
+      console.error('Controller: Error from service:', error);
+      throw error;
+    }
   }
 
   @Patch(':id')

@@ -18,6 +18,7 @@ import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
@@ -99,6 +100,21 @@ export class AuthController {
     @CurrentUser() admin: CurrentUserPayload,
   ) {
     return this.authService.createUser(dto, admin);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Mot de passe oublie',
+    description:
+      "Envoie un mot de passe temporaire par email si le compte existe et est actif. Reponse identique dans tous les cas pour eviter l'enumeration d'emails.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Demande prise en compte',
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
   }
 
   @Post('reset-temp-password')
