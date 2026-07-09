@@ -25,7 +25,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import './ChatbotWidget.css';
-
+import { validateChatInput } from './chatValidation';
 /* ============================================================
    TYPES
    ============================================================ */
@@ -240,7 +240,11 @@ export default function ChatbotWidget() {
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     if (!canSend) return;
-
+    const validation = validateChatInput(input);
+    if (!validation.valid) {
+      setError(validation.message ?? 'Message invalide.');
+      return;
+    }
     const userMessage = input.trim();
     setInput('');
     setError('');

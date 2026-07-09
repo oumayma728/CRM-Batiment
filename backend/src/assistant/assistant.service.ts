@@ -6195,9 +6195,31 @@ export class AssistantService {
       const parts: string[] = [
         "Bien sur ! Pour planifier un rendez-vous, j'ai besoin de quelques infos :",
       ];
+      // Le client a-t-il tente un numero trop court (4 a 7 chiffres) ?
+      // Si oui, on explique pourquoi on redemande (evite la boucle silencieuse).
+      const compactMsg = input.normalizedMessage.replace(/[\s.\-()]/g, '');
+      const attemptedShortPhone =
+        !data.telephone && /(^|\D)\d{4,7}(\D|$)/.test(compactMsg);
+      // Un email tente mais invalide (contient un @ mais mal forme) ?
+      const attemptedBadEmail =
+        !data.email &&
+        /\S+@\S*/.test(input.normalizedMessage) &&
+        !/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(
+          input.normalizedMessage,
+        );
       if (!data.nom) parts.push('- Votre nom complet');
-      if (!data.telephone) parts.push('- Votre numero de telephone');
-      if (!data.email) parts.push('- Votre email');
+      if (!data.telephone)
+        parts.push(
+          attemptedShortPhone
+            ? '- Votre numero de telephone (⚠️ celui indique semble incomplet : 8 chiffres minimum)'
+            : '- Votre numero de telephone',
+        );
+      if (!data.email)
+        parts.push(
+          attemptedBadEmail
+            ? '- Votre email (⚠️ celui indique semble incorrect, ex: nom@domaine.com)'
+            : '- Votre email',
+        );
       if (parts.length === 1) {
         return `Parfait ${data.nom} ! Votre demande de rendez-vous a ete notee. Notre equipe vous contactera rapidement au ${data.telephone || data.email}. 📅`;
       }
@@ -6374,14 +6396,27 @@ export class AssistantService {
         ? `Parfait, projet "${state.projectType}" bien identifie ! ✅`
         : `J'ai note votre besoin de "${state.projectType}".`;
 
+      // Detection des tentatives invalides pour expliquer le refus (anti-boucle) :
+      // un numero trop court ou un email malforme donnent un message explicite.
+      const compactMsgDevis = input.message.replace(/[\s.\-()]/g, '');
+      const attemptedShortPhoneDevis = /(^|\D)\d{4,7}(\D|$)/.test(compactMsgDevis);
+      const attemptedBadEmailDevis =
+        /\S+@\S*/.test(input.message) &&
+        !/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(
+          input.message,
+        );
       const missingLabels = devisMissing.map((field) => {
         switch (field) {
           case 'nom':
             return 'votre nom complet';
           case 'telephone':
-            return 'votre telephone';
+            return attemptedShortPhoneDevis
+              ? 'votre telephone (⚠️ celui indique semble incomplet : 8 chiffres minimum)'
+              : 'votre telephone';
           case 'email':
-            return 'votre email';
+            return attemptedBadEmailDevis
+              ? 'votre email (⚠️ celui indique semble incorrect, ex: nom@domaine.com)'
+              : 'votre email';
           case 'projectType':
             return 'le type de projet';
           default:
