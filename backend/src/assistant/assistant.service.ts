@@ -477,6 +477,14 @@ export class AssistantService {
       (!isHowToQuestion &&
         /\b(suivi|suivre|statut|avancement|ou en est)\b/i.test(normalizedMessage)) ||
       /dem-[a-z0-9]{4,10}/i.test(normalizedMessage);
+    // Demande explicite de contact humain : "je veux parler a un humain/conseiller"
+    const wantsHuman =
+      /\b(parler|discuter|contacter|joindre)\b[\s\S]{0,30}\b(humain|conseiller|personne|quelqu un|agent|responsable|commercial|equipe)\b/i.test(
+        normalizedMessage,
+      ) ||
+      /\b(un humain|un conseiller|une vraie personne|un vrai conseiller)\b/i.test(
+        normalizedMessage,
+      );
     const wasPendingSuivi = Boolean(state.sessionState?.pendingSuivi);
     const switchesAwayFromSuivi =
       /\b(devis|rendez[\s-]?vous|rdv|prix|tarif)\b/i.test(normalizedMessage);
@@ -812,6 +820,33 @@ export class AssistantService {
         .replace(/\s*Mots-cles\s*:.*$/is, '')
         .trim();
       answeredByRag = true;
+    } else if (wantsHuman) {
+      // ========== DEMANDE DE CONTACT HUMAIN ==========
+      // Le client veut parler a quelqu'un : on collecte ses coordonnees
+      // via le parcours rdv existant (deja teste et valide).
+      sessionState.pendingRdv = true;
+      responseMessage =
+        'Bien sûr, je comprends ! 😊 Notre équipe peut vous recontacter directement.\n' +
+        'Pour cela, donnez-moi simplement :\n' +
+        '- Votre nom complet\n' +
+        '- Votre téléphone\n' +
+        '- Votre email';
+      answeredByRag = true; // pas de liste des projets derriere ce message
+    } else if (
+      isInformationalQuestion &&
+      !mentionsSuiviDirect &&
+      !sessionState.pendingRdv &&
+      !sessionState.pendingSuivi
+    ) {
+      // ========== FALLBACK RAG : "JE NE SAIS PAS" ==========
+      // Question informative mais AUCUN document pertinent (score < 0.4) :
+      // reponse honnete + proposition de recontact par un conseiller.
+      sessionState.pendingRdv = true;
+      responseMessage =
+        "Je n'ai pas d'information précise sur ce point dans ma base. 🤔\n" +
+        'Mais notre équipe peut vous répondre directement ! Souhaitez-vous être recontacté ?\n' +
+        'Si oui, donnez-moi simplement votre nom, votre téléphone et votre email.';
+      answeredByRag = true; // pas de liste des projets derriere
     } else if (sessionState.confirmed) {
       responseMessage = this.buildClosureMessage(sessionState);
     } else if (awaitingProjectTypeChangeConfirmation && pendingProjectType) {
