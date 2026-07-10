@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
@@ -95,7 +95,8 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 
 export default function TechnicoAssistantIA() {
   const queryClient = useQueryClient();
-
+  const [statutFilter, setStatutFilter] = useState<string>('TOUS');
+  const [sortOrder, setSortOrder] = useState<'recent' | 'ancien'>('recent');
   const prospectsQuery = useQuery({
     queryKey: ['technico-assistant-prospects'],
     queryFn: async () => {
@@ -141,7 +142,21 @@ export default function TechnicoAssistantIA() {
       await queryClient.invalidateQueries({ queryKey: ['technico-demandes'] });
     },
   });
-  const prospects = prospectsQuery.data?.items ?? [];
+  const allProspects = prospectsQuery.data?.items ?? [];
+  const prospects = useMemo(() => {
+    let list = [...allProspects];
+    if (statutFilter !== 'TOUS') {
+      list = list.filter(
+        (p) => p.latestDemandeDevis?.statut === statutFilter,
+      );
+    }
+    list.sort((a, b) => {
+      const da = new Date(a.createdAt).getTime();
+      const db = new Date(b.createdAt).getTime();
+      return sortOrder === 'recent' ? db - da : da - db;
+    });
+    return list;
+  }, [allProspects, statutFilter, sortOrder]);
   const futureProjects = futureProjectsQuery.data?.items ?? [];
 
   const pendingCount = useMemo(
@@ -212,7 +227,31 @@ export default function TechnicoAssistantIA() {
 
       <section className="space-y-3">
         <h3 className="text-base font-bold text-gray-900">Prospects chatbot</h3>
-
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <select
+            value={statutFilter}
+            onChange={(e) => setStatutFilter(e.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700"
+          >
+            <option value="TOUS">Tous les statuts</option>
+            <option value="NOUVEAU">Nouveau</option>
+            <option value="EN_COURS">À qualifier</option>
+            <option value="QUALIFIE">Qualifié</option>
+            <option value="CONVERTI">Converti</option>
+            <option value="PERDU">Rejeté</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as 'recent' | 'ancien')}
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700"
+          >
+            <option value="recent">Plus récents d'abord</option>
+            <option value="ancien">Plus anciens d'abord</option>
+          </select>
+          <span className="text-xs text-gray-400">
+            {prospects.length} prospect{prospects.length > 1 ? 's' : ''}
+          </span>
+        </div>
         {prospects.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
             Aucun prospect chatbot a gerer pour le moment.
