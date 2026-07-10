@@ -831,11 +831,12 @@ function PrestationRow({
   indent: number;
 }) {
   const hasOptions = (p.options?.length ?? 0) > 0;
-  const paddingLeft = indent === 1 ? 'pl-14' : 'pl-20';
+  // Indentation reduite en mobile (ecran etroit), complete en desktop.
+  const paddingLeft = indent === 1 ? 'pl-3 md:pl-14' : 'pl-4 md:pl-20';
 
   return (
     <div className="border-t border-gray-50">
-      <div className={cn('flex items-center gap-3 pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
+      <div className={cn('flex flex-wrap items-center gap-3 pr-3 md:pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
         {hasOptions ? (
           <button onClick={onToggle} className="shrink-0">
             {expanded ? <ChevronDown size={14} className="text-amber-500" /> : <ChevronRight size={14} className="text-gray-400" />}
@@ -847,7 +848,7 @@ function PrestationRow({
           <BookOpen size={14} className="text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-gray-900">{p.nom}</span>
             <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-500 rounded">{p.unite}</span>
             {hasOptions && (
@@ -860,6 +861,8 @@ function PrestationRow({
         </div>
         <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
           {formatCurrency(p.prixVenteMin)} – {formatCurrency(p.prixVenteMax)}
+        </span><span className="w-full md:w-auto text-sm font-semibold text-gray-700 md:whitespace-nowrap pl-9 md:pl-0">
+          {formatCurrency(p.prixVenteMin)} – {formatCurrency(p.prixVenteMax)}
         </span>
         {canEdit && (
           <div className="flex items-center gap-1 ml-2">
@@ -871,7 +874,7 @@ function PrestationRow({
 
       {/* Options & Choix */}
       {expanded && hasOptions && (
-        <div className={cn('pb-3', indent === 1 ? 'pl-24' : 'pl-28')}>
+        <div className={cn('pb-3', indent === 1 ? 'pl-4 md:pl-24' : 'pl-5 md:pl-28')}>
           {p.options!.map((opt) => (
             <OptionBlock key={opt.id} option={opt} />
           ))}
