@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -80,6 +81,22 @@ export class AssistantAdminController {
     return this.assistantService.rejectProspect({
       prospectId,
       companyId: user.companyId,
+    });
+  }
+  @Patch('prospects/:prospectId/notes')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Modifier les notes internes d un prospect chatbot',
+  })
+  updateProspectNotes(
+    @Param('prospectId', ParseIntPipe) prospectId: number,
+    @Body() body: { notes: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.updateProspectNotes({
+      prospectId,
+      companyId: user.companyId,
+      notes: typeof body.notes === 'string' ? body.notes : '',
     });
   }
   @Delete('prospects/:prospectId')

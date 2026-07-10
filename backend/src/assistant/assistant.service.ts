@@ -1437,6 +1437,33 @@ export class AssistantService {
       autoGeneration,
     };
   }
+  async updateProspectNotes(input: {
+    prospectId: number;
+    companyId: number;
+    notes: string;
+  }) {
+    const prospect = await this.prisma.client.findFirst({
+      where: {
+        id: input.prospectId,
+        companyId: input.companyId,
+        source: LeadSource.CHATBOT,
+      },
+      select: { id: true },
+    });
+
+    if (!prospect) {
+      throw new NotFoundException(
+        'Prospect chatbot introuvable pour cette societe',
+      );
+    }
+
+    await this.prisma.client.update({
+      where: { id: input.prospectId },
+      data: { notes: input.notes.slice(0, 2000) },
+    });
+
+    return { status: 'updated' };
+  }
   async rejectProspect(input: {
     prospectId: number;
     companyId: number;
