@@ -25,7 +25,7 @@ import {
   type RagSnippet,
 } from './assistant-rag.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
-
+import { checkSensitiveOutput } from './sensitive-output.filter.js';
 type AssistantIntent =
   | 'demande_devis'
   | 'demande_info_service'
@@ -960,7 +960,18 @@ export class AssistantService {
       !sessionState.confirmed &&
       (intent === 'demande_info_service' ||
         (intent === 'demande_devis' && !projectMatch.known));
-
+    // ========== FILTRE DE SORTIE (dernier filet de securite) ==========
+    // Scanne la reponse finale : si un contenu sensible s'est glisse
+    // (montant, marge, cout interne, message de configuration...),
+    // on le journalise et on remplace par un message sur.
+    const sensitiveCheck = checkSensitiveOutput(responseMessage);
+    if (!sensitiveCheck.safe) {
+      this.logger.error(
+        `Filtre de sortie : contenu sensible bloque (${sensitiveCheck.reasons.join(', ')}) - message remplace avant envoi`,
+      );
+      responseMessage =
+        'Je ne peux pas communiquer cette information ici. 😊 Pour une réponse précise et personnalisée, notre équipe peut vous recontacter : souhaitez-vous me laisser vos coordonnées ?';
+    }
     const result: AssistantResult = {
       intent,
       detected_intents: detectedIntentsResolved,
