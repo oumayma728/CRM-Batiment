@@ -236,7 +236,7 @@ export default function ChefDashboard() {
           </h2>
         </div>
         <div className="p-6">
-          {isLoadingChantiers ? (
+          {isLoading ? (
             <LoadingSkeleton type="card" count={3} />
           ) : chantiersEnCours.length === 0 ? (
             <EmptyState

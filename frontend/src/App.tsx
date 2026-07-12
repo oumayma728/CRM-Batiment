@@ -28,6 +28,15 @@ import TypesProjetPage from '@/pages/TypesProjetPage';
 import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import TasksChantierPage from '@/pages/TasksChantierPage';
+import PrestationsPage from '@/pages/PrestationsPage';
+import PrestationCompositionsPage from '@/pages/PrestationCompositionsPage';
+import MateriauxPage from '@/pages/MateriauxPage';
+import ServicesMoPage from '@/pages/ServicesMoPage';
+import AdminDemo from '@/pages/admin/AdminDemo';
+import AssistanteDemo from '@/pages/assistante/AssistanteDemo';
+import ChefDemo from '@/pages/chef/ChefDemo';
+import TechnicoDemo from '@/pages/technico/TechnicoDemo';
+import SousTraitantDemo from '@/pages/sous-traitant/SousTraitantDemo';
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
 import TechnicoDemandes from '@/pages/technico/TechnicoDemandes';
@@ -163,6 +172,7 @@ export default function App() {
           >
             <Route path="admin" element={<AdminLayoutRouter />}>
               <Route index element={<AdminDashboardRouter />} />
+              <Route path="demo" element={<AdminDemo />} />
               <Route path="chantiers" element={<ChantiersPage />} />
               <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
               <Route path="profil" element={<ChefProfilePage />} />
@@ -191,6 +201,11 @@ export default function App() {
                   path="parametres-chiffrage"
                   element={<ParametresChiffragePage />}
                 />
+                <Route path="checklist" element={<TechnicoChecklist />} />
+                <Route path="prestations" element={<PrestationsPage />} />
+                <Route path="prestations-compositions" element={<PrestationCompositionsPage />} />
+                <Route path="materiaux" element={<MateriauxPage />} />
+                <Route path="services-mo" element={<ServicesMoPage />} />
               </Route>
             </Route>
           </Route>
@@ -198,6 +213,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['TECHNICO']} />}>
             <Route path="technico" element={<TechnicoLayout />}>
               <Route index element={<TechnicoDashboard />} />
+              <Route path="demo" element={<TechnicoDemo />} />
               <Route path="clients" element={<TechnicoClients />} />
               <Route path="demandes" element={<TechnicoDemandes />} />
               <Route path="devis" element={<TechnicoDevis />} />
@@ -228,6 +244,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['ASSISTANTE']} />}>
             <Route path="assistante" element={<AssistanteLayout />}>
               <Route index element={<AssistanteDashboard />} />
+              <Route path="demo" element={<AssistanteDemo />} />
               <Route path="clients" element={<ClientsPage />} />
               <Route path="creation-client" element={<CreateClientAccountPage />} />
               <Route path="demandes-devis" element={<DemandesDevisPage />} />
@@ -243,6 +260,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['CHEF_CHANTIER']} />}>
             <Route path="chef" element={<ChefChantierLayout />}>
               <Route index element={<ChefDashboard />} />
+              <Route path="demo" element={<ChefDemo />} />
               <Route path="chantiers" element={<ChantiersPage />} />
               <Route path="taches" element={<TasksChantierPage />} />
               <Route path="receptions" element={<CommandesFournisseurPage />} />
@@ -255,6 +273,7 @@ export default function App() {
           <Route element={<ProtectedRoute allowedRoles={['SOUS_TRAITANT']} />}>
             <Route path="sous-traitant" element={<SousTraitantLayout />}>
               <Route index element={<SousTraitantDashboard />} />
+              <Route path="demo" element={<SousTraitantDemo />} />
               <Route path="chantiers" element={<SousTraitantChantiers />} />
               <Route path="taches" element={<SousTraitantTaches />} />
               <Route path="interventions" element={<SousTraitantInterventions />} />

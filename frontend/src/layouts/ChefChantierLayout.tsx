@@ -206,7 +206,7 @@ export default function ChefChantierLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="min-h-screen">
+      <div className="flex-1 min-h-screen">
         {/* Page content */}
         <main className="p-4 lg:p-6 lg:ml-72">
           <Outlet />
