@@ -23,6 +23,7 @@ export type RagSnippet = {
   sourceId: number;
   title: string;
   excerpt: string;
+  fullText: string;
   score: number;
 };
 
@@ -145,6 +146,7 @@ export class AssistantRagService {
       sourceId: chunk.sourceId,
       title: chunk.title,
       excerpt: this.toExcerpt(chunk.text),
+      fullText: chunk.text,
       score: Number(score.toFixed(3)),
     }));
 
@@ -337,7 +339,7 @@ export class AssistantRagService {
 
     const coverage = overlap.length / input.queryTokens.length;
     const density = overlap.length / Math.max(input.chunk.tokens.length, 1);
-    let score = coverage * 0.72 + density * 0.28;
+    let score = coverage * 0.9 + density * 0.1;
 
     const normalizedQuery = this.normalize(input.query);
     if (

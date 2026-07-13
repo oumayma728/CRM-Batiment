@@ -30,7 +30,7 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
   },
-  "include": ["src", "test/*.ts"],
+  "include": ["src", "test/*.ts", "prisma/seed-rag.ts"],
   "exclude": [
     "node_modules",
     "dist",

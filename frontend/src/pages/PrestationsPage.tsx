@@ -357,7 +357,7 @@ export default function PrestationsPage() {
   function handleDeleteCategory(categoryId: number, categoryName: string) {
     if (deleteSelectedCategoryMutation.isPending) return;
     const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer la catÃ©gorie "${categoryName}" ?`,
+      `Voulez-vous vraiment supprimer la catégorie "${categoryName}" ?`,
     );
     if (!confirmed) return;
     deleteSelectedCategoryMutation.mutate(categoryId);
@@ -407,7 +407,7 @@ export default function PrestationsPage() {
             Catalogue des Prestations
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            {catalogue?.length ?? 0} catÃ©gories Â· {totalSousCategories} sous-catÃ©gories Â· {totalPrestations} prestations Â· {totalOptions} options
+            {catalogue?.length ?? 0} catégories · {totalSousCategories} sous-catégories · {totalPrestations} prestations · {totalOptions} options
           </p>
           {!isAdmin && (
             <p className="text-amber-700 text-xs mt-1">
@@ -445,7 +445,7 @@ export default function PrestationsPage() {
           )}
         </div>
         <button onClick={expandAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-          Tout dÃ©plier
+          Tout déplier
         </button>
         <button onClick={collapseAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           Tout replier
@@ -460,13 +460,13 @@ export default function PrestationsPage() {
       ) : filteredCatalogue.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">Aucun rÃ©sultat</p>
+          <p className="text-lg font-medium text-gray-500">Aucun résultat</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredCatalogue.map((cat) => (
             <div key={cat.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {/* CatÃ©gorie header */}
+              {/* Catégorie header */}
               <div
                 className={cn(
                   'w-full flex items-center gap-2 px-5 py-3.5 hover:bg-gray-50/50 transition-colors',
@@ -490,7 +490,7 @@ export default function PrestationsPage() {
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     <span>{cat.sousCategories?.length ?? 0} sous-cat.</span>
-                    <span className="text-gray-300">Â·</span>
+                    <span className="text-gray-300">·</span>
                     <span>
                       {(cat.sousCategories?.reduce((acc, sc) => acc + (sc.prestations?.length ?? 0), 0) ?? 0) + (cat.prestations?.length ?? 0)} prestations
                     </span>
@@ -510,7 +510,7 @@ export default function PrestationsPage() {
                         ? 'text-gray-300 border-gray-200 cursor-not-allowed'
                         : 'text-gray-600 border-gray-300 hover:bg-gray-100',
                     )}
-                    title={`Supprimer la catÃ©gorie ${cat.nom}`}
+                    title={`Supprimer la catégorie ${cat.nom}`}
                   >
                     <Trash2 size={14} />
                     Supprimer
@@ -518,10 +518,10 @@ export default function PrestationsPage() {
                 )}
               </div>
 
-              {/* Sous-catÃ©gories */}
+              {/* Sous-catégories */}
               {expandedCats.has(cat.id) && (
                 <div className="border-t border-gray-100">
-                  {/* Direct prestations (without sous-catÃ©gorie) */}
+                  {/* Direct prestations (without sous-catégorie) */}
                   {(cat.prestations?.length ?? 0) > 0 && (
                     <div className="ml-8 border-l-2 border-gray-100">
                       {cat.prestations.map(p => (
@@ -540,7 +540,7 @@ export default function PrestationsPage() {
 
                   {cat.sousCategories?.map(sc => (
                     <div key={sc.id}>
-                      {/* Sous-catÃ©gorie header */}
+                      {/* Sous-catégorie header */}
                       <button
                         onClick={() => toggleSub(sc.id)}
                         className="w-full flex items-center gap-3 pl-12 pr-5 py-3 hover:bg-gray-50/50 transition-colors border-t border-gray-50"
@@ -549,12 +549,12 @@ export default function PrestationsPage() {
                         <FolderOpen size={16} className="text-emerald-500" />
                         <div className="flex-1 text-left">
                           <span className="text-sm font-semibold text-gray-800">{sc.nom}</span>
-                          {sc.description && <span className="text-xs text-gray-400 ml-2">â€” {sc.description}</span>}
+                          {sc.description && <span className="text-xs text-gray-400 ml-2">— {sc.description}</span>}
                         </div>
                         <span className="text-xs text-gray-400">{sc.prestations?.length ?? 0} prestations</span>
                       </button>
 
-                      {/* Prestations dans la sous-catÃ©gorie */}
+                      {/* Prestations dans la sous-catégorie */}
                       {expandedSubs.has(sc.id) && sc.prestations?.map(p => (
                         <PrestationRow
                           key={p.id}
@@ -636,7 +636,7 @@ export default function PrestationsPage() {
                   <input type="number" step="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">UnitÃ©</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Unité</label>
                   <input type="text" placeholder="mÂ², ml, u..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                 </div>
               </div>
@@ -831,11 +831,12 @@ function PrestationRow({
   indent: number;
 }) {
   const hasOptions = (p.options?.length ?? 0) > 0;
-  const paddingLeft = indent === 1 ? 'pl-14' : 'pl-20';
+  // Indentation reduite en mobile (ecran etroit), complete en desktop.
+  const paddingLeft = indent === 1 ? 'pl-3 md:pl-14' : 'pl-4 md:pl-20';
 
   return (
     <div className="border-t border-gray-50">
-      <div className={cn('flex items-center gap-3 pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
+      <div className={cn('flex flex-wrap items-center gap-3 pr-3 md:pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
         {hasOptions ? (
           <button onClick={onToggle} className="shrink-0">
             {expanded ? <ChevronDown size={14} className="text-amber-500" /> : <ChevronRight size={14} className="text-gray-400" />}
@@ -847,7 +848,7 @@ function PrestationRow({
           <BookOpen size={14} className="text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-gray-900">{p.nom}</span>
             <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-500 rounded">{p.unite}</span>
             {hasOptions && (
@@ -859,7 +860,9 @@ function PrestationRow({
           {p.description && <p className="text-xs text-gray-400 truncate max-w-lg">{p.description}</p>}
         </div>
         <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-          {formatCurrency(p.prixVenteMin)} â€“ {formatCurrency(p.prixVenteMax)}
+          {formatCurrency(p.prixVenteMin)} – {formatCurrency(p.prixVenteMax)}
+        </span><span className="w-full md:w-auto text-sm font-semibold text-gray-700 md:whitespace-nowrap pl-9 md:pl-0">
+          {formatCurrency(p.prixVenteMin)} – {formatCurrency(p.prixVenteMax)}
         </span>
         {canEdit && (
           <div className="flex items-center gap-1 ml-2">
@@ -871,7 +874,7 @@ function PrestationRow({
 
       {/* Options & Choix */}
       {expanded && hasOptions && (
-        <div className={cn('pb-3', indent === 1 ? 'pl-24' : 'pl-28')}>
+        <div className={cn('pb-3', indent === 1 ? 'pl-4 md:pl-24' : 'pl-5 md:pl-28')}>
           {p.options!.map((opt) => (
             <OptionBlock key={opt.id} option={opt} />
           ))}
@@ -896,7 +899,7 @@ function OptionBlock({ option }: { option: OptionPrestation }) {
             Obligatoire
           </span>
         )}
-        {option.description && <span className="text-[11px] text-gray-400 ml-1">â€” {option.description}</span>}
+        {option.description && <span className="text-[11px] text-gray-400 ml-1">— {option.description}</span>}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {option.choix.map(ch => (

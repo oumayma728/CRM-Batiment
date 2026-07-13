@@ -122,6 +122,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get ragDocument() {
     return this._client.ragDocument;
   }
+  get assistantFeedback() {
+    return this._client.assistantFeedback;
+  }
   get auditLog() {
     return this._client.auditLog;
   }
