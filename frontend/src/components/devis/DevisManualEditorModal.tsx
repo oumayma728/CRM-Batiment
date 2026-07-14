@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
 import api from '@/lib/api';
 import type { Devis, LigneDevis, Materiau } from '@/types';
@@ -8,6 +8,26 @@ import {
   parseStructuredDevisNotes,
   type StructuredDevisNotes,
 } from '@/lib/devisStructuredNotes';
+
+function extractApiErrorMessage(err: unknown, fallback: string): string {
+  if (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    typeof (err as { response?: unknown }).response === 'object' &&
+    (err as { response?: { data?: unknown } }).response !== null
+  ) {
+    const data = (err as { response: { data?: unknown } }).response.data;
+    if (typeof data === 'object' && data !== null && 'message' in data) {
+      const msg = (data as { message: unknown }).message;
+      if (typeof msg === 'string') return msg;
+      if (Array.isArray(msg))
+        return msg.filter((m): m is string => typeof m === 'string').join(' | ');
+    }
+  }
+  if (err instanceof Error) return err.message;
+  return fallback;
+}
 
 interface DevisManualEditorModalProps {
   devis: Devis;
@@ -52,14 +72,28 @@ function toLineForm(line: LigneDevis): LineFormState {
 }
 
 export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisManualEditorModalProps) {
+  const queryClient = useQueryClient();
   const [lineForm, setLineForm] = useState<LineFormState>(emptyLineForm);
   const [notesForm, setNotesForm] = useState<StructuredDevisNotes>(() =>
     parseStructuredDevisNotes(devis.notes),
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Fetch the latest devis data so the UI stays in sync after mutations
+  const { data: liveDevis } = useQuery({
+    queryKey: ['devis-manual-editor-detail', devis.id],
+    enabled: open,
+    queryFn: async () => {
+      const response = await api.get(`/devis/${devis.id}`);
+      return response.data as Devis;
+    },
+  });
+
+  const currentDevis = liveDevis ?? devis;
 
   const lignes = useMemo(
-    () => [...(devis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre),
-    [devis.lignes],
+    () => [...(currentDevis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre),
+    [currentDevis.lignes],
   );
 
   const { data: materiaux = [] } = useQuery({
@@ -71,13 +105,22 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
     },
   });
 
+  async function refetchDevis() {
+    await queryClient.invalidateQueries({ queryKey: ['devis-manual-editor-detail', devis.id] });
+    if (onSaved) await onSaved();
+  }
+
   const saveNotesMutation = useMutation({
     mutationFn: async () => {
       const notes = composeStructuredDevisNotes(notesForm);
       await api.patch(`/devis/${devis.id}`, { notes });
     },
     onSuccess: async () => {
-      if (onSaved) await onSaved();
+      setErrorMessage(null);
+      await refetchDevis();
+    },
+    onError: (err: unknown) => {
+      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la sauvegarde des conditions'));
     },
   });
 
@@ -86,8 +129,12 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await api.post(`/devis/${devis.id}/lignes`, payload);
     },
     onSuccess: async () => {
+      setErrorMessage(null);
       setLineForm(emptyLineForm);
-      if (onSaved) await onSaved();
+      await refetchDevis();
+    },
+    onError: (err: unknown) => {
+      setErrorMessage(extractApiErrorMessage(err, "Erreur lors de l'ajout de la ligne"));
     },
   });
 
@@ -96,8 +143,12 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await api.patch(`/devis/${devis.id}/lignes/${lineId}`, payload);
     },
     onSuccess: async () => {
+      setErrorMessage(null);
       setLineForm(emptyLineForm);
-      if (onSaved) await onSaved();
+      await refetchDevis();
+    },
+    onError: (err: unknown) => {
+      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la mise à jour de la ligne'));
     },
   });
 
@@ -106,11 +157,15 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await api.delete(`/devis/${devis.id}/lignes/${lineId}`);
     },
     onSuccess: async () => {
+      setErrorMessage(null);
       if (lineForm.id) {
         const deletedCurrentLine = !lignes.some((line) => line.id === lineForm.id);
         if (deletedCurrentLine) setLineForm(emptyLineForm);
       }
-      if (onSaved) await onSaved();
+      await refetchDevis();
+    },
+    onError: (err: unknown) => {
+      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la suppression de la ligne'));
     },
   });
 
@@ -159,11 +214,20 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
         </div>
 
         <div className="grid max-h-[calc(92vh-72px)] gap-0 overflow-y-auto lg:grid-cols-[1.1fr_0.9fr]">
+          {errorMessage && (
+            <div className="col-span-full mx-6 mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {errorMessage}
+            </div>
+          )}
+
           <section className="border-r border-slate-100 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Lignes devis</h3>
               <button
-                onClick={() => setLineForm(emptyLineForm)}
+                onClick={() => {
+                  setLineForm(emptyLineForm);
+                  setErrorMessage(null);
+                }}
                 className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Plus size={14} /> Nouvelle ligne
@@ -293,7 +357,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   </button>
                   {lineForm.id ? (
                     <button
-                      onClick={() => setLineForm(emptyLineForm)}
+                      onClick={() => {
+                        setLineForm(emptyLineForm);
+                        setErrorMessage(null);
+                      }}
                       className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                     >
                       Annuler edition

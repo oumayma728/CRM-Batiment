@@ -19,7 +19,6 @@ import {
   Eye,
   FileSpreadsheet,
   Loader2,
-  MoreVertical,
   Search,
   Send,
   Trash2,
@@ -147,6 +146,7 @@ export default function DevisPage() {
   const [sendingDevisId, setSendingDevisId] = useState<number | null>(null);
   const [updatingDevisId, setUpdatingDevisId] = useState<number | null>(null);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
+  const [deleteDevisId, setDeleteDevisId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
   );
@@ -189,9 +189,18 @@ export default function DevisPage() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/devis/${id}`),
+    mutationFn: (id: number) => api.delete(`/devis/${id}`, { params: { force: 'true' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devis'] });
+      setFeedback({ type: 'success', text: 'Devis supprime avec succes.' });
+      setDeleteDevisId(null);
+    },
+    onError: (error) => {
+      setFeedback({
+        type: 'error',
+        text: getApiErrorMessage(error, 'Impossible de supprimer ce devis.'),
+      });
+      setDeleteDevisId(null);
     },
   });
 
@@ -474,7 +483,7 @@ export default function DevisPage() {
                                 {updatingDevisId === devis.id && updateStatutMutation.isPending ? (
                                   <Loader2 size={15} className="animate-spin" />
                                 ) : (
-                                  <MoreVertical size={15} />
+                                  <ChevronRight size={15} />
                                 )}
                               </button>
 
@@ -513,7 +522,7 @@ export default function DevisPage() {
                             )}
                           </button>
                           <button
-                            onClick={() => deleteMutation.mutate(devis.id)}
+                            onClick={() => setDeleteDevisId(devis.id)}
                             className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
                             title="Supprimer"
                           >
@@ -713,6 +722,51 @@ export default function DevisPage() {
           onPrint={() => window.print()}
         />
       )}
+
+      {deleteDevisId !== null && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">Supprimer le devis</h3>
+              <button
+                onClick={() => setDeleteDevisId(null)}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600">
+                Etes-vous sur de vouloir supprimer ce devis ? Cette action est
+                definitive et supprimera egalement toutes les factures, bons de
+                commande et commandes fournisseur associes.
+              </p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDeleteDevisId(null)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteMutation.mutate(deleteDevisId)}
+                  disabled={deleteMutation.isPending}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-rose-600 text-white hover:bg-rose-700 shadow-lg shadow-rose-600/20 disabled:opacity-50 transition-all"
+                >
+                  {deleteMutation.isPending ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Trash2 size={16} />
+                  )}
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -741,3 +795,4 @@ function MenuAction({
     </button>
   );
 }
+ 

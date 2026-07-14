@@ -455,6 +455,13 @@ export class FacturesService {
       throw new NotFoundException(`Devis #${devisId} introuvable.`);
     }
 
+    // P0.6 : Impossible de facturer un devis refusé ou annulé
+    if (['REFUSE', 'ANNULE'].includes(devis.statut)) {
+      throw new BadRequestException(
+        `Impossible de générer une facture pour un devis au statut ${devis.statut}.`,
+      );
+    }
+
     const existing = await this.prisma.facture.findFirst({
       where: { devisId },
       orderBy: { createdAt: 'desc' },
@@ -927,14 +934,15 @@ export class FacturesService {
       );
     }
 
-    const targetEmail =
-      this.toNullableString(dto.email) ??
-      this.toNullableString(facture.emailClient) ??
-      this.toNullableString(facture.devis.client?.email ?? null);
+    const targetEmail = this.pickFirstNonEmpty(
+      dto.email,
+      facture.emailClient,
+      facture.devis?.client?.email,
+    );
 
     if (!targetEmail) {
       throw new BadRequestException(
-        'Aucun email client disponible pour l envoi.',
+        'Le client doit avoir une adresse email dans sa fiche pour l envoi de la facture.',
       );
     }
 
@@ -946,11 +954,26 @@ export class FacturesService {
     await this.mailService.sendInvoiceEmail({
       to: targetEmail,
       clientName: clientDisplayName,
+      clientEmail: facture.emailClient ?? facture.devis.client?.email ?? undefined,
+      clientPhone: facture.telephoneClient ?? facture.devis.client?.telephone ?? undefined,
+      clientAddress:
+        facture.adresseClient ??
+        facture.devis.client?.adresseChantier ??
+        facture.devis.client?.adresseClient ??
+        undefined,
       invoiceReference: facture.reference,
       devisReference: facture.referenceDevis ?? facture.devis.reference,
       companyName: facture.companyNom ?? facture.devis.company.nom,
+      companyEmail: facture.companyEmail ?? facture.devis.company.email ?? undefined,
+      companyPhone: facture.companyTelephone ?? facture.devis.company.telephone ?? undefined,
+      companyAddress: facture.companyAdresse ?? facture.devis.company.adresse ?? undefined,
+      companySiret: facture.companySiret ?? facture.devis.company.siret ?? undefined,
       amountTTC: facture.montantTTC,
       dueDate: facture.dateEcheance?.toISOString(),
+      paymentConditions: facture.conditionsPaiement ?? undefined,
+      paymentCommunication: facture.communicationPaiement ?? undefined,
+      paymentReference: facture.referencePaiement ?? undefined,
+      legalNotes: facture.notesLegales ?? undefined,
       customMessage: this.toNullableString(dto.message) ?? undefined,
       lines: facture.lignes.map((line) => ({
         description: line.description,

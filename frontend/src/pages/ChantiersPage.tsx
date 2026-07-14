@@ -4,13 +4,14 @@ import {
   HardHat,
   Loader2,
   Pencil,
-  Plus,
   RefreshCcw,
   Search,
   Trash2,
+  ChevronRight,
 } from 'lucide-react';
 import axios from 'axios';
 import api from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { cn, formatDate } from '@/lib/utils';
 import type {
   Chantier,
@@ -104,6 +105,7 @@ function toForm(chantier: Chantier): ChantierFormState {
 
 export default function ChantiersPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ChantierStatusFilter>('ALL');
@@ -130,6 +132,14 @@ export default function ChantiersPage() {
         params: { page: 1, limit: 200 },
       });
       return res.data.data;
+    },
+  });
+
+  const chefsQuery = useQuery({
+    queryKey: ['chefs-chantier'],
+    queryFn: async () => {
+      const res = await api.get<{ id: number; nom: string; prenom: string; role: string; actif: boolean }[]>('/users');
+      return res.data.filter((u) => u.role === 'CHEF_CHANTIER' && u.actif);
     },
   });
 
@@ -220,10 +230,12 @@ export default function ChantiersPage() {
 
   const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data?.data]);
   const meta = listQuery.data?.meta ?? { page: 1, totalPages: 1, total: 0, limit: 15 };
+  const canManageChantiers = user?.role !== 'CHEF_CHANTIER';
 
   const submitMutation = editing ? updateMutation : createMutation;
 
   function openCreate() {
+    if (!canManageChantiers) return;
     setEditing(null);
     setForm(emptyForm);
     setShowModal(true);
@@ -270,12 +282,14 @@ export default function ChantiersPage() {
               {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
               Synchroniser depuis devis
             </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
-            >
-              <Plus size={16} /> Nouveau chantier
-            </button>
+            {canManageChantiers ? (
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
+              >
+                <ChevronRight size={16} /> Nouveau chantier
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -356,6 +370,11 @@ export default function ChantiersPage() {
                     <td className="px-5 py-4">
                       <p className="font-semibold text-slate-900">{chantier.reference}</p>
                       <p className="mt-1 text-slate-600">{chantier.adresse}</p>
+                      {chantier.chefChantier && (
+                        <p className="mt-1 text-xs text-orange-600">
+                          Chef : {chantier.chefChantier.prenom} {chantier.chefChantier.nom}
+                        </p>
+                      )}
                     </td>
                     <td className="px-5 py-4">
                       <p className="max-w-[520px] leading-6 text-slate-700" title={chantier.description ?? ''}>
@@ -370,21 +389,25 @@ export default function ChantiersPage() {
                     <td className="px-5 py-4 text-slate-500">{formatDate(chantier.updatedAt)}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(chantier)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
-                          title="Modifier"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(chantier)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-600 transition hover:bg-rose-50"
-                          title="Supprimer"
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        {canManageChantiers ? (
+                          <>
+                            <button
+                              onClick={() => openEdit(chantier)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
+                              title="Modifier"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(chantier)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-600 transition hover:bg-rose-50"
+                              title="Supprimer"
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </>
+                        ) : null}
                       </div>
                     </td>
                   </tr>
@@ -459,6 +482,29 @@ export default function ChantiersPage() {
                   </select>
                 </label>
 
+                <label className="space-y-1">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    Chef de chantier
+                  </span>
+                  <select
+                    value={form.chefChantierId}
+                    onChange={(event) => setForm((current) => ({ ...current, chefChantierId: event.target.value }))}
+                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  >
+                    <option value="">— Aucun —</option>
+                    {(chefsQuery.data ?? []).map((chef) => (
+                      <option key={chef.id} value={chef.id}>
+                        {chef.prenom} {chef.nom}
+                      </option>
+                    ))}
+                  </select>
+                  {chefsQuery.data?.length === 0 && (
+                    <p className="text-xs text-amber-600">Aucun utilisateur Chef de chantier actif trouvé.</p>
+                  )}
+                </label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-1">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Reference</span>
                   <input

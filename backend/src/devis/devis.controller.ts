@@ -29,6 +29,7 @@ import { UpdateDevisStatutDto } from './dto/update-devis-statut.dto.js';
 import { CreateLigneDevisDto } from './dto/create-ligne-devis.dto.js';
 import { UpdateLigneDevisDto } from './dto/update-ligne-devis.dto.js';
 import { SendClientSignatureDto } from './dto/send-client-signature.dto.js';
+import { Role } from '../../generated/prisma/client.js';
 
 @ApiTags('Devis')
 @ApiBearerAuth()
@@ -38,13 +39,14 @@ export class DevisController {
   constructor(private readonly service: DevisService) {}
 
   @Post()
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({ summary: 'Creer un devis en brouillon' })
   create(@Body() dto: CreateDevisDto, @CurrentUser() user: CurrentUserPayload) {
     return this.service.create(dto, user.userId, user.companyId);
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: 'Lister les devis avec pagination et filtres' })
   findAll(
     @Query() query: QueryDevisDto,
@@ -54,6 +56,7 @@ export class DevisController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: 'Consulter le detail d un devis' })
   @ApiParam({ name: 'id', type: Number })
   findOne(
@@ -64,7 +67,7 @@ export class DevisController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({ summary: 'Modifier les informations generales du devis' })
   @ApiParam({ name: 'id', type: Number })
   update(
@@ -76,7 +79,7 @@ export class DevisController {
   }
 
   @Patch(':id/statut')
-  @Roles('ADMIN', 'TECHNICO')
+  @Roles(Role.ADMIN, Role.TECHNICO)
   @ApiOperation({ summary: 'Changer manuellement le statut du devis' })
   @ApiParam({ name: 'id', type: Number })
   updateStatut(
@@ -88,7 +91,7 @@ export class DevisController {
   }
 
   @Post(':id/send-client')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: 'Envoyer le devis au client par email pour validation',
   })
@@ -101,7 +104,7 @@ export class DevisController {
   }
 
   @Post(':id/bon-commande/validate-send')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary:
       'Valider le bon de commande et envoyer les commandes fournisseur',
@@ -115,7 +118,7 @@ export class DevisController {
   }
 
   @Get(':id/signature')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: 'Consulter l etat de signature client/conseiller du devis',
   })
@@ -128,7 +131,7 @@ export class DevisController {
   }
 
   @Post(':id/signature/send-client')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: 'Envoyer un lien SMS pour la signature client du devis',
   })
@@ -142,7 +145,7 @@ export class DevisController {
   }
 
   @Post(':id/signature/appose-conseiller')
-  @Roles('ADMIN', 'TECHNICO')
+  @Roles(Role.ADMIN, Role.TECHNICO)
   @ApiOperation({
     summary: 'Apposer la signature configuree du conseiller sur le devis',
   })
@@ -159,7 +162,7 @@ export class DevisController {
   }
 
   @Post(':id/lignes')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({ summary: 'Ajouter une ligne au devis' })
   @ApiParam({ name: 'id', type: Number })
   addLigne(
@@ -171,7 +174,7 @@ export class DevisController {
   }
 
   @Post(':id/lignes/checklist')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: 'Ajouter des lignes depuis la checklist technicien',
   })
@@ -192,7 +195,7 @@ export class DevisController {
   }
 
   @Delete(':id/lignes/:ligneId')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({ summary: 'Supprimer une ligne du devis' })
   @ApiParam({ name: 'id', type: Number })
   @ApiParam({ name: 'ligneId', type: Number })
@@ -205,7 +208,7 @@ export class DevisController {
   }
 
   @Patch(':id/lignes/:ligneId')
-  @Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({ summary: 'Modifier une ligne du devis' })
   @ApiParam({ name: 'id', type: Number })
   @ApiParam({ name: 'ligneId', type: Number })
@@ -219,13 +222,14 @@ export class DevisController {
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
-  @ApiOperation({ summary: 'Supprimer un devis non signe' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Supprimer un devis (force=true pour suppression complete en cascade)' })
   @ApiParam({ name: 'id', type: Number })
   remove(
     @Param('id', ParseIntPipe) id: number,
+    @Query('force') force: string,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.service.remove(id, user.companyId);
+    return this.service.remove(id, user.companyId, force === 'true');
   }
 }

@@ -374,13 +374,13 @@ export class ChantiersService {
 
   private async ensureChefInCompany(chefChantierId: number, companyId: number) {
     const user = await this.prisma.user.findFirst({
-      where: { id: chefChantierId, companyId },
+      where: { id: chefChantierId, companyId, role: Role.CHEF_CHANTIER, actif: true },
       select: { id: true },
     });
 
     if (!user) {
       throw new NotFoundException(
-        `Utilisateur #${chefChantierId} introuvable dans votre entreprise.`,
+        `Utilisateur #${chefChantierId} introuvable ou n'a pas le rôle Chef de chantier dans votre entreprise.`,
       );
     }
   }
@@ -544,6 +544,11 @@ export class ChantiersService {
     const where: Prisma.ChantierWhereInput = {
       companyId: currentUser.companyId,
     };
+
+    // P0.7 / RBAC : un Chef de chantier ne voit que les chantiers qui lui sont assignés
+    if (currentUser.role === 'CHEF_CHANTIER') {
+      where.chefChantierId = currentUser.userId;
+    }
 
     if (query.statut) {
       where.statut = query.statut;

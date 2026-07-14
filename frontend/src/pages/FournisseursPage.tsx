@@ -11,12 +11,21 @@ export default function FournisseursPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
+  const [editingFournisseur, setEditingFournisseur] = useState<Fournisseur | null>(null);
+  const [form, setForm] = useState({
+    nom: '',
+    contact: '',
+    email: '',
+    telephone: '',
+    adresse: '',
+    typesMateriaux: '',
+    conditions: '',
+  });
 
   const { data: fournisseurs, isLoading } = useQuery({
     queryKey: ['fournisseurs', search],
     queryFn: async () => {
-      const params: Record<string, unknown> = {};
+      const params: Record<string, unknown> = { actif: true };
       if (search) params.search = search;
       const res = await api.get('/fournisseurs', { params });
       return (res.data?.data ?? res.data) as Fournisseur[];
@@ -28,6 +37,18 @@ export default function FournisseursPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
       setShowModal(false);
+      setEditingFournisseur(null);
+      setForm({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      api.patch(`/fournisseurs/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      setShowModal(false);
+      setEditingFournisseur(null);
       setForm({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
     },
   });
@@ -36,6 +57,70 @@ export default function FournisseursPage() {
     mutationFn: (id: number) => api.delete(`/fournisseurs/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['fournisseurs'] }),
   });
+
+  function openCreateModal() {
+    setEditingFournisseur(null);
+    setForm({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
+    setShowModal(true);
+  }
+
+  function openEditModal(fournisseur: Fournisseur) {
+    setEditingFournisseur(fournisseur);
+    setForm({
+      nom: fournisseur.nom ?? '',
+      contact: fournisseur.contact ?? '',
+      email: fournisseur.email ?? '',
+      telephone: fournisseur.telephone ?? '',
+      adresse: fournisseur.adresse ?? '',
+      typesMateriaux: fournisseur.typesMateriaux ?? '',
+      conditions: fournisseur.conditions ?? '',
+    });
+    setShowModal(true);
+  }
+
+  function escapeCsvValue(value: string) {
+    return `"${value.replaceAll('"', '""')}"`;
+  }
+
+  function handleExport() {
+    if (list.length === 0) return;
+
+    const headers = [
+      'Nom',
+      'Contact',
+      'Email',
+      'Telephone',
+      'Adresse',
+      'TypesMateriaux',
+      'Conditions',
+      'Actif',
+    ];
+
+    const rows = list.map((fournisseur) => [
+      fournisseur.nom ?? '',
+      fournisseur.contact ?? '',
+      fournisseur.email ?? '',
+      fournisseur.telephone ?? '',
+      fournisseur.adresse ?? '',
+      fournisseur.typesMateriaux ?? '',
+      fournisseur.conditions ?? '',
+      fournisseur.actif ? 'Oui' : 'Non',
+    ]);
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map((value) => escapeCsvValue(String(value))).join(';'))
+      .join('\n');
+
+    const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `fournisseurs-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +131,12 @@ export default function FournisseursPage() {
     if (form.adresse) body.adresse = form.adresse;
     if (form.typesMateriaux) body.typesMateriaux = form.typesMateriaux;
     if (form.conditions) body.conditions = form.conditions;
+
+    if (editingFournisseur) {
+      updateMutation.mutate({ id: editingFournisseur.id, body });
+      return;
+    }
+
     createMutation.mutate(body);
   }
 
@@ -62,10 +153,14 @@ export default function FournisseursPage() {
           <p className="text-gray-500 text-sm mt-0.5">{list.length} fournisseur(s) enregistré(s)</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium">
+          <button
+            onClick={handleExport}
+            disabled={isLoading || list.length === 0}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          >
             <Download size={16} /> Exporter
           </button>
-          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
+          <button onClick={openCreateModal} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
             <Plus size={17} /> Nouveau fournisseur
           </button>
         </div>
@@ -94,7 +189,7 @@ export default function FournisseursPage() {
                   <Truck size={20} />
                 </div>
                 <div className="flex gap-1">
-                  <button className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"><Edit size={14} /></button>
+                  <button onClick={() => openEditModal(f)} className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"><Edit size={14} /></button>
                   <button onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
                 </div>
               </div>
@@ -128,7 +223,7 @@ export default function FournisseursPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Nouveau fournisseur</h2>
+              <h2 className="text-lg font-bold text-gray-900">{editingFournisseur ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}</h2>
               <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -165,9 +260,9 @@ export default function FournisseursPage() {
               {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la création.</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
+                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
+                  {editingFournisseur ? 'Enregistrer' : 'Créer'}
                 </button>
               </div>
             </form>

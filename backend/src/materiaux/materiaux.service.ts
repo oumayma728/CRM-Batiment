@@ -4,6 +4,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { WorkflowStateService } from '../workflow-state.service.js';
 import { CreateMateriauDto } from './dto/create-materiau.dto.js';
 import { UpdateMateriauDto } from './dto/update-materiau.dto.js';
 import { QueryMateriauDto } from './dto/query-materiau.dto.js';
@@ -11,7 +12,10 @@ import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interf
 
 @Injectable()
 export class MateriauxService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workflowStateService: WorkflowStateService,
+  ) {}
 
   /**
    * Créer un matériau (ADMIN uniquement)
@@ -165,9 +169,13 @@ export class MateriauxService {
 
   /**
    * Supprimer un matériau (soft delete)
+   * P0.6 : bloqué si le matériau est utilisé dans un devis signé
    */
   async delete(id: number, currentUser: CurrentUserPayload) {
     await this.findOne(id, currentUser);
+
+    // P0.6 — Impossible de supprimer un matériau utilisé dans un devis signé
+    await this.workflowStateService.canDeleteMaterial(id, currentUser.companyId);
 
     return this.prisma.materiau.update({
       where: { id },

@@ -32,11 +32,22 @@ interface SupplierOrderEmailPayload {
 interface InvoiceEmailPayload {
   to: string;
   clientName: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  clientAddress?: string;
   invoiceReference: string;
   devisReference: string;
   companyName: string;
+  companyEmail?: string;
+  companyPhone?: string;
+  companyAddress?: string;
+  companySiret?: string;
   amountTTC: number;
   dueDate?: string;
+  paymentConditions?: string;
+  paymentCommunication?: string;
+  paymentReference?: string;
+  legalNotes?: string;
   customMessage?: string;
   lines: {
     description: string;
@@ -257,6 +268,23 @@ export class MailService {
       )
       .join('');
 
+    const companyDetailsHtml = [
+      payload.companyAddress,
+      [payload.companyEmail, payload.companyPhone].filter(Boolean).join(' | '),
+      payload.companySiret ? `SIRET: ${payload.companySiret}` : '',
+    ]
+      .filter(Boolean)
+      .map((line) => `<p style="margin: 4px 0; color: #475569;">${line}</p>`)
+      .join('');
+
+    const clientDetailsHtml = [
+      payload.clientAddress,
+      [payload.clientEmail, payload.clientPhone].filter(Boolean).join(' | '),
+    ]
+      .filter(Boolean)
+      .map((line) => `<p style="margin: 4px 0; color: #475569;">${line}</p>`)
+      .join('');
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 720px; margin: 0 auto; color: #0f172a;">
         <div style="padding: 28px; background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 20px 20px 0 0; color: white;">
@@ -266,6 +294,22 @@ export class MailService {
         <div style="border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 20px 20px; padding: 28px; background: #ffffff;">
           <p>Bonjour <strong>${payload.clientName}</strong>,</p>
           <p>Veuillez trouver ci-dessous les informations de votre facture.</p>
+          ${
+            companyDetailsHtml
+              ? `<div style="margin: 18px 0; padding: 14px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                  <p style="margin: 0 0 8px;"><strong>Societe:</strong> ${payload.companyName}</p>
+                  ${companyDetailsHtml}
+                </div>`
+              : ''
+          }
+          ${
+            clientDetailsHtml
+              ? `<div style="margin: 18px 0; padding: 14px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                  <p style="margin: 0 0 8px;"><strong>Client:</strong> ${payload.clientName}</p>
+                  ${clientDetailsHtml}
+                </div>`
+              : ''
+          }
           <div style="margin: 18px 0; padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0;">
             <p style="margin: 0 0 6px;"><strong>Facture:</strong> ${payload.invoiceReference}</p>
             <p style="margin: 0 0 6px;"><strong>Devis origine:</strong> ${payload.devisReference}</p>
@@ -289,6 +333,35 @@ export class MailService {
           ${
             payload.customMessage
               ? `<p style="margin-top: 20px; white-space: pre-line; color: #334155;"><strong>Message:</strong><br/>${payload.customMessage}</p>`
+              : ''
+          }
+          ${
+            payload.paymentConditions ||
+            payload.paymentCommunication ||
+            payload.paymentReference ||
+            payload.legalNotes
+              ? `<div style="margin-top: 20px; padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0; color: #334155;">
+                  ${
+                    payload.paymentConditions
+                      ? `<p style="margin: 0 0 10px; white-space: pre-line;"><strong>Conditions de paiement:</strong><br/>${payload.paymentConditions}</p>`
+                      : ''
+                  }
+                  ${
+                    payload.paymentCommunication
+                      ? `<p style="margin: 0 0 10px; white-space: pre-line;"><strong>Communication:</strong><br/>${payload.paymentCommunication}</p>`
+                      : ''
+                  }
+                  ${
+                    payload.paymentReference
+                      ? `<p style="margin: 0 0 10px;"><strong>Reference paiement:</strong> ${payload.paymentReference}</p>`
+                      : ''
+                  }
+                  ${
+                    payload.legalNotes
+                      ? `<p style="margin: 0; white-space: pre-line;"><strong>Mentions legales:</strong><br/>${payload.legalNotes}</p>`
+                      : ''
+                  }
+                </div>`
               : ''
           }
         </div>

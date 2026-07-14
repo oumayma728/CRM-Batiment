@@ -2,23 +2,15 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import type { DemandeDevis } from '@/types';
 import { formatDate, cn } from '@/lib/utils';
 import {
-  Plus, Search, Trash2, X, ChevronLeft, ChevronRight,
+  Search, Trash2, X, ChevronLeft, ChevronRight,
   FileText, Loader2, Eye, ListChecks,
+  FilePlus2,
 } from 'lucide-react';
-
-const statutConfig: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-  NOUVEAU: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500', label: 'Nouveau' },
-  EN_COURS: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', label: 'En cours' },
-  CONVERTI: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', label: 'Converti' },
-  PERDU: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'Perdu' },
-};
-
-function normalizeDemandeStatut(statut: string) {
-  return statut === 'QUALIFIE' ? 'EN_COURS' : statut;
-}
+import { DEMANDE_STATUT_CONFIG, normalizeDemandeStatut } from '@/lib/demande-utils';
 
 interface DemandeForm {
   description: string;
@@ -39,12 +31,14 @@ const emptyForm: DemandeForm = {
 export default function DemandesDevisPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState<DemandeForm>(emptyForm);
   const [detailDemande, setDetailDemande] = useState<DemandeDevis | null>(null);
   const [studyDemandeId, setStudyDemandeId] = useState<number | null>(null);
+  const [convertingDemandeId, setConvertingDemandeId] = useState<number | null>(null);
   const [studyError, setStudyError] = useState('');
   const limit = 10;
 
@@ -68,6 +62,7 @@ export default function DemandesDevisPage() {
 
   const demandes: DemandeDevis[] = data?.data ?? [];
   const meta = data?.meta ?? { total: 0, page: 1, lastPage: 1 };
+  const canConvertDemandes = user?.role === 'ADMIN';
 
   const createMutation = useMutation({
     mutationFn: (body: CreateDemandePayload) => api.post('/demandes-devis', body),
@@ -83,6 +78,28 @@ export default function DemandesDevisPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['demandes-devis'] }),
   });
 
+  const convertMutation = useMutation({
+    mutationFn: (id: number) => api.post(`/demandes-devis/${id}/convert`),
+    onMutate: (id) => {
+      setStudyError('');
+      setConvertingDemandeId(id);
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['demandes-devis'] }),
+        queryClient.invalidateQueries({ queryKey: ['devis'] }),
+      ]);
+      setDetailDemande(null);
+      navigate('/admin/devis');
+    },
+    onError: (err: unknown) => {
+      setStudyError(err instanceof Error ? err.message : 'Impossible de creer le devis depuis cette demande.');
+    },
+    onSettled: () => {
+      setConvertingDemandeId(null);
+    },
+  });
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const clientId = Number(form.clientId);
@@ -96,6 +113,11 @@ export default function DemandesDevisPage() {
   }
 
   function canOpenStudy(statut: string) {
+    const normalizedStatut = normalizeDemandeStatut(statut);
+    return normalizedStatut === 'NOUVEAU' || normalizedStatut === 'EN_COURS';
+  }
+
+  function canConvertToDevis(statut: string) {
     const normalizedStatut = normalizeDemandeStatut(statut);
     return normalizedStatut === 'NOUVEAU' || normalizedStatut === 'EN_COURS';
   }
@@ -134,7 +156,7 @@ export default function DemandesDevisPage() {
           onClick={() => setShowModal(true)}
           className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
         >
-          <Plus size={17} /> Nouvelle demande
+          <ChevronRight size={17} /> Nouvelle demande
         </button>
       </div>
 
@@ -175,12 +197,7 @@ export default function DemandesDevisPage() {
               <tbody className="divide-y divide-gray-100">
                 {demandes.map((d) => {
                   const normalizedStatut = normalizeDemandeStatut(d.statut);
-                  const st = statutConfig[normalizedStatut] ?? {
-                    bg: 'bg-gray-50',
-                    text: 'text-gray-600',
-                    dot: 'bg-gray-400',
-                    label: normalizedStatut,
-                  };
+                  const st = DEMANDE_STATUT_CONFIG[normalizedStatut];
                   return (
                   <tr key={d.id} className="hover:bg-primary-50/30 transition-colors group">
                     <td className="px-6 py-4">
@@ -188,7 +205,7 @@ export default function DemandesDevisPage() {
                     </td>
                     <td className="px-6 py-4 text-[13px] text-gray-600">
                       {d.client ? `${d.client.prenom} ${d.client.nom}` : '—'}
-                    </td>
+                    </td> {/* Using getClientLabel(d) would be better here for consistency */}
                     <td className="px-6 py-4">
                       <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold', st.bg, st.text)}>
                         <span className={cn('w-1.5 h-1.5 rounded-full', st.dot)} />
@@ -219,8 +236,28 @@ export default function DemandesDevisPage() {
                             <ListChecks size={15} />
                           )}
                         </button>
+                        {canConvertDemandes && (
+                          <button
+                            onClick={() => convertMutation.mutate(d.id)}
+                            disabled={!canConvertToDevis(normalizedStatut) || convertingDemandeId === d.id}
+                            className="p-2 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                            title={
+                              canConvertToDevis(normalizedStatut)
+                                ? 'Creer un devis brouillon'
+                                : 'Devis deja cree ou demande non convertible'
+                            }
+                          >
+                            {convertingDemandeId === d.id ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <FilePlus2 size={15} />
+                            )}
+                          </button>
+                        )}
                         <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Eye size={15} /></button>
-                        <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        {user?.role !== 'ASSISTANTE' && (
+                          <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -299,20 +336,23 @@ export default function DemandesDevisPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">Détail de la demande</h2>
               <button onClick={() => setDetailDemande(null)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
-            </div>
+            </div> {/* Using getClientLabel(detailDemande) would be better here for consistency */}
+
+
             <div className="p-6 space-y-4">
               <div><p className="text-[11px] font-bold text-gray-400 uppercase">Description</p><p className="text-sm text-gray-700 mt-0.5">{detailDemande.description || '—'}</p></div>
               <div className="grid grid-cols-2 gap-4">
                 <div><p className="text-[11px] font-bold text-gray-400 uppercase">Statut</p>
-                  {(() => { const normalizedStatut = normalizeDemandeStatut(detailDemande.statut); const st = statutConfig[normalizedStatut] ?? { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', label: normalizedStatut }; return (
-                    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold mt-0.5', st.bg, st.text)}><span className={cn('w-1.5 h-1.5 rounded-full', st.dot)} />{st.label}</span>
-                  ); })()}
+                  <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold mt-0.5', DEMANDE_STATUT_CONFIG[normalizeDemandeStatut(detailDemande.statut)].bg, DEMANDE_STATUT_CONFIG[normalizeDemandeStatut(detailDemande.statut)].text)}>
+                    <span className={cn('w-1.5 h-1.5 rounded-full', DEMANDE_STATUT_CONFIG[normalizeDemandeStatut(detailDemande.statut)].dot)} />
+                    {DEMANDE_STATUT_CONFIG[normalizeDemandeStatut(detailDemande.statut)].label}
+                  </span>
                 </div>
                 <div><p className="text-[11px] font-bold text-gray-400 uppercase">Source</p><p className="text-sm mt-0.5">{detailDemande.source}</p></div>
               </div>
               <div><p className="text-[11px] font-bold text-gray-400 uppercase">Client</p><p className="text-sm mt-0.5">{detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}</p></div>
               <div><p className="text-[11px] font-bold text-gray-400 uppercase">Créée le</p><p className="text-sm mt-0.5">{formatDate(detailDemande.createdAt)}</p></div>
-              <div className="pt-2 flex justify-end">
+              <div className="pt-2 flex flex-wrap justify-end gap-2">
                 <button
                   onClick={() => handleOpenStudy(detailDemande)}
                   disabled={!canOpenStudy(detailDemande.statut) || studyDemandeId === detailDemande.id}
@@ -325,6 +365,20 @@ export default function DemandesDevisPage() {
                   )}
                   Etude checklist / generer devis
                 </button>
+                {canConvertDemandes && (
+                  <button
+                    onClick={() => convertMutation.mutate(detailDemande.id)}
+                    disabled={!canConvertToDevis(detailDemande.statut) || convertingDemandeId === detailDemande.id}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {convertingDemandeId === detailDemande.id ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <FilePlus2 size={15} />
+                    )}
+                    Creer devis
+                  </button>
+                )}
               </div>
             </div>
           </div>

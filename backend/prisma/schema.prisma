@@ -34,6 +34,7 @@ model Company {
   servicesMainOeuvre    ServiceMainOeuvre[]
   typesProjet           TypeProjet[]
   utilisateurs          User[]
+  sousTraitants         SousTraitant[]
 
   @@map("companies")
 }
@@ -884,3 +885,110 @@ enum ModeValidation {
   VERBAL
   AUTRE
 }
+
+// ─── P1 : Module Sous-Traitants ───────────────────────────────────────────
+
+model SousTraitant {
+  id            Int                       @id @default(autoincrement())
+  companyId     Int
+  nom           String
+  siret         String?
+  contact       String?
+  email         String?
+  telephone     String?
+  adresse       String?
+  specialite    String?
+  actif         Boolean                   @default(true)
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  company       Company                   @relation(fields: [companyId], references: [id])
+  contrats      ContratSousTraitant[]
+  assurances    AssuranceSousTraitant[]
+  paiements     PaiementSousTraitant[]
+  disponibilites DisponibiliteSousTraitant[]
+  notations     NotationSousTraitant[]
+
+  @@index([companyId])
+  @@map("sous_traitants")
+}
+
+model ContratSousTraitant {
+  id              Int          @id @default(autoincrement())
+  sousTraitantId  Int
+  reference       String?
+  dateDebut       DateTime
+  dateFin         DateTime?
+  montant         Float
+  description     String?
+  statut          String       @default("ACTIF")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  sousTraitant    SousTraitant @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@index([sousTraitantId])
+  @@map("contrats_sous_traitants")
+}
+
+model AssuranceSousTraitant {
+  id              Int          @id @default(autoincrement())
+  sousTraitantId  Int
+  type            String
+  compagnie       String?
+  numeroPolice    String?
+  dateDebut       DateTime
+  dateExpiration  DateTime
+  montantGarantie Float?
+  alerteEnvoyee   Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  sousTraitant    SousTraitant @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@index([sousTraitantId])
+  @@index([dateExpiration])
+  @@map("assurances_sous_traitants")
+}
+
+model PaiementSousTraitant {
+  id              Int          @id @default(autoincrement())
+  sousTraitantId  Int
+  montant         Float
+  date            DateTime     @default(now())
+  reference       String?
+  statut          String       @default("EN_ATTENTE")
+  notes           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  sousTraitant    SousTraitant @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@index([sousTraitantId])
+  @@map("paiements_sous_traitants")
+}
+
+model DisponibiliteSousTraitant {
+  id              Int          @id @default(autoincrement())
+  sousTraitantId  Int
+  dateDebut       DateTime
+  dateFin         DateTime
+  disponible      Boolean      @default(true)
+  notes           String?
+  createdAt       DateTime     @default(now())
+  sousTraitant    SousTraitant @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@index([sousTraitantId])
+  @@map("disponibilites_sous_traitants")
+}
+
+model NotationSousTraitant {
+  id              Int          @id @default(autoincrement())
+  sousTraitantId  Int
+  note            Int
+  commentaire     String?
+  critere         String?
+  evaluateurId    Int?
+  createdAt       DateTime     @default(now())
+  sousTraitant    SousTraitant @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@index([sousTraitantId])
+  @@map("notations_sous_traitants")
+}
+

@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '@/lib/api';
-import { formatDate, cn } from '@/lib/utils';
-import type { DemandeDevis, DemandeDevisStatut } from '@/types';
+import { formatDate, cn } from '@/lib/utils'; // Assuming cn and formatDate are in utils
+import type { DemandeDevis } from '@/types'; // DemandeDevisStatut is now imported from demande-utils
+import { DEMANDE_STATUT_CONFIG, normalizeDemandeStatut, getClientLabel } from '@/lib/demande-utils';
 import {
-  FileText,
+  FileText, // Keep FileText for the icon
   Search,
   X,
   Eye,
@@ -15,7 +16,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowRight,
+  type LucideIcon, // Import type for icons if needed
 } from 'lucide-react';
+
+import type { DemandeDevisStatut } from '@/types'; // Keep this if DemandeDevisStatut is used as a type directly
 
 const statutOrder: DemandeDevisStatut[] = [
   'NOUVEAU',
@@ -23,54 +27,6 @@ const statutOrder: DemandeDevisStatut[] = [
   'CONVERTI',
   'PERDU',
 ];
-
-const statutConfig: Record<
-  DemandeDevisStatut,
-  { label: string; color: string; icon: ReactNode; helper: string }
-> = {
-  NOUVEAU: {
-    label: 'Nouveau',
-    color: 'bg-sky-100 text-sky-700 border-sky-200',
-    icon: <Clock size={14} />,
-    helper: 'Demande créée et en attente de prise en charge.',
-  },
-  EN_COURS: {
-    label: 'En cours',
-    color: 'bg-amber-100 text-amber-700 border-amber-200',
-    icon: <Loader2 size={14} />,
-    helper: 'Le technico est en train d’étudier le besoin.',
-  },
-  CONVERTI: {
-    label: 'Convertie',
-    color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-    icon: <CheckCircle2 size={14} />,
-    helper: 'La demande a été transformée en opportunité traitée.',
-  },
-  PERDU: {
-    label: 'Perdue',
-    color: 'bg-rose-100 text-rose-700 border-rose-200',
-    icon: <X size={14} />,
-    helper: 'La demande n’ira pas plus loin.',
-  },
-};
-
-function normalizeDemandeStatut(statut: string): DemandeDevisStatut {
-  if (statut === 'QUALIFIE') return 'EN_COURS';
-  if (
-    statut === 'NOUVEAU' ||
-    statut === 'EN_COURS' ||
-    statut === 'CONVERTI' ||
-    statut === 'PERDU'
-  ) {
-    return statut;
-  }
-  return 'NOUVEAU';
-}
-
-function getClientLabel(demande: DemandeDevis) {
-  if (!demande.client) return `#${demande.clientId}`;
-  return `${demande.client.prenom ?? ''} ${demande.client.nom}`.trim() || `#${demande.clientId}`;
-}
 
 function canOpenStudy(statut: DemandeDevisStatut) {
   return statut === 'NOUVEAU' || statut === 'EN_COURS';
@@ -109,9 +65,28 @@ export default function TechnicoDemandes() {
     },
   });
 
+  const convertMutation = useMutation({
+    mutationFn: (id: number) => api.post(`/demandes-devis/${id}/convert`),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['technico-demandes'] });
+      queryClient.invalidateQueries({ queryKey: ['demandes-devis'] });
+      queryClient.invalidateQueries({ queryKey: ['technico-devis'] }); // Invalidate devis list
+      setSelectedDemande(null);
+      // Redirect to the newly created devis's edit page
+      navigate(`/technico/devis/${response.data.id}`);
+    },
+    onError: (err) => {
+      const errorMessage =
+        (err as any).response?.data?.message ||
+        'Erreur lors de la conversion de la demande en devis.';
+      alert(errorMessage);
+    },
+  });
+
   const queryErrorMessage =
     error instanceof Error ? error.message : 'Impossible de charger les demandes de devis.';
 
+  // This function is now primarily for navigating to the checklist for existing devis or for initial status update
   async function handleStudyNavigation(demande: DemandeDevis) {
     const workflowStatut = normalizeDemandeStatut(demande.statut as string);
 
@@ -122,7 +97,12 @@ export default function TechnicoDemandes() {
       });
     }
 
-    navigate(`/technico/checklist?demandeId=${demande.id}`);
+    // If the demand is already converted, navigate to its associated devis if available
+    if (workflowStatut === 'CONVERTI' && demande.devis && demande.devis.length > 0) {
+      navigate(`/technico/devis/${demande.devis[0].id}`); // Assuming one devis per demande
+    } else {
+      navigate(`/technico/checklist?demandeId=${demande.id}`);
+    }
   }
 
   return (
@@ -142,7 +122,7 @@ export default function TechnicoDemandes() {
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {statutOrder.map((statut) => {
-          const cfg = statutConfig[statut];
+          const cfg = DEMANDE_STATUT_CONFIG[statut];
           const count = demandes.filter(
             (demande) => normalizeDemandeStatut(demande.statut as string) === statut,
           ).length;
@@ -227,7 +207,7 @@ export default function TechnicoDemandes() {
         <div className="space-y-3">
           {demandes.map((demande) => {
             const workflowStatut = normalizeDemandeStatut(demande.statut as string);
-            const cfg = statutConfig[workflowStatut];
+            const cfg = DEMANDE_STATUT_CONFIG[workflowStatut];
             const studyButtonLabel =
               workflowStatut === 'NOUVEAU'
                 ? 'Generer le devis'
@@ -272,16 +252,27 @@ export default function TechnicoDemandes() {
                 </div>
 
                 {canOpenStudy(workflowStatut) && (
-                  <div className="px-5 py-3 bg-gray-50/60 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                  <div className="px-5 py-3 bg-gray-50/60 border-t border-gray-100 flex flex-wrap items-center gap-2 justify-end">
                     <span className="text-xs text-gray-400 mr-auto">Étape suivante :</span>
                     <button
-                      onClick={() => handleStudyNavigation(demande)}
-                      disabled={updateStatutMutation.isPending}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+                      onClick={() => convertMutation.mutate(demande.id)}
+                      disabled={convertMutation.isPending}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-60"
                     >
-                      {studyButtonLabel}
-                      <ArrowRight size={12} />
+                      {convertMutation.isPending ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <FileText size={12} />
+                      )}
+                      Convertir en Devis
                     </button>
+                    <Link
+                      to={`/technico/checklist?demandeId=${demande.id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    >
+                      Aller à la Checklist
+                      <ArrowRight size={12} />
+                    </Link>
                   </div>
                 )}
               </div>
@@ -331,7 +322,7 @@ export default function TechnicoDemandes() {
             <div className="p-6 space-y-4">
               <Detail
                 label="Statut"
-                value={statutConfig[normalizeDemandeStatut(selectedDemande.statut as string)].label}
+                value={DEMANDE_STATUT_CONFIG[normalizeDemandeStatut(selectedDemande.statut as string)].label}
               />
               <Detail label="Source" value={selectedDemande.source} />
               <Detail label="Description" value={selectedDemande.description} />
@@ -344,13 +335,12 @@ export default function TechnicoDemandes() {
                   <p className="text-xs font-medium text-gray-400 mb-2">Action principale</p>
                   <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => handleStudyNavigation(selectedDemande)}
-                      disabled={updateStatutMutation.isPending}
-                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold transition bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+                      onClick={() => convertMutation.mutate(selectedDemande.id)}
+                      disabled={convertMutation.isPending}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold transition bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-60"
                     >
-                      {normalizeDemandeStatut(selectedDemande.statut as string) === 'NOUVEAU'
-                        ? 'Generer le devis'
-                        : 'Modifier devis'}
+                      {convertMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />}
+                      Convertir en Devis
                       <ArrowRight size={12} />
                     </button>
                   </div>

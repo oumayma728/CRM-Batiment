@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,7 +25,7 @@ import {
 interface ModuleCard {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   gradient: string;
   bgLight: string;
   iconColor: string;
@@ -332,7 +333,7 @@ export default function DashboardPage() {
   );
 }
 
-function ActionButton({ icon, label, onClick, color }: { icon: React.ReactNode; label: string; onClick: () => void; color: string }) {
+function ActionButton({ icon, label, onClick, color }: { icon: ReactNode; label: string; onClick: () => void; color: string }) {
   const colors: Record<string, string> = {
     blue: 'hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700',
     orange: 'hover:bg-orange-50 hover:border-orange-200 hover:text-orange-700',
@@ -352,7 +353,7 @@ function ActionButton({ icon, label, onClick, color }: { icon: React.ReactNode; 
   );
 }
 
-function PipelineCard({ icon, label, count, color, description }: { icon: React.ReactNode; label: string; count: number; color: string; description: string }) {
+function PipelineCard({ icon, label, count, color, description }: { icon: ReactNode; label: string; count: number; color: string; description: string }) {
   const colorMap: Record<string, { bg: string; iconBg: string; text: string }> = {
     amber: { bg: 'border-amber-100', iconBg: 'bg-amber-50 text-amber-600', text: 'text-amber-700' },
     blue: { bg: 'border-blue-100', iconBg: 'bg-blue-50 text-blue-600', text: 'text-blue-700' },

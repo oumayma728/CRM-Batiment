@@ -20,6 +20,14 @@ export default function LoginPage() {
     setError("");
     try {
       const data = await login(email, password);
+      
+      // Handle first login / mandatory password change
+      if (data.mustChangePassword) {
+        // Redirect to the reset password page and pass the email in the state
+        navigate("/reset-password", { state: { email: email } });
+        return;
+      }
+
       setRole(data.user.role);
       if (data.user.role === "TECHNICO") {
         navigate("/technico");
@@ -120,7 +128,12 @@ export default function LoginPage() {
                 <label className="flex items-center gap-2">
                   <input type="checkbox" /> Se souvenir de moi
                 </label>
-                <span className="text-blue-600 cursor-pointer">Mot de passe oublié ?</span>
+                <span 
+                  onClick={() => navigate("/forgot-password")}
+                  className="text-blue-600 cursor-pointer hover:underline"
+                >
+                  Mot de passe oublié ?
+                </span>
               </div>
               {/* BUTTON */}
               <button

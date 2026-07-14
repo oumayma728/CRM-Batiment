@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-// import { DevisService } from '../devis/devis.service.js'; // TODO: Fix devis service
+import { DevisService } from '../devis/devis.service.js';
 import { CreateDemandeDevisDto } from './dto/create-demande-devis.dto.js';
 import { UpdateDemandeDevisDto } from './dto/update-demande-devis.dto.js';
 import { QueryDemandeDevisDto } from './dto/query-demande-devis.dto.js';
@@ -26,7 +26,7 @@ const TRANSITIONS_AUTORISEES: Record<string, string[]> = {
 export class DemandesDevisService {
   constructor(
     private readonly prisma: PrismaService,
-    // private readonly devisService: DevisService, // TODO: Fix devis service
+    private readonly devisService: DevisService,
   ) {}
 
   /* ───────── CREATE ───────── */
@@ -149,8 +149,8 @@ export class DemandesDevisService {
   ) {
     const demande = await this.findOne(id, companyId);
 
-    const currentStatut = demande.statut as string;
-    const newStatut = dto.statut as string;
+    const currentStatut = demande.statut;
+    const newStatut = dto.statut;
 
     const allowed = TRANSITIONS_AUTORISEES[currentStatut] ?? [];
     if (!allowed.includes(newStatut)) {
@@ -160,22 +160,14 @@ export class DemandesDevisService {
       );
     }
 
-    if (newStatut === 'CONVERTI' && (demande.devis?.length ?? 0) === 0) {
-      throw new BadRequestException(
-        'Impossible de convertir la demande sans devis brouillon valide.',
-      );
-    }
-
     const updated = await this.prisma.demandeDevis.update({
       where: { id },
-      data: { statut: newStatut as DemandeStatut },
+      data: { statut: newStatut },
       include: { client: true },
     });
 
     // Si CONVERTI → créer automatiquement un devis en BROUILLON
-    // TODO: Re-enable devis service once fixed
-    /*
-    if (newStatut === 'CONVERTI') {
+    if (updated.statut === 'CONVERTI') {
       const devis = await this.devisService.create(
         {
           clientId: demande.clientId,
@@ -187,7 +179,6 @@ export class DemandesDevisService {
       );
       return { ...updated, devisCree: devis };
     }
-    */
 
     return updated;
   }
@@ -196,5 +187,37 @@ export class DemandesDevisService {
   async remove(id: number, companyId: number) {
     await this.findOne(id, companyId);
     return this.prisma.demandeDevis.delete({ where: { id } });
+  }
+
+  /**
+   * P0.1 : Transformation d'une demande en devis éditable.
+   * Copie les données client et initialise le devis en statut BROUILLON.
+   */
+  async convertToDevis(id: number, userId: number, companyId: number) {
+    const demande = await this.findOne(id, companyId);
+
+    // 1. Protection contre les doublons (P0.6)
+    if (demande.statut === 'CONVERTI') {
+      throw new BadRequestException('Cette demande a déjà été convertie en devis.');
+    }
+
+    // 2. Création du Devis en statut BROUILLON via le DevisService
+    const newDevis = await this.devisService.create(
+      {
+        clientId: demande.clientId,
+        demandeDevisId: demande.id,
+        notes: `Devis généré depuis la demande #${demande.id}.\nDescription initiale : ${demande.description}`,
+      },
+      userId,
+      companyId,
+    );
+
+    // 3. Mise à jour automatique du statut de la demande d'origine
+    await this.prisma.demandeDevis.update({
+      where: { id },
+      data: { statut: 'CONVERTI' },
+    });
+
+    return newDevis;
   }
 }

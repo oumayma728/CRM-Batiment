@@ -140,6 +140,39 @@ function buildDraft(detail: FactureDetail): FactureDraft {
   };
 }
 
+function buildSavePayload(draft: FactureDraft) {
+  return {
+    reference: draft.reference,
+    date: draft.date,
+    dateEcheance: draft.dateEcheance || null,
+    typeFacture: draft.typeFacture,
+    acomptePercent: draft.typeFacture === 'ACOMPTE' ? draft.acomptePercent : null,
+    tauxTVA: draft.tauxTVA,
+    companyNom: draft.companyNom,
+    companyEmail: draft.companyEmail,
+    companyTelephone: draft.companyTelephone,
+    companyAdresse: draft.companyAdresse,
+    companySiret: draft.companySiret,
+    nomClient: draft.nomClient,
+    prenomClient: draft.prenomClient,
+    emailClient: draft.emailClient,
+    telephoneClient: draft.telephoneClient,
+    adresseClient: draft.adresseClient,
+    conditionsPaiement: draft.conditionsPaiement,
+    communicationPaiement: draft.communicationPaiement,
+    notesLegales: draft.notesLegales,
+    referencePaiement: draft.referencePaiement,
+    lignes: draft.lignes.map((line) => ({
+      description: line.description,
+      datePrestation: line.datePrestation || undefined,
+      quantite: Number(line.quantite),
+      unite: line.unite,
+      prixUnitaireHT: Number(line.prixUnitaireHT),
+      tauxTVA: Number(line.tauxTVA),
+    })),
+  };
+}
+
 export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -196,7 +229,21 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
     );
   }, [draft]);
 
-  const locked = !draft || !draft.editable || draft.statut === 'PAYEE';
+  const statusIsReadOnly = false;
+  const locked =
+    !draft ||
+    !draft.editable ||
+    (factureQuery.data?.statut === 'PAYEE' && draft.statut === 'PAYEE');
+
+  async function persistDraft(currentDraft: FactureDraft) {
+    const response = await api.patch(`/factures/${currentDraft.id}`, buildSavePayload(currentDraft));
+    const data = response.data as FactureDetail;
+      queryClient.invalidateQueries({ queryKey: ['factures-list'] });
+      queryClient.invalidateQueries({ queryKey: ['factures-devis-sources'] });
+      queryClient.setQueryData(['facture-detail', factureId], data);
+      setDraftState(buildDraft(data));
+    return data;
+  }
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -204,48 +251,12 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
         throw new Error('Facture non chargee.');
       }
 
-      const payload = {
-        reference: draft.reference,
-        date: draft.date,
-        dateEcheance: draft.dateEcheance || null,
-        typeFacture: draft.typeFacture,
-        acomptePercent: draft.typeFacture === 'ACOMPTE' ? draft.acomptePercent : null,
-        tauxTVA: draft.tauxTVA,
-        companyNom: draft.companyNom,
-        companyEmail: draft.companyEmail,
-        companyTelephone: draft.companyTelephone,
-        companyAdresse: draft.companyAdresse,
-        companySiret: draft.companySiret,
-        nomClient: draft.nomClient,
-        prenomClient: draft.prenomClient,
-        emailClient: draft.emailClient,
-        telephoneClient: draft.telephoneClient,
-        adresseClient: draft.adresseClient,
-        conditionsPaiement: draft.conditionsPaiement,
-        communicationPaiement: draft.communicationPaiement,
-        notesLegales: draft.notesLegales,
-        referencePaiement: draft.referencePaiement,
-        lignes: draft.lignes.map((line) => ({
-          description: line.description,
-          datePrestation: line.datePrestation || undefined,
-          quantite: Number(line.quantite),
-          unite: line.unite,
-          prixUnitaireHT: Number(line.prixUnitaireHT),
-          tauxTVA: Number(line.tauxTVA),
-        })),
-      };
-
-      const response = await api.patch(`/factures/${draft.id}`, payload);
-      return response.data as FactureDetail;
+      return persistDraft(draft);
     },
     onMutate: () => {
       setFeedback(null);
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['factures-list'] });
-      queryClient.invalidateQueries({ queryKey: ['factures-devis-sources'] });
-      queryClient.setQueryData(['facture-detail', factureId], data);
-      setDraftState(buildDraft(data));
+    onSuccess: () => {
       setFeedback({ type: 'success', text: 'Facture enregistree avec succes.' });
     },
     onError: (error: unknown) => {
@@ -261,8 +272,12 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
       if (!draft) {
         throw new Error('Facture non chargee.');
       }
-      const response = await api.post(`/factures/${draft.id}/send-client`, {
-        email: draft.emailClient,
+
+      const savedFacture = locked ? factureQuery.data : await persistDraft(draft);
+      const savedDraft = savedFacture ? buildDraft(savedFacture) : draft;
+
+      const response = await api.post(`/factures/${savedDraft.id}/send-client`, {
+        email: savedDraft.emailClient,
       });
       return response.data;
     },
@@ -272,9 +287,13 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ['facture-detail', factureId] });
       await queryClient.invalidateQueries({ queryKey: ['factures-list'] });
+      if (data?.facture) {
+        queryClient.setQueryData(['facture-detail', factureId], data.facture);
+        setDraftState(buildDraft(data.facture));
+      }
       setFeedback({
         type: 'success',
-        text: data?.message ?? 'Facture envoyee au client avec succes.',
+        text: data?.message ?? 'Facture enregistree puis envoyee au client avec succes.',
       });
     },
     onError: (error: unknown) => {
@@ -343,6 +362,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={draft.statut}
+            disabled={statusIsReadOnly}
             onChange={(event) =>
               setDraft((current) =>
                 current
@@ -363,7 +383,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
           <button
             onClick={() => statutMutation.mutate(draft.statut)}
-            disabled={statutMutation.isPending}
+            disabled={statusIsReadOnly || statutMutation.isPending}
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
           >
             {statutMutation.isPending ? 'Maj...' : 'Appliquer statut'}
@@ -379,11 +399,11 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
           <button
             onClick={() => sendMutation.mutate()}
-            disabled={sendMutation.isPending}
+            disabled={sendMutation.isPending || saveMutation.isPending}
             className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
           >
-            <Mail size={15} />
-            Envoyer au client
+            {sendMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Mail size={15} />}
+            {sendMutation.isPending ? 'Enregistrement et envoi...' : 'Envoyer au client'}
           </button>
 
           <button

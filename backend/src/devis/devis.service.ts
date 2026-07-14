@@ -15,6 +15,7 @@ import {
 } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
+import { WorkflowStateService } from '../workflow-state.service.js';
 import { CreateDevisDto } from './dto/create-devis.dto.js';
 import { UpdateDevisDto } from './dto/update-devis.dto.js';
 import { QueryDevisDto } from './dto/query-devis.dto.js';
@@ -81,8 +82,8 @@ interface SupplierRequirementGroup {
 export interface AcceptedArtifactsSummary {
   factureReference?: string;
   bonCommandeReference?: string;
-  commandesFournisseurReferences: string[];
-  warnings: string[];
+  commandesFournisseurReferences?: string[];
+  warnings?: string[];
 }
 
 interface MaterialSupplierInfo {
@@ -159,6 +160,12 @@ export class DevisService {
 
   private round2(value: number) {
     return Math.round(value * 100) / 100;
+  }
+
+  private resolveAcomptePercent() {
+    const rawValue = this.configService.get<string>('DEVIS_ACOMPTE_PERCENT');
+    const parsed = Number(rawValue);
+    return parsed === 40 ? 40 : 30;
   }
 
   private calcCompositionsCostPerUnit(
@@ -387,7 +394,7 @@ export class DevisService {
     return chantier.id;
   }
 
-  private async generateDocumentReference(
+  async generateDocumentReference(
     prefix: 'FAC' | 'BC' | 'BAF',
     model: 'facture' | 'bonCommande' | 'commandeFournisseur',
   ) {
@@ -443,7 +450,7 @@ export class DevisService {
       .filter((entry) => entry.optionName && entry.choiceName);
   }
 
-  private async buildSupplierRequirementsForAcceptedDevis(
+  async buildSupplierRequirementsForAcceptedDevis(
     devisId: number,
     companyId: number,
   ): Promise<{ groups: SupplierRequirementGroup[]; warnings: string[] }> {
@@ -608,7 +615,7 @@ export class DevisService {
     };
   }
 
-  private buildSupplierDeliveryDate(delaiLivraison?: number | null) {
+  buildSupplierDeliveryDate(delaiLivraison?: number | null) {
     if (!delaiLivraison || delaiLivraison <= 0) {
       return null;
     }
@@ -619,6 +626,7 @@ export class DevisService {
   private async ensureAcceptedDocumentsGenerated(
     devisId: number,
     companyId: number,
+    createChantier = true,
   ): Promise<AcceptedArtifactsSummary> {
     const devis = await this.prisma.devis.findFirst({
       where: { id: devisId, companyId },
@@ -633,24 +641,10 @@ export class DevisService {
       throw new NotFoundException(`Devis #${devisId} introuvable`);
     }
 
-    const chantierId = await this.ensureChantierLinkedToDevis(
-      devis.id,
-      companyId,
-    );
-
-    let facture = await this.prisma.facture.findFirst({ where: { devisId } });
-    if (!facture) {
-      facture = await this.prisma.facture.create({
-        data: {
-          devisId,
-          reference: await this.generateDocumentReference('FAC', 'facture'),
-          montantHT: this.round2(devis.totalHT),
-          montantTVA: this.round2(devis.totalTVA),
-          montantTTC: this.round2(devis.totalTTC),
-          statut: 'BROUILLON',
-        },
-      });
-    }
+    // Créer le chantier uniquement si demandé (sur SIGNE, pas sur ACCEPTE)
+    const chantierId = createChantier
+      ? await this.ensureChantierLinkedToDevis(devis.id, companyId)
+      : devis.chantierId ?? null;
 
     let bonCommande = await this.prisma.bonCommande.findUnique({
       where: { devisId },
@@ -718,23 +712,130 @@ export class DevisService {
       },
     );
 
-    await this.prisma.chantier.update({
-      where: { id: chantierId },
-      data: {
-        statut:
-          commandesFournisseur.length > 0
-            ? 'COMMANDES_GENEREES'
-            : 'DEVIS_VALIDE',
-      },
-    });
+    if (chantierId) {
+      await this.prisma.chantier.update({
+        where: { id: chantierId },
+        data: {
+          statut:
+            commandesFournisseur.length > 0
+              ? 'COMMANDES_GENEREES'
+              : 'DEVIS_VALIDE',
+        },
+      });
+    }
 
     return {
-      factureReference: facture.reference,
       bonCommandeReference: bonCommande.reference,
       commandesFournisseurReferences: commandesFournisseur.map(
         (order) => order.reference,
       ),
       warnings: requirements.warnings,
+    };
+  }
+
+  private async ensureAcompteInvoiceGenerated(
+    devisId: number,
+    companyId: number,
+  ): Promise<AcceptedArtifactsSummary> {
+    const existing = await this.prisma.facture.findFirst({
+      where: { devisId, typeFacture: 'ACOMPTE' },
+      select: { reference: true },
+    });
+
+    if (existing) {
+      return {
+        factureReference: existing.reference,
+        commandesFournisseurReferences: [],
+        warnings: [],
+      };
+    }
+
+    const devis = await this.prisma.devis.findFirst({
+      where: { id: devisId, companyId },
+      include: {
+        client: {
+          select: {
+            nom: true,
+            prenom: true,
+            email: true,
+            telephone: true,
+            adresseClient: true,
+            adresseChantier: true,
+          },
+        },
+        company: {
+          select: {
+            nom: true,
+            email: true,
+            telephone: true,
+            adresse: true,
+            siret: true,
+            tvaDefaut: true,
+          },
+        },
+      },
+    });
+
+    if (!devis) {
+      throw new NotFoundException(`Devis #${devisId} introuvable`);
+    }
+
+    const acomptePercent = this.resolveAcomptePercent();
+    const ratio = acomptePercent / 100;
+    const montantHT = this.round2(devis.totalHT * ratio);
+    const montantTVA = this.round2(devis.totalTVA * ratio);
+    const montantTTC = this.round2(devis.totalTTC * ratio);
+
+    const facture = await this.prisma.facture.create({
+      data: {
+        devisId,
+        reference: await this.generateDocumentReference('FAC', 'facture'),
+        date: new Date(),
+        montantHT,
+        montantTVA,
+        montantTTC,
+        statut: 'BROUILLON',
+        referenceDevis: devis.reference,
+        tauxTVA: devis.tauxTVA,
+        typeFacture: 'ACOMPTE',
+        acomptePercent,
+        acompteMontant: montantTTC,
+        nomClient: devis.client.nom,
+        prenomClient: devis.client.prenom,
+        emailClient: devis.client.email,
+        telephoneClient: devis.client.telephone,
+        adresseClient:
+          devis.client.adresseChantier ?? devis.client.adresseClient,
+        companyNom: devis.company.nom,
+        companyEmail: devis.company.email,
+        companyTelephone: devis.company.telephone,
+        companyAdresse: devis.company.adresse,
+        companySiret: devis.company.siret,
+        conditionsPaiement: `Acompte de ${acomptePercent}% a la commande.`,
+        communicationPaiement: `Facture ${devis.reference} - acompte ${acomptePercent}%`,
+        notesLegales: null,
+        referencePaiement: null,
+        lignes: {
+          create: {
+            description: `Acompte de ${acomptePercent}% sur devis ${devis.reference}`,
+            quantite: 1,
+            unite: 'FORFAIT',
+            prixUnitaireHT: montantHT,
+            tauxTVA: devis.tauxTVA,
+            montantHT,
+            montantTVA,
+            montantTTC,
+            ordre: 0,
+          },
+        },
+      },
+      select: { reference: true },
+    });
+
+    return {
+      factureReference: facture.reference,
+      commandesFournisseurReferences: [],
+      warnings: [],
     };
   }
 
@@ -778,7 +879,7 @@ export class DevisService {
       orderBy: { createdAt: 'asc' },
     });
 
-    const warnings = [...generated.warnings];
+    const warnings = [...(generated.warnings ?? [])];
     const commandesEnvoyeesReferences: string[] = [];
 
     for (const order of orders) {
@@ -1166,6 +1267,16 @@ export class DevisService {
       );
     }
 
+    // P0.6 : Impossible de signer ou d'accepter un devis sans lignes
+    if (next === 'ACCEPTE' || next === 'SIGNE') {
+      const lignesCount = await this.prisma.ligneDevis.count({ where: { devisId: id } });
+      if (lignesCount === 0) {
+        throw new BadRequestException(
+          'Impossible de valider un devis ne contenant aucune ligne.',
+        );
+      }
+    }
+
     const updateData: Record<string, unknown> = { statut: next as DevisStatut };
 
     if (next === 'ENVOYE' || next === 'RENVOYE') {
@@ -1208,10 +1319,31 @@ export class DevisService {
       },
     });
 
-    const generated =
-      next === 'ACCEPTE' || next === 'SIGNE'
-        ? await this.ensureAcceptedDocumentsGenerated(id, companyId)
-        : null;
+    let generated: AcceptedArtifactsSummary | null = null;
+    if (next === 'SIGNE') {
+      const acceptanceGenerated = await this.ensureAcceptedDocumentsGenerated(
+        id,
+        companyId,
+      );
+      const acompteGenerated = await this.ensureAcompteInvoiceGenerated(
+        id,
+        companyId,
+      );
+
+      generated = {
+        ...acceptanceGenerated,
+        factureReference: acompteGenerated.factureReference,
+        commandesFournisseurReferences:
+          acceptanceGenerated.commandesFournisseurReferences ?? [],
+        warnings: [
+          ...(acceptanceGenerated.warnings ?? []),
+          ...(acompteGenerated.warnings ?? []),
+        ],
+      };
+    } else if (next === 'ACCEPTE') {
+      // ACCEPTE: créer BC + commandes fournisseur uniquement, PAS le chantier
+      generated = await this.ensureAcceptedDocumentsGenerated(id, companyId, false);
+    }
 
     return {
       devis: await this.findOne(id, companyId),
@@ -1780,6 +1912,17 @@ export class DevisService {
       });
     });
 
+    if (request.devis.signatureConseillerBase64) {
+      await this.ensureAcceptedDocumentsGenerated(
+        request.devisId,
+        request.devis.companyId,
+      );
+      await this.ensureAcompteInvoiceGenerated(
+        request.devisId,
+        request.devis.companyId,
+      );
+    }
+
     return {
       message:
         'Signature client enregistree. Votre conseiller sera notifie pour finaliser le dossier.',
@@ -1853,6 +1996,7 @@ export class DevisService {
     });
 
     await this.ensureAcceptedDocumentsGenerated(updated.id, companyId);
+    await this.ensureAcompteInvoiceGenerated(updated.id, companyId);
 
     return {
       message:
@@ -1864,9 +2008,9 @@ export class DevisService {
   async addLigne(devisId: number, dto: CreateLigneDevisDto, companyId: number) {
     const devis = await this.findOne(devisId, companyId);
 
-    if (devis.statut !== 'BROUILLON' && devis.statut !== 'REVISE') {
+    if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
       throw new ForbiddenException(
-        'Les lignes ne peuvent etre modifiees que sur un devis en BROUILLON ou REVISE',
+        `Les lignes ne peuvent pas etre modifiees sur un devis au statut ${devis.statut}`,
       );
     }
 
@@ -1962,9 +2106,9 @@ export class DevisService {
   ) {
     const devis = await this.findOne(devisId, companyId);
 
-    if (devis.statut !== 'BROUILLON' && devis.statut !== 'REVISE') {
+    if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
       throw new ForbiddenException(
-        'Les lignes ne peuvent etre modifiees que sur un devis en BROUILLON ou REVISE',
+        `Les lignes ne peuvent pas etre modifiees sur un devis au statut ${devis.statut}`,
       );
     }
 
@@ -2110,9 +2254,9 @@ export class DevisService {
   async removeLigne(devisId: number, ligneId: number, companyId: number) {
     const devis = await this.findOne(devisId, companyId);
 
-    if (devis.statut !== 'BROUILLON' && devis.statut !== 'REVISE') {
+    if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
       throw new ForbiddenException(
-        'Les lignes ne peuvent etre modifiees que sur un devis en BROUILLON ou REVISE',
+        `Les lignes ne peuvent pas etre modifiees sur un devis au statut ${devis.statut}`,
       );
     }
 
@@ -2139,9 +2283,9 @@ export class DevisService {
   ) {
     const devis = await this.findOne(devisId, companyId);
 
-    if (devis.statut !== 'BROUILLON' && devis.statut !== 'REVISE') {
+    if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
       throw new ForbiddenException(
-        'Les lignes ne peuvent etre modifiees que sur un devis en BROUILLON ou REVISE',
+        `Les lignes ne peuvent pas etre modifiees sur un devis au statut ${devis.statut}`,
       );
     }
 
@@ -2289,13 +2433,63 @@ export class DevisService {
     });
   }
 
-  async remove(id: number, companyId: number) {
+  async remove(id: number, companyId: number, force = false) {
     const devis = await this.findOne(id, companyId);
 
-    if (devis.statut === 'SIGNE') {
-      throw new ForbiddenException('Impossible de supprimer un devis signe');
+    if (!force) {
+      const [facturesCount, bonCommande, commandesFournisseurCount] =
+        await Promise.all([
+          this.prisma.facture.count({ where: { devisId: devis.id } }),
+          this.prisma.bonCommande.findUnique({
+            where: { devisId: devis.id },
+            select: { id: true },
+          }),
+          this.prisma.commandeFournisseur.count({ where: { devisId: devis.id } }),
+        ]);
+
+      if (devis.statut === 'SIGNE') {
+        throw new ForbiddenException('Impossible de supprimer un devis signe');
+      }
+
+      if (facturesCount > 0 || bonCommande || commandesFournisseurCount > 0) {
+        throw new ForbiddenException(
+          'Impossible de supprimer ce devis car il est lie a une facture, un bon de commande ou une commande fournisseur.',
+        );
+      }
+
+      return this.prisma.devis.delete({ where: { id } });
     }
 
-    return this.prisma.devis.delete({ where: { id } });
+    // Force delete: clean up all linked records first then delete the devis
+    await this.prisma.$transaction(async (tx) => {
+      // Lignes factures -> factures
+      const factures = await tx.facture.findMany({
+        where: { devisId: id },
+        select: { id: true },
+      });
+      for (const facture of factures) {
+        await tx.factureLigne.deleteMany({ where: { factureId: facture.id } });
+      }
+      await tx.facture.deleteMany({ where: { devisId: id } });
+
+      // Commandes fournisseur -> lignes + receptions
+      const commandes = await tx.commandeFournisseur.findMany({
+        where: { devisId: id },
+        select: { id: true },
+      });
+      for (const commande of commandes) {
+        await tx.reception.deleteMany({ where: { commandeFournisseurId: commande.id } });
+        await tx.ligneCommandeFournisseur.deleteMany({ where: { commandeFournisseurId: commande.id } });
+      }
+      await tx.commandeFournisseur.deleteMany({ where: { devisId: id } });
+
+      // Bon de commande
+      await tx.bonCommande.deleteMany({ where: { devisId: id } });
+
+      // The devis itself (cascades: lignes, versions, signatureRequests)
+      await tx.devis.delete({ where: { id } });
+    });
+
+    return { message: `Devis #${id} supprime avec toutes ses donnees associees.` };
   }
 }

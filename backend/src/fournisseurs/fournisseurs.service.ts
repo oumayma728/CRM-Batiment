@@ -54,7 +54,10 @@ export class FournisseursService {
         where,
         skip,
         take: limit,
-        orderBy: { nom: 'asc' },
+        orderBy: [
+          { createdAt: 'desc' },
+          { id: 'desc' },
+        ],
         include: {
           _count: {
             select: { materiaux: true, commandesFournisseur: true },

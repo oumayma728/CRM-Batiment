@@ -1,18 +1,19 @@
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { getImportErrorMessage, parseClientsSpreadsheet } from '@/lib/clientSpreadsheetImport';
 import { ProjectTypeCheckboxGroup } from '@/components/ProjectTypeCheckboxGroup';
+import { MapPickerModal } from '@/components/MapPickerModal';
 import type { Client, TypeProjet, LeadSource } from '@/types';
 import { formatDate, getInitials, cn } from '@/lib/utils';
 import {
   Search, Edit, Trash2, X, ChevronLeft, ChevronRight,
-  Users, Phone, Mail, Building, Loader2, UserPlus,
+  Users, Phone, Mail, Building, Loader2,
   MapPin, Home, FileText, Zap, PhoneCall, Upload,
   Info, HardHat, AlertTriangle, CheckCircle2, Sparkles,
 } from 'lucide-react';
-
 /* ───── Config labels ───── */
 const sourceLabels: Record<string, { label: string; bg: string; text: string }> = {
   CHATBOT: { label: 'Chatbot', bg: 'bg-cyan-50', text: 'text-cyan-700' },
@@ -80,6 +81,7 @@ function getClientProjectLabel(client: Client, fallback = 'Projet') {
 export default function ClientsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -88,6 +90,7 @@ export default function ClientsPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [genDescription, setGenDescription] = useState('');
+  const [mapPickerField, setMapPickerField] = useState<'adresseClient' | 'adresseChantier' | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importFeedback, setImportFeedback] = useState<{
@@ -132,6 +135,7 @@ export default function ClientsPage() {
 
   const clients: Client[] = data?.data ?? [];
   const meta = data?.meta ?? { total: 0, page: 1, totalPages: 1 };
+  const canCreateClient = user?.role !== 'ASSISTANTE';
 
   const createMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) => api.post('/clients', body),
@@ -228,7 +232,7 @@ export default function ClientsPage() {
     setIsImporting(true);
 
     try {
-      const parsed = await parseClientsSpreadsheet(file);
+      const parsed = await parseClientsSpreadsheet(file, typesProjetData ?? []);
       const apiErrors: { rowNumber: number; reason: string }[] = [];
       let createdCount = 0;
 
@@ -304,9 +308,11 @@ export default function ClientsPage() {
             {isImporting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {isImporting ? 'Import en cours...' : 'Importer Excel'}
           </button>
-          <button onClick={openCreate} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
-            <UserPlus size={17} /> Nouveau client
-          </button>
+          {canCreateClient ? (
+            <button onClick={openCreate} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
+              <ChevronRight size={17} /> Nouveau client
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -345,16 +351,16 @@ export default function ClientsPage() {
             <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 text-primary-600 font-medium text-sm hover:text-primary-700"><UserPlus size={16} /> Ajouter un client</button>
           </div>
         ) : (
-          <div className="overflow-hidden">
-            <table className="w-full table-fixed">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1120px] table-fixed">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/90">
-                  <th className="w-[7%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">ID</th>
-                  <th className="w-[20%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Client</th>
-                  <th className="w-[22%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Contact</th>
-                  <th className="w-[18%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Type projet</th>
-                  <th className="w-[10%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Besoin</th>
-                  <th className="w-[8%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Source</th>
+                  <th className="w-[6%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">ID</th>
+                  <th className="w-[18%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Client</th>
+                  <th className="w-[20%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Contact</th>
+                  <th className="w-[17%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Type projet</th>
+                  <th className="w-[11%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Besoin</th>
+                  <th className="w-[13%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Source</th>
                   <th className="w-[9%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Date</th>
                   <th className="w-[6%] px-3 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-gray-500">Actions</th>
                 </tr>
@@ -465,15 +471,22 @@ export default function ClientsPage() {
                         </td>
 
                         {/* Source */}
-                        <td className="px-3 py-3.5 align-top">
+                        <td className="min-w-0 px-3 py-3.5 align-top">
                           {(() => {
                             const src = sourceLabels[client.source ?? 'AUTRE'] ?? sourceLabels.AUTRE;
-                            return <span className={cn('inline-flex items-center whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-semibold', src.bg, src.text)}>{src.label}</span>;
+                            return (
+                              <span
+                                className={cn('inline-flex max-w-full items-center rounded-lg px-2.5 py-1 text-[11px] font-semibold', src.bg, src.text)}
+                                title={src.label}
+                              >
+                                <span className="truncate">{src.label}</span>
+                              </span>
+                            );
                           })()}
                         </td>
 
                         {/* Date */}
-                        <td className="px-3 py-3.5 align-top text-[13px] font-medium text-gray-600">{formatDate(client.createdAt)}</td>
+                        <td className="whitespace-nowrap px-3 py-3.5 align-top text-[13px] font-medium text-gray-600">{formatDate(client.createdAt)}</td>
 
                         {/* Actions */}
                         <td className="px-3 py-3.5 align-top">
@@ -485,13 +498,15 @@ export default function ClientsPage() {
                             >
                               <Edit size={13} />
                             </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setDeleteId(client.id); }}
-                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-                              title="Supprimer"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            {canCreateClient && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDeleteId(client.id); }}
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-200 bg-white text-gray-600 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                                title="Supprimer"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -644,8 +659,18 @@ export default function ClientsPage() {
               </div>
 
               {/* Adresses */}
-              <InputField label="Adresse Client" value={form.adresseClient} onChange={(v) => setForm({ ...form, adresseClient: v })} />
-              <InputField label="Adresse Chantier" value={form.adresseChantier} onChange={(v) => setForm({ ...form, adresseChantier: v })} />
+              <AddressFieldWithMap
+                label="Adresse Client"
+                value={form.adresseClient}
+                onChange={(v) => setForm({ ...form, adresseClient: v })}
+                onMapClick={() => setMapPickerField('adresseClient')}
+              />
+              <AddressFieldWithMap
+                label="Adresse Chantier"
+                value={form.adresseChantier}
+                onChange={(v) => setForm({ ...form, adresseChantier: v })}
+                onMapClick={() => setMapPickerField('adresseChantier')}
+              />
 
               {/* Type de projet & Source */}
               <div className="grid gap-4 lg:grid-cols-[1.35fr_0.65fr]">
@@ -720,6 +745,21 @@ export default function ClientsPage() {
         </div>
       )}
 
+      {/* ─── Map Picker ─── */}
+      <MapPickerModal
+        open={mapPickerField !== null}
+        title={mapPickerField === 'adresseClient' ? 'Sélectionner l\'adresse client' : 'Sélectionner l\'adresse chantier'}
+        initialAddress={mapPickerField === 'adresseClient' ? form.adresseClient : form.adresseChantier}
+        onClose={() => setMapPickerField(null)}
+        onConfirm={(address) => {
+          if (mapPickerField === 'adresseClient') {
+            setForm((f) => ({ ...f, adresseClient: address }));
+          } else {
+            setForm((f) => ({ ...f, adresseChantier: address }));
+          }
+        }}
+      />
+
       {/* ─── Delete Confirmation ─── */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -750,6 +790,34 @@ function InputField({ label, value, onChange, type = 'text', required = false }:
       <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required}
         className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+    </div>
+  );
+}
+
+/* ─── Address field with map picker button ─── */
+function AddressFieldWithMap({ label, value, onChange, onMapClick }: {
+  label: string; value: string; onChange: (v: string) => void; onMapClick: () => void;
+}) {
+  return (
+    <div>
+      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">{label}</label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
+          placeholder="Saisir manuellement ou choisir sur la carte"
+        />
+        <button
+          type="button"
+          onClick={onMapClick}
+          title="Choisir sur la carte OpenStreetMap"
+          className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-slate-500 transition hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600"
+        >
+          <MapPin size={16} />
+        </button>
+      </div>
     </div>
   );
 }

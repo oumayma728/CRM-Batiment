@@ -12,6 +12,8 @@ import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
@@ -48,9 +50,11 @@ export class AuthService {
   // ──────────────────────────────────────────────
 
   async createUser(dto: CreateUserDto, admin: CurrentUserPayload) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
     // Vérifier que l'email n'existe pas déjà
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
     if (existing) {
       throw new ConflictException('Un utilisateur avec cet email existe déjà');
@@ -65,7 +69,7 @@ export class AuthService {
     // Créer le compte dans la base
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         nom: dto.nom,
         prenom: dto.prenom,
         role: dto.role,
@@ -190,9 +194,11 @@ export class AuthService {
   // ──────────────────────────────────────────────
 
   async login(dto: LoginDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
     // Rechercher l'utilisateur
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -315,6 +321,32 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.trim().toLowerCase() },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Aucun compte associé à cet email');
+    }
+
+    return { success: true, email: user.email };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const hashedPassword = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { email: dto.email.trim().toLowerCase() },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false,
+      },
+    });
+
+    return { message: 'Mot de passe réinitialisé avec succès' };
   }
 
   async saveSignature(dto: SaveSignatureDto, currentUser: CurrentUserPayload) {

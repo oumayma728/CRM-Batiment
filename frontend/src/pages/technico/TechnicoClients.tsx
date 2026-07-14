@@ -15,6 +15,7 @@ import {
   UserPlus,
   Filter,
   Edit3,
+  Trash2,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -85,6 +86,7 @@ export default function TechnicoClients() {
   const [selectedTypeProjetIds, setSelectedTypeProjetIds] = useState<number[]>([]);
   const [demandeClient, setDemandeClient] = useState<Client | null>(null);
   const [demandeDescription, setDemandeDescription] = useState('');
+  const [deleteClientId, setDeleteClientId] = useState<number | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [importFeedback, setImportFeedback] = useState<{
@@ -130,6 +132,14 @@ export default function TechnicoClients() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-clients'] });
       closeClientModal();
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/clients/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['technico-clients'] });
+      setDeleteClientId(null);
     },
   });
 
@@ -427,12 +437,22 @@ export default function TechnicoClients() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => openEdit(client)}
-                  className="opacity-0 group-hover:opacity-100 p-2 rounded-lg hover:bg-teal-50 text-gray-400 hover:text-teal-600 transition-all"
-                >
-                  <Edit3 size={16} />
-                </button>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                  <button
+                    onClick={() => openEdit(client)}
+                    className="p-2 rounded-lg hover:bg-teal-50 text-gray-400 hover:text-teal-600 transition-all"
+                    title="Modifier"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => setDeleteClientId(client.id)}
+                    className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-all"
+                    title="Supprimer"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
               <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
                 <span className="text-[11px] text-gray-400">
@@ -448,6 +468,39 @@ export default function TechnicoClients() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteClientId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
+              <Trash2 size={22} className="text-red-500" />
+            </div>
+            <h3 className="mb-2 text-center text-lg font-bold text-gray-900">Supprimer ce client ?</h3>
+            <p className="mb-6 text-center text-sm text-gray-500">
+              Cette action est irréversible. Toutes les données associées seront supprimées.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteClientId(null)}
+                className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteClientId)}
+                disabled={deleteMutation.isPending}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white hover:bg-red-600 disabled:opacity-50 transition"
+              >
+                {deleteMutation.isPending
+                  ? <Loader2 size={15} className="animate-spin" />
+                  : <Trash2 size={15} />}
+                Supprimer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

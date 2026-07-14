@@ -31,6 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<AuthResponse> => {
     const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
+    // If mustChangePassword, the backend returns no accessToken/user — don't store broken state
+    if ((data as unknown as { mustChangePassword?: boolean }).mustChangePassword) {
+      return data;
+    }
     setToken(data.accessToken);
     setUser(data.user);
     return data;
