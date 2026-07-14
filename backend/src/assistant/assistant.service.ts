@@ -1483,6 +1483,72 @@ export class AssistantService {
       autoGeneration,
     };
   }
+  async findPotentialDuplicates(input: {
+    companyId: number;
+    email?: string;
+    telephone?: string;
+    excludeProspectId?: number;
+  }) {
+    const normalizedEmail = (input.email ?? '').trim().toLowerCase();
+    const normalizedPhone = (input.telephone ?? '').replace(/\D/g, '');
+
+    // Rien d'exploitable : pas de recherche (evite les faux positifs massifs)
+    if (!normalizedEmail && normalizedPhone.length < 8) {
+      return { duplicates: [] };
+    }
+
+    // 1) La base filtre LARGE : candidats par email exact (insensible casse)
+    //    ou par telephone contenant la fin du numero normalise.
+    const orConditions: object[] = [];
+    if (normalizedEmail) {
+      orConditions.push({ email: { equals: normalizedEmail, mode: 'insensitive' } });
+    }
+    if (normalizedPhone.length >= 8) {
+      orConditions.push({ telephone: { contains: normalizedPhone.slice(-8) } });
+    }
+
+    const candidates = await this.prisma.client.findMany({
+      where: {
+        companyId: input.companyId,
+        ...(input.excludeProspectId
+          ? { id: { not: input.excludeProspectId } }
+          : {}),
+        OR: orConditions,
+      },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        telephone: true,
+        source: true,
+        createdAt: true,
+      },
+      take: 10,
+    });
+
+    // 2) Le code verifie EXACTEMENT (normalisation des deux cotes = zero faux positif)
+    const duplicates = candidates
+      .map((c) => {
+        const matchedOn: string[] = [];
+        if (
+          normalizedEmail &&
+          (c.email ?? '').trim().toLowerCase() === normalizedEmail
+        ) {
+          matchedOn.push('email');
+        }
+        if (
+          normalizedPhone.length >= 8 &&
+          (c.telephone ?? '').replace(/\D/g, '') === normalizedPhone
+        ) {
+          matchedOn.push('telephone');
+        }
+        return { ...c, matchedOn };
+      })
+      .filter((c) => c.matchedOn.length > 0);
+
+    return { duplicates };
+  }
   async updateProspectNotes(input: {
     prospectId: number;
     companyId: number;
@@ -5269,19 +5335,23 @@ export class AssistantService {
     // On nettoie toujours le nom (coupe les mots parasites comme "mon telephone")
     const cleanName = this.sanitizeName(input.collectedData.nom);
 
-    const existing = await this.prisma.client.findFirst({
-      where: {
-        companyId: input.companyId,
-        OR: [
-          { email: normalizedEmail || undefined },
-          { telephone: normalizedPhone || undefined },
-        ],
-      },
-      select: {
-        id: true,
-        besoin: true,
-      },
-    });
+    // Fusion uniquement si l'email correspond : l'email identifie la personne.
+    // Un telephone identique avec un email different = personne differente
+    // (couple, fixe partage, entreprise...) => on cree un nouveau client
+    // au lieu d'ecraser l'identite de l'existant.
+    // Les telephones partages restent detectables via check-duplicates (back-office).
+    const existing = normalizedEmail
+      ? await this.prisma.client.findFirst({
+          where: {
+            companyId: input.companyId,
+            email: normalizedEmail,
+          },
+          select: {
+            id: true,
+            besoin: true,
+          },
+        })
+      : null;
     // Calcul du besoin : si le client avait deja un devis et demande un rdv
     // (ou l'inverse), on combine en DEVIS_RENDEZ_VOUS.
     const nouveauBesoin = input.isRdv ? 'RENDEZ_VOUS' : 'DEVIS';
