@@ -99,6 +99,23 @@ export class AssistantAdminController {
       notes: typeof body.notes === 'string' ? body.notes : '',
     });
   }
+  @Post('prospects/check-duplicates')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Detecter les prospects en doublon potentiel (email/telephone)',
+  })
+  checkDuplicates(
+    @Body()
+    body: { email?: string; telephone?: string; excludeProspectId?: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.findPotentialDuplicates({
+      companyId: user.companyId,
+      email: body.email,
+      telephone: body.telephone,
+      excludeProspectId: body.excludeProspectId,
+    });
+  }
   @Delete('prospects/:prospectId')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({

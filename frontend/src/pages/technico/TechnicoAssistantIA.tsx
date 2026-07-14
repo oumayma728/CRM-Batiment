@@ -99,6 +99,17 @@ export default function TechnicoAssistantIA() {
   const [sortOrder, setSortOrder] = useState<'recent' | 'ancien'>('recent');
   const [editingNotesId, setEditingNotesId] = useState<number | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
+  const [duplicatesResult, setDuplicatesResult] = useState<{
+    prospectId: number;
+    duplicates: Array<{
+      id: number;
+      nom: string | null;
+      prenom: string | null;
+      email: string | null;
+      telephone: string | null;
+      matchedOn: string[];
+    }>;
+  } | null>(null);
   const prospectsQuery = useQuery({
     queryKey: ['technico-assistant-prospects'],
     queryFn: async () => {
@@ -151,6 +162,24 @@ export default function TechnicoAssistantIA() {
       await queryClient.invalidateQueries({ queryKey: ['technico-assistant-prospects'] });
       setEditingNotesId(null);
     },
+  });
+  const checkDuplicatesMutation = useMutation({
+    mutationFn: async ({
+      prospectId,
+      email,
+      telephone,
+    }: {
+      prospectId: number;
+      email?: string;
+      telephone?: string;
+    }) => {
+      const res = await api.post(
+        '/assistant/admin/prospects/check-duplicates',
+        { email, telephone, excludeProspectId: prospectId },
+      );
+      return { prospectId, duplicates: res.data.duplicates };
+    },
+    onSuccess: (data) => setDuplicatesResult(data),
   });
   const allProspects = prospectsQuery.data?.items ?? [];
   const prospects = useMemo(() => {
@@ -363,6 +392,58 @@ export default function TechnicoAssistantIA() {
                           </button>
                         </div>
                       )}
+                      {/* Verification des doublons potentiels */}
+                      <div className="space-y-2">
+                        <button
+                          onClick={() =>
+                            checkDuplicatesMutation.mutate({
+                              prospectId: prospect.id,
+                              email: prospect.email ?? undefined,
+                              telephone: prospect.telephone ?? undefined,
+                            })
+                          }
+                          disabled={checkDuplicatesMutation.isPending}
+                          className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-60"
+                        >
+                          🔍 Vérifier les doublons
+                        </button>
+                        {duplicatesResult &&
+                          duplicatesResult.prospectId === prospect.id &&
+                          (duplicatesResult.duplicates.length === 0 ? (
+                            <p className="text-xs text-emerald-600">
+                              ✅ Aucun doublon détecté pour ce prospect.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                              <p className="text-xs font-semibold text-amber-800">
+                                ⚠️ {duplicatesResult.duplicates.length} doublon(s)
+                                potentiel(s) détecté(s) :
+                              </p>
+                              {duplicatesResult.duplicates.map((dup) => (
+                                <div
+                                  key={dup.id}
+                                  className="flex flex-wrap items-center gap-2 text-xs text-amber-900"
+                                >
+                                  <span className="font-semibold">
+                                    #{dup.id}{' '}
+                                    {`${dup.prenom ?? ''} ${dup.nom ?? ''}`.trim() ||
+                                      'Sans nom'}
+                                  </span>
+                                  {dup.email && <span>📧 {dup.email}</span>}
+                                  {dup.telephone && <span>📱 {dup.telephone}</span>}
+                                  {dup.matchedOn.map((m) => (
+                                    <span
+                                      key={m}
+                                      className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold"
+                                    >
+                                      même {m}
+                                    </span>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                      </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
                         {prospect.latestDemandeDevis ? (
