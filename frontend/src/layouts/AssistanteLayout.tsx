@@ -229,9 +229,9 @@ export default function AssistanteLayout() {
       </aside>
 
       {/* Main content */}
-      <div className="min-h-screen">
+      <div className="flex-1 min-h-screen">
         {/* Page content */}
-        <main className="p-4 lg:p-6 lg:ml-72">
+        <main className="p-3 sm:p-4 lg:p-6 lg:ml-72">
           <Outlet />
         </main>
       </div>

@@ -202,7 +202,7 @@ export default function TechnicoLayout() {
       {/* MAIN CONTENT */}
       <main className="flex-1 lg:ml-72 min-h-screen">
         {/* Top bar */}
-        <header className="app-main-header backdrop-blur-md px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20 transition-colors duration-300">
+        <header className="app-main-header backdrop-blur-md px-3 sm:px-4 lg:px-8 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 transition-colors duration-300">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}

@@ -7,21 +7,24 @@ import { ProjectTypeCheckboxGroup } from '@/components/ProjectTypeCheckboxGroup'
 import { formatDate } from '@/lib/utils';
 import type { Client, TypeProjet } from '@/types';
 import {
-  Search,
   Phone,
   Mail,
   MapPin,
-  X,
   UserPlus,
   Filter,
   Edit3,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Loader2,
   Upload,
+  X,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const sourceLabels: Record<string, { label: string; color: string }> = {
   CHATBOT: { label: 'Chatbot', color: 'bg-cyan-100 text-cyan-700' },
@@ -328,20 +331,13 @@ export default function TechnicoClients() {
 
       {/* Filters bar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-          <Search size={18} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Rechercher par nom, email, téléphone..."
+        <div className="flex-1">
+          <SearchBar
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+            onChange={(value) => { setSearch(value); setPage(1); }}
+            placeholder="Rechercher par nom, email, téléphone..."
+            onClear={() => setSearch('')}
           />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
-              <X size={16} />
-            </button>
-          )}
         </div>
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
           <Filter size={16} className="text-gray-400" />
@@ -375,27 +371,13 @@ export default function TechnicoClients() {
 
       {/* Client cards grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-3 bg-gray-100 rounded w-1/3" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingSkeleton type="card" count={4} />
       ) : clients.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <UserPlus size={28} className="text-gray-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Aucun client trouvé</h3>
-          <p className="text-sm text-gray-400 mt-1">Commencez par ajouter votre premier client.</p>
-        </div>
+        <EmptyState
+          icon={UserPlus}
+          title="Aucun client trouvé"
+          description="Commencez par ajouter votre premier client."
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {sortedClients.map((client) => (

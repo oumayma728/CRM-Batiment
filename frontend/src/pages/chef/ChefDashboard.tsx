@@ -6,7 +6,6 @@ import {
   CheckSquare,
   ClipboardCheck,
   HardHat,
-  Loader2,
   MapPin,
   PackageSearch,
   TrendingUp,
@@ -111,14 +110,6 @@ export default function ChefDashboard() {
 
   const isLoading = chantiersQuery.isLoading || chantiersEnCoursQuery.isLoading || commandesQuery.isLoading;
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-      </div>
-    );
-  }
-
   return (
     <div>
       {/* Header */}
@@ -132,98 +123,102 @@ export default function ChefDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-700 dark:to-orange-800 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-orange-100">Chantiers totaux</p>
-              <p className="text-3xl font-bold mt-1">{stats.totalChantiers}</p>
-            </div>
-            <div className="p-3 bg-white/20 rounded-lg">
-              <HardHat size={24} />
+      {isLoading ? (
+        <LoadingSkeleton type="card" count={4} />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 dark:from-orange-700 dark:to-orange-800 rounded-xl p-4 sm:p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-orange-100">Chantiers totaux</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.totalChantiers}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
+                <HardHat size={24} />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-blue-100">En cours</p>
-              <p className="text-3xl font-bold mt-1">{stats.chantiersEnCours}</p>
-            </div>
-            <div className="p-3 bg-white/20 rounded-lg">
-              <TrendingUp size={24} />
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-800 rounded-xl p-4 sm:p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-blue-100">En cours</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.chantiersEnCours}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
+                <TrendingUp size={24} />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-amber-500 to-amber-600 dark:from-amber-700 dark:to-amber-800 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-amber-100">Livraisons en attente</p>
-              <p className="text-3xl font-bold mt-1">{stats.commandesEnAttente}</p>
-            </div>
-            <div className="p-3 bg-white/20 rounded-lg">
-              <PackageSearch size={24} />
+          <div className="bg-gradient-to-br from-amber-500 to-amber-600 dark:from-amber-700 dark:to-amber-800 rounded-xl p-4 sm:p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-amber-100">Livraisons en attente</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.commandesEnAttente}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
+                <PackageSearch size={24} />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-gradient-to-br from-green-500 to-green-600 dark:from-green-700 dark:to-green-800 rounded-xl p-6 text-white shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-green-100">Réceptions aujourd'hui</p>
-              <p className="text-3xl font-bold mt-1">{stats.receptionsAujourdhui}</p>
-            </div>
-            <div className="p-3 bg-white/20 rounded-lg">
-              <ClipboardCheck size={24} />
+          <div className="bg-gradient-to-br from-green-500 to-green-600 dark:from-green-700 dark:to-green-800 rounded-xl p-4 sm:p-6 text-white shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs sm:text-sm font-medium text-green-100">Réceptions aujourd'hui</p>
+                <p className="text-2xl sm:text-3xl font-bold mt-1">{stats.receptionsAujourdhui}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
+                <ClipboardCheck size={24} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <button
           onClick={() => navigate('/chef/chantiers')}
-          className="flex items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
+          className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
         >
-          <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-            <HardHat className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+          <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+            <HardHat className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600 dark:text-orange-400" />
           </div>
-          <div className="text-left">
-            <span className="block font-semibold text-gray-900 dark:text-white">Voir les chantiers</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">Accéder à la liste</span>
+          <div className="text-left flex-1">
+            <span className="block font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Voir les chantiers</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Accéder à la liste</span>
           </div>
-          <ArrowRight className="h-5 w-5 text-gray-400 ml-auto" />
+          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 ml-auto" />
         </button>
 
         <button
           onClick={() => navigate('/chef/taches')}
-          className="flex items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
+          className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
         >
-          <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-            <CheckSquare className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+            <CheckSquare className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
           </div>
-          <div className="text-left">
-            <span className="block font-semibold text-gray-900 dark:text-white">Gérer les tâches</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">Planning équipes</span>
+          <div className="text-left flex-1">
+            <span className="block font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Gérer les tâches</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Planning équipes</span>
           </div>
-          <ArrowRight className="h-5 w-5 text-gray-400 ml-auto" />
+          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 ml-auto" />
         </button>
 
         <button
           onClick={() => navigate('/chef/receptions')}
-          className="flex items-center gap-4 p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
+          className="flex items-center gap-3 sm:gap-4 p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all border border-gray-200 dark:border-gray-700"
         >
-          <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-            <ClipboardCheck className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+          <div className="p-2 sm:p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+            <ClipboardCheck className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-left">
-            <span className="block font-semibold text-gray-900 dark:text-white">Réceptions</span>
-            <span className="text-sm text-gray-500 dark:text-gray-400">Matériaux livraisons</span>
+          <div className="text-left flex-1">
+            <span className="block font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Réceptions</span>
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Matériaux livraisons</span>
           </div>
-          <ArrowRight className="h-5 w-5 text-gray-400 ml-auto" />
+          <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 ml-auto" />
         </button>
       </div>
 
@@ -236,7 +231,7 @@ export default function ChefDashboard() {
           </h2>
         </div>
         <div className="p-6">
-          {isLoading ? (
+          {chantiersEnCoursQuery.isLoading ? (
             <LoadingSkeleton type="card" count={3} />
           ) : chantiersEnCours.length === 0 ? (
             <EmptyState

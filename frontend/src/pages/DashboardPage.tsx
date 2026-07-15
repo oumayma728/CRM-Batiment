@@ -44,7 +44,7 @@ export default function DashboardPage() {
     messages: true,
     stats: true
   });
-  const [expandedCards, setExpandedCards] = useState({});
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
   
   // États pour les favoris
   const [favorites, setFavorites] = useState(() => {
@@ -194,21 +194,21 @@ export default function DashboardPage() {
     }
   };
 
-  const toggleFavorite = (itemId, itemType) => {
+  const toggleFavorite = (itemId: number, itemType: string) => {
     const favoriteKey = `${itemType}_${itemId}`;
     if (favorites.includes(favoriteKey)) {
-      setFavorites(favorites.filter(f => f !== favoriteKey));
+      setFavorites(favorites.filter((f: string) => f !== favoriteKey));
     } else {
       setFavorites([...favorites, favoriteKey]);
     }
   };
 
-  const isFavorite = (itemId, itemType) => {
+  const isFavorite = (itemId: number, itemType: string) => {
     return favorites.includes(`${itemType}_${itemId}`);
   };
 
-  const markNotificationAsRead = (id) => {
-    setNotifications(notifications.map(notif => 
+  const markNotificationAsRead = (id: number) => {
+    setNotifications(notifications.map((notif: any) => 
       notif.id === id ? { ...notif, read: true } : notif
     ));
   };
@@ -300,8 +300,8 @@ export default function DashboardPage() {
 
   // Tri des KPI
   const sortedKPIs = [...kpiCards].sort((a, b) => {
-    let aVal = a[sortBy];
-    let bVal = b[sortBy];
+    let aVal: any = a[sortBy as keyof typeof a];
+    let bVal: any = b[sortBy as keyof typeof b];
     if (sortBy === 'value') {
       aVal = typeof a.value === 'string' ? parseFloat(a.value) : a.value;
       bVal = typeof b.value === 'string' ? parseFloat(b.value) : b.value;
@@ -440,15 +440,15 @@ export default function DashboardPage() {
            task.project.toLowerCase().includes(searchQuery.toLowerCase());
   }).sort((a, b) => {
     if (sortBy === 'priority') {
-      const priorityOrder = { high: 3, medium: 2, low: 1 };
-      const aPriority = priorityOrder[a.priority];
-      const bPriority = priorityOrder[b.priority];
+      const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+      const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+      const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
       return sortOrder === 'asc' ? aPriority - bPriority : bPriority - aPriority;
     }
     if (sortBy === 'due') {
       return sortOrder === 'asc' 
-        ? new Date(a.due) - new Date(b.due)
-        : new Date(b.due) - new Date(a.due);
+        ? new Date(a.due).getTime() - new Date(b.due).getTime()
+        : new Date(b.due).getTime() - new Date(a.due).getTime();
     }
     return 0;
   });
@@ -473,7 +473,7 @@ export default function DashboardPage() {
 
   // Raccourcis clavier
   useEffect(() => {
-    const handleKeyPress = (e) => {
+    const handleKeyPress = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey) {
         switch(e.key) {
           case 'c':
@@ -524,7 +524,6 @@ export default function DashboardPage() {
       {/* En-tête avec barre d'outils avancée */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 sticky top-0 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-4 rounded-xl shadow-sm z-40 transition-colors duration-300">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Tableau de bord</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
             Bienvenue, {user?.prenom || 'Utilisateur'} {user?.nom || ''}
           </p>

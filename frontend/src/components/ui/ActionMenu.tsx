@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Trash2, Edit, Eye, Download, Copy, Check, X } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 export interface ActionMenuItem {
   label: string;
-  icon?: any;
+  icon?: LucideIcon | React.ComponentType<{ className?: string }>;
   onClick: () => void;
   variant?: 'default' | 'danger' | 'success';
   disabled?: boolean;
@@ -34,19 +35,6 @@ export default function ActionMenu({ items, position = 'right', className = '' }
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
-
-  const getIcon = (iconName: string) => {
-    const icons: Record<string, any> = {
-      Trash2,
-      Edit,
-      Eye,
-      Download,
-      Copy,
-      Check,
-      X,
-    };
-    return icons[iconName] || null;
-  };
 
   const getItemClass = (variant: string = 'default') => {
     const baseClass = 'flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-colors';
@@ -79,7 +67,7 @@ export default function ActionMenu({ items, position = 'right', className = '' }
           `}
         >
           {items.map((item, index) => {
-            const Icon = item.icon ? getIcon(item.icon) : null;
+            const Icon = item.icon;
             return (
               <button
                 key={index}

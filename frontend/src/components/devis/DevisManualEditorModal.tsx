@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Loader2, Pencil, Plus, Save, Trash2, X } from 'lucide-react';
+import { Loader2, Pencil, Plus, Save, Trash2, X, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
 import api from '@/lib/api';
 import type { Devis, LigneDevis, Materiau } from '@/types';
 import {
@@ -56,6 +56,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
   const [notesForm, setNotesForm] = useState<StructuredDevisNotes>(() =>
     parseStructuredDevisNotes(devis.notes),
   );
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof LineFormState, string>>>({});
 
   const lignes = useMemo(
     () => [...(devis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre),
@@ -126,7 +127,66 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
     };
   }
 
+  function calculateMargin() {
+    const prixVente = Number(lineForm.prixUnitaireVente || 0);
+    const prixAchat = Number(lineForm.prixAchat || 0);
+    const mainOeuvre = Number(lineForm.mainOeuvre || 0);
+    const coutTotal = prixAchat + mainOeuvre;
+    
+    if (coutTotal === 0) return { margin: 0, marginPercent: 0, isValid: false };
+    
+    const margin = prixVente - coutTotal;
+    const marginPercent = (margin / prixVente) * 100;
+    
+    return {
+      margin,
+      marginPercent,
+      isValid: marginPercent >= 20,
+      isWarning: marginPercent >= 10 && marginPercent < 20,
+      isDanger: marginPercent < 10,
+    };
+  }
+
+  function validateLineForm(): boolean {
+    const errors: Partial<Record<keyof LineFormState, string>> = {};
+
+    if (!lineForm.description.trim()) {
+      errors.description = 'La description est requise';
+    }
+
+    const quantite = Number(lineForm.quantite);
+    if (!quantite || quantite <= 0) {
+      errors.quantite = 'La quantité doit être supérieure à 0';
+    }
+
+    const prixVente = Number(lineForm.prixUnitaireVente);
+    if (!prixVente || prixVente <= 0) {
+      errors.prixUnitaireVente = 'Le prix de vente doit être supérieur à 0';
+    }
+
+    const prixAchat = Number(lineForm.prixAchat);
+    const mainOeuvre = Number(lineForm.mainOeuvre);
+    
+    if (prixAchat < 0) {
+      errors.prixAchat = 'Le prix d\'achat ne peut pas être négatif';
+    }
+
+    if (mainOeuvre < 0) {
+      errors.mainOeuvre = 'La main d\'œuvre ne peut pas être négative';
+    }
+
+    const marginData = calculateMargin();
+    if (marginData.isDanger) {
+      errors.prixUnitaireVente = 'Marge critique (<10%). Veuillez ajuster le prix.';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
   function submitLine() {
+    if (!validateLineForm()) return;
+
     const payload = buildPayload();
     if (!payload.quantite || payload.quantite <= 0) return;
 
@@ -163,7 +223,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Lignes devis</h3>
               <button
-                onClick={() => setLineForm(emptyLineForm)}
+                onClick={() => {
+                  setLineForm(emptyLineForm);
+                  setFormErrors({});
+                }}
                 className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Plus size={14} /> Nouvelle ligne
@@ -183,7 +246,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setLineForm(toLineForm(line))}
+                      onClick={() => {
+                        setLineForm(toLineForm(line));
+                        setFormErrors({});
+                      }}
                       className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-blue-600"
                       title="Modifier"
                     >
@@ -211,62 +277,108 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Formulaire ligne</h3>
               <div className="mt-3 grid gap-3">
-                <input
-                  value={lineForm.description}
-                  onChange={(e) => setLineForm((current) => ({ ...current, description: e.target.value }))}
-                  placeholder="Description / tache"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                />
+                <div>
+                  <input
+                    value={lineForm.description}
+                    onChange={(e) => {
+                      setLineForm((current) => ({ ...current, description: e.target.value }));
+                      setFormErrors((prev) => ({ ...prev, description: '' }));
+                    }}
+                    placeholder="Description / tache"
+                    className={`w-full rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none ${
+                      formErrors.description ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                    } focus:border-primary-400`}
+                  />
+                  {formErrors.description && (
+                    <p className="mt-1 text-xs text-red-600">{formErrors.description}</p>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={lineForm.quantite}
-                    onChange={(e) => setLineForm((current) => ({ ...current, quantite: e.target.value }))}
-                    placeholder="Quantite"
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                  />
-                  <input
-                    value={lineForm.unite}
-                    onChange={(e) => setLineForm((current) => ({ ...current, unite: e.target.value }))}
-                    placeholder="Unite"
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                  />
+                  <div>
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={lineForm.quantite}
+                      onChange={(e) => {
+                        setLineForm((current) => ({ ...current, quantite: e.target.value }));
+                        setFormErrors((prev) => ({ ...prev, quantite: '' }));
+                      }}
+                      placeholder="Quantite"
+                      className={`rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none ${
+                        formErrors.quantite ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                      } focus:border-primary-400`}
+                    />
+                    {formErrors.quantite && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.quantite}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      value={lineForm.unite}
+                      onChange={(e) => setLineForm((current) => ({ ...current, unite: e.target.value }))}
+                      placeholder="Unite"
+                      className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={lineForm.prixUnitaireVente}
-                    onChange={(e) =>
-                      setLineForm((current) => ({ ...current, prixUnitaireVente: e.target.value }))
-                    }
-                    placeholder="PU vente"
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={lineForm.prixAchat}
-                    onChange={(e) =>
-                      setLineForm((current) => ({ ...current, prixAchat: e.target.value }))
-                    }
-                    placeholder="Prix achat"
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={lineForm.mainOeuvre}
-                    onChange={(e) =>
-                      setLineForm((current) => ({ ...current, mainOeuvre: e.target.value }))
-                    }
-                    placeholder="Main d'oeuvre"
-                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
-                  />
+                  <div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={lineForm.prixUnitaireVente}
+                      onChange={(e) => {
+                        setLineForm((current) => ({ ...current, prixUnitaireVente: e.target.value }));
+                        setFormErrors((prev) => ({ ...prev, prixUnitaireVente: '' }));
+                      }}
+                      placeholder="PU vente"
+                      className={`rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none ${
+                        formErrors.prixUnitaireVente ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                      } focus:border-primary-400`}
+                    />
+                    {formErrors.prixUnitaireVente && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.prixUnitaireVente}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={lineForm.prixAchat}
+                      onChange={(e) => {
+                        setLineForm((current) => ({ ...current, prixAchat: e.target.value }));
+                        setFormErrors((prev) => ({ ...prev, prixAchat: '' }));
+                      }}
+                      placeholder="Prix achat"
+                      className={`rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none ${
+                        formErrors.prixAchat ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                      } focus:border-primary-400`}
+                    />
+                    {formErrors.prixAchat && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.prixAchat}</p>
+                    )}
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={lineForm.mainOeuvre}
+                      onChange={(e) => {
+                        setLineForm((current) => ({ ...current, mainOeuvre: e.target.value }));
+                        setFormErrors((prev) => ({ ...prev, mainOeuvre: '' }));
+                      }}
+                      placeholder="Main d'oeuvre"
+                      className={`rounded-xl border px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none ${
+                        formErrors.mainOeuvre ? 'border-red-300 bg-red-50' : 'border-slate-200'
+                      } focus:border-primary-400`}
+                    />
+                    {formErrors.mainOeuvre && (
+                      <p className="mt-1 text-xs text-red-600">{formErrors.mainOeuvre}</p>
+                    )}
+                  </div>
                 </div>
 
                 <select
@@ -281,6 +393,44 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                     </option>
                   ))}
                 </select>
+
+                {/* Margin Alert */}
+                {lineForm.prixUnitaireVente && (lineForm.prixAchat || lineForm.mainOeuvre) && (() => {
+                  const marginData = calculateMargin();
+                  return (
+                    <div className={`rounded-xl border p-3 ${
+                      marginData.isValid ? 'border-emerald-200 bg-emerald-50' :
+                      marginData.isWarning ? 'border-amber-200 bg-amber-50' :
+                      'border-red-200 bg-red-50'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        {marginData.isValid ? (
+                          <CheckCircle2 size={16} className="text-emerald-600" />
+                        ) : marginData.isWarning ? (
+                          <AlertTriangle size={16} className="text-amber-600" />
+                        ) : (
+                          <AlertTriangle size={16} className="text-red-600" />
+                        )}
+                        <span className="text-xs font-semibold">
+                          {marginData.isValid ? 'Marge optimale' :
+                           marginData.isWarning ? 'Marge faible' :
+                           'Marge critique'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TrendingUp size={14} className="text-slate-600" />
+                        <span className="text-sm font-medium">
+                          {marginData.marginPercent.toFixed(1)}% ({marginData.margin.toFixed(2)}€)
+                        </span>
+                      </div>
+                      {marginData.isDanger && (
+                        <p className="mt-1 text-xs text-red-600">
+                          Attention: marge inférieure à 10%
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
 
                 <div className="flex items-center gap-2 pt-1">
                   <button

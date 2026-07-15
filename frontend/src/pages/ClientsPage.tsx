@@ -10,11 +10,13 @@ import {
   Loader2,
   Moon,
   Plus,
-  Search,
   Sun,
   Trash2,
   X,
 } from 'lucide-react';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 type ClientForm = {
   nom: string;
@@ -298,11 +300,7 @@ export default function ClientsPage() {
   const isSubmitting = createClient.isPending || updateClient.isPending;
 
   if (isLoading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600 dark:border-blue-400" />
-      </div>
-    );
+    return <LoadingSkeleton type="table" count={5} />;
   }
 
   if (error) {
@@ -320,19 +318,19 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="p-6 text-gray-900 dark:text-gray-100">
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Clients</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Clients</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Recherchez, triez et ajoutez vos clients.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => setDarkMode((current: boolean) => !current)}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm sm:text-base text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
           >
             {darkMode ? (
@@ -340,31 +338,26 @@ export default function ClientsPage() {
             ) : (
               <Moon size={18} className="text-gray-600" />
             )}
-            {darkMode ? 'Mode clair' : 'Mode sombre'}
+            <span className="hidden sm:inline">{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
           </button>
           <button
             onClick={openCreateForm}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#185FA5] px-4 py-2 text-white transition hover:bg-[#0F4780]"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#185FA5] px-3 py-2 sm:px-4 text-sm sm:text-base text-white transition hover:bg-[#0F4780]"
           >
             <Plus size={18} />
-            Nouveau client
+            <span className="hidden sm:inline">Nouveau client</span>
+            <span className="sm:hidden">Nouveau</span>
           </button>
         </div>
       </div>
 
       <div className="mb-6 grid gap-3 lg:grid-cols-[minmax(240px,1fr)_220px_160px]">
-        <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"
-          />
-          <input
-            type="text"
-            placeholder="Rechercher un client..."
+        <div>
+          <SearchBar
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            maxLength={80}
-            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-gray-900 transition placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500"
+            onChange={setSearchTerm}
+            placeholder="Rechercher un client..."
+            onClear={() => setSearchTerm('')}
           />
         </div>
 

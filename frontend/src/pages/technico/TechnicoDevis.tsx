@@ -30,12 +30,15 @@ import {
   FileSpreadsheet,
   Loader2,
   MoreVertical,
-  Search,
   Send,
   X,
   XCircle,
   Receipt,
 } from 'lucide-react';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import ActionMenu from '@/components/ui/ActionMenu';
 
 const statutConfig: Record<
   string,
@@ -161,7 +164,6 @@ export default function TechnicoDevis() {
   const [showManualEditor, setShowManualEditor] = useState(false);
   const [activeDocumentPreview, setActiveDocumentPreview] =
     useState<ActiveGeneratedDocument>(null);
-  const [actionMenuId, setActionMenuId] = useState<number | null>(null);
   const [sendingDevisId, setSendingDevisId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
@@ -220,7 +222,6 @@ export default function TechnicoDevis() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-devis'] });
       queryClient.invalidateQueries({ queryKey: ['technico-devis-brouillon'] });
-      setActionMenuId(null);
     },
   });
 
@@ -265,7 +266,6 @@ export default function TechnicoDevis() {
           queryKey: ['technico-devis-detail', devisId],
         }),
       ]);
-      setActionMenuId(null);
       setFeedback({
         type: 'success',
         text: buildPurchaseOrderFeedback(
@@ -379,7 +379,6 @@ export default function TechnicoDevis() {
       queryClient.invalidateQueries({ queryKey: ['technico-devis-detail', devisId] }),
     ]);
 
-    setActionMenuId(null);
     setPreviewDevisId(devisId);
     setFeedback({
       type: 'success',
@@ -499,23 +498,16 @@ export default function TechnicoDevis() {
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="flex max-w-md flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
-          <Search size={18} className="text-slate-400" />
-          <input
-            type="text"
-            placeholder="Rechercher par reference..."
+        <div className="flex max-w-md flex-1">
+          <SearchBar
             value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
+            onChange={(value) => {
+              setSearch(value);
               setPage(1);
             }}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+            placeholder="Rechercher par reference..."
+            onClear={() => setSearch('')}
           />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-slate-300 transition hover:text-slate-500">
-              <X size={16} />
-            </button>
-          )}
         </div>
         <select
           value={sortBy}
@@ -531,21 +523,17 @@ export default function TechnicoDevis() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin text-teal-500" size={32} />
-        </div>
+        <LoadingSkeleton type="list" count={5} />
       ) : isError ? (
         <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">
           {listErrorText}
         </div>
       ) : devisList.length === 0 ? (
-        <div className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50">
-            <FileSpreadsheet size={28} className="text-teal-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-900">Aucun devis</h3>
-          <p className="mt-1 text-sm text-slate-400">Creez votre premier devis.</p>
-        </div>
+        <EmptyState
+          icon={FileSpreadsheet}
+          title="Aucun devis"
+          description="Creez votre premier devis."
+        />
       ) : (
         <div className="space-y-3">
           {sortedDevisList.map((devis) => {
@@ -621,29 +609,14 @@ export default function TechnicoDevis() {
                       )}
                     </button>
 
-                    <div className="relative">
-                      <button
-                        onClick={() => setActionMenuId(actionMenuId === devis.id ? null : devis.id)}
-                        className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
-                      >
-                        <MoreVertical size={16} />
-                      </button>
-
-                      {actionMenuId === devis.id && actions.length > 0 && (
-                        <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-2xl border border-slate-200 bg-white py-1 shadow-lg">
-                          {actions.map((action) => (
-                            <MenuAction
-                              key={action.value}
-                              label={action.label}
-                              color={action.color}
-                              onClick={() =>
-                                handleStatutAction(devis.id, action.value, devis.modeValidation)
-                              }
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    <ActionMenu
+                      items={actions.map((action) => ({
+                        label: action.label,
+                        onClick: () => handleStatutAction(devis.id, action.value, devis.modeValidation),
+                        variant: action.color === 'red' ? 'danger' : action.color === 'green' ? 'success' : 'default',
+                      }))}
+                      position="right"
+                    />
                   </div>
                 </div>
               </div>
@@ -861,24 +834,5 @@ export default function TechnicoDevis() {
         />
       )}
     </div>
-  );
-}
-
-function MenuAction({
-  label,
-  onClick,
-  color,
-}: {
-  label: string;
-  onClick: () => void;
-  color: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn('w-full px-4 py-2 text-left text-sm font-medium transition hover:bg-slate-50', color)}
-    >
-      {label}
-    </button>
   );
 }

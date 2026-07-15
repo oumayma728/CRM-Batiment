@@ -20,11 +20,14 @@ api.interceptors.request.use((config) => {
     url.startsWith('/auth/login?') ||
     url.startsWith('/auth/change-password?');
 
+  // Check demo mode from localStorage
+  const isDemoMode = localStorage.getItem('baticrm_demo_mode') === 'true';
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  if (isDemoToken(token) && !isAuthEndpoint) {
+  if ((isDemoToken(token) || isDemoMode) && !isAuthEndpoint) {
     config.adapter = createDemoApiResponse;
   }
 

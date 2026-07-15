@@ -70,19 +70,19 @@ export default function AdminDemo() {
       {isLoading ? (
         <LoadingSkeleton type="card" count={4} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {demoStats.map((stat, index) => (
             <div
               key={index}
-              className={`bg-gradient-to-br ${stat.color} rounded-xl shadow-lg p-6 text-white transform hover:scale-105 transition-all duration-300`}
+              className={`bg-gradient-to-br ${stat.color} rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-all duration-300`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium opacity-90">{stat.label}</p>
-                  <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                  <p className="text-xs sm:text-sm font-medium opacity-90">{stat.label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{stat.value}</p>
                 </div>
-                <div className="p-3 bg-white/20 rounded-lg">
-                  <stat.icon className="h-6 w-6" />
+                <div className="p-2 sm:p-3 bg-white/20 rounded-lg">
+                  <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
               </div>
             </div>

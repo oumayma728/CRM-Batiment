@@ -810,7 +810,7 @@ export default function DevisPage() {
       )}
 
       {/* Search */}
-      <div className="max-w-md">
+      <div className="w-full max-w-md">
         <div className="relative">
           <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -849,7 +849,7 @@ export default function DevisPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80">
                   <th className={thClass} onClick={() => toggleSort('reference')}>
@@ -870,7 +870,7 @@ export default function DevisPage() {
                   <th className={thClass} onClick={() => toggleSort('createdAt')}>
                     Date <SortIcon field="createdAt" sortField={sortField} sortDir={sortDir} />
                   </th>
-                  <th className="px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <th className="px-4 sm:px-6 py-3.5 text-right text-[11px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     Actions
                   </th>
                 </tr>
@@ -885,11 +885,11 @@ export default function DevisPage() {
 
                   return (
                     <tr key={devis.id} className="group transition hover:bg-primary-50/30 dark:hover:bg-slate-800/60">
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{devis.reference}</span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{clientName}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{clientName}</td>
+                      <td className="px-4 sm:px-6 py-4">
                         <span className={cn(
                           'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-semibold',
                           status.bg, status.text, status.darkBg, status.darkText,
@@ -898,14 +898,14 @@ export default function DevisPage() {
                           {status.label}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="px-4 sm:px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {formatCurrency(devis.totalHT ?? 0)}
                       </td>
-                      <td className="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="px-4 sm:px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {formatCurrency(devis.totalTTC ?? 0)}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{formatDate(devis.createdAt)}</td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{formatDate(devis.createdAt)}</td>
+                      <td className="px-4 sm:px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
 
                           {/* Send */}

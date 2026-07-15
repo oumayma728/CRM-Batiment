@@ -408,7 +408,7 @@ export default function AppLayout() {
 
         <DemoModeBanner />
 
-        <div className="app-content px-4 py-5 transition-colors duration-300 lg:px-8 lg:py-8">
+        <div className="app-content px-3 py-4 sm:px-4 sm:py-5 transition-colors duration-300 lg:px-8 lg:py-8">
           <Outlet />
         </div>
       </main>

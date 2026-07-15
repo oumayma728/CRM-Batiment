@@ -36,9 +36,10 @@
 @layer base {
   body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    /* Dégradé bleu un peu plus foncé pour un meilleur contraste */
-    background: linear-gradient(120deg, #75aef5 0%, #6891cc 100%);
-    color: #303e53; /* bleu foncé pour le texte, reste lisible */
+    background:
+      radial-gradient(circle at 14% -10%, rgba(24, 95, 165, 0.16), transparent 30rem),
+      linear-gradient(135deg, var(--app-bg-soft) 0%, var(--app-bg) 100%);
+    color: var(--app-text);
     overflow-x: hidden;
     @apply antialiased;
   }
@@ -55,7 +56,6 @@
 /* ============================================================
    GRADIENTS
    ============================================================ */
-
 
 /* Palette pastel — usage général */
 .pastel-gradient {
@@ -81,20 +81,18 @@
 }
 
 /* Technico — Iris → Lavande → Pervenche */
-
 .technico-gradient {
-  /* Dégradé violet (iris) vers bleu (ajouté) pour plus de contraste */
   background: linear-gradient(133deg,
-    var(--color-iris)      0%,      /* violet foncé */
-    #3d6abe                60%,     /* bleu moyen (ajouté) */
-    var(--color-pervenche) 100%     /* bleu-violet pâle */
+    var(--color-iris)      0%,
+    #3d6abe                60%,
+    var(--color-pervenche) 100%
   );
 }
 
 /* Technico soft — variante inversée */
 .technico-gradient-soft {
   background: linear-gradient(133deg,
-    #6161dc              0%,   /* teinte intermédiaire iris/lavande */
+    #6161dc              0%,
     var(--color-lavande) 50%,
     var(--color-iris)    100%
   );
@@ -109,7 +107,7 @@
    GLASS CARD & FORMULAIRE
    ============================================================ */
 .glass-card, .form-card {
-  background: #b6c9f1; /* gris-bleuté très clair pour remplacer le blanc pur */
+  background: #b6c9f1;
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-glass-border);
 }
@@ -118,7 +116,6 @@
    CARD INTERACTIONS
    ============================================================ */
 
-/* Légère élévation au survol */
 .card-hover {
   transition: all 0.2s ease;
 }
@@ -129,7 +126,6 @@
     0  4px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
-/* Élévation plus prononcée pour les module cards */
 .module-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -142,7 +138,6 @@
    ANIMATIONS
    ============================================================ */
 
-/* Pulsation douce — appliquer via : animation: stat-pulse 2s ease-in-out infinite */
 @keyframes stat-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.7; }
@@ -159,7 +154,6 @@
   box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
 }
 
-/* Masque les fleches des champs numeriques (usage cible: prix unitaire) */
 .input-no-spin {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -169,18 +163,6 @@
 .input-no-spin::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
-}
-
-/* index.css ou App.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Styles supplémentaires pour le dark mode */
-@layer base {
-  body {
-    @apply bg-gray-50 dark:bg-gray-900;
-  }
 }
 
 /* ============================================================
@@ -217,13 +199,6 @@
   --app-primary-soft: rgba(96, 165, 250, 0.14);
   --app-shadow: 0 18px 48px -30px rgba(0, 0, 0, 0.85);
   --app-card-gradient: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.9));
-}
-
-body {
-  background:
-    radial-gradient(circle at 14% -10%, rgba(24, 95, 165, 0.16), transparent 30rem),
-    linear-gradient(135deg, var(--app-bg-soft) 0%, var(--app-bg) 100%);
-  color: var(--app-text);
 }
 
 .app-shell {

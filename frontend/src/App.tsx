@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDarkMode } from '@/hooks/useDarkMode';
 import ChatbotWidget from '@/components/ChatbotWidget';
+import DemoModeIndicator from '@/components/ui/DemoModeIndicator';
 import AppLayout from '@/layouts/AppLayout';
 import AssistanteLayout from '@/layouts/AssistanteLayout';
 import ChefChantierLayout from '@/layouts/ChefChantierLayout';
@@ -142,6 +143,7 @@ export default function App() {
   return (
     <>
       {showChatbotOnHome && <ChatbotWidget />}
+      <DemoModeIndicator />
       <Routes>
         <Route
           path="/"

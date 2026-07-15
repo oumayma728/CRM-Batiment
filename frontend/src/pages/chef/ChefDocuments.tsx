@@ -3,13 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import {
   FileText,
   Upload,
-  Search,
   Filter,
   Download,
   Eye,
   HardHat,
 } from 'lucide-react';
 import api from '@/lib/api';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface Document {
   id: number;
@@ -58,15 +60,13 @@ export default function ChefDocuments() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Rechercher un document..."
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex-1">
+          <SearchBar
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            onChange={setSearchQuery}
+            placeholder="Rechercher un document..."
+            onClear={() => setSearchQuery('')}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export default function ChefDocuments() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs sm:text-sm"
           >
             {documentTypes.map((type) => (
               <option key={type} value={type}>
@@ -83,7 +83,7 @@ export default function ChefDocuments() {
             ))}
           </select>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm">
           <Upload className="h-4 w-4" />
           <span>Ajouter</span>
         </button>
@@ -91,18 +91,13 @@ export default function ChefDocuments() {
 
       {/* Documents Grid */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
+        <LoadingSkeleton type="card" count={6} />
       ) : filteredDocuments.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">
-            {searchQuery || typeFilter !== 'ALL'
-              ? 'Aucun document trouvé'
-              : 'Aucun document disponible'}
-          </p>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title={searchQuery || typeFilter !== 'ALL' ? 'Aucun document trouvé' : 'Aucun document disponible'}
+          description="Il n'y a aucun document à afficher."
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDocuments.map((doc: Document) => (

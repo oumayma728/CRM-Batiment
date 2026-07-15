@@ -8,12 +8,15 @@ import {
   CheckCircle,
   Clock,
   AlertTriangle,
-  Search,
   Filter,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { Chantier, PaginatedResponse } from '@/types';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import StatusBadge from '@/components/ui/StatusBadge';
 
 const chantierStatusLabel: Record<Chantier['statut'], string> = {
   VISITE_TECHNIQUE: 'Visite technique',
@@ -147,15 +150,13 @@ export default function ChefAvancement() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Rechercher un chantier..."
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="flex-1">
+          <SearchBar
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            onChange={setSearchQuery}
+            placeholder="Rechercher un chantier..."
+            onClear={() => setSearchQuery('')}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -163,7 +164,7 @@ export default function ChefAvancement() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs sm:text-sm"
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -176,18 +177,13 @@ export default function ChefAvancement() {
 
       {/* Chantiers List */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
+        <LoadingSkeleton type="list" count={5} />
       ) : filteredChantiers.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <HardHat className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 dark:text-gray-400">
-            {searchQuery || statusFilter !== 'ALL'
-              ? 'Aucun chantier trouvé'
-              : 'Aucun chantier disponible'}
-          </p>
-        </div>
+        <EmptyState
+          icon={HardHat}
+          title={searchQuery || statusFilter !== 'ALL' ? 'Aucun chantier trouvé' : 'Aucun chantier disponible'}
+          description="Il n'y a aucun chantier à afficher."
+        />
       ) : (
         <div className="space-y-4">
           {filteredChantiers.map((chantier: Chantier) => (

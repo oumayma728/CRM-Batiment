@@ -116,23 +116,23 @@ export default function ChefProfilePage() {
     <div className="space-y-6">
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
-          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#eff6ff_52%,#f0fdfa_100%)] p-5 lg:p-6">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-blue-700 text-2xl font-extrabold text-white shadow-lg shadow-blue-900/20">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#eff6ff_52%,#f0fdfa_100%)] p-4 sm:p-5 lg:p-6">
+            <div className="flex flex-col gap-4 sm:gap-5 sm:flex-row sm:items-center">
+              <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-xl bg-blue-700 text-xl sm:text-2xl font-extrabold text-white shadow-lg shadow-blue-900/20">
                 {initials}
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700">
                   Profil terrain
                 </p>
-                <h1 className="mt-2 text-3xl font-bold text-slate-950">{fullName}</h1>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-600">
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 ring-1 ring-slate-200">
-                    <Mail size={14} />
+                <h1 className="mt-2 text-2xl sm:text-3xl font-bold text-slate-950">{fullName}</h1>
+                <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-slate-600">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-white px-2 sm:px-3 py-1.5 ring-1 ring-slate-200">
+                    <Mail size={12} sm:size={14} />
                     {profile?.email ?? 'Email non renseigne'}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 font-semibold text-blue-800 ring-1 ring-blue-100">
-                    <HardHat size={14} />
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-2 sm:px-3 py-1.5 font-semibold text-blue-800 ring-1 ring-blue-100">
+                    <HardHat size={12} sm:size={14} />
                     Chef de chantier
                   </span>
                 </div>
@@ -140,12 +140,12 @@ export default function ChefProfilePage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
+          <div className="border-t border-slate-200 bg-slate-950 p-4 sm:p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-200">
               Completion du compte
             </p>
-            <p className="mt-3 text-4xl font-bold">{completion.percent}%</p>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+            <p className="mt-2 sm:mt-3 text-3xl sm:text-4xl font-bold">{completion.percent}%</p>
+            <div className="mt-3 sm:mt-4 h-2 overflow-hidden rounded-full bg-white/10">
               <div className="h-full rounded-full bg-sky-300" style={{ width: `${completion.percent}%` }} />
             </div>
             <div className="mt-4 grid gap-2">

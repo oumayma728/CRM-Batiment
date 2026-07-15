@@ -2,17 +2,19 @@
 import { useState, useEffect } from 'react';
 import { authManager } from '@/lib/auth';
 import api from '@/lib/api';
-import { 
-  Eye, 
-  EyeOff, 
-  Building2, 
-  Mail, 
-  Lock, 
+import { useDemo } from '@/contexts/DemoContext';
+import {
+  Eye,
+  EyeOff,
+  Building2,
+  Mail,
+  Lock,
   Loader2,
   ArrowLeft,
   CheckCircle2,
   AlertCircle,
-  Home
+  Home,
+  Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getDemoRoleFromCredentials, isDemoEmail } from '@/lib/demoMode';
@@ -31,6 +33,7 @@ const getApiErrorMessage = (error: unknown, fallback: string) =>
     : fallback;
 
 export default function LoginPage() {
+  const { isDemoMode, setDemoMode } = useDemo();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -184,9 +187,9 @@ export default function LoginPage() {
   const getRedirectPath = (role: string): string => {
     const roleMap: Record<string, string> = {
       'TECHNICO': '/technico',
-      'SOUS_TRAITANT': '/fournisseur',
-      'CHEF_CHANTIER': '/admin',
-      'ASSISTANTE': '/admin',
+      'SOUS_TRAITANT': '/sous-traitant',
+      'CHEF_CHANTIER': '/chef',
+      'ASSISTANTE': '/assistante',
       'ADMIN': '/admin',
       'CLIENT': '/profile',
     };
@@ -422,7 +425,18 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="text-center mt-6">
-            <p className="text-xs text-gray-400">
+            <button
+              onClick={() => setDemoMode(!isDemoMode)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                isDemoMode
+                  ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                  : 'bg-gray-100 text-gray-600 border border-gray-300 hover:bg-gray-200'
+              }`}
+            >
+              <Sparkles size={16} />
+              {isDemoMode ? 'Mode Démo Activé' : 'Activer Mode Démo'}
+            </button>
+            <p className="text-xs text-gray-400 mt-3">
               © 2026 BatiCRM. Tous droits réservés.
             </p>
           </div>

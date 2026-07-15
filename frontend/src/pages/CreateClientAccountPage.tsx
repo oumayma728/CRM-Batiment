@@ -36,7 +36,7 @@ const emptyForm: ClientAccountForm = {
 };
 
 const inputClass =
-  'w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200';
+  'w-full pl-10 pr-3 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base';
 const phonePattern = String.raw`(?:[0-9]|\+|\(|\)| |\.|-){6,20}`;
 
 function getApiErrorMessage(error: unknown, fallback: string) {
