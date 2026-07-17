@@ -2,9 +2,10 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import RevenueChart from '@/components/charts/RevenueChart';
 import {
   Users, FileText, FileSpreadsheet, Clock, CheckCircle, ArrowRight,
   Building2, BookOpen, Truck, HardHat, Euro, Target, Zap,
@@ -62,7 +63,7 @@ export default function DashboardPage() {
   
   // États pour les statistiques supplémentaires
   const [showStats, setShowStats] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState('month'); // week, month, year
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
   
   // État pour le mode plein écran
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -134,6 +135,19 @@ export default function DashboardPage() {
     }
   });
 
+  const { data: allDevis } = useQuery({
+    queryKey: ['devis-all'],
+    queryFn: async () => {
+      try {
+        const response = await api.get('/devis', { params: { page: 1, limit: 1000 } });
+        return response.data.data || [];
+      } catch (error) {
+        console.error('Erreur chargement devis:', error);
+        return [];
+      }
+    }
+  });
+
   const { data: prestations, isLoading: loadingPrestations } = useQuery({
     queryKey: ['prestations-count'],
     queryFn: async () => {
@@ -171,6 +185,33 @@ export default function DashboardPage() {
   const totalChantiers = chantiers?.meta?.total ?? 0;
   const totalPrestations = prestations?.total ?? 0;
   const totalFournisseurs = fournisseurs?.total ?? 0;
+
+  // Données réelles pour la courbe d'évolution du chiffre d'affaires
+  const revenueData = useMemo(() => {
+    if (!allDevis || allDevis.length === 0) {
+      return [];
+    }
+
+    const wonStatuses = ['ACCEPTE', 'SIGNE'];
+    const monthLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+    const currentYear = new Date().getFullYear();
+
+    return monthLabels.map((label, index) => {
+      const month = index + 1;
+      const total = allDevis
+        .filter((devis: any) => wonStatuses.includes(devis.statut))
+        .filter((devis: any) => {
+          const date = new Date(devis.dateValidation || devis.createdAt);
+          return date.getFullYear() === currentYear && date.getMonth() + 1 === month;
+        })
+        .reduce((sum: number, devis: any) => sum + (devis.totalTTC || 0), 0);
+
+      return { month: label, revenue: total };
+    });
+  }, [allDevis]);
+
+  console.log('DashboardPage - revenueData:', revenueData);
+  console.log('DashboardPage - visibleSections.stats:', visibleSections.stats);
 
   // Sauvegarde des favoris
   useEffect(() => {
@@ -763,6 +804,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Courbe d'évolution du chiffre d'affaires */}
+      {visibleSections.stats && (
+        <RevenueChart data={revenueData} />
+      )}
 
       {/* KPI Cards avec tri et recherche */}
       {visibleSections.kpiCards && (

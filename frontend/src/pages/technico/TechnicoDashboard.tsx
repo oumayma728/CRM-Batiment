@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import RevenueChart from '@/components/charts/RevenueChart';
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -162,6 +163,14 @@ export default function TechnicoDashboard() {
     return values.map((item) => ({ ...item, percent: Math.max(4, Math.round((item.total / max) * 100)) }));
   }, [allDevis]);
 
+  // Données pour RevenueChart
+  const revenueChartData = useMemo(() => {
+    return monthlyRevenue.map(item => ({
+      month: item.label,
+      revenue: item.total
+    }));
+  }, [monthlyRevenue]);
+
   return (
     <div className="space-y-6">
       <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-gradient-to-r from-[#d9eefc] via-[#eee8ff] to-[#d7f8ed] p-6 text-slate-900 shadow-sm sm:p-8">
@@ -235,21 +244,7 @@ export default function TechnicoDashboard() {
             </div>
             <TrendingUp size={18} className="text-emerald-600" />
           </div>
-          <div className="flex h-56 items-end gap-3 border-b border-gray-100 pb-3">
-            {monthlyRevenue.map((month) => (
-              <div key={month.key} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
-                <div className="text-[11px] font-semibold text-gray-500">{formatCompactCurrency(month.total)}</div>
-                <div className="flex w-full items-end justify-center rounded-t-lg bg-gray-50">
-                  <div
-                    className="w-full rounded-t-lg bg-gradient-to-t from-emerald-500 to-blue-400 transition-all"
-                    style={{ height: `${month.percent}%` }}
-                    title={formatCurrency(month.total)}
-                  />
-                </div>
-                <span className="text-xs font-medium text-gray-500">{month.label}</span>
-              </div>
-            ))}
-          </div>
+          <RevenueChart data={revenueChartData} title="" />
         </div>
 
         <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
