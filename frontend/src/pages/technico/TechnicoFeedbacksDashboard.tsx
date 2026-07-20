@@ -19,7 +19,19 @@ interface FeedbackStats {
 export default function TechnicoFeedbacksDashboard() {
   // 'all' = tout l'historique ; '7'/'30'/'90' = periode en jours
   const [days, setDays] = useState<string>('all');
+  const [openSessionId, setOpenSessionId] = useState<number | null>(null);
 
+  const sessionQuery = useQuery({
+    queryKey: ['technico-feedback-session', openSessionId],
+    queryFn: async () => {
+      const res = await api.get(`/assistant/admin/sessions/${openSessionId}`);
+      return res.data as {
+        id: number;
+        messages: Array<{ id: number; role: string; contenu: string }>;
+      };
+    },
+    enabled: openSessionId !== null,   // la requete ne part QUE si une session est ouverte !
+  });
   const statsQuery = useQuery({
     // days DANS la queryKey : changer le filtre => nouvelle requete automatique !
     queryKey: ['technico-feedback-stats', days],
@@ -136,9 +148,16 @@ export default function TechnicoFeedbacksDashboard() {
                     <p className="text-sm text-gray-700">
                       {fb.messageExcerpt ?? 'Extrait non disponible'}
                     </p>
-                    <p className="mt-1 text-[11px] text-gray-400">
+                    <p className="mt-1 flex items-center gap-2 text-[11px] text-gray-400">
                       {new Date(fb.createdAt).toLocaleString('fr-FR')}
-                      {fb.sessionId ? ` · Session #${fb.sessionId}` : ''}
+                      {fb.sessionId && (
+                        <button
+                          onClick={() => setOpenSessionId(fb.sessionId)}
+                          className="rounded-md border border-gray-200 px-2 py-0.5 font-medium text-blue-600 hover:bg-blue-50"
+                        >
+                          Voir la conversation (#{fb.sessionId})
+                        </button>
+                      )}
                     </p>
                   </div>
                 ))}
@@ -146,6 +165,57 @@ export default function TechnicoFeedbacksDashboard() {
             )}
           </div>
         </>
+      )}
+
+      {/* Modal : la conversation complete de la session */}
+      {openSessionId !== null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => setOpenSessionId(null)}
+        >
+          <div
+            className="max-h-[80vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-900">
+                Conversation — Session #{openSessionId}
+              </h3>
+              <button
+                onClick={() => setOpenSessionId(null)}
+                className="rounded-lg border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+              >
+                Fermer ✕
+              </button>
+            </div>
+            {sessionQuery.isLoading && (
+              <p className="text-sm text-gray-400">Chargement de la conversation...</p>
+            )}
+            {sessionQuery.data && (
+              <div className="space-y-2">
+                {sessionQuery.data.messages.length === 0 ? (
+                  <p className="text-sm text-gray-400">Aucun message dans cette session.</p>
+                ) : (
+                  sessionQuery.data.messages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={
+                        msg.role === 'USER'
+                          ? 'ml-8 rounded-xl bg-blue-50 p-3 text-sm text-gray-800'
+                          : 'mr-8 rounded-xl bg-gray-100 p-3 text-sm text-gray-700'
+                      }
+                    >
+                      <p className="mb-1 text-[10px] font-bold uppercase text-gray-400">
+                        {msg.role === 'USER' ? 'Client' : 'Léa'}
+                      </p>
+                      {msg.contenu}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -136,6 +136,17 @@ export class AssistantAdminController {
       days: days ? Number(days) : undefined,
     });
   }
+  @Get('sessions/:sessionId')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Lire une session de chat et son historique (back-office)',
+  })
+  getSessionForAdmin(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.getSession(sessionId, user.companyId);
+  }
   @Delete('prospects/:prospectId')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({
