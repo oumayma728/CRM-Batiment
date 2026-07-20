@@ -7,9 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AssistantService } from './assistant.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
@@ -114,6 +115,25 @@ export class AssistantAdminController {
       email: body.email,
       telephone: body.telephone,
       excludeProspectId: body.excludeProspectId,
+    });
+  }
+  @Get('feedbacks/stats')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Statistiques des feedbacks utilisateurs du chatbot',
+  })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Periode en jours (ex: 7, 30). Vide = tout l historique.',
+  })
+  getFeedbackStats(
+    @Query('days') days: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.getFeedbackStats({
+      companyId: user.companyId,
+      days: days ? Number(days) : undefined,
     });
   }
   @Delete('prospects/:prospectId')

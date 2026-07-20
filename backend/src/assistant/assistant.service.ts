@@ -1483,6 +1483,44 @@ export class AssistantService {
       autoGeneration,
     };
   }
+  async getFeedbackStats(input: { companyId: number; days?: number }) {
+    // Filtre par periode : si days fourni (ex: 7, 30), on ne compte que
+    // les feedbacks depuis cette date. Sinon : tout l'historique.
+    const since = input.days
+      ? new Date(Date.now() - input.days * 24 * 60 * 60 * 1000)
+      : undefined;
+
+    const where = {
+      companyId: input.companyId,
+      ...(since ? { createdAt: { gte: since } } : {}),
+    };
+
+    // 1) Les compteurs : total, positifs, negatifs (3 requetes simples)
+    const [total, positifs, negatifs] = await Promise.all([
+      this.prisma.assistantFeedback.count({ where }),
+      this.prisma.assistantFeedback.count({ where: { ...where, rating: 'UP' } }),
+      this.prisma.assistantFeedback.count({ where: { ...where, rating: 'DOWN' } }),
+    ]);
+
+    // 2) Le taux de satisfaction (protege contre la division par zero !)
+    const satisfactionRate =
+      total > 0 ? Math.round((positifs / total) * 1000) / 10 : null;
+
+    // 3) La liste des feedbacks negatifs recents (les ameliorations a faire !)
+    const recentNegatives = await this.prisma.assistantFeedback.findMany({
+      where: { ...where, rating: 'DOWN' },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        sessionId: true,
+        messageExcerpt: true,
+        createdAt: true,
+      },
+    });
+
+    return { total, positifs, negatifs, satisfactionRate, recentNegatives };
+  }
   async findPotentialDuplicates(input: {
     companyId: number;
     email?: string;
