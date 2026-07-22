@@ -1,0 +1,49 @@
+[33m83aee86[m[33m ([m[1;36mHEAD[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Merge pull request #5 from oumayma728/asma/refonte-extraction
+[33m98ccd01[m fix: dedup chatbot par email seul - un telephone partage n'ecrase plus l'identite du client existant (detectable via check-duplicates)
+[33mc76d54d[m Merge pull request #4 from oumayma728/asma/refonte-extraction
+[33m5cca5d3[m feat: filtre de sortie anti-fuite (montants, marges, config interne) + 10 tests Jest - tache journalisation complete
+[33m47fb465[m feat: fallback RAG 'je ne sais pas' + detection 'parler a un humain' avec collecte de contact - tache RAG complete
+[33ma08bd70[m fix: panneau notifications pleine largeur en mobile (debordait hors ecran)
+[33m6035afb[m feat: edition des notes internes des prospects (backend PATCH + UI editable) - tache qualification complete
+[33m3d93c2c[m feat: filtres par statut et tri par date sur la liste des prospects (back-office)
+[33m7a0cfa5[m feat: catalogue prestations responsive mobile (flex-wrap, indentation adaptative) + nettoyage encodage commentaires
+[33mf1c9248[m feat: page clients responsive mobile (cartes empilees)
+[33m863cea2[m fix: encodage UTF-8 des textes statiques de PrestationsPage (caracteres corrompus repares)
+[33m243d975[m fix: messages explicites telephone incomplet / email malforme dans les parcours devis et rdv (anti-boucle)
+[33m61ebf4c[m feat: confirmations qualification et reset conversation
+[33mdfcda86[m feat: confirmation avant qualification d'un prospect (back-office)
+[33m09d5545[m fix: liste des types de projets seulement au moment du choix (plus de parasite pendant collecte/rdv/suivi)
+[33mfb3670b[m fix: extraction nom - mots de refus rejetes + particules francaises preservees + fuite tarifs
+[33me629cdb[m fix: RAG - questions prix sans point d'interrogation + elimination fuites messages internes
+[33m92e375f[m fix: conflit intentions - questions informatives (comment suivre...) vont au RAG, pas au suivi personnel
+[33m60d5a9e[m feat: RAG - couverture complete questions prix/budget (regex elargi + mots-cles enrichis)
+[33m3751af4[m feat: P4 journalisation erreurs IA - logs enrichis (devis brouillon, parsing, contexte)
+[33m05136eb[m feat: P1 back-office qualification - bouton Rejeter (PERDU) + badges statuts colores
+[33mbea2277[m feat: boutons feedback copier/pouce-haut/pouce-bas sur les reponses de Lea (frontend + backend complet)
+[33m0ee7b7e[m feat: backend feedback - table assistant_feedbacks + endpoint POST /assistant/feedback
+[33maa29ccc[m feat: UX Lea - markdown rendu, messages accents/naturels, suggestions reactivees + fix crash handleSuggestionClick
+[33m63e6323[m feat: UX - suggestions rapides completes (devis, rdv, suivi, services, questions)
+[33mf20e19f[m feat: securite suivi - reference aleatoire IDOR + suivi robuste (priorite reference)
+[33m05d6352[m feat: RAG enrichi - 28 documents + detection questions puis-je/peut-on (base de connaissances complete)
+[33m1caa307[m feat: RAG ameliore - enrichissement mots-cles + scoring optimise (matching questions)
+[33m1cacae0[m feat: RAG operationnel - le bot repond aux questions frequentes (base de connaissances + routing questions)
+[33m44de22f[m fix: phrases naturelles/questions ne sont plus prises pour des noms (validation pipeline unique)
+[33mf4098ed[m feat: parcours devis vers rendez-vous (besoin combine DEVIS_RENDEZ_VOUS + badge)
+[33m75217ee[m Merge pull request #3 from oumayma728/asma/refonte-extraction
+[33m86818b1[m fix: politesse + detection suivre + reference DEM-X immediate + matching renovation maison/appartement
+[33m9fa4518[m fix: prospect cree uniquement apres confirmation (oui) pour les devis
+[33me0e7d10[m feat: fonctionnalite suivi (reference DEM-X + recherche) + fix matching accents + types de projet non pris pour un nom
+[33mb7a779d[m fix: type de projet reconnu en parcours devis guide (peinture, etc.)
+[33m4181429[m fix: ne plus afficher les sources RAG techniques au client
+[33m4a1fd02[m fix: memoire du parcours devis guide + types de projet non pris pour un nom
+[33medb03bc[m fix: memoire du parcours devis guide + types de projet non pris pour un nom
+[33mfb70c0b[m fix: les formules de politesse ne sont plus prises pour un nom (protection du nom)
+[33mf845c49[m feat: parcours rdv + devis fiabilises (nom nettoye, besoin correct, creation prospect)
+[33m7f9b78a[m fix: parcours rendez-vous complet (detection, persistance, anti-reboucle) + extraction nom prioritaire IA + pas de type de projet invente en rdv
+[33mdcca2b2[m wip: fixes nom + boucle devis (avant correction rdv)
+[33mb1d5d6b[m fix: extraction du nom (priorité IA) + correction boucle parcours devis (guided step, intent, verrouillage type)
+[33m8293acb[m fix: priorité à l'extraction IA pour le nom du prospect
+[33mdba03cf[m Fix README.md by resolving merge conflicts
+[33mcb73115[m Initial commit
+[33mc450da1[m first commit
+[33mc288ac9[m Initial commit
