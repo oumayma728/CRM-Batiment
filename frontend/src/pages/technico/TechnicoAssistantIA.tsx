@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatDate } from '@/lib/utils';
@@ -12,8 +12,15 @@ import {
   Sparkles,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react';
-
+const statutBadges: Record<string, { label: string; className: string }> = {
+  NOUVEAU: { label: 'Nouveau', className: 'bg-blue-100 text-blue-700' },
+  EN_COURS: { label: 'À qualifier', className: 'bg-amber-100 text-amber-700' },
+  QUALIFIE: { label: 'Qualifié', className: 'bg-emerald-100 text-emerald-700' },
+  CONVERTI: { label: 'Converti', className: 'bg-violet-100 text-violet-700' },
+  PERDU: { label: 'Rejeté', className: 'bg-rose-100 text-rose-700' },
+};
 interface ProspectItem {
   id: number;
   nom: string;
@@ -88,7 +95,21 @@ function getApiErrorMessage(error: unknown, fallback: string) {
 
 export default function TechnicoAssistantIA() {
   const queryClient = useQueryClient();
-
+  const [statutFilter, setStatutFilter] = useState<string>('TOUS');
+  const [sortOrder, setSortOrder] = useState<'recent' | 'ancien'>('recent');
+  const [editingNotesId, setEditingNotesId] = useState<number | null>(null);
+  const [notesDraft, setNotesDraft] = useState('');
+  const [duplicatesResult, setDuplicatesResult] = useState<{
+    prospectId: number;
+    duplicates: Array<{
+      id: number;
+      nom: string | null;
+      prenom: string | null;
+      email: string | null;
+      telephone: string | null;
+      matchedOn: string[];
+    }>;
+  } | null>(null);
   const prospectsQuery = useQuery({
     queryKey: ['technico-assistant-prospects'],
     queryFn: async () => {
@@ -126,8 +147,55 @@ export default function TechnicoAssistantIA() {
       await queryClient.invalidateQueries({ queryKey: ['technico-assistant-future-projects'] });
     },
   });
-
-  const prospects = prospectsQuery.data?.items ?? [];
+  const rejectMutation = useMutation({
+    mutationFn: (prospectId: number) =>
+      api.post(`/assistant/admin/prospects/${prospectId}/reject`),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['technico-assistant-prospects'] });
+      await queryClient.invalidateQueries({ queryKey: ['technico-demandes'] });
+    },
+  });
+  const notesMutation = useMutation({
+    mutationFn: ({ prospectId, notes }: { prospectId: number; notes: string }) =>
+      api.patch(`/assistant/admin/prospects/${prospectId}/notes`, { notes }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['technico-assistant-prospects'] });
+      setEditingNotesId(null);
+    },
+  });
+  const checkDuplicatesMutation = useMutation({
+    mutationFn: async ({
+      prospectId,
+      email,
+      telephone,
+    }: {
+      prospectId: number;
+      email?: string;
+      telephone?: string;
+    }) => {
+      const res = await api.post(
+        '/assistant/admin/prospects/check-duplicates',
+        { email, telephone, excludeProspectId: prospectId },
+      );
+      return { prospectId, duplicates: res.data.duplicates };
+    },
+    onSuccess: (data) => setDuplicatesResult(data),
+  });
+  const allProspects = prospectsQuery.data?.items ?? [];
+  const prospects = useMemo(() => {
+    let list = [...allProspects];
+    if (statutFilter !== 'TOUS') {
+      list = list.filter(
+        (p) => p.latestDemandeDevis?.statut === statutFilter,
+      );
+    }
+    list.sort((a, b) => {
+      const da = new Date(a.createdAt).getTime();
+      const db = new Date(b.createdAt).getTime();
+      return sortOrder === 'recent' ? db - da : da - db;
+    });
+    return list;
+  }, [allProspects, statutFilter, sortOrder]);
   const futureProjects = futureProjectsQuery.data?.items ?? [];
 
   const pendingCount = useMemo(
@@ -198,7 +266,31 @@ export default function TechnicoAssistantIA() {
 
       <section className="space-y-3">
         <h3 className="text-base font-bold text-slate-950">Prospects chatbot</h3>
-
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <select
+            value={statutFilter}
+            onChange={(e) => setStatutFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700"
+          >
+            <option value="TOUS">Tous les statuts</option>
+            <option value="NOUVEAU">Nouveau</option>
+            <option value="EN_COURS">À qualifier</option>
+            <option value="QUALIFIE">Qualifié</option>
+            <option value="CONVERTI">Converti</option>
+            <option value="PERDU">Rejeté</option>
+          </select>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as 'recent' | 'ancien')}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700"
+          >
+            <option value="recent">Plus récents d&apos;abord</option>
+            <option value="ancien">Plus anciens d&apos;abord</option>
+          </select>
+          <span className="text-xs text-slate-400">
+            {prospects.length} prospect{prospects.length > 1 ? 's' : ''}
+          </span>
+        </div>
         {prospects.length === 0 ? (
           <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm text-slate-400">
             Aucun prospect chatbot a gerer pour le moment.
@@ -251,16 +343,121 @@ export default function TechnicoAssistantIA() {
                         <span>Detecte le {formatDate(prospect.createdAt)}</span>
                       </div>
 
-                      {(prospect.notes || prospect.besoin) && (
-                        <p className="text-sm text-slate-700">
-                          {prospect.notes || prospect.besoin}
-                        </p>
+                      {editingNotesId === prospect.id ? (
+                        <div className="space-y-2">
+                          <textarea
+                            value={notesDraft}
+                            onChange={(e) => setNotesDraft(e.target.value)}
+                            rows={3}
+                            maxLength={2000}
+                            placeholder="Notes internes sur ce prospect..."
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-300 focus:outline-none"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() =>
+                                notesMutation.mutate({
+                                  prospectId: prospect.id,
+                                  notes: notesDraft,
+                                })
+                              }
+                              disabled={notesMutation.isPending}
+                              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                            >
+                              💾 Enregistrer
+                            </button>
+                            <button
+                              onClick={() => setEditingNotesId(null)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                            >
+                              Annuler
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between gap-2">
+                          {(prospect.notes || prospect.besoin) && (
+                            <p className="text-sm text-slate-700">
+                              {prospect.notes || prospect.besoin}
+                            </p>
+                          )}
+                          <button
+                            onClick={() => {
+                              setEditingNotesId(prospect.id);
+                              setNotesDraft(prospect.notes ?? '');
+                            }}
+                            className="shrink-0 rounded-lg border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-500 hover:bg-slate-50"
+                          >
+                            ✏️ Notes
+                          </button>
+                        </div>
                       )}
+                      {/* Verification des doublons potentiels */}
+                      <div className="space-y-2">
+                        <button
+                          onClick={() =>
+                            checkDuplicatesMutation.mutate({
+                              prospectId: prospect.id,
+                              email: prospect.email ?? undefined,
+                              telephone: prospect.telephone ?? undefined,
+                            })
+                          }
+                          disabled={checkDuplicatesMutation.isPending}
+                          className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-60"
+                        >
+                          🔍 Vérifier les doublons
+                        </button>
+                        {duplicatesResult &&
+                          duplicatesResult.prospectId === prospect.id &&
+                          (duplicatesResult.duplicates.length === 0 ? (
+                            <p className="text-xs text-emerald-600">
+                              ✅ Aucun doublon détecté pour ce prospect.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                              <p className="text-xs font-semibold text-amber-800">
+                                ⚠️ {duplicatesResult.duplicates.length} doublon(s)
+                                potentiel(s) détecté(s) :
+                              </p>
+                              {duplicatesResult.duplicates.map((dup) => (
+                                <div
+                                  key={dup.id}
+                                  className="flex flex-wrap items-center gap-2 text-xs text-amber-900"
+                                >
+                                  <span className="font-semibold">
+                                    #{dup.id}{' '}
+                                    {`${dup.prenom ?? ''} ${dup.nom ?? ''}`.trim() ||
+                                      'Sans nom'}
+                                  </span>
+                                  {dup.email && <span>📧 {dup.email}</span>}
+                                  {dup.telephone && <span>📱 {dup.telephone}</span>}
+                                  {dup.matchedOn.map((m) => (
+                                    <span
+                                      key={m}
+                                      className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-semibold"
+                                    >
+                                      même {m}
+                                    </span>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                      </div>
 
                       <div className="flex flex-wrap gap-2 text-xs">
                         {prospect.latestDemandeDevis ? (
-                          <span className="rounded-full bg-blue-50 px-2 py-1 font-semibold text-blue-700">
-                            Demande #{prospect.latestDemandeDevis.id} ({prospect.latestDemandeDevis.statut})
+                          <span className="rounded-full bg-violet-50 px-2 py-1 font-semibold text-violet-700">
+                            Demande #{prospect.latestDemandeDevis.id}{' '}
+                            <span
+                              className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                statutBadges[prospect.latestDemandeDevis.statut]?.className ??
+                                'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {statutBadges[prospect.latestDemandeDevis.statut]?.label ??
+                                prospect.latestDemandeDevis.statut}
+                            </span>
                           </span>
                         ) : (
                           <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-600">
@@ -278,12 +475,16 @@ export default function TechnicoAssistantIA() {
 
                     <div className="flex shrink-0 flex-wrap items-center gap-2">
                       <button
-                        onClick={() =>
-                          qualifyMutation.mutate({
-                            prospectId: prospect.id,
-                            createDevisDraft: hasTypeProjet,
-                          })
-                        }
+                        onClick={() => {
+                          const confirmed = window.confirm(
+                            'Qualifier ce prospect en demande de devis ?',
+                          );
+                          if (confirmed)
+                            qualifyMutation.mutate({
+                              prospectId: prospect.id,
+                              createDevisDraft: hasTypeProjet,
+                            });
+                        }}
                         disabled={disableActions}
                         className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -293,6 +494,20 @@ export default function TechnicoAssistantIA() {
                           <CheckCircle2 size={13} />
                         )}
                         Qualifier
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          const confirmed = window.confirm(
+                            'Rejeter ce prospect ? (il sera conservé avec le statut Rejeté)',
+                          );
+                          if (confirmed) rejectMutation.mutate(prospect.id);
+                        }}
+                        disabled={disableActions}
+                        className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 transition hover:bg-orange-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <X size={13} />
+                        Rejeter
                       </button>
 
                       <button

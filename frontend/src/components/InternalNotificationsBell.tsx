@@ -230,7 +230,7 @@ export default function InternalNotificationsBell() {
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-12 z-[120] w-[420px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_22px_70px_rgba(15,23,42,0.18)]">
+        <div className="fixed inset-x-2 top-16 z-[120] max-h-[75vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-[0_22px_70px_rgba(15,23,42,0.18)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:max-h-none sm:w-[420px] sm:overflow-hidden">
           <div className="border-b border-slate-100 px-4 py-4">
             <div className="flex items-start justify-between gap-4">
               <div>

@@ -40,6 +40,7 @@ model Company {
   @@map("companies")
 }
 
+
 model User {
   id                 Int                @id @default(autoincrement())
   companyId          Int
@@ -144,6 +145,7 @@ model DemandeDevis {
   description     String
   besoinStructure Json?
   statut          DemandeStatut @default(NOUVEAU)
+  reference       String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   client          Client        @relation(fields: [clientId], references: [id])
@@ -154,6 +156,7 @@ model DemandeDevis {
   @@index([companyId])
   @@index([clientId])
   @@index([statut])
+  @@index([reference])
   @@map("demandes_devis")
 }
 
@@ -755,7 +758,18 @@ model RagDocument {
   @@index([actif])
   @@map("rag_documents")
 }
+model AssistantFeedback {
+  id             Int      @id @default(autoincrement())
+  companyId      Int
+  sessionId      Int?
+  messageExcerpt String?
+  rating         String
+  createdAt      DateTime @default(now())
 
+  @@index([companyId])
+  @@index([rating])
+  @@map("assistant_feedbacks")
+}
 
 model SavTicket {
   id             Int                @id @default(autoincrement())

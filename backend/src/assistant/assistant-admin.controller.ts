@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -67,7 +68,54 @@ export class AssistantAdminController {
       createDevisDraft: dto.createDevisDraft,
     });
   }
-
+  @Post('prospects/:prospectId/reject')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Rejeter un prospect chatbot',
+    description: 'Marque les demandes ouvertes du prospect comme PERDU (trace conservee).',
+  })
+  rejectProspect(
+    @Param('prospectId', ParseIntPipe) prospectId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.rejectProspect({
+      prospectId,
+      companyId: user.companyId,
+    });
+  }
+  @Patch('prospects/:prospectId/notes')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Modifier les notes internes d un prospect chatbot',
+  })
+  updateProspectNotes(
+    @Param('prospectId', ParseIntPipe) prospectId: number,
+    @Body() body: { notes: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.updateProspectNotes({
+      prospectId,
+      companyId: user.companyId,
+      notes: typeof body.notes === 'string' ? body.notes : '',
+    });
+  }
+  @Post('prospects/check-duplicates')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Detecter les prospects en doublon potentiel (email/telephone)',
+  })
+  checkDuplicates(
+    @Body()
+    body: { email?: string; telephone?: string; excludeProspectId?: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.findPotentialDuplicates({
+      companyId: user.companyId,
+      email: body.email,
+      telephone: body.telephone,
+      excludeProspectId: body.excludeProspectId,
+    });
+  }
   @Delete('prospects/:prospectId')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({

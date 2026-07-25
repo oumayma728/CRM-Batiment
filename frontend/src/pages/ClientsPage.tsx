@@ -47,6 +47,7 @@ const besoinConfig: Record<string, { label: string; bg: string; text: string }> 
   INFORMATION: { label: 'Information', bg: 'bg-blue-50', text: 'text-blue-700' },
   VISITE_TECHNIQUE: { label: 'Visite tech.', bg: 'bg-amber-50', text: 'text-amber-700' },
   URGENCE: { label: 'Urgent', bg: 'bg-red-50', text: 'text-red-700' },
+  DEVIS_RENDEZ_VOUS: { label: 'Veut un devis et un rendez-vous', bg: 'bg-purple-50', text: 'text-purple-700' },
 };
 
 /* ───── Types ───── */
@@ -347,7 +348,7 @@ export default function ClientsPage() {
           </div>
         ) : (
           <div className="overflow-hidden">
-            <table className="w-full table-fixed">
+            <table className="hidden md:table w-full table-fixed">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/90">
                   <th className="w-[7%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">ID</th>
@@ -612,6 +613,59 @@ export default function ClientsPage() {
                 })}
               </tbody>
             </table>
+            {/* Version mobile : cartes empilées (le tableau est masqué < md) */}
+            <div className="md:hidden divide-y divide-gray-100">
+              {clients.map((client) => {
+                const bCfg = besoinConfig[client.besoin ?? ''];
+                const projectTypes = getClientProjectTypes(client);
+                const primaryProject = projectTypes[0];
+                const fullName = `${client.prenom ?? ''} ${client.nom ?? ''}`.trim();
+                return (
+                  <div key={client.id} className="p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="font-semibold text-gray-900">
+                          {fullName || `Client #${client.id}`}
+                        </div>
+                        {primaryProject && (
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {typeof primaryProject === 'string'
+                              ? primaryProject
+                              : (primaryProject.nom ?? '')}
+                          </div>
+                        )}
+                      </div>
+                      {bCfg && (
+                        <span className="shrink-0 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
+                          {client.besoin}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-0.5">
+                      {client.telephone && <div>📱 {client.telephone}</div>}
+                      {client.email && <div className="truncate">📧 {client.email}</div>}
+                    </div>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-gray-400">{client.source ?? ''}</span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openEdit(client)}
+                          className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                        >
+                          Modifier
+                        </button>
+                        <button
+                          onClick={() => setDeleteId(client.id)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 
