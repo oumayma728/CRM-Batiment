@@ -11,6 +11,7 @@ import {
 } from '../../generated/prisma/client.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { NotificationsGateway, type RealtimeEventPayload } from './notifications.gateway.js';
 
 type NotificationLevel = 'info' | 'success' | 'warning' | 'danger';
 type NotificationCategory =
@@ -27,6 +28,7 @@ type NotificationCategory =
   | 'SAV_NOTE'
   | 'DEMO_REQUEST'
   | 'DEMO_SCHEDULED'
+  | 'CHANTIER_DOCUMENT'
   | 'AUDIT_RECENT';
 
 interface CreateInternalNotificationPayload {
@@ -75,11 +77,15 @@ const legacyNotificationActions = [
   'NOTIFICATION_RECEPTION_PARTIELLE',
   'NOTIFICATION_RECEPTION_COMPLETE',
   'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+  'NOTIFICATION_SOUS_TRAITANT_DOCUMENT',
 ];
 
 @Injectable()
 export class NotificationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gateway: NotificationsGateway,
+  ) {}
 
   private ensureInternalUser(currentUser: CurrentUserPayload) {
     if (
@@ -108,8 +114,36 @@ export class NotificationsService {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0);
   }
 
+  private canRoleSeeCategory(role: string, category: NotificationCategory) {
+    if (role === Role.ADMIN) return true;
+
+    if (role === Role.CHEF_CHANTIER) {
+      return [
+        'CHANTIERS_RETARD',
+        'COMMANDES_ATTENTE',
+        'SUPPLIER_STATUS',
+        'RECEPTION_PARTIELLE',
+        'RECEPTION_COMPLETE',
+        'SAV_TICKET',
+        'SAV_URGENT',
+        'SAV_NOTE',
+        'CHANTIER_DOCUMENT',
+      ].includes(category);
+    }
+
+    if (role === Role.TECHNICO) {
+      return category !== 'AUDIT_RECENT';
+    }
+
+    if (role === Role.ASSISTANTE) {
+      return category !== 'MODIFICATION_PRIX' && category !== 'AUDIT_RECENT';
+    }
+
+    return false;
+  }
+
   async createInternalNotification(payload: CreateInternalNotificationPayload) {
-    return this.prisma.auditLog.create({
+    const notification = await this.prisma.auditLog.create({
       data: {
         companyId: payload.companyId,
         userId: payload.userId,
@@ -127,6 +161,23 @@ export class NotificationsService {
         } as Prisma.InputJsonObject,
       },
     });
+
+    this.emitCompanyEvent(payload.companyId, 'notifications:changed', {
+      reason: payload.action,
+      entity: payload.entite,
+      entityId: payload.entiteId,
+      actorId: payload.userId ?? null,
+    });
+
+    return notification;
+  }
+
+  emitCompanyEvent(
+    companyId: number,
+    event: string,
+    payload: RealtimeEventPayload,
+  ) {
+    this.gateway.emitToCompany(companyId, event, payload);
   }
 
   private buildLegacyLogNotification(log: {
@@ -739,6 +790,7 @@ export class NotificationsService {
       ...auditLogs.map((log) => this.buildAuditNotification(log)),
       ...legacyLogs.map((log) => this.buildLegacyLogNotification(log)),
     ]
+      .filter((item) => this.canRoleSeeCategory(currentUser.role, item.category))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, safeLimit);
 
@@ -747,34 +799,74 @@ export class NotificationsService {
       summary: {
         total: items.length,
         unreadPotential: items.length,
-        alerts: alertItems.length,
-        facturesImpayees: unpaidCount,
-        montantFacturesImpayees: unpaidAmount,
-        chantiersEnRetard,
-        commandesEnAttente,
+        alerts: items.filter((item) =>
+          [
+            'FACTURES_IMPAYEES',
+            'CHANTIERS_RETARD',
+            'COMMANDES_ATTENTE',
+            'SUPPLIER_STATUS',
+            'RECEPTION_PARTIELLE',
+            'RECEPTION_COMPLETE',
+            'CHANTIER_DOCUMENT',
+            'AUDIT_RECENT',
+          ].includes(item.category),
+        ).length,
+        facturesImpayees: this.canRoleSeeCategory(
+          currentUser.role,
+          'FACTURES_IMPAYEES',
+        )
+          ? unpaidCount
+          : 0,
+        montantFacturesImpayees: this.canRoleSeeCategory(
+          currentUser.role,
+          'FACTURES_IMPAYEES',
+        )
+          ? unpaidAmount
+          : 0,
+        chantiersEnRetard: this.canRoleSeeCategory(
+          currentUser.role,
+          'CHANTIERS_RETARD',
+        )
+          ? chantiersEnRetard
+          : 0,
+        commandesEnAttente: this.canRoleSeeCategory(
+          currentUser.role,
+          'COMMANDES_ATTENTE',
+        )
+          ? commandesEnAttente
+          : 0,
         savOuverts,
         savEnCours,
         savUrgents,
-        savNotifications: savLogs.length,
-        demoPending,
-        demoScheduledSoon,
-        demoNotifications: demoLogs.length,
-        signatures: auditLogs.filter((item) => item.action === 'SIGNATURE_DEVIS')
-          .length,
-        modificationsPrix: auditLogs.filter(
-          (item) => item.action === 'MODIFICATION_PRIX',
+        savNotifications: items.filter((item) =>
+          item.category.startsWith('SAV'),
         ).length,
-        supplierUpdates: legacyLogs.filter(
-          (item) =>
-            this.buildLegacyLogNotification(item).category === 'SUPPLIER_STATUS',
+        demoPending: this.canRoleSeeCategory(currentUser.role, 'DEMO_REQUEST')
+          ? demoPending
+          : 0,
+        demoScheduledSoon: this.canRoleSeeCategory(
+          currentUser.role,
+          'DEMO_SCHEDULED',
+        )
+          ? demoScheduledSoon
+          : 0,
+        demoNotifications: items.filter((item) =>
+          item.category.startsWith('DEMO'),
         ).length,
-        receptionsPartielles: legacyLogs.filter(
-          (item) =>
-            this.buildLegacyLogNotification(item).category === 'RECEPTION_PARTIELLE',
+        signatures: items.filter(
+          (item) => item.category === 'SIGNATURE_DEVIS',
         ).length,
-        receptionsCompletes: legacyLogs.filter(
-          (item) =>
-            this.buildLegacyLogNotification(item).category === 'RECEPTION_COMPLETE',
+        modificationsPrix: items.filter(
+          (item) => item.category === 'MODIFICATION_PRIX',
+        ).length,
+        supplierUpdates: items.filter(
+          (item) => item.category === 'SUPPLIER_STATUS',
+        ).length,
+        receptionsPartielles: items.filter(
+          (item) => item.category === 'RECEPTION_PARTIELLE',
+        ).length,
+        receptionsCompletes: items.filter(
+          (item) => item.category === 'RECEPTION_COMPLETE',
         ).length,
       },
     };

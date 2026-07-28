@@ -184,6 +184,7 @@ export default function CommandesFournisseurPage() {
   const [draftForms, setDraftForms] = useState<Record<number, ReceptionFormState>>({});
   const [editDrafts, setEditDrafts] = useState<Record<number, OrderEditFormState>>({});
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
+  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [supplierDocumentPreview, setSupplierDocumentPreview] =
     useState<SupplierPurchaseDocumentData | null>(null);
 
@@ -590,8 +591,8 @@ export default function CommandesFournisseurPage() {
             <button
               type="button"
               title="Les commandes fournisseur sont générées depuis les devis validés."
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700"
-              onClick={() => setStatusFilter('CREEE')}
+              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
+              onClick={() => setShowNewOrderModal(true)}
             >
               <Plus size={17} />
               Nouvelle commande
@@ -1158,6 +1159,59 @@ export default function CommandesFournisseurPage() {
           )}
         </div>
       </section>
+
+      {showNewOrderModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-[2rem] bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                  Nouvelle commande fournisseur
+                </p>
+                <h2 className="mt-1 text-xl font-semibold text-slate-950">
+                  Commandes générées depuis les devis
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNewOrderModal(false)}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"
+                aria-label="Fermer"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4 p-5">
+              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-800">
+                Les commandes fournisseur sont créées automatiquement à partir des devis validés.
+                Vous pouvez afficher les commandes à confirmer, puis les vérifier avant envoi.
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowNewOrderModal(false)}
+                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStatusFilter('CREEE');
+                    setShowNewOrderModal(false);
+                  }}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
+                >
+                  <ClipboardList size={17} />
+                  Voir les commandes à confirmer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {supplierDocumentPreview && (
         <CommandeFournisseurDocument

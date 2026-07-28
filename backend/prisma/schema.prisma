@@ -40,34 +40,33 @@ model Company {
   @@map("companies")
 }
 
-
 model User {
-  id                 Int                @id @default(autoincrement())
-  companyId          Int
-  nom                String
-  prenom             String
-  email              String             @unique
-  password           String
-  role               Role
-  telephone          String?
-  actif              Boolean            @default(true)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  mustChangePassword Boolean            @default(true)
-  signatureBase64    String?
-  signatureUpdatedAt DateTime?
-  affectationsTaches AffectationTache[]
-  auditLogs          AuditLog[]
-  chantiersChef      Chantier[]         @relation("ChefChantier")
-  demandesCreees     DemandeDevis[]     @relation("DemandeCreateur")
-  devisCrees         Devis[]            @relation("DevisCreateur")
-  messagesChat       MessageChat[]
-  company            Company            @relation(fields: [companyId], references: [id])
-  versionsDevis      VersionDevis[]     @relation("VersionAuteur")
-  savTicketsCrees    SavTicket[]        @relation("SavTicketCreateur")
-  savTicketsAssignes SavTicket[]        @relation("SavTicketAssigne")
-  savTicketNotes     SavTicketNote[]
-  demoRequestsAssignes DemoRequest[]     @relation("DemoRequestAssigne")
+  id                   Int                @id @default(autoincrement())
+  companyId            Int
+  nom                  String
+  prenom               String
+  email                String             @unique
+  password             String
+  role                 Role
+  telephone            String?
+  actif                Boolean            @default(true)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  mustChangePassword   Boolean            @default(true)
+  signatureBase64      String?
+  signatureUpdatedAt   DateTime?
+  affectationsTaches   AffectationTache[]
+  auditLogs            AuditLog[]
+  chantiersChef        Chantier[]         @relation("ChefChantier")
+  demandesCreees       DemandeDevis[]     @relation("DemandeCreateur")
+  devisCrees           Devis[]            @relation("DevisCreateur")
+  messagesChat         MessageChat[]
+  company              Company            @relation(fields: [companyId], references: [id])
+  versionsDevis        VersionDevis[]     @relation("VersionAuteur")
+  savTicketsCrees      SavTicket[]        @relation("SavTicketCreateur")
+  savTicketsAssignes   SavTicket[]        @relation("SavTicketAssigne")
+  savTicketNotes       SavTicketNote[]
+  demoRequestsAssignes DemoRequest[]      @relation("DemoRequestAssigne")
 
   @@index([companyId])
   @@index([email])
@@ -148,10 +147,11 @@ model DemandeDevis {
   reference       String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-  client          Client        @relation(fields: [clientId], references: [id])
-  company         Company       @relation(fields: [companyId], references: [id])
-  createur        User?         @relation("DemandeCreateur", fields: [createurId], references: [id])
-  devis           Devis[]
+
+  client   Client  @relation(fields: [clientId], references: [id])
+  company  Company @relation(fields: [companyId], references: [id])
+  createur User?   @relation("DemandeCreateur", fields: [createurId], references: [id])
+  devis    Devis[]
 
   @@index([companyId])
   @@index([clientId])
@@ -758,6 +758,7 @@ model RagDocument {
   @@index([actif])
   @@map("rag_documents")
 }
+
 model AssistantFeedback {
   id             Int      @id @default(autoincrement())
   companyId      Int
@@ -791,13 +792,13 @@ model SavTicket {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  company    Company   @relation(fields: [companyId], references: [id])
-  client     Client    @relation(fields: [clientId], references: [id])
-  devis      Devis?    @relation(fields: [devisId], references: [id])
-  facture    Facture?  @relation(fields: [factureId], references: [id])
-  chantier   Chantier? @relation(fields: [chantierId], references: [id])
-  createur   User      @relation("SavTicketCreateur", fields: [createurId], references: [id])
-  assignedTo User?     @relation("SavTicketAssigne", fields: [assignedToId], references: [id])
+  company    Company         @relation(fields: [companyId], references: [id])
+  client     Client          @relation(fields: [clientId], references: [id])
+  devis      Devis?          @relation(fields: [devisId], references: [id])
+  facture    Facture?        @relation(fields: [factureId], references: [id])
+  chantier   Chantier?       @relation(fields: [chantierId], references: [id])
+  createur   User            @relation("SavTicketCreateur", fields: [createurId], references: [id])
+  assignedTo User?           @relation("SavTicketAssigne", fields: [assignedToId], references: [id])
   notes      SavTicketNote[]
 
   @@index([companyId])
@@ -827,7 +828,7 @@ model SavTicketNote {
 }
 
 model DemoRequest {
-  id           Int                @id @default(autoincrement())
+  id           Int               @id @default(autoincrement())
   companyId    Int?
   assignedToId Int?
   nom          String
@@ -836,13 +837,13 @@ model DemoRequest {
   telephone    String?
   entreprise   String?
   message      String?
-  statut       DemoRequestStatut  @default(PENDING)
-  source       String             @default("PUBLIC_FORM")
+  statut       DemoRequestStatut @default(PENDING)
+  source       String            @default("PUBLIC_FORM")
   dateContact  DateTime?
   dateDemo     DateTime?
   notes        String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   company    Company? @relation(fields: [companyId], references: [id])
   assignedTo User?    @relation("DemoRequestAssigne", fields: [assignedToId], references: [id])
@@ -1017,8 +1018,6 @@ enum SavTicketCategorie {
   SAV_TECHNIQUE
   AUTRE
 }
-
-
 
 enum DemoRequestStatut {
   PENDING

@@ -148,7 +148,7 @@ export default function RagDocumentsPage() {
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700"
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
         >
           <Plus size={17} />
           Ajouter
@@ -265,7 +265,7 @@ export default function RagDocumentsPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <form
             onSubmit={handleSubmit}
             className="w-full max-w-2xl rounded-lg bg-white shadow-xl"
@@ -386,7 +386,7 @@ export default function RagDocumentsPage() {
       )}
 
       {deleteId !== null && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
             <h2 className="text-lg font-bold text-gray-900">Supprimer document</h2>
             <p className="mt-2 text-sm text-gray-600">

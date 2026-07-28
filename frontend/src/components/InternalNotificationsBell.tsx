@@ -47,6 +47,7 @@ const categoryLabels: Record<string, string> = {
   SAV_NOTE: 'Note SAV',
   DEMO_REQUEST: 'Démo',
   DEMO_SCHEDULED: 'Démo',
+  CHANTIER_DOCUMENT: 'Document chantier',
   AUDIT_RECENT: 'Audit',
 };
 
@@ -71,7 +72,8 @@ function getNotificationFilter(category: string): NotificationFilter {
     category === 'COMMANDES_ATTENTE' ||
     category === 'SUPPLIER_STATUS' ||
     category === 'RECEPTION_PARTIELLE' ||
-    category === 'RECEPTION_COMPLETE'
+    category === 'RECEPTION_COMPLETE' ||
+    category === 'CHANTIER_DOCUMENT'
   ) {
     return 'ALERTS';
   }
@@ -100,7 +102,8 @@ export default function InternalNotificationsBell() {
   const notificationsQuery = useQuery({
     queryKey: ['internal-notifications', user?.id],
     enabled: canUseNotifications,
-    refetchInterval: 30000,
+    refetchInterval: 60000, // secours si le WebSocket est indisponible
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       const response = await api.get<InternalNotificationsResponse>(
         '/notifications/internal',
@@ -177,38 +180,70 @@ export default function InternalNotificationsBell() {
     }
   };
 
+  const getRoleHome = () => {
+    if (user?.role === 'ADMIN') return '/admin';
+    if (user?.role === 'ASSISTANTE') return '/assistante';
+    if (user?.role === 'TECHNICO') return '/technico';
+    if (user?.role === 'CHEF_CHANTIER') return '/chef-chantier';
+    if (user?.role === 'SOUS_TRAITANT') return '/sous-traitant';
+    return '/login';
+  };
+
+  const getNotificationTarget = (category: string) => {
+    if (category.startsWith('SAV')) {
+      if (user?.role === 'TECHNICO') return '/technico/sav';
+      if (user?.role === 'CHEF_CHANTIER') return '/chef-chantier/sav';
+      if (user?.role === 'ASSISTANTE') return '/assistante/sav';
+      if (user?.role === 'ADMIN') return '/admin/sav';
+      return getRoleHome();
+    }
+
+    if (category.startsWith('DEMO')) {
+      if (user?.role === 'TECHNICO') return '/technico/demo-requests';
+      if (user?.role === 'ASSISTANTE') return '/assistante/demo-requests';
+      if (user?.role === 'ADMIN') return '/admin/demo-requests';
+      return getRoleHome();
+    }
+
+    if (category === 'CHANTIER_DOCUMENT' || category === 'CHANTIERS_RETARD') {
+      if (user?.role === 'CHEF_CHANTIER') return '/chef-chantier/chantiers';
+      if (user?.role === 'ASSISTANTE') return '/assistante/chantiers';
+      if (user?.role === 'ADMIN') return '/admin/chantiers';
+      return getRoleHome();
+    }
+
+    if (category === 'SIGNATURE_DEVIS' || category === 'MODIFICATION_PRIX') {
+      if (user?.role === 'TECHNICO') return '/technico/devis';
+      if (user?.role === 'ASSISTANTE') return '/assistante/devis';
+      if (user?.role === 'ADMIN') return '/admin/devis';
+      return getRoleHome();
+    }
+
+    return user?.role === 'ADMIN' ? '/admin/audit' : getRoleHome();
+  };
+
   const handleGoToList = () => {
     markAsSeen();
     setOpen(false);
 
-    if (activeFilter === 'SAV') {
-      navigate(user?.role === 'TECHNICO' ? '/technico/sav' : '/admin/sav');
-      return;
-    }
+    const category =
+      activeFilter === 'SAV'
+        ? 'SAV_TICKET'
+        : activeFilter === 'DEMOS'
+          ? 'DEMO_REQUEST'
+          : activeFilter === 'SIGNATURES'
+            ? 'SIGNATURE_DEVIS'
+            : activeFilter === 'PRICES'
+              ? 'MODIFICATION_PRIX'
+              : 'AUDIT_RECENT';
 
-    if (activeFilter === 'DEMOS') {
-      navigate('/admin/demo-requests');
-      return;
-    }
-
-    navigate('/admin/audit');
+    navigate(getNotificationTarget(category));
   };
 
   const handleNotificationClick = (category: string) => {
     markAsSeen();
     setOpen(false);
-
-    if (category.startsWith('SAV')) {
-      navigate(user?.role === 'TECHNICO' ? '/technico/sav' : '/admin/sav');
-      return;
-    }
-
-    if (category.startsWith('DEMO')) {
-      navigate('/admin/demo-requests');
-      return;
-    }
-
-    navigate('/admin/audit');
+    navigate(getNotificationTarget(category));
   };
 
   if (!canUseNotifications) return null;
@@ -399,7 +434,9 @@ export default function InternalNotificationsBell() {
                           ? 'Voir SAV'
                           : item.category.startsWith('DEMO')
                             ? 'Voir démos'
-                            : 'Voir audit'}
+                            : item.category === 'CHANTIER_DOCUMENT'
+                              ? 'Voir chantier'
+                              : 'Ouvrir'}
                         <ChevronRight size={13} />
                       </span>
                     </div>

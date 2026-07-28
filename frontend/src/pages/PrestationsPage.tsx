@@ -35,12 +35,33 @@ interface OptionPayload {
   }>;
 }
 
+type UniteValue =
+  | 'M2'
+  | 'ML'
+  | 'PIECE'
+  | 'JOUR'
+  | 'HEURE'
+  | 'LITRE'
+  | 'KG'
+  | 'FORFAIT';
+
+const UNITES: Array<{ value: UniteValue; label: string }> = [
+  { value: 'M2', label: 'm²' },
+  { value: 'ML', label: 'mètre linéaire' },
+  { value: 'PIECE', label: 'pièce' },
+  { value: 'JOUR', label: 'jour' },
+  { value: 'HEURE', label: 'heure' },
+  { value: 'LITRE', label: 'litre' },
+  { value: 'KG', label: 'kg' },
+  { value: 'FORFAIT', label: 'forfait' },
+];
+
 interface PrestationCreateFormState {
   nom: string;
   description: string;
   prixVenteMin: string;
   prixVenteMax: string;
-  unite: string;
+  unite: UniteValue;
   categorieId: string;
   sousCategorieId: string;
 }
@@ -50,7 +71,7 @@ const createEmptyPrestationForm = (): PrestationCreateFormState => ({
   description: '',
   prixVenteMin: '',
   prixVenteMax: '',
-  unite: '',
+  unite: 'M2',
   categorieId: '',
   sousCategorieId: '',
 });
@@ -241,8 +262,13 @@ export default function PrestationsPage() {
     const parsedMin = Number(form.prixVenteMin);
     const parsedMax = Number(form.prixVenteMax);
 
-    if (!Number.isFinite(parsedMin) || !Number.isFinite(parsedMax)) {
-      window.alert('Veuillez saisir des prix valides.');
+    if (
+      !Number.isFinite(parsedMin) ||
+      !Number.isFinite(parsedMax) ||
+      parsedMin <= 0 ||
+      parsedMax <= 0
+    ) {
+      window.alert('Veuillez saisir des prix strictement supérieurs à 0.');
       return;
     }
 
@@ -259,17 +285,41 @@ export default function PrestationsPage() {
 
     createMutation.mutate({
       prestationBody: {
-      nom: form.nom,
-      description: form.description || undefined,
+      nom: form.nom.trim(),
+      description: form.description.trim() || undefined,
       prixVenteMin: parsedMin,
       prixVenteMax: parsedMax,
-      unite: form.unite || undefined,
+      unite: form.unite,
         categorieId: parseInt(form.categorieId),
         sousCategorieId: form.sousCategorieId ? parseInt(form.sousCategorieId) : undefined,
       },
       options: builtOptions.payload,
     });
   }
+
+  const createErrorMessage = (() => {
+    if (!createMutation.error) return null;
+
+    if (axios.isAxiosError(createMutation.error)) {
+      const data = createMutation.error.response?.data as
+        | { message?: string | string[] }
+        | undefined;
+
+      if (Array.isArray(data?.message)) {
+        return data.message.join(' ');
+      }
+
+      if (typeof data?.message === 'string') {
+        return data.message;
+      }
+    }
+
+    if (createMutation.error instanceof Error) {
+      return createMutation.error.message;
+    }
+
+    return 'Erreur lors de la création de la prestation.';
+  })();
 
   const selectedCategory = (catalogue ?? []).find((category) => category.id === Number(form.categorieId));
   const selectedSubCategories = selectedCategory?.sousCategories ?? [];
@@ -577,7 +627,7 @@ export default function PrestationsPage() {
 
       {/* Create Modal */}
       {showModal && isAdmin && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h2 className="text-lg font-bold text-slate-950">Nouvelle prestation</h2>
@@ -629,15 +679,31 @@ export default function PrestationsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix vente min *</label>
-                  <input type="number" step="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <input type="number" step="0.01" min="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix vente max *</label>
-                  <input type="number" step="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <input type="number" step="0.01" min="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Unité</label>
-                  <input type="text" placeholder="m², ml, u..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Unité *</label>
+                  <select
+                    required
+                    value={form.unite}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        unite: e.target.value as UniteValue,
+                      })
+                    }
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {UNITES.map((unite) => (
+                      <option key={unite.value} value={unite.value}>
+                        {unite.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div>
@@ -785,7 +851,11 @@ export default function PrestationsPage() {
                   </div>
                 )}
               </div>
-              {createMutation.error && <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la creation.</p>}
+              {createErrorMessage && (
+                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                  {createErrorMessage}
+                </p>
+              )}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -882,9 +952,6 @@ function PrestationRow({
   );
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Sub-component: Option Block
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function OptionBlock({ option }: { option: OptionPrestation }) {
   return (
@@ -915,4 +982,3 @@ function OptionBlock({ option }: { option: OptionPrestation }) {
     </div>
   );
 }
-

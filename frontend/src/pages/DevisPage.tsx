@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { DevisInvoice } from '@/components/DevisInvoice';
 import { DevisManualEditorModal } from '@/components/devis/DevisManualEditorModal';
@@ -135,6 +136,8 @@ function buildPurchaseOrderFeedback(data: unknown, fallback: string) {
 
 export default function DevisPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const workspaceBasePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -285,7 +288,7 @@ export default function DevisPage() {
         type: 'success',
         text: 'Facture creee depuis le devis.',
       });
-      navigate(`/admin/factures/${response.data.id}`);
+      navigate(`${workspaceBasePath}/factures/${response.data.id}`);
     },
     onError: (error: unknown) => {
       setFeedback({

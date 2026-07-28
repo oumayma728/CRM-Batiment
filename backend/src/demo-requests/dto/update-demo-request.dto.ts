@@ -18,22 +18,32 @@ export class UpdateDemoRequestDto {
   @IsEnum(DemoRequestStatut)
   statut?: DemoRequestStatut;
 
-  @ApiPropertyOptional({ example: 2, description: 'Utilisateur commercial assigné' })
+  @ApiPropertyOptional({
+    example: 2,
+    nullable: true,
+    description: 'Utilisateur commercial assigné. null permet de retirer l’affectation.',
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  assignedToId?: number;
+  assignedToId?: number | null;
 
-  @ApiPropertyOptional({ example: '2026-07-04T14:00:00.000Z' })
+  @ApiPropertyOptional({
+    example: '2026-07-04T14:00:00.000Z',
+    nullable: true,
+  })
   @IsOptional()
   @IsDateString()
-  dateContact?: string;
+  dateContact?: string | null;
 
-  @ApiPropertyOptional({ example: '2026-07-05T10:00:00.000Z' })
+  @ApiPropertyOptional({
+    example: '2026-07-05T10:00:00.000Z',
+    nullable: true,
+  })
   @IsOptional()
   @IsDateString()
-  dateDemo?: string;
+  dateDemo?: string | null;
 
   @ApiPropertyOptional({ example: 'Client intéressé, rappeler demain.' })
   @IsOptional()

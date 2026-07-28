@@ -64,11 +64,14 @@
   );
 }
 
-/* Batiflow dashboard banner — violet clair personnalisé */
+/* Batiflow dashboard banner — bleu */
 .batiflow-gradient {
-  background: linear-gradient(120deg, #c0b4fa 0%, #b4e0fa 100%);
+  background: #2563eb;
 }
 
+.batiflow-gradient:hover {
+  background: #1d4ed8;
+}
 /* Admin */
 .admin-gradient {
   background: linear-gradient(133deg,

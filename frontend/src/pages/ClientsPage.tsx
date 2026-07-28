@@ -1,6 +1,7 @@
 import { Fragment, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { getImportErrorMessage, parseClientsSpreadsheet } from '@/lib/clientSpreadsheetImport';
 import { ProjectTypeCheckboxGroup } from '@/components/ProjectTypeCheckboxGroup';
@@ -82,6 +83,8 @@ function getClientProjectLabel(client: Client, fallback = 'Projet') {
 export default function ClientsPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const workspaceBasePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -159,7 +162,7 @@ export default function ClientsPage() {
       queryClient.invalidateQueries({ queryKey: ['demandes-devis'] });
       setExpandedId(null);
       setGenDescription('');
-      navigate('/admin/demandes-devis');
+      navigate(`${workspaceBasePath}/demandes-devis`);
     },
   });
 

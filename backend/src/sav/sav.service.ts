@@ -13,6 +13,7 @@ import {
 } from '../../generated/prisma/client.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateSavTicketNoteDto } from './dto/create-sav-ticket-note.dto.js';
 import { CreateSavTicketDto } from './dto/create-sav-ticket.dto.js';
@@ -90,6 +91,7 @@ export class SavService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private ensureInternalUser(currentUser: CurrentUserPayload) {
@@ -284,6 +286,8 @@ export class SavService {
       },
     });
 
+    this.emitRealtime(currentUser, 'SAV_TICKET_CREATED', ticket.id);
+
     return ticket;
   }
 
@@ -448,6 +452,8 @@ export class SavService {
       },
     });
 
+    this.emitRealtime(currentUser, 'SAV_TICKET_UPDATED', ticket.id);
+
     return ticket;
   }
 
@@ -488,6 +494,32 @@ export class SavService {
       },
     });
 
+    this.emitRealtime(currentUser, 'SAV_NOTE_CREATED', ticket.id);
+
     return note;
+  }
+
+  private emitRealtime(
+    currentUser: CurrentUserPayload,
+    reason: string,
+    ticketId: number,
+  ) {
+    const payload = {
+      reason,
+      entity: 'SavTicket',
+      entityId: ticketId,
+      actorId: currentUser.userId,
+    };
+
+    this.notificationsService.emitCompanyEvent(
+      currentUser.companyId,
+      'notifications:changed',
+      payload,
+    );
+    this.notificationsService.emitCompanyEvent(
+      currentUser.companyId,
+      'sav:changed',
+      payload,
+    );
   }
 }

@@ -177,6 +177,7 @@ const roleLabels: Record<Role, string> = {
 
 const routeLabels: Record<string, string> = {
   admin: 'Admin',
+  assistante: 'Assistante',
   clients: 'Clients',
   'demandes-devis': 'Demandes',
   'demo-requests': 'Demandes de démo',
@@ -208,7 +209,13 @@ export default function AppLayout() {
 
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-  const visibleItems = navItems.filter((item) => user && item.roles.includes(user.role));
+  const basePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
+  const visibleItems = navItems
+    .filter((item) => user && item.roles.includes(user.role))
+    .map((item) => ({
+      ...item,
+      to: item.to.replace(/^\/admin/, basePath),
+    }));
 
   const currentPage =
     [...visibleItems]
@@ -220,14 +227,14 @@ export default function AppLayout() {
     const parts = location.pathname.split('/').filter(Boolean);
 
     if (!parts.length) {
-      return [{ label: 'Bâtiflow', to: '/admin' }];
+      return [{ label: 'Bâtiflow', to: basePath }];
     }
 
     return parts.map((part, index) => ({
       label: routeLabels[part] ?? formatPathLabel(part),
       to: `/${parts.slice(0, index + 1).join('/')}`,
     }));
-  }, [location.pathname]);
+  }, [basePath, location.pathname]);
 
   const initials = user
     ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase()
@@ -310,7 +317,7 @@ export default function AppLayout() {
 
                 <NavLink
                   to={item.to}
-                  end={item.to === '/admin'}
+                  end={item.to === basePath}
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
@@ -336,29 +343,32 @@ export default function AppLayout() {
         </nav>
 
         <div className="border-t border-slate-100 p-4">
-          <button
-            type="button"
-            onClick={() => setUserMenuOpen((open) => !open)}
-            className="flex w-full items-center gap-3 rounded-2xl px-2 py-2 text-left transition hover:bg-slate-50"
-          >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
-              {initials || 'SA'}
+          <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
+                {initials || 'SA'}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-semibold text-slate-950">
+                  {displayName || 'Super Admin'}
+                </p>
+                <p className="truncate text-[11px] text-slate-500">
+                  {roleLabels[user?.role ?? 'ADMIN']}
+                </p>
+              </div>
             </div>
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold text-slate-950">
-                {displayName || 'Super Admin'}
-              </p>
-              <p className="text-[11px] text-slate-500">
-                {roleLabels[user?.role ?? 'ADMIN']}
-              </p>
-            </div>
-
-            <ChevronDown
-              size={14}
-              className={cn('text-slate-400 transition', userMenuOpen && 'rotate-180')}
-            />
-          </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              aria-label="Se déconnecter"
+              title="Déconnexion"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            >
+              <LogOut size={17} />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -376,12 +386,12 @@ export default function AppLayout() {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-400">
-                  <Link to="/admin" className="transition hover:text-blue-600">
+                  <Link to={basePath} className="transition hover:text-blue-600">
                     Bâtiflow
                   </Link>
 
                   {breadcrumbs
-                    .filter((crumb) => crumb.label !== 'Admin')
+                    .filter((crumb) => crumb.label !== 'Admin' && crumb.label !== 'Assistante')
                     .map((crumb) => (
                       <span key={crumb.to} className="flex items-center gap-1">
                         <span>/</span>
@@ -448,31 +458,35 @@ export default function AppLayout() {
                     </div>
 
                     <div className="p-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate('/admin/parametres-chiffrage');
-                        }}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <Settings size={17} />
-                        Paramètres
-                      </button>
+                      {user?.role === 'ADMIN' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              navigate('/admin/parametres-chiffrage');
+                            }}
+                            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <Settings size={17} />
+                            Paramètres
+                          </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUserMenuOpen(false);
-                          navigate('/admin/audit');
-                        }}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                      >
-                        <History size={17} />
-                        Audit
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              navigate('/admin/audit');
+                            }}
+                            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <History size={17} />
+                            Audit
+                          </button>
 
-                      <div className="my-2 h-px bg-slate-100" />
+                          <div className="my-2 h-px bg-slate-100" />
+                        </>
+                      )}
 
                       <button
                         type="button"

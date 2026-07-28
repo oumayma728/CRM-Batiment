@@ -1,13 +1,38 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { DemoRequestStatut, Prisma, Role } from '../../generated/prisma/client.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreatePublicDemoRequestDto } from './dto/create-demo-request.dto.js';
 import { QueryDemoRequestDto } from './dto/query-demo-request.dto.js';
 import { UpdateDemoRequestDto } from './dto/update-demo-request.dto.js';
 
 const commercialRoles = [Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO] as const;
+
+const allowedTransitions: Record<DemoRequestStatut, DemoRequestStatut[]> = {
+  [DemoRequestStatut.PENDING]: [
+    DemoRequestStatut.CONTACTED,
+    DemoRequestStatut.CANCELED,
+  ],
+  [DemoRequestStatut.CONTACTED]: [
+    DemoRequestStatut.PENDING,
+    DemoRequestStatut.SCHEDULED,
+    DemoRequestStatut.CANCELED,
+  ],
+  [DemoRequestStatut.SCHEDULED]: [
+    DemoRequestStatut.CONTACTED,
+    DemoRequestStatut.DONE,
+    DemoRequestStatut.CANCELED,
+  ],
+  [DemoRequestStatut.DONE]: [DemoRequestStatut.SCHEDULED],
+  [DemoRequestStatut.CANCELED]: [DemoRequestStatut.PENDING],
+};
 
 const demoRequestInclude = {
   company: {
@@ -34,20 +59,22 @@ export class DemoRequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   private ensureCommercialUser(currentUser: CurrentUserPayload) {
     if (!commercialRoles.includes(currentUser.role as (typeof commercialRoles)[number])) {
-      throw new ForbiddenException('Acces reserve au back-office commercial.');
+      throw new ForbiddenException('Accès réservé au back-office commercial.');
     }
   }
 
-  private normalizeText(value?: string) {
+  private normalizeText(value?: string | null) {
     const trimmed = value?.trim();
     return trimmed && trimmed.length > 0 ? trimmed : undefined;
   }
 
-  private toDate(value?: string) {
+  private toDate(value?: string | null) {
+    if (value === null) return null;
     return value ? new Date(value) : undefined;
   }
 
@@ -83,7 +110,20 @@ export class DemoRequestsService {
     });
 
     if (!assignedUser) {
-      throw new NotFoundException('Utilisateur commercial introuvable ou non autorise.');
+      throw new NotFoundException('Utilisateur commercial introuvable ou non autorisé.');
+    }
+  }
+
+  private assertTransition(
+    current: DemoRequestStatut,
+    next: DemoRequestStatut,
+  ) {
+    if (current === next) return;
+
+    if (!allowedTransitions[current].includes(next)) {
+      throw new BadRequestException(
+        `Transition de statut interdite : ${current} → ${next}.`,
+      );
     }
   }
 
@@ -142,6 +182,23 @@ export class DemoRequestsService {
           statut: request.statut,
           source: request.source,
         },
+      });
+
+      this.notificationsService.emitCompanyEvent(
+        companyId,
+        'notifications:changed',
+        {
+          reason: 'DEMO_REQUEST_CREATED',
+          entity: 'DemoRequest',
+          entityId: request.id,
+          actorId: null,
+        },
+      );
+      this.notificationsService.emitCompanyEvent(companyId, 'demo:changed', {
+        reason: 'DEMO_REQUEST_CREATED',
+        entity: 'DemoRequest',
+        entityId: request.id,
+        actorId: null,
       });
     }
 
@@ -219,6 +276,26 @@ export class DemoRequestsService {
     return { total, pending, contacted, scheduled, done, canceled, scheduledSoon };
   }
 
+  async getAssignees(currentUser: CurrentUserPayload) {
+    this.ensureCommercialUser(currentUser);
+
+    return this.prisma.user.findMany({
+      where: {
+        companyId: currentUser.companyId,
+        actif: true,
+        role: { in: [...commercialRoles] },
+      },
+      select: {
+        id: true,
+        nom: true,
+        prenom: true,
+        email: true,
+        role: true,
+      },
+      orderBy: [{ prenom: 'asc' }, { nom: 'asc' }],
+    });
+  }
+
   async findOne(id: number, currentUser: CurrentUserPayload) {
     this.ensureCommercialUser(currentUser);
 
@@ -245,20 +322,51 @@ export class DemoRequestsService {
       throw new NotFoundException('Demande de démo introuvable.');
     }
 
-    await this.assertAssignedUser(currentUser.companyId, dto.assignedToId ?? undefined);
+    await this.assertAssignedUser(currentUser.companyId, dto.assignedToId);
 
     const nextStatut = dto.statut ?? existing.statut;
+    this.assertTransition(existing.statut, nextStatut);
+
+    const requestedDateDemo = this.toDate(dto.dateDemo);
+    const nextDateDemo =
+      requestedDateDemo === undefined ? existing.dateDemo : requestedDateDemo;
+    const nextAssignedToId =
+      dto.assignedToId === undefined ? existing.assignedToId : dto.assignedToId;
+
+    if (nextStatut === DemoRequestStatut.SCHEDULED && !nextDateDemo) {
+      throw new BadRequestException(
+        'Une date de démonstration est obligatoire pour planifier la demande.',
+      );
+    }
+
+    if (
+      (nextStatut === DemoRequestStatut.SCHEDULED ||
+        nextStatut === DemoRequestStatut.DONE) &&
+      !nextAssignedToId
+    ) {
+      throw new BadRequestException(
+        'Un utilisateur commercial doit être assigné avant la planification.',
+      );
+    }
+
+    const automaticDateContact =
+      nextStatut === DemoRequestStatut.CONTACTED && !existing.dateContact
+        ? new Date()
+        : undefined;
 
     const updated = await this.prisma.demoRequest.update({
       where: { id },
       data: {
         statut: nextStatut,
         assignedToId: dto.assignedToId,
-        dateContact: this.toDate(dto.dateContact),
-        dateDemo: this.toDate(dto.dateDemo),
+        dateContact: this.toDate(dto.dateContact) ?? automaticDateContact,
+        dateDemo: requestedDateDemo,
         notes: dto.notes,
         email: dto.email?.trim().toLowerCase(),
-        telephone: this.normalizeText(dto.telephone),
+        telephone:
+          dto.telephone === undefined
+            ? undefined
+            : this.normalizeText(dto.telephone) ?? null,
       },
       include: demoRequestInclude,
     });
@@ -284,6 +392,24 @@ export class DemoRequestsService {
         entreprise: updated.entreprise ?? undefined,
       },
     });
+
+    const eventPayload = {
+      reason: 'DEMO_REQUEST_UPDATED',
+      entity: 'DemoRequest',
+      entityId: updated.id,
+      actorId: currentUser.userId,
+      status: updated.statut,
+    };
+    this.notificationsService.emitCompanyEvent(
+      currentUser.companyId,
+      'notifications:changed',
+      eventPayload,
+    );
+    this.notificationsService.emitCompanyEvent(
+      currentUser.companyId,
+      'demo:changed',
+      eventPayload,
+    );
 
     return updated;
   }

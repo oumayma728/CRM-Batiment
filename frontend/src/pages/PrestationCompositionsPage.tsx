@@ -420,7 +420,7 @@ export default function PrestationCompositionsPage() {
         {isAdmin && (
           <button
             onClick={openCreateEditor}
-            className="inline-flex items-center gap-2 batiflow-gradient text-white px-4 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
           >
             <Plus size={16} />
             Nouvelle composition
@@ -554,7 +554,7 @@ export default function PrestationCompositionsPage() {
       </div>
 
       {showEditor && isAdmin && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">

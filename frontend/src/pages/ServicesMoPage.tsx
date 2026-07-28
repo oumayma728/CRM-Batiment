@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import api from '@/lib/api';
 import type { ServiceMainOeuvre } from '@/types';
 import { formatCurrency } from '@/lib/utils';
@@ -7,11 +8,32 @@ import {
   Plus, Search, Edit, Trash2, X, Wrench, Loader2,
 } from 'lucide-react';
 
+type UniteValue =
+  | 'M2'
+  | 'ML'
+  | 'PIECE'
+  | 'JOUR'
+  | 'HEURE'
+  | 'LITRE'
+  | 'KG'
+  | 'FORFAIT';
+
+const UNITES: Array<{ value: UniteValue; label: string }> = [
+  { value: 'M2', label: 'm²' },
+  { value: 'ML', label: 'mètre linéaire' },
+  { value: 'PIECE', label: 'pièce' },
+  { value: 'JOUR', label: 'jour' },
+  { value: 'HEURE', label: 'heure' },
+  { value: 'LITRE', label: 'litre' },
+  { value: 'KG', label: 'kg' },
+  { value: 'FORFAIT', label: 'forfait' },
+];
+
 export default function ServicesMoPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ nom: '', prixUnitaire: '', unite: '' });
+  const [form, setForm] = useState({ nom: '', prixUnitaire: '', unite: 'M2' as UniteValue });
 
   const {
     data: services,
@@ -33,7 +55,7 @@ export default function ServicesMoPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['services-mo'] });
       setShowModal(false);
-      setForm({ nom: '', prixUnitaire: '', unite: '' });
+      setForm({ nom: '', prixUnitaire: '', unite: 'M2' as UniteValue });
     },
   });
 
@@ -44,12 +66,39 @@ export default function ServicesMoPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const prixUnitaire = Number(form.prixUnitaire);
+    if (!Number.isFinite(prixUnitaire) || prixUnitaire <= 0) {
+      window.alert('Veuillez saisir un prix unitaire supérieur à 0.');
+      return;
+    }
+
     createMutation.mutate({
-      nom: form.nom,
-      prixUnitaire: form.prixUnitaire ? parseFloat(form.prixUnitaire) : undefined,
-      unite: form.unite || undefined,
+      nom: form.nom.trim(),
+      prixUnitaire,
+      unite: form.unite,
     });
   }
+
+  const createErrorMessage = (() => {
+    if (!createMutation.error) return null;
+
+    if (axios.isAxiosError(createMutation.error)) {
+      const data = createMutation.error.response?.data as
+        | { message?: string | string[] }
+        | undefined;
+
+      if (Array.isArray(data?.message)) {
+        return data.message.join(' ');
+      }
+
+      if (typeof data?.message === 'string') {
+        return data.message;
+      }
+    }
+
+    return 'Erreur lors de la création du service de main-d’œuvre.';
+  })();
 
   const list = services ?? [];
   const errorStatus = (error as { response?: { status?: number } } | null)?.response?.status;
@@ -67,7 +116,7 @@ export default function ServicesMoPage() {
             {isError ? 'Erreur de chargement' : `${list.length} service(s) enregistré(s)`}
           </p>
         </div>
-        <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
+        <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
           <Plus size={17} /> Nouveau service
         </button>
       </div>
@@ -121,7 +170,7 @@ export default function ServicesMoPage() {
 
       {/* Create Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-lg font-bold text-slate-900">Nouveau service</h2>
@@ -134,15 +183,35 @@ export default function ServicesMoPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix unitaire</label>
-                  <input type="number" step="0.01" value={form.prixUnitaire} onChange={(e) => setForm({ ...form, prixUnitaire: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Prix unitaire *</label>
+                  <input type="number" step="0.01" min="0.01" required value={form.prixUnitaire} onChange={(e) => setForm({ ...form, prixUnitaire: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Unité</label>
-                  <input type="text" placeholder="heure, jour..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">Unité *</label>
+                  <select
+                    required
+                    value={form.unite}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        unite: e.target.value as UniteValue,
+                      })
+                    }
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {UNITES.map((unite) => (
+                      <option key={unite.value} value={unite.value}>
+                        {unite.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
-              {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la création.</p>}
+              {createErrorMessage && (
+                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                  {createErrorMessage}
+                </p>
+              )}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
                 <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">

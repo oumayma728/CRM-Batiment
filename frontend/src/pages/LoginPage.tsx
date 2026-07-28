@@ -21,12 +21,18 @@ export default function LoginPage() {
     try {
       const data = await login(email, password);
       setRole(data.user.role);
-      if (data.user.role === "TECHNICO") {
-        navigate("/technico");
-      } else if (data.user.role === "SOUS_TRAITANT") {
-        navigate("/fournisseur");
-      } else {
+      if (data.user.role === "ADMIN") {
         navigate("/admin");
+      } else if (data.user.role === "ASSISTANTE") {
+        navigate("/assistante");
+      } else if (data.user.role === "TECHNICO") {
+        navigate("/technico");
+      } else if (data.user.role === "CHEF_CHANTIER") {
+        navigate("/chef-chantier");
+      } else if (data.user.role === "SOUS_TRAITANT") {
+        navigate("/sous-traitant");
+      } else {
+        navigate("/login");
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erreur de connexion");

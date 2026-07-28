@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import type { DemandeDevis } from '@/types';
 import { formatDate, cn } from '@/lib/utils';
@@ -38,6 +39,8 @@ const emptyForm: DemandeForm = {
 
 export default function DemandesDevisPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const workspaceBasePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -112,7 +115,7 @@ export default function DemandesDevisPage() {
         await queryClient.invalidateQueries({ queryKey: ['demandes-devis'] });
       }
 
-      navigate(`/admin/checklist?demandeId=${demande.id}`);
+      navigate(`${workspaceBasePath}/checklist?demandeId=${demande.id}`);
     } catch (err: unknown) {
       setStudyError(err instanceof Error ? err.message : 'Impossible d ouvrir la checklist.');
     } finally {

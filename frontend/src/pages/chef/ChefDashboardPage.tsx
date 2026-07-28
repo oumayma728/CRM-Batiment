@@ -16,18 +16,18 @@ import type { Chantier, FournisseurCommandeDetail, PaginatedResponse } from '@/t
 
 const chantierStatusLabel: Record<Chantier['statut'], string> = {
   VISITE_TECHNIQUE: 'Visite technique',
-  DEVIS_EN_PREPARATION: 'Devis en preparation',
-  DEVIS_ENVOYE: 'Devis envoye',
-  NEGOCIATION_EN_COURS: 'Negociation',
-  DEVIS_VALIDE: 'Devis valide',
-  COMMANDES_GENEREES: 'Commandes generees',
-  MATERIAUX_EN_LIVRAISON: 'Materiaux en livraison',
-  MATERIAUX_RECEPTIONNES: 'Materiaux receptionnes',
-  PLANIFIE: 'Planifie',
-  DEMARRE: 'Demarre',
+  DEVIS_EN_PREPARATION: 'Devis en préparation',
+  DEVIS_ENVOYE: 'Devis envoyé',
+  NEGOCIATION_EN_COURS: 'Négociation',
+  DEVIS_VALIDE: 'Devis validé',
+  COMMANDES_GENEREES: 'Commandes générées',
+  MATERIAUX_EN_LIVRAISON: 'Matériaux en livraison',
+  MATERIAUX_RECEPTIONNES: 'Matériaux réceptionnés',
+  PLANIFIE: 'Planifié',
+  DEMARRE: 'Démarré',
   EN_COURS: 'En cours',
-  TERMINE: 'Termine',
-  CLOTURE: 'Cloture',
+  TERMINE: 'Terminé',
+  CLOTURE: 'Clôturé',
 };
 
 export default function ChefDashboardPage() {
@@ -93,12 +93,12 @@ export default function ChefDashboardPage() {
       icon: <TrendingUp size={18} />,
     },
     {
-      label: 'Receptions en attente',
+      label: 'Réceptions en attente',
       value: receptionsEnAttente,
       icon: <PackageSearch size={18} />,
     },
     {
-      label: 'Receptions completes',
+      label: 'Réceptions complètes',
       value: receptionsCompletes,
       icon: <ClipboardCheck size={18} />,
     },
@@ -109,43 +109,43 @@ export default function ChefDashboardPage() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_26%),linear-gradient(135deg,#fff7ed_0%,#ffffff_55%,#fefce8_100%)] p-4 shadow-sm ring-1 ring-amber-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-800">
+      <section className="rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_top_left,_rgba(37,99,235,0.14),_transparent_30%),linear-gradient(135deg,#ffffff_0%,#f8fbff_55%,#eef5ff_100%)] p-6 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
           Chef de chantier
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-slate-900">Tableau de bord terrain</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Tableau de bord terrain</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-600">
-          Interface isolee pour piloter les chantiers et suivre les receptions fournisseurs.
+          Pilotez vos chantiers, vos tâches et les réceptions depuis un espace clair et unifié.
         </p>
         <div className="mt-4 flex flex-wrap gap-2.5">
           <button
-            onClick={() => navigate('/admin/chantiers')}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-700"
+            onClick={() => navigate('/chef-chantier/chantiers')}
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
           >
             Voir les chantiers <ArrowRight size={16} />
           </button>
           <button
-            onClick={() => navigate('/admin/taches-chantier')}
-            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-amber-50"
+            onClick={() => navigate('/chef-chantier/taches-chantier')}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
           >
-            Taches chantier <CheckSquare size={16} />
+            Tâches chantier <CheckSquare size={16} />
           </button>
           <button
-            onClick={() => navigate('/admin/commandes-fournisseur')}
-            className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-amber-50"
+            onClick={() => navigate('/chef-chantier/receptions')}
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
           >
-            Voir les receptions <ArrowRight size={16} />
+            Voir les réceptions <ArrowRight size={16} />
           </button>
         </div>
       </section>
 
-      <section className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi) => (
           <article
             key={kpi.label}
-            className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-stone-200"
+            className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm"
           >
-            <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+            <div className="mb-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               {kpi.icon}
             </div>
             <p className="text-xl font-bold text-slate-900">{kpi.value}</p>
@@ -154,36 +154,36 @@ export default function ChefDashboardPage() {
         ))}
       </section>
 
-      <section className="rounded-2xl bg-white p-3.5 shadow-sm ring-1 ring-stone-200">
+      <section className="rounded-[28px] border border-slate-100 bg-white p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-base font-bold text-slate-900">Derniers chantiers</h2>
             <p className="text-xs text-slate-500">Vue rapide des derniers dossiers</p>
           </div>
           <button
-            onClick={() => navigate('/admin/chantiers')}
-            className="rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-stone-50"
+            onClick={() => navigate('/chef-chantier/chantiers')}
+            className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
           >
             Tout voir
           </button>
         </div>
 
         {isLoading ? (
-          <div className="rounded-xl bg-stone-50 px-4 py-6 text-center text-slate-500">
+          <div className="rounded-xl bg-slate-50 px-4 py-6 text-center text-slate-500">
             <span className="inline-flex items-center gap-2">
               <Loader2 size={16} className="animate-spin" /> Chargement du dashboard...
             </span>
           </div>
         ) : (chantiersQuery.data?.data ?? []).length === 0 ? (
-          <div className="rounded-xl bg-stone-50 px-4 py-6 text-center text-slate-500">
-            Aucun chantier trouve.
+          <div className="rounded-xl bg-slate-50 px-4 py-6 text-center text-slate-500">
+            Aucun chantier trouvé.
           </div>
         ) : (
           <div className="space-y-2.5">
             {(chantiersQuery.data?.data ?? []).map((chantier) => (
               <div
                 key={chantier.id}
-                className="rounded-xl border border-stone-200 bg-stone-50/60 px-3.5 py-2.5"
+                className="rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-2.5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -204,7 +204,7 @@ export default function ChefDashboardPage() {
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
-                  Mis a jour le {formatDate(chantier.updatedAt)}
+                  Mis à jour le {formatDate(chantier.updatedAt)}
                 </p>
               </div>
             ))}

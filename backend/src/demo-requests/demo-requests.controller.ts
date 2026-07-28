@@ -60,6 +60,15 @@ export class DemoRequestsController {
     return this.demoRequestsService.getSummary(user);
   }
 
+  @Get('assignees')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({ summary: 'Lister les utilisateurs pouvant prendre en charge une démo' })
+  getAssignees(@CurrentUser() user: CurrentUserPayload) {
+    return this.demoRequestsService.getAssignees(user);
+  }
+
   @Get(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
