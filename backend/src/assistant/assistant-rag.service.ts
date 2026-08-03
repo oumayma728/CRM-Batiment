@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
-
+import { cosineSimilarity, semanticBonus } from './semantic-similarity.js';
+import { embedText, embedTexts } from './embeddings.js';
 type AssistantIntent =
   | 'demande_devis'
   | 'demande_info_service'
@@ -16,6 +17,16 @@ type KnowledgeChunk = {
   normalizedText: string;
   tokens: string[];
   priority?: number;
+  /**
+   * Vecteur de sens (384 nombres) precalcule au remplissage du cache RAG.
+   *
+   * OPTIONNEL, et c'est VOULU : absent si le modele local n'a pas pu se
+   * charger (echec reseau, cache disque vide, kill switch desactive).
+   * Le "?" force le compilateur a nous faire traiter ce cas partout ou
+   * on l'utilise -> le repli en LEXICAL PUR est verifie par TypeScript,
+   * pas seulement espere par le developpeur.
+   */
+  embedding?: number[];
 };
 
 export type RagSnippet = {
@@ -25,6 +36,8 @@ export type RagSnippet = {
   excerpt: string;
   fullText: string;
   score: number;
+  lexicalScore?: number;
+  semanticScore?: number;
 };
 
 type RagRetrievalInput = {
@@ -45,7 +58,7 @@ export class AssistantRagService {
   private readonly cacheTtlMs = this.resolveCacheTtlMs();
   private readonly cache = new Map<
     number,
-    { expiresAt: number; chunks: KnowledgeChunk[] }
+    { expiresAt: number; chunks: KnowledgeChunk[] ; embedding?: number[]; }
   >();
 
   private readonly stopWords = new Set([
@@ -102,7 +115,127 @@ export class AssistantRagService {
     'vous',
     'vos',
   ]);
+  // ============================================================
+  // RAG HYBRIDE (phase 2) — reglages du bonus semantique.
+  //
+  // ARCHITECTURE : socle lexical (calibre sur ~45 questions, seuil 0.4
+  // dans assistant.service.ts) + bonus semantique ADDITIF et BORNE.
+  // Le score hybride est TOUJOURS >= au score lexical :
+  // aucune question qui repondait avant ne peut cesser de repondre.
+  // ============================================================
 
+  private readonly logger = new Logger(AssistantRagService.name);
+
+  /** Interrupteur d'urgence : ASSISTANT_RAG_SEMANTIC_ENABLED=false -> lexical pur. */
+  private readonly semanticEnabled = this.resolveSemanticEnabled();
+
+  /** Bonus maximal. 0.35 = ordre de grandeur des bonus lexicaux existants. */
+  private readonly semanticWeight = this.resolveEnvNumber(
+    'ASSISTANT_RAG_SEMANTIC_WEIGHT',
+    0.35,
+  );
+
+  /** Plancher de bruit du cosinus, mesure sur nos 29 documents reels. */
+  private readonly semanticFloor = this.resolveEnvNumber(
+    'ASSISTANT_RAG_SEMANTIC_FLOOR',
+    0.35,
+  );
+
+  /** Similarite minimale pour qu'un document a lexical NUL entre dans le contexte. */
+  private readonly semanticRescueMin = this.resolveEnvNumber(
+    'ASSISTANT_RAG_SEMANTIC_RESCUE_MIN',
+    0.45,
+  );
+
+  /**
+   * Passe a false definitivement si le modele refuse de se charger.
+   * POURQUOI memoriser l'echec ? Sinon on retenterait un chargement
+   * (potentiellement un ETIMEDOUT de plusieurs secondes) a CHAQUE message
+   * de Lea. On echoue une fois, on log, on n'y revient plus.
+   */
+  private semanticAvailable = true;
+
+  private resolveSemanticEnabled(): boolean {
+    const raw = (process.env.ASSISTANT_RAG_SEMANTIC_ENABLED || 'true')
+      .trim()
+      .toLowerCase();
+    return raw !== '0' && raw !== 'false' && raw !== 'off' && raw !== 'no';
+  }
+
+  private resolveEnvNumber(key: string, fallback: number): number {
+    const raw = Number(process.env[key]);
+    // Number('') === 0 et Number('abc') === NaN : on filtre les deux cas.
+    return Number.isFinite(raw) && raw > 0 && raw <= 1 ? raw : fallback;
+  }
+
+  /**
+   * Texte a vectoriser pour un document.
+   *
+   * POURQUOI TRONQUER ? Contre-intuitif mais crucial :
+   * all-MiniLM-L6-v2 ne lit que ~256 tokens et fait la MOYENNE des vecteurs.
+   * Plus le texte est long, plus le vecteur se rapproche de la "moyenne du
+   * francais" -> tous les documents longs finissent par se ressembler.
+   * C'est l'explication de nos scores tasses entre 0.33 et 0.63 (evaluation
+   * phase 2), et de "Estimation de prix" qui sortait sur des questions
+   * sans rapport. Le titre + le debut du contenu portent l'essentiel du sujet.
+   */
+  private buildEmbeddingText(chunk: KnowledgeChunk): string {
+    return `${chunk.title}. ${chunk.text}`.replace(/\s+/g, ' ').trim().slice(0, 600);
+  }
+
+  /**
+   * Vectorise la question de l'utilisateur.
+   * Renvoie null en cas de probleme -> le RAG retombe en LEXICAL PUR.
+   * REGLE : une amelioration optionnelle ne doit JAMAIS casser la base.
+   */
+  private async embedQuerySafely(query: string): Promise<number[] | null> {
+    if (!this.semanticEnabled || !this.semanticAvailable) return null;
+    try {
+      return await embedText(query);
+    } catch (error) {
+      this.semanticAvailable = false;
+      this.logger.warn(
+        `RAG semantique indisponible, repli en lexical pur : ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Precalcule les vecteurs des 29 documents, UNE SEULE FOIS par remplissage
+   * de cache.
+   *
+   * POURQUOI ICI et pas dans retrieveContext ?
+   * Vectoriser 29 documents coute ~1 seconde. Le faire a chaque message
+   * ajouterait 1 s de latence a chaque reponse de Lea. Ici, c'est paye
+   * une fois par TTL de cache, et la question (1 seul vecteur, ~30 ms)
+   * reste le seul calcul par requete.
+   *
+   * CONSEQUENCE : la convention n°7 (re-seed RAG -> redemarrage complet du
+   * backend) devient encore plus vraie : les vecteurs vivent dans ce cache.
+   */
+  private async attachEmbeddings(chunks: KnowledgeChunk[]): Promise<void> {
+    if (!this.semanticEnabled || !this.semanticAvailable) return;
+    if (chunks.length === 0) return;
+
+    const startedAt = Date.now();
+    try {
+      const vectors = await embedTexts(
+        chunks.map((chunk) => this.buildEmbeddingText(chunk)),
+      );
+      chunks.forEach((chunk, index) => {
+        chunk.embedding = vectors[index];
+      });
+      this.logger.log(
+        `RAG semantique : ${chunks.length} documents vectorises en ${Date.now() - startedAt} ms.`,
+      );
+    } catch (error) {
+      this.semanticAvailable = false;
+      this.logger.warn(
+        `Vectorisation impossible, RAG en lexical pur : ${(error as Error).message}`,
+      );
+    }
+  }
   constructor(private readonly prisma: PrismaService) {}
 
   async retrieveContext(input: RagRetrievalInput): Promise<RagRetrievalResult> {
@@ -124,32 +257,80 @@ export class AssistantRagService {
     if (queryTokens.length === 0) {
       return { snippets: [], context: '' };
     }
-
     const limit = Math.min(Math.max(input.limit ?? 4, 1), 8);
-    const scored = chunks
-      .map((chunk) => ({
+
+    // ============================================================
+    // ETAPE 1 — SOCLE LEXICAL (inchange, calibre sur ~45 questions)
+    // ============================================================
+    const lexicalEntries = chunks.map((chunk) => ({
+      chunk,
+      lexicalScore: this.computeScore({
+        query,
+        queryTokens,
         chunk,
-        score: this.computeScore({
-          query,
-          queryTokens,
-          chunk,
-          projectType: input.projectType,
-          intent: input.intent,
-        }),
-      }))
+        projectType: input.projectType,
+        intent: input.intent,
+      }),
+    }));
+
+    // ============================================================
+    // ETAPE 2 — VECTEUR DE LA QUESTION (1 seul calcul par requete)
+    // null = mode degrade : on continue en lexical pur, sans erreur.
+    // ============================================================
+    const queryEmbedding = await this.embedQuerySafely(query);
+
+    // ============================================================
+    // ETAPE 3 — SCORE HYBRIDE = LEXICAL + BONUS SEMANTIQUE BORNE
+    // Le bonus est TOUJOURS >= 0 : le score ne peut que monter,
+    // donc aucune regression possible sur les questions validees.
+    // ============================================================
+    const scored = lexicalEntries
+      .map((entry) => {
+        const semanticScore =
+          queryEmbedding && entry.chunk.embedding
+            ? cosineSimilarity(queryEmbedding, entry.chunk.embedding)
+            : 0;
+
+        const bonus = semanticBonus(
+          semanticScore,
+          this.semanticFloor,
+          this.semanticWeight,
+        );
+
+        return {
+          chunk: entry.chunk,
+          lexicalScore: entry.lexicalScore,
+          semanticScore,
+          score: entry.lexicalScore + bonus,
+        };
+      })
+      // Filtre de pertinence. On garde le comportement historique
+      // (au moins un mot en commun) ET on ouvre une porte etroite :
+      // un document SANS aucun mot commun peut entrer dans le contexte
+      // s'il est semantiquement tres proche (cas "proposition commerciale"
+      // -> document "Duree de validite d'un devis", zero mot partage).
+      // Le seuil de repechage est HAUT (0.45) pour ne pas laisser passer
+      // le bruit de fond du cosinus (~0.35).
+      .filter(
+        (entry) =>
+          entry.lexicalScore > 0 || entry.semanticScore >= this.semanticRescueMin,
+      )
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
-    const snippets: RagSnippet[] = scored.map(({ chunk, score }) => ({
-      sourceType: chunk.sourceType,
-      sourceId: chunk.sourceId,
-      title: chunk.title,
-      excerpt: this.toExcerpt(chunk.text),
-      fullText: chunk.text,
-      score: Number(score.toFixed(3)),
-    }));
-
+    const snippets: RagSnippet[] = scored.map(
+      ({ chunk, score, lexicalScore, semanticScore }) => ({
+        sourceType: chunk.sourceType,
+        sourceId: chunk.sourceId,
+        title: chunk.title,
+        excerpt: this.toExcerpt(chunk.text),
+        fullText: chunk.text,
+        score: Number(score.toFixed(3)),
+        lexicalScore: Number(lexicalScore.toFixed(3)),
+        semanticScore: Number(semanticScore.toFixed(3)),
+      }),
+    );
     const context = snippets.length > 0 ? this.buildContextBlock(snippets) : '';
 
     return {
@@ -306,7 +487,9 @@ export class AssistantRagService {
         }
       }
     }
-
+    // Vectorisation des documents AVANT la mise en cache : les vecteurs
+    // sont ainsi stockes avec les chunks et reutilises pendant tout le TTL.
+    await this.attachEmbeddings(chunks);
     if (this.cacheTtlMs > 0) {
       this.cache.set(companyId, {
         expiresAt: now + this.cacheTtlMs,
