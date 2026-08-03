@@ -4,7 +4,6 @@ import { after, before, describe, it } from 'node:test';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module.js';
 
 type AuthLoginBody = {
@@ -15,7 +14,7 @@ type AuthLoginBody = {
 };
 
 describe('Assistant Integration (DB-backed e2e)', { concurrency: 1 }, () => {
-  let app: INestApplication<App>;
+  let app: INestApplication;
   let token = '';
   let companyId = 0;
 
