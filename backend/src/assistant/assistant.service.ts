@@ -1253,6 +1253,7 @@ export class AssistantService {
   async getProspects(companyId: number) {
     const prospects = await this.prisma.client.findMany({
       where: {
+        actif: true,
         companyId,
         source: LeadSource.CHATBOT,
       },
@@ -1523,6 +1524,85 @@ export class AssistantService {
     });
 
     return { total, positifs, negatifs, satisfactionRate, recentNegatives };
+  }
+  async mergeProspects(input: {
+    companyId: number;
+    keepId: number; // la fiche qui SURVIT
+    mergeId: number; // la fiche fusionnee puis archivee
+  }) {
+    // Garde-fou : on ne fusionne pas une fiche avec elle-meme.
+    if (input.keepId === input.mergeId) {
+      throw new BadRequestException(
+        'Impossible de fusionner une fiche avec elle-meme.',
+      );
+    }
+
+    // Toute la fusion dans UNE transaction : si une etape echoue,
+    // TOUT est annule (rollback). Pas de fusion a moitie possible.
+    return this.prisma.$transaction(async (tx) => {
+      // 1) Charger les deux fiches ET verifier qu'elles appartiennent
+      //    a la meme company (securite multi-tenant).
+      const [keep, merge] = await Promise.all([
+        tx.client.findFirst({
+          where: { id: input.keepId, companyId: input.companyId },
+        }),
+        tx.client.findFirst({
+          where: { id: input.mergeId, companyId: input.companyId },
+        }),
+      ]);
+
+      // Garde-fou : on ne fusionne pas une fiche deja archivee (double-fusion).
+      if (keep.actif === false || merge.actif === false) {
+        throw new BadRequestException(
+          'Une des deux fiches est deja archivee : fusion impossible.',
+        );
+      }
+
+      // 2) Repointer les demandes de devis : mergeId -> keepId
+      await tx.demandeDevis.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 3) Repointer les devis
+      await tx.devis.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 4) Repointer les chantiers
+      await tx.chantier.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 5) Tracabilite : sauver les infos de la fiche fusionnee
+      //    dans les notes de la fiche gardee (rien n'est perdu).
+      const dateStr = new Date().toLocaleDateString('fr-FR');
+      const traceMerge = `[Fusion du ${dateStr}] Fiche fusionnee : ${merge.nom}${
+        merge.email ? ` <${merge.email}>` : ''
+      }${merge.telephone ? ` (${merge.telephone})` : ''}.`;
+      const nouvellesNotes = keep.notes
+        ? `${keep.notes}\n${traceMerge}`
+        : traceMerge;
+
+      // 6) Archiver la fiche fusionnee (jamais supprimee !) + noter la trace.
+      await tx.client.update({
+        where: { id: input.keepId },
+        data: { notes: nouvellesNotes.slice(0, 4000) },
+      });
+      await tx.client.update({
+        where: { id: input.mergeId },
+        data: { actif: false },
+      });
+
+      return {
+        success: true,
+        keptId: input.keepId,
+        archivedId: input.mergeId,
+        message: `Fiche ${merge.nom} fusionnee dans ${keep.nom} et archivee.`,
+      };
+    });
   }
   async findPotentialDuplicates(input: {
     companyId: number;

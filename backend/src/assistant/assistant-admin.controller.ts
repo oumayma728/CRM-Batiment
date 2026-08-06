@@ -117,6 +117,21 @@ export class AssistantAdminController {
       excludeProspectId: body.excludeProspectId,
     });
   }
+  @Post('prospects/merge')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Fusionner deux prospects en doublon (transfert + archivage)',
+  })
+  mergeProspects(
+    @Body() body: { keepId: number; mergeId: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.mergeProspects({
+      companyId: user.companyId,
+      keepId: body.keepId,
+      mergeId: body.mergeId,
+    });
+  }
   @Get('feedbacks/stats')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({
