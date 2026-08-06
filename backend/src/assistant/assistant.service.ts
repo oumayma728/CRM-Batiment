@@ -5465,7 +5465,9 @@ export class AssistantService {
       ? await this.prisma.client.findFirst({
           where: {
             companyId: input.companyId,
-            email: normalizedEmail,
+            // insensitive : "Amal@gmail.com" et "amal@gmail.com" = meme personne.
+            // Protege contre les emails existants stockes en casse mixte.
+            email: { equals: normalizedEmail, mode: 'insensitive' },
           },
           select: {
             id: true,
