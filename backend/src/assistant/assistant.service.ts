@@ -6240,7 +6240,11 @@ export class AssistantService {
     typeProjetId: number | null;
   }): Promise<{ devisId: number; demandeId: number; reference: string | null } | null> {
     try {
-      const existingDemande = await this.prisma.demandeDevis.findFirst({
+      // OPTION B (validee par Oumayma) : on ne reutilise une demande ouverte
+      // QUE si elle concerne le MEME type de projet. Un projet different cree
+      // une demande DISTINCTE (pas de perte de besoin multi-projets).
+      // Le type de projet est stocke dans besoinStructure (pas de colonne dediee).
+      const openDemandes = await this.prisma.demandeDevis.findMany({
         where: {
           companyId: input.companyId,
           clientId: input.prospectId,
@@ -6248,11 +6252,18 @@ export class AssistantService {
           statut: { in: ['NOUVEAU', 'EN_COURS'] },
         },
         orderBy: { createdAt: 'desc' },
-        select: { id: true, reference: true },
+        select: { id: true, reference: true, besoinStructure: true },
       });
 
-      const demandeRecord = existingDemande
-        ? existingDemande
+      // Chercher une demande ouverte du MEME type de projet.
+      const sameProjectDemande = openDemandes.find((d) => {
+        const structure = d.besoinStructure as { typeProjetId?: number | null } | null;
+        const demandeTypeProjet = structure?.typeProjetId ?? null;
+        return demandeTypeProjet === input.typeProjetId;
+      });
+
+      const demandeRecord = sameProjectDemande
+        ? { id: sameProjectDemande.id, reference: sameProjectDemande.reference }
         : await this.prisma.demandeDevis.create({
             data: {
               companyId: input.companyId,
@@ -6267,6 +6278,7 @@ export class AssistantService {
                 origin: 'assistant-ia-auto',
                 created_by: input.actorUserId,
                 created_at: new Date().toISOString(),
+                typeProjetId: input.typeProjetId, // <-- stocke pour comparaison future
               },
               reference: this.generateReference(),
             },
