@@ -306,7 +306,88 @@ export class MailService {
       ],
     });
   }
+  async sendProspectConfirmation(payload: {
+    to: string;
+    prospectName: string;
+    reference: string | null;
+    besoin: string;
+    companyName: string;
+  }): Promise<void> {
+    const refLabel = payload.reference ?? 'en cours d attribution';
+    const subject = `Votre demande a bien ete recue (${refLabel})`;
 
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #0f172a;">
+        <div style="padding: 28px; background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 20px 20px 0 0; color: white;">
+          <p style="margin: 0; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #cbd5e1;">${payload.companyName}</p>
+          <h1 style="margin: 12px 0 0; font-size: 26px;">Demande bien recue !</h1>
+        </div>
+        <div style="border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 20px 20px; padding: 28px; background: #ffffff;">
+          <p>Bonjour <strong>${payload.prospectName}</strong>,</p>
+          <p>Nous avons bien enregistre votre demande. Notre equipe va l etudier et revenir vers vous rapidement.</p>
+          <div style="margin: 18px 0; padding: 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 6px;"><strong>Reference de suivi :</strong> ${refLabel}</p>
+            <p style="margin: 0;"><strong>Votre besoin :</strong> ${payload.besoin}</p>
+          </div>
+          <p style="color: #334155;">Conservez votre reference : elle vous permet de suivre l avancement de votre demande a tout moment.</p>
+          <p style="margin-top: 20px;">A tres bientot,<br/>L equipe ${payload.companyName}</p>
+        </div>
+      </div>
+    `;
+
+    await this.sendOrLog({
+      to: payload.to,
+      subject,
+      html,
+      devLogs: [
+        `Confirmation prospect: ${payload.prospectName}`,
+        `Reference: ${refLabel}`,
+        `Besoin: ${payload.besoin}`,
+      ],
+    });
+  }
+
+  async sendInternalNewProspectAlert(payload: {
+    to: string;
+    prospectName: string;
+    prospectEmail: string | null;
+    prospectPhone: string | null;
+    reference: string | null;
+    besoin: string;
+    backOfficeUrl: string;
+  }): Promise<void> {
+    const subject = `Nouveau prospect a qualifier : ${payload.prospectName}`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #0f172a;">
+        <div style="padding: 24px; background: #1e40af; border-radius: 16px 16px 0 0; color: white;">
+          <h1 style="margin: 0; font-size: 22px;">Nouveau prospect chatbot</h1>
+        </div>
+        <div style="border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 16px 16px; padding: 24px; background: #ffffff;">
+          <p>Un nouveau prospect vient de soumettre une demande via l assistant Lea.</p>
+          <div style="margin: 16px 0; padding: 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
+            <p style="margin: 0 0 6px;"><strong>Nom :</strong> ${payload.prospectName}</p>
+            <p style="margin: 0 0 6px;"><strong>Email :</strong> ${payload.prospectEmail ?? 'Non renseigne'}</p>
+            <p style="margin: 0 0 6px;"><strong>Telephone :</strong> ${payload.prospectPhone ?? 'Non renseigne'}</p>
+            <p style="margin: 0 0 6px;"><strong>Reference :</strong> ${payload.reference ?? 'N/A'}</p>
+            <p style="margin: 0;"><strong>Besoin :</strong> ${payload.besoin}</p>
+          </div>
+          <a href="${payload.backOfficeUrl}" style="display: inline-block; margin-top: 8px; padding: 12px 20px; background: #1e40af; color: white; text-decoration: none; border-radius: 10px; font-weight: bold;">Ouvrir le back-office</a>
+        </div>
+      </div>
+    `;
+
+    await this.sendOrLog({
+      to: payload.to,
+      subject,
+      html,
+      devLogs: [
+        `Nouveau prospect: ${payload.prospectName}`,
+        `Contact: ${payload.prospectEmail ?? '-'} / ${payload.prospectPhone ?? '-'}`,
+        `Reference: ${payload.reference ?? 'N/A'}`,
+      ],
+    });
+  }
   private async sendOrLog({
     to,
     subject,

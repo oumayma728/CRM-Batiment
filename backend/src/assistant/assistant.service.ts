@@ -26,6 +26,7 @@ import {
 } from './assistant-rag.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import { checkSensitiveOutput } from './sensitive-output.filter.js';
+import { MailService } from '../mail/mail.service.js';
 type AssistantIntent =
   | 'demande_devis'
   | 'demande_info_service'
@@ -283,6 +284,7 @@ export class AssistantService {
     private readonly assistantLlmService: AssistantLlmService,
     private readonly assistantRagService: AssistantRagService,
     private readonly notificationsService: NotificationsService,
+    private readonly mailService: MailService,
   ) {}
 
   async startSession(dto: StartAssistantSessionDto) {
@@ -6305,6 +6307,59 @@ export class AssistantService {
         companyId: input.companyId,
         typeProjetId: input.typeProjetId,
       });
+
+      // ========== NOTIFICATIONS EMAIL (seulement pour une NOUVELLE demande) ==========
+      // On n'envoie pas d'email si on a reutilise une demande existante (evite le spam).
+      // L'envoi ne bloque JAMAIS le parcours : en cas d'echec, on journalise et on continue.
+      if (!sameProjectDemande) {
+        try {
+          const prospect = await this.prisma.client.findUnique({
+            where: { id: input.prospectId },
+            select: { nom: true, email: true, telephone: true },
+          });
+          const company = await this.prisma.company.findUnique({
+            where: { id: input.companyId },
+            select: { nom: true, email: true },
+          });
+          const besoin = input.description || 'Demande de devis';
+          const prospectName = prospect?.nom || 'Client';
+
+          // 1) Email de confirmation au prospect (s'il a laisse un email)
+          if (prospect?.email) {
+            await this.mailService.sendProspectConfirmation({
+              to: prospect.email,
+              prospectName,
+              reference: demandeReference,
+              besoin,
+              companyName: company?.nom || 'Notre entreprise',
+            });
+          }
+
+          // 2) Alerte interne a l'equipe (si l'entreprise a un email de contact)
+          if (company?.email) {
+            await this.mailService.sendInternalNewProspectAlert({
+              to: company.email,
+              prospectName,
+              prospectEmail: prospect?.email ?? null,
+              prospectPhone: prospect?.telephone ?? null,
+              reference: demandeReference,
+              besoin,
+              backOfficeUrl: 'http://localhost:5173/technico/assistant-ia',
+            });
+          }
+
+          this.logger.log(
+            `[IA] Emails de notification envoyes (demande ${demandeReference ?? demandeId})`,
+          );
+        } catch (mailError) {
+          // L'email echoue ? On journalise mais on NE bloque PAS le parcours client.
+          const msg =
+            mailError instanceof Error ? mailError.message : String(mailError);
+          this.logger.error(
+            `[IA] Echec envoi emails notification (demande ${demandeId}): ${msg}`,
+          );
+        }
+      }
 
       return { devisId: devis.id, demandeId, reference: demandeReference };
     } catch (error) {

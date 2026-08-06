@@ -7,9 +7,10 @@ import { AssistantRagService } from './assistant-rag.service.js';
 import { DevisModule } from '../devis/devis.module.js';
 import { ClientsModule } from '../clients/clients.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
+import { MailModule } from '../mail/mail.module.js';
 
 @Module({
-  imports: [DevisModule, ClientsModule, NotificationsModule],
+  imports: [DevisModule, ClientsModule, NotificationsModule, MailModule],
   controllers: [AssistantController, AssistantAdminController],
   providers: [AssistantService, AssistantLlmService, AssistantRagService],
   exports: [AssistantService],
