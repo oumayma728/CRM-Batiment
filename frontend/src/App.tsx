@@ -44,6 +44,7 @@ import TechnicoCatalogueExplorer from '@/pages/technico/TechnicoCatalogueExplore
 import TechnicoDevisSignature from '@/pages/technico/TechnicoDevisSignature';
 import TechnicoProfile from '@/pages/technico/TechnicoProfile';
 import TechnicoAssistantIA from '@/pages/technico/TechnicoAssistantIA';
+import TechnicoFeedbacksDashboard from '@/pages/technico/TechnicoFeedbacksDashboard';
 import FournisseurDashboard from '@/pages/fournisseur/FournisseurDashboard';
 
 function RoleRouter() {
@@ -137,6 +138,7 @@ export default function App() {
             <Route path="devis/:id/signature" element={<TechnicoDevisSignature />} />
             <Route path="checklist" element={<TechnicoChecklist />} />
             <Route path="assistant-ia" element={<TechnicoAssistantIA />} />
+            <Route path="feedbacks" element={<TechnicoFeedbacksDashboard />} />
             <Route path="profil" element={<TechnicoProfile />} />
             <Route path="prestations" element={<TechnicoPrestations />} />
             <Route path="materiaux" element={<TechnicoMateriaux />} />

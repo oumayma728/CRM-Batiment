@@ -1,4 +1,4 @@
-import { checkSensitiveOutput } from './sensitive-output.filter';
+import { checkSensitiveOutput } from './sensitive-output.filter.js';
 
 describe('checkSensitiveOutput — filtre anti-fuite de donnees sensibles', () => {
   // ========== CE QUI DOIT ETRE BLOQUE ==========

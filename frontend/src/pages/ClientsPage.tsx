@@ -190,7 +190,7 @@ export default function ClientsPage() {
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const body: Record<string, unknown> = {
       nom: form.nom,
@@ -205,8 +205,42 @@ export default function ClientsPage() {
       notes: form.notes || undefined,
     };
     if (editingClient) {
-      updateMutation.mutate({ id: editingClient.id, body });
+      await updateMutation.mutate({ id: editingClient.id, body });
     } else {
+      // ========== VERIFICATION DES DOUBLONS AVANT CREATION ==========
+      // Detection par email/telephone -> avertissement -> l'HUMAIN decide.
+      try {
+        if (form.email || form.telephone) {
+          const res = await api.post(
+            '/assistant/admin/prospects/check-duplicates',
+            {
+              email: form.email || undefined,
+              telephone: form.telephone || undefined,
+            },
+          );
+          const duplicates = res.data?.duplicates ?? [];
+          if (duplicates.length > 0) {
+            const details = duplicates
+              .map(
+                (d: {
+                  id: number;
+                  nom: string | null;
+                  prenom: string | null;
+                  matchedOn: string[];
+                }) =>
+                  `#${d.id} ${`${d.prenom ?? ''} ${d.nom ?? ''}`.trim() || 'Sans nom'} (${d.matchedOn.map((m) => `même ${m}`).join(', ')})`,
+              )
+              .join('\n');
+            const proceed = window.confirm(
+              `⚠️ Doublon(s) potentiel(s) détecté(s) :\n\n${details}\n\nCréer quand même un nouveau client ?`,
+            );
+            if (!proceed) return; // l'admin annule : rien n'est cree
+          }
+        }
+      } catch {
+        // La verification est un confort, pas un verrou :
+        // si elle echoue (reseau...), on n'empeche pas la creation.
+      }
       createMutation.mutate(body);
     }
   }

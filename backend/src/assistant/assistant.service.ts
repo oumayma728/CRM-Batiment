@@ -26,6 +26,7 @@ import {
 } from './assistant-rag.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import { checkSensitiveOutput } from './sensitive-output.filter.js';
+import { MailService } from '../mail/mail.service.js';
 type AssistantIntent =
   | 'demande_devis'
   | 'demande_info_service'
@@ -283,6 +284,7 @@ export class AssistantService {
     private readonly assistantLlmService: AssistantLlmService,
     private readonly assistantRagService: AssistantRagService,
     private readonly notificationsService: NotificationsService,
+    private readonly mailService: MailService,
   ) {}
 
   async startSession(dto: StartAssistantSessionDto) {
@@ -423,7 +425,10 @@ export class AssistantService {
     const messageForQuestionCheck = this.normalizeForMatch(dto.message);
     const isInformationalQuestion =
       (/\?/.test(dto.message) ||
-        /(prix|tarif|co[uû]te?|budget|estimation)/.test(messageForQuestionCheck)) &&
+        /(prix|tarif|co[uû]te?|budget|estimation)/.test(messageForQuestionCheck) ||
+        /\b(comment|quelle?s?|combien|pourquoi|est[\s-]?ce que|c est quoi)\b/.test(
+          messageForQuestionCheck,
+        )) &&
       /(quelle?|quels?|quelles?|comment|combien|pourquoi|difference|c est quoi|ca veut dire|signifie|valide|inclus|inclut|puis[\s-]?je|peut[\s-]?on|est[\s-]?il possible|est[\s-]?ce possible|comment faire|ou puis[\s-]?je|ou trouver|peut[\s-]?elle|peut[\s-]?il|budget|prix|co[uû]te?|tarif|estimation)/.test(
         messageForQuestionCheck,
       ) &&
@@ -1250,6 +1255,7 @@ export class AssistantService {
   async getProspects(companyId: number) {
     const prospects = await this.prisma.client.findMany({
       where: {
+        actif: true,
         companyId,
         source: LeadSource.CHATBOT,
       },
@@ -1482,6 +1488,123 @@ export class AssistantService {
         : null,
       autoGeneration,
     };
+  }
+  async getFeedbackStats(input: { companyId: number; days?: number }) {
+    // Filtre par periode : si days fourni (ex: 7, 30), on ne compte que
+    // les feedbacks depuis cette date. Sinon : tout l'historique.
+    const since = input.days
+      ? new Date(Date.now() - input.days * 24 * 60 * 60 * 1000)
+      : undefined;
+
+    const where = {
+      companyId: input.companyId,
+      ...(since ? { createdAt: { gte: since } } : {}),
+    };
+
+    // 1) Les compteurs : total, positifs, negatifs (3 requetes simples)
+    const [total, positifs, negatifs] = await Promise.all([
+      this.prisma.assistantFeedback.count({ where }),
+      this.prisma.assistantFeedback.count({ where: { ...where, rating: 'UP' } }),
+      this.prisma.assistantFeedback.count({ where: { ...where, rating: 'DOWN' } }),
+    ]);
+
+    // 2) Le taux de satisfaction (protege contre la division par zero !)
+    const satisfactionRate =
+      total > 0 ? Math.round((positifs / total) * 1000) / 10 : null;
+
+    // 3) La liste des feedbacks negatifs recents (les ameliorations a faire !)
+    const recentNegatives = await this.prisma.assistantFeedback.findMany({
+      where: { ...where, rating: 'DOWN' },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        sessionId: true,
+        messageExcerpt: true,
+        createdAt: true,
+      },
+    });
+
+    return { total, positifs, negatifs, satisfactionRate, recentNegatives };
+  }
+  async mergeProspects(input: {
+    companyId: number;
+    keepId: number; // la fiche qui SURVIT
+    mergeId: number; // la fiche fusionnee puis archivee
+  }) {
+    // Garde-fou : on ne fusionne pas une fiche avec elle-meme.
+    if (input.keepId === input.mergeId) {
+      throw new BadRequestException(
+        'Impossible de fusionner une fiche avec elle-meme.',
+      );
+    }
+
+    // Toute la fusion dans UNE transaction : si une etape echoue,
+    // TOUT est annule (rollback). Pas de fusion a moitie possible.
+    return this.prisma.$transaction(async (tx) => {
+      // 1) Charger les deux fiches ET verifier qu'elles appartiennent
+      //    a la meme company (securite multi-tenant).
+      const [keep, merge] = await Promise.all([
+        tx.client.findFirst({
+          where: { id: input.keepId, companyId: input.companyId },
+        }),
+        tx.client.findFirst({
+          where: { id: input.mergeId, companyId: input.companyId },
+        }),
+      ]);
+
+      // Garde-fou : on ne fusionne pas une fiche deja archivee (double-fusion).
+      if (keep.actif === false || merge.actif === false) {
+        throw new BadRequestException(
+          'Une des deux fiches est deja archivee : fusion impossible.',
+        );
+      }
+
+      // 2) Repointer les demandes de devis : mergeId -> keepId
+      await tx.demandeDevis.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 3) Repointer les devis
+      await tx.devis.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 4) Repointer les chantiers
+      await tx.chantier.updateMany({
+        where: { clientId: input.mergeId },
+        data: { clientId: input.keepId },
+      });
+
+      // 5) Tracabilite : sauver les infos de la fiche fusionnee
+      //    dans les notes de la fiche gardee (rien n'est perdu).
+      const dateStr = new Date().toLocaleDateString('fr-FR');
+      const traceMerge = `[Fusion du ${dateStr}] Fiche fusionnee : ${merge.nom}${
+        merge.email ? ` <${merge.email}>` : ''
+      }${merge.telephone ? ` (${merge.telephone})` : ''}.`;
+      const nouvellesNotes = keep.notes
+        ? `${keep.notes}\n${traceMerge}`
+        : traceMerge;
+
+      // 6) Archiver la fiche fusionnee (jamais supprimee !) + noter la trace.
+      await tx.client.update({
+        where: { id: input.keepId },
+        data: { notes: nouvellesNotes.slice(0, 4000) },
+      });
+      await tx.client.update({
+        where: { id: input.mergeId },
+        data: { actif: false },
+      });
+
+      return {
+        success: true,
+        keptId: input.keepId,
+        archivedId: input.mergeId,
+        message: `Fiche ${merge.nom} fusionnee dans ${keep.nom} et archivee.`,
+      };
+    });
   }
   async findPotentialDuplicates(input: {
     companyId: number;
@@ -4330,7 +4453,22 @@ export class AssistantService {
       .replace(/\s*\(dot\)\s*/gi, '.');
 
     // Ex: "amal saidani2.Je veux..." -> "amal saidani. Je veux..."
-    const cleanedMessage = normalizedEmailSyntax
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    const phoneRegex = /(?:\+?\d(?:[\s().-]*\d){7,14})/;
+
+    // On extrait l'email AVANT tout nettoyage : les regles de separation
+    // lettre/chiffre casseraient un email comme "asmaameftah662003@gmail.com"
+    // (le "h662003" serait coupe en "h 662003" -> email tronque).
+    const emailMatch = normalizedEmailSyntax.match(emailRegex);
+
+    // On retire l'email du message AVANT de nettoyer, pour qu'il ne pollue
+    // ni le nettoyage ni l'extraction du telephone.
+    const messageSansEmail = emailMatch
+      ? normalizedEmailSyntax.replace(emailMatch[0], ' ')
+      : normalizedEmailSyntax;
+
+    // Ex: "amal saidani2.Je veux..." -> "amal saidani. Je veux..."
+    const cleanedMessage = messageSansEmail
       .replace(/[;,|]/g, ' ')
       .replace(/(\p{L})\d+\./gu, '$1. ')
       .replace(/(\p{L})(\d{6,15})/gu, '$1 $2')
@@ -4338,12 +4476,7 @@ export class AssistantService {
       .replace(/\s+/g, ' ')
       .trim();
 
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-    const phoneRegex = /(?:\+?\d(?:[\s().-]*\d){7,14})/;
-
-    const emailMatch = cleanedMessage.match(emailRegex);
     const phoneMatch = cleanedMessage.match(phoneRegex);
-
     // 2. Patterns de détection du nom (enrichis)
     const namePatterns = [
       // Patterns explicites
@@ -5344,7 +5477,9 @@ export class AssistantService {
       ? await this.prisma.client.findFirst({
           where: {
             companyId: input.companyId,
-            email: normalizedEmail,
+            // insensitive : "Amal@gmail.com" et "amal@gmail.com" = meme personne.
+            // Protege contre les emails existants stockes en casse mixte.
+            email: { equals: normalizedEmail, mode: 'insensitive' },
           },
           select: {
             id: true,
@@ -6119,7 +6254,11 @@ export class AssistantService {
     typeProjetId: number | null;
   }): Promise<{ devisId: number; demandeId: number; reference: string | null } | null> {
     try {
-      const existingDemande = await this.prisma.demandeDevis.findFirst({
+      // OPTION B (validee par Oumayma) : on ne reutilise une demande ouverte
+      // QUE si elle concerne le MEME type de projet. Un projet different cree
+      // une demande DISTINCTE (pas de perte de besoin multi-projets).
+      // Le type de projet est stocke dans besoinStructure (pas de colonne dediee).
+      const openDemandes = await this.prisma.demandeDevis.findMany({
         where: {
           companyId: input.companyId,
           clientId: input.prospectId,
@@ -6127,11 +6266,18 @@ export class AssistantService {
           statut: { in: ['NOUVEAU', 'EN_COURS'] },
         },
         orderBy: { createdAt: 'desc' },
-        select: { id: true, reference: true },
+        select: { id: true, reference: true, besoinStructure: true },
       });
 
-      const demandeRecord = existingDemande
-        ? existingDemande
+      // Chercher une demande ouverte du MEME type de projet.
+      const sameProjectDemande = openDemandes.find((d) => {
+        const structure = d.besoinStructure as { typeProjetId?: number | null } | null;
+        const demandeTypeProjet = structure?.typeProjetId ?? null;
+        return demandeTypeProjet === input.typeProjetId;
+      });
+
+      const demandeRecord = sameProjectDemande
+        ? { id: sameProjectDemande.id, reference: sameProjectDemande.reference }
         : await this.prisma.demandeDevis.create({
             data: {
               companyId: input.companyId,
@@ -6146,6 +6292,7 @@ export class AssistantService {
                 origin: 'assistant-ia-auto',
                 created_by: input.actorUserId,
                 created_at: new Date().toISOString(),
+                typeProjetId: input.typeProjetId, // <-- stocke pour comparaison future
               },
               reference: this.generateReference(),
             },
@@ -6170,6 +6317,59 @@ export class AssistantService {
         companyId: input.companyId,
         typeProjetId: input.typeProjetId,
       });
+
+      // ========== NOTIFICATIONS EMAIL (seulement pour une NOUVELLE demande) ==========
+      // On n'envoie pas d'email si on a reutilise une demande existante (evite le spam).
+      // L'envoi ne bloque JAMAIS le parcours : en cas d'echec, on journalise et on continue.
+      if (!sameProjectDemande) {
+        try {
+          const prospect = await this.prisma.client.findUnique({
+            where: { id: input.prospectId },
+            select: { nom: true, email: true, telephone: true },
+          });
+          const company = await this.prisma.company.findUnique({
+            where: { id: input.companyId },
+            select: { nom: true, email: true },
+          });
+          const besoin = input.description || 'Demande de devis';
+          const prospectName = prospect?.nom || 'Client';
+
+          // 1) Email de confirmation au prospect (s'il a laisse un email)
+          if (prospect?.email) {
+            await this.mailService.sendProspectConfirmation({
+              to: prospect.email,
+              prospectName,
+              reference: demandeReference,
+              besoin,
+              companyName: company?.nom || 'Notre entreprise',
+            });
+          }
+
+          // 2) Alerte interne a l'equipe (si l'entreprise a un email de contact)
+          if (company?.email) {
+            await this.mailService.sendInternalNewProspectAlert({
+              to: company.email,
+              prospectName,
+              prospectEmail: prospect?.email ?? null,
+              prospectPhone: prospect?.telephone ?? null,
+              reference: demandeReference,
+              besoin,
+              backOfficeUrl: 'http://localhost:5173/technico/assistant-ia',
+            });
+          }
+
+          this.logger.log(
+            `[IA] Emails de notification envoyes (demande ${demandeReference ?? demandeId})`,
+          );
+        } catch (mailError) {
+          // L'email echoue ? On journalise mais on NE bloque PAS le parcours client.
+          const msg =
+            mailError instanceof Error ? mailError.message : String(mailError);
+          this.logger.error(
+            `[IA] Echec envoi emails notification (demande ${demandeId}): ${msg}`,
+          );
+        }
+      }
 
       return { devisId: devis.id, demandeId, reference: demandeReference };
     } catch (error) {

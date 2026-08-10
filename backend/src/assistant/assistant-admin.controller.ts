@@ -7,9 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AssistantService } from './assistant.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
@@ -115,6 +116,51 @@ export class AssistantAdminController {
       telephone: body.telephone,
       excludeProspectId: body.excludeProspectId,
     });
+  }
+  @Post('prospects/merge')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Fusionner deux prospects en doublon (transfert + archivage)',
+  })
+  mergeProspects(
+    @Body() body: { keepId: number; mergeId: number },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.mergeProspects({
+      companyId: user.companyId,
+      keepId: body.keepId,
+      mergeId: body.mergeId,
+    });
+  }
+  @Get('feedbacks/stats')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Statistiques des feedbacks utilisateurs du chatbot',
+  })
+  @ApiQuery({
+    name: 'days',
+    required: false,
+    description: 'Periode en jours (ex: 7, 30). Vide = tout l historique.',
+  })
+  getFeedbackStats(
+    @Query('days') days: string | undefined,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.getFeedbackStats({
+      companyId: user.companyId,
+      days: days ? Number(days) : undefined,
+    });
+  }
+  @Get('sessions/:sessionId')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
+  @ApiOperation({
+    summary: 'Lire une session de chat et son historique (back-office)',
+  })
+  getSessionForAdmin(
+    @Param('sessionId', ParseIntPipe) sessionId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.assistantService.getSession(sessionId, user.companyId);
   }
   @Delete('prospects/:prospectId')
   @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)

@@ -310,4 +310,112 @@ describe('AssistantService conversation logic', () => {
     expect(result.isAvailabilityQuery).toBe(true);
     expect(result.isAvailable).toBe(false);
   });
+  // ============================================================
+  // TESTS ANTI-REGRESSION — les bugs corriges pendant le stage
+  // deviennent des gardiens permanents. Chaque cas ci-dessous
+  // correspond a un bug reel rencontre et corrige.
+  // ============================================================
+
+  describe('isLikelyName — validation des noms de personnes', () => {
+    describe('rejette les faux noms (bugs corriges)', () => {
+      it('rejette "pas important" (mots de refus/minimisation)', () => {
+        expect((service as any).isLikelyName('pas important')).toBe(false);
+      });
+
+      it('rejette "sais pas" (refus deguise)', () => {
+        expect((service as any).isLikelyName('sais pas')).toBe(false);
+      });
+
+      it('rejette "renovation maison" (vocabulaire metier)', () => {
+        expect((service as any).isLikelyName('renovation maison')).toBe(false);
+      });
+
+      it('rejette "comment allez vous" (forme interrogative)', () => {
+        expect((service as any).isLikelyName('comment allez vous')).toBe(false);
+      });
+
+      it('rejette "merci beaucoup" (formule de politesse)', () => {
+        expect((service as any).isLikelyName('merci beaucoup')).toBe(false);
+      });
+
+      it('rejette "je veux un devis" (phrase d intention)', () => {
+        expect((service as any).isLikelyName('je veux un devis')).toBe(false);
+      });
+
+      it('rejette un mot seul (regle nom + prenom)', () => {
+        expect((service as any).isLikelyName('Karim')).toBe(false);
+      });
+    });
+
+    describe('accepte les vrais noms (contre-tests)', () => {
+      it('accepte un nom simple "Nabiha Brahmni"', () => {
+        expect((service as any).isLikelyName('Nabiha Brahmni')).toBe(true);
+      });
+
+      it('accepte un nom compose a particules "Jean-Pierre de la Fontaine"', () => {
+        expect((service as any).isLikelyName('Jean-Pierre de la Fontaine')).toBe(
+          true,
+        );
+      });
+
+      it('accepte "Sami Trabelsi"', () => {
+        expect((service as any).isLikelyName('Sami Trabelsi')).toBe(true);
+      });
+    });
+  });
+
+  describe('sanitizeName — nettoyage des noms extraits', () => {
+    it('preserve la particule francaise "de la" (bug Jean-Pierre de)', () => {
+      expect(
+        (service as any).sanitizeName('jean-pierre de la fontaine'),
+      ).toBe('jean-pierre de la fontaine');
+    });
+
+    it('coupe au mot parasite "mon" (Karim mon telephone -> Karim)', () => {
+      expect((service as any).sanitizeName('Karim mon telephone')).toBe('Karim');
+    });
+
+    it('coupe au parasite "la" hors particule (Karim la semaine -> Karim)', () => {
+      expect((service as any).sanitizeName('Karim la semaine')).toBe('Karim');
+    });
+
+    it('supprime les chiffres du nom', () => {
+      expect((service as any).sanitizeName('Sami 0612345678')).toBe('Sami');
+    });
+
+    it('normalise les espaces multiples', () => {
+      expect((service as any).sanitizeName('  Sami   Trabelsi  ')).toBe(
+        'Sami Trabelsi',
+      );
+    });
+  });
+
+  describe('detectIntentWithConfidence — routage des intentions (cas du stage)', () => {
+    it('detecte le suivi quand une reference DEM-XXXXXX est presente', () => {
+      const result = (service as any).detectIntentWithConfidence(
+        'ou en est ma demande DEM-2J488F',
+        'autre',
+        undefined,
+      );
+      expect(result.detectedIntents).toContain('demande_suivi');
+    });
+
+    it('classe "je veux prendre un rendez-vous" en demande_rdv', () => {
+      const result = (service as any).detectIntentWithConfidence(
+        'je veux prendre un rendez-vous',
+        'autre',
+        undefined,
+      );
+      expect(result.detectedIntents).toContain('demande_rdv');
+    });
+
+    it('classe "quels sont vos services" en demande_info_service', () => {
+      const result = (service as any).detectIntentWithConfidence(
+        'quels sont vos services',
+        'autre',
+        undefined,
+      );
+      expect(result.detectedIntents).toContain('demande_service');
+    });
+  });
 });

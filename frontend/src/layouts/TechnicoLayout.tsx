@@ -17,6 +17,7 @@ import {
   Receipt,
   Bot,
   PackageCheck,
+  BarChart3,
 } from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 import { cn } from '@/lib/utils';
@@ -39,6 +40,7 @@ const techNavItems: TechNavItem[] = [
   { to: '/technico/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={20} />, description: 'Achats & receptions', group: 'Commercial' },
   { to: '/technico/checklist', label: 'Checklist Devis', icon: <CheckSquare size={20} />, description: 'Generer un devis', group: 'Commercial' },
   { to: '/technico/assistant-ia', label: 'Assistant IA', icon: <Bot size={20} />, description: 'Gerer prospects chatbot', group: 'Commercial' },
+  { to: '/technico/feedbacks', label: 'Feedbacks', icon: <BarChart3 size={20} />, description: 'Satisfaction chatbot', group: 'Commercial' },
   { to: '/technico/prestations', label: 'Prestations', icon: <BookOpen size={20} />, description: 'Catalogue', group: 'Referentiel' },
   { to: '/technico/catalogue', label: 'Catalogue Expert', icon: <Search size={20} />, description: 'Explorer le catalogue', group: 'Referentiel' },
   { to: '/technico/profil', label: 'Mon Profil', icon: <Signature size={20} />, description: 'Ma signature', group: 'Compte' },

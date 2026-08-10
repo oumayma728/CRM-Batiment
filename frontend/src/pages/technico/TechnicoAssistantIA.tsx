@@ -181,6 +181,28 @@ export default function TechnicoAssistantIA() {
     },
     onSuccess: (data) => setDuplicatesResult(data),
   });
+  const mergeMutation = useMutation({
+    mutationFn: async ({
+      keepId,
+      mergeId,
+    }: {
+      keepId: number;
+      mergeId: number;
+    }) => {
+      const res = await api.post('/assistant/admin/prospects/merge', {
+        keepId,
+        mergeId,
+      });
+      return res.data;
+    },
+    onSuccess: async () => {
+      // Rafraichir la liste des prospects ET fermer l'encart de doublons
+      await queryClient.invalidateQueries({
+        queryKey: ['technico-assistant-prospects'],
+      });
+      setDuplicatesResult(null);
+    },
+  });
   const allProspects = prospectsQuery.data?.items ?? [];
   const prospects = useMemo(() => {
     let list = [...allProspects];
@@ -439,6 +461,26 @@ export default function TechnicoAssistantIA() {
                                       même {m}
                                     </span>
                                   ))}
+                                  <button
+                                    onClick={() => {
+                                      const confirmed = window.confirm(
+                                        `Fusionner les deux fiches ?\n\n` +
+                                          `• Fiche GARDÉE : #${prospect.id} ${prospect.nom ?? ''}\n` +
+                                          `• Fiche ARCHIVÉE : #${dup.id} ${`${dup.prenom ?? ''} ${dup.nom ?? ''}`.trim()}\n\n` +
+                                          `Les demandes, devis et chantiers de la fiche archivée seront transférés vers la fiche gardée. Cette action est irréversible.`,
+                                      );
+                                      if (confirmed) {
+                                        mergeMutation.mutate({
+                                          keepId: prospect.id,
+                                          mergeId: dup.id,
+                                        });
+                                      }
+                                    }}
+                                    disabled={mergeMutation.isPending}
+                                    className="rounded-md border border-amber-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-amber-700 hover:bg-amber-100 disabled:opacity-60"
+                                  >
+                                    ⇄ Fusionner
+                                  </button>
                                 </div>
                               ))}
                             </div>
