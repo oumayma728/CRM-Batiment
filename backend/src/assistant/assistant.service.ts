@@ -4453,7 +4453,22 @@ export class AssistantService {
       .replace(/\s*\(dot\)\s*/gi, '.');
 
     // Ex: "amal saidani2.Je veux..." -> "amal saidani. Je veux..."
-    const cleanedMessage = normalizedEmailSyntax
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    const phoneRegex = /(?:\+?\d(?:[\s().-]*\d){7,14})/;
+
+    // On extrait l'email AVANT tout nettoyage : les regles de separation
+    // lettre/chiffre casseraient un email comme "asmaameftah662003@gmail.com"
+    // (le "h662003" serait coupe en "h 662003" -> email tronque).
+    const emailMatch = normalizedEmailSyntax.match(emailRegex);
+
+    // On retire l'email du message AVANT de nettoyer, pour qu'il ne pollue
+    // ni le nettoyage ni l'extraction du telephone.
+    const messageSansEmail = emailMatch
+      ? normalizedEmailSyntax.replace(emailMatch[0], ' ')
+      : normalizedEmailSyntax;
+
+    // Ex: "amal saidani2.Je veux..." -> "amal saidani. Je veux..."
+    const cleanedMessage = messageSansEmail
       .replace(/[;,|]/g, ' ')
       .replace(/(\p{L})\d+\./gu, '$1. ')
       .replace(/(\p{L})(\d{6,15})/gu, '$1 $2')
@@ -4461,12 +4476,7 @@ export class AssistantService {
       .replace(/\s+/g, ' ')
       .trim();
 
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-    const phoneRegex = /(?:\+?\d(?:[\s().-]*\d){7,14})/;
-
-    const emailMatch = cleanedMessage.match(emailRegex);
     const phoneMatch = cleanedMessage.match(phoneRegex);
-
     // 2. Patterns de détection du nom (enrichis)
     const namePatterns = [
       // Patterns explicites
