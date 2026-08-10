@@ -52,10 +52,17 @@ export default function RealtimeEventsBridge() {
       queryClient.invalidateQueries({ queryKey: ['sous-traitant-dashboard'] });
     };
 
+    const refreshStock = () => {
+      refreshNotifications();
+      queryClient.invalidateQueries({ queryKey: ['stock'] });
+      queryClient.invalidateQueries({ queryKey: ['stock-movements'] });
+    };
+
     socket.on('notifications:changed', refreshNotifications);
     socket.on('demo:changed', refreshDemo);
     socket.on('sav:changed', refreshSav);
     socket.on('sous-traitant:documents-changed', refreshSousTraitantDocuments);
+    socket.on('stock:changed', refreshStock);
 
     return () => {
       socket.removeAllListeners();

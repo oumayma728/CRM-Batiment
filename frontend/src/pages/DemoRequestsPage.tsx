@@ -132,6 +132,7 @@ export default function DemoRequestsPage() {
       queryClient.invalidateQueries({ queryKey: ['demo-requests'] });
       queryClient.invalidateQueries({ queryKey: ['demo-requests-summary'] });
       queryClient.invalidateQueries({ queryKey: ['internal-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['audit-logs'] });
     },
     onError: (error) => setFeedback(getErrorMessage(error)),
   });

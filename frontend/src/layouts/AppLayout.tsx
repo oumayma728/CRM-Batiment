@@ -26,6 +26,7 @@ import {
   Receipt,
   Database,
   ChevronDown,
+  Warehouse,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
@@ -129,6 +130,12 @@ const navItems: NavItem[] = [
     roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
   },
   {
+    to: '/admin/stock',
+    label: 'Stock',
+    icon: <Warehouse size={17} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+  {
     to: '/admin/services-mo',
     label: 'Main d’œuvre',
     icon: <Wrench size={17} />,
@@ -191,6 +198,7 @@ const routeLabels: Record<string, string> = {
   prestations: 'Prestations',
   'prestations-compositions': 'Compositions',
   materiaux: 'Matériaux',
+  stock: 'Stock',
   'services-mo': 'Main d’œuvre',
   utilisateurs: 'Utilisateurs',
   'types-projet': 'Types de projet',

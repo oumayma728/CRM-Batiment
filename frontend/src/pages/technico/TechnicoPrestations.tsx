@@ -31,7 +31,7 @@ export default function TechnicoPrestations() {
   });
 
   function toggle(_set: Set<number>, id: number, setter: React.Dispatch<React.SetStateAction<Set<number>>>) {
-    setter(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setter(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
 
   function expandAll() {

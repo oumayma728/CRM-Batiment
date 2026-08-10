@@ -1,5 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatCurrency, cn } from '@/lib/utils';
@@ -19,6 +21,7 @@ import {
  * Questions → Infos → Options → Devis Auto
  */
 export default function DiagnosticToDevisFlow() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [clientId, setClientId] = useState<string>('');
@@ -84,6 +87,11 @@ export default function DiagnosticToDevisFlow() {
       setCurrentStep('devis');
       queryClient.invalidateQueries({ queryKey: ['devis'] });
     },
+  });
+
+  const sendGeneratedDevisMutation = useMutation({
+    mutationFn: () => api.post(`/devis/${generatedDevisId}/send-client`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['devis'] }),
   });
 
   const handleAnswerQuestion = (questionId: number, answer: string) => {
@@ -474,11 +482,11 @@ export default function DiagnosticToDevisFlow() {
                   </div>
 
                   <div className="flex gap-4">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                    <button type="button" onClick={() => navigate('/admin/devis', { state: { selectedDevisId: generatedDevisId } })} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
                       Voir le devis
                     </button>
-                    <button className="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                      Envoyer au client
+                    <button type="button" onClick={() => sendGeneratedDevisMutation.mutate()} disabled={sendGeneratedDevisMutation.isPending} className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors">
+                      {sendGeneratedDevisMutation.isPending ? 'Envoi…' : 'Envoyer au client'}
                     </button>
                   </div>
                 </div>

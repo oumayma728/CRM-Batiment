@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   HardHat,
+  ExternalLink,
+  FileText,
   Loader2,
   Pencil,
   Plus,
@@ -111,6 +113,8 @@ export default function ChantiersPage() {
   const [editing, setEditing] = useState<Chantier | null>(null);
   const [form, setForm] = useState<ChantierFormState>(emptyForm);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [documentsChantier, setDocumentsChantier] = useState<Chantier | null>(null);
+  const [documentForm, setDocumentForm] = useState({ nom: '', type: 'PLAN', url: '' });
 
   const listQuery = useQuery({
     queryKey: ['chantiers', page, search, statusFilter],
@@ -130,6 +134,44 @@ export default function ChantiersPage() {
         params: { page: 1, limit: 200 },
       });
       return res.data.data;
+    },
+  });
+
+  const documentsQuery = useQuery({
+    queryKey: ['chantier-documents', documentsChantier?.id],
+    enabled: Boolean(documentsChantier),
+    queryFn: async () => {
+      const res = await api.get<Chantier>(`/chantiers/${documentsChantier!.id}`);
+      return res.data;
+    },
+  });
+
+  const createDocumentMutation = useMutation({
+    mutationFn: async () => {
+      if (!documentsChantier) throw new Error('Aucun chantier sélectionné.');
+      const res = await api.post(`/chantiers/${documentsChantier.id}/documents`, {
+        nom: documentForm.nom.trim(),
+        type: documentForm.type.trim(),
+        url: documentForm.url.trim(),
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      setDocumentForm({ nom: '', type: 'PLAN', url: '' });
+      queryClient.invalidateQueries({ queryKey: ['chantier-documents', documentsChantier?.id] });
+      queryClient.invalidateQueries({ queryKey: ['chantiers'] });
+      queryClient.invalidateQueries({ queryKey: ['internal-notifications'] });
+    },
+  });
+
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (documentId: number) => {
+      if (!documentsChantier) throw new Error('Aucun chantier sélectionné.');
+      await api.delete(`/chantiers/${documentsChantier.id}/documents/${documentId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chantier-documents', documentsChantier?.id] });
+      queryClient.invalidateQueries({ queryKey: ['chantiers'] });
     },
   });
 
@@ -371,6 +413,14 @@ export default function ChantiersPage() {
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
                         <button
+                          type="button"
+                          onClick={() => setDocumentsChantier(chantier)}
+                          className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-blue-200 px-3 text-xs font-semibold text-blue-600 transition hover:bg-blue-50"
+                          title="Gérer les documents"
+                        >
+                          <FileText size={14} /> {chantier._count?.documents ?? 0}
+                        </button>
+                        <button
                           onClick={() => openEdit(chantier)}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
                           title="Modifier"
@@ -566,6 +616,61 @@ export default function ChantiersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      ) : null}
+
+      {documentsChantier ? (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Documents du chantier</h2>
+                <p className="mt-1 text-sm text-slate-500">{documentsChantier.reference} — {documentsChantier.adresse}</p>
+              </div>
+              <button type="button" onClick={() => setDocumentsChantier(null)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-500 hover:bg-stone-50" aria-label="Fermer">✕</button>
+            </div>
+
+            <form
+              className="mt-5 grid gap-3 rounded-2xl border border-blue-100 bg-blue-50/50 p-4 md:grid-cols-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                createDocumentMutation.mutate();
+              }}
+            >
+              <input required value={documentForm.nom} onChange={(event) => setDocumentForm((current) => ({ ...current, nom: event.target.value }))} placeholder="Nom du document" className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
+              <select value={documentForm.type} onChange={(event) => setDocumentForm((current) => ({ ...current, type: event.target.value }))} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                <option value="PLAN">Plan</option>
+                <option value="CONTRAT">Contrat</option>
+                <option value="PV">Procès-verbal</option>
+                <option value="RAPPORT">Rapport</option>
+                <option value="AUTRE">Autre</option>
+              </select>
+              <input required type="url" value={documentForm.url} onChange={(event) => setDocumentForm((current) => ({ ...current, url: event.target.value }))} placeholder="https://…" className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 md:col-span-2" />
+              <button type="submit" disabled={createDocumentMutation.isPending} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 md:col-span-2">
+                {createDocumentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} Ajouter le document
+              </button>
+              {createDocumentMutation.error ? <p className="text-sm text-rose-700 md:col-span-2">{getApiErrorMessage(createDocumentMutation.error, 'Impossible d’ajouter le document.')}</p> : null}
+            </form>
+
+            <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
+              {documentsQuery.isLoading ? (
+                <div className="flex items-center justify-center gap-2 p-8 text-sm text-slate-500"><Loader2 size={16} className="animate-spin" /> Chargement…</div>
+              ) : (documentsQuery.data?.documents ?? []).length === 0 ? (
+                <div className="p-8 text-center text-sm text-slate-500">Aucun document ajouté.</div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {(documentsQuery.data?.documents ?? []).map((document) => (
+                    <div key={document.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+                      <FileText size={18} className="shrink-0 text-blue-600" />
+                      <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{document.nom}</p><p className="text-xs text-slate-500">{document.type} · {formatDate(document.createdAt)}</p></div>
+                      <a href={document.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"><ExternalLink size={14} /> Ouvrir</a>
+                      <button type="button" onClick={() => deleteDocumentMutation.mutate(document.id)} className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50"><Trash2 size={14} /> Supprimer</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       ) : null}

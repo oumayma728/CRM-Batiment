@@ -20,12 +20,12 @@ export class AuditController {
     @Query() query: AuditQueryDto,
   ) {
     return this.auditService.findAll(user.companyId, {
-      page: Number(query.page ?? 1),
-      limit: Number(query.limit ?? 20),
+      page: query.page ?? 1,
+      limit: query.limit ?? 20,
       entite: query.entite,
       action: query.action,
       search: query.search,
-      userId: query.userId ? Number(query.userId) : undefined,
+      userId: query.userId,
       startDate: query.startDate,
       endDate: query.endDate,
     });

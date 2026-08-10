@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
+import AccountUserMenu from '@/components/AccountUserMenu';
 import { cn } from '@/lib/utils';
 
 interface ChefNavItem {
@@ -66,6 +67,8 @@ export default function ChefChantierLayout() {
           ? location.pathname === '/chef-chantier'
           : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`),
       ) ?? navItems[0];
+  const currentPageLabel =
+    location.pathname === '/chef-chantier/parametres' ? 'Paramètres' : currentPage.label;
 
   const handleLogout = () => {
     logout();
@@ -194,7 +197,7 @@ export default function ChefChantierLayout() {
               <div className="min-w-0">
                 <p className="truncate text-[11px] text-slate-400">Bâtiflow / Chef de chantier</p>
                 <h1 className="truncate text-[17px] font-semibold text-slate-950">
-                  {currentPage.label}
+                  {currentPageLabel}
                 </h1>
               </div>
             </div>
@@ -202,17 +205,12 @@ export default function ChefChantierLayout() {
             <div className="flex items-center gap-3">
               <InternalNotificationsBell />
 
-              <div className="hidden items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm sm:flex">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
-                  {initials || 'CC'}
-                </div>
-                <div className="min-w-0">
-                  <p className="max-w-[150px] truncate text-[13px] font-semibold text-slate-950">
-                    {displayName}
-                  </p>
-                  <p className="text-[11px] text-slate-500">Chef de chantier</p>
-                </div>
-              </div>
+              <AccountUserMenu
+                displayName={displayName || 'Chef de chantier'}
+                initials={initials || 'CC'}
+                roleLabel="Chef de chantier"
+                settingsPath="/chef-chantier/parametres"
+              />
             </div>
           </div>
         </header>

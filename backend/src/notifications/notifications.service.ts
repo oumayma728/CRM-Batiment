@@ -29,6 +29,7 @@ type NotificationCategory =
   | 'DEMO_REQUEST'
   | 'DEMO_SCHEDULED'
   | 'CHANTIER_DOCUMENT'
+  | 'STOCK_BAS'
   | 'AUDIT_RECENT';
 
 interface CreateInternalNotificationPayload {
@@ -70,6 +71,7 @@ const allowedInternalRoles = [
   Role.ASSISTANTE,
   Role.CHEF_CHANTIER,
   Role.TECHNICO,
+  Role.SOUS_TRAITANT,
 ] as const;
 
 const legacyNotificationActions = [
@@ -78,6 +80,8 @@ const legacyNotificationActions = [
   'NOTIFICATION_RECEPTION_COMPLETE',
   'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
   'NOTIFICATION_SOUS_TRAITANT_DOCUMENT',
+  'NOTIFICATION_CHANTIER_DOCUMENT_ADDED',
+  'NOTIFICATION_STOCK_BAS',
 ];
 
 @Injectable()
@@ -137,6 +141,10 @@ export class NotificationsService {
 
     if (role === Role.ASSISTANTE) {
       return category !== 'MODIFICATION_PRIX' && category !== 'AUDIT_RECENT';
+    }
+
+    if (role === Role.SOUS_TRAITANT) {
+      return category === 'CHANTIER_DOCUMENT';
     }
 
     return false;
@@ -518,6 +526,7 @@ export class NotificationsService {
       facturesImpayees,
       chantiersEnRetard,
       commandesEnAttente,
+      stockBas,
       savOuverts,
       savEnCours,
       savUrgents,
@@ -558,6 +567,14 @@ export class NotificationsService {
               CommandeFournisseurStatut.PARTIELLE,
             ],
           },
+        },
+      }),
+
+      this.prisma.materiau.count({
+        where: {
+          companyId: currentUser.companyId,
+          actif: true,
+          stockActuel: { lte: this.prisma.materiau.fields.stockMinimum },
         },
       }),
 
@@ -734,6 +751,22 @@ export class NotificationsService {
       });
     }
 
+    if (stockBas > 0) {
+      alertItems.push({
+        id: -7,
+        action: 'ALERT_STOCK_BAS',
+        createdAt: alertDate,
+        entite: 'Materiau',
+        entiteId: 0,
+        title: 'Stock à réapprovisionner',
+        message: `${stockBas} matériau(x) ont atteint leur seuil minimum.`,
+        category: 'STOCK_BAS',
+        level: 'warning',
+        metadata: { nombre: stockBas },
+        actor: null,
+      });
+    }
+
     if (savUrgents > 0) {
       alertItems.push({
         id: -4,
@@ -808,6 +841,7 @@ export class NotificationsService {
             'RECEPTION_PARTIELLE',
             'RECEPTION_COMPLETE',
             'CHANTIER_DOCUMENT',
+            'STOCK_BAS',
             'AUDIT_RECENT',
           ].includes(item.category),
         ).length,
@@ -834,6 +868,9 @@ export class NotificationsService {
           'COMMANDES_ATTENTE',
         )
           ? commandesEnAttente
+          : 0,
+        stockBas: this.canRoleSeeCategory(currentUser.role, 'STOCK_BAS')
+          ? stockBas
           : 0,
         savOuverts,
         savEnCours,

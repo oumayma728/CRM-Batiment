@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Bell,
   Building2,
   ClipboardList,
   LogOut,
@@ -11,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 
 interface SousTraitantNavItem {
   to: string;
@@ -179,14 +179,7 @@ export default function FournisseurLayout() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50"
-                aria-label="Notifications"
-                title="Notifications"
-              >
-                <Bell size={17} />
-              </button>
+              <InternalNotificationsBell />
 
               <div className="hidden items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 shadow-sm sm:flex">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">

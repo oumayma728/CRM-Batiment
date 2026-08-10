@@ -4,7 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { DemoRequestStatut, Prisma, Role } from '../../generated/prisma/client.js';
+import {
+  DemoRequestStatut,
+  Prisma,
+  Role,
+} from '../../generated/prisma/client.js';
 import { AuditService } from '../audit/audit.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
@@ -63,7 +67,11 @@ export class DemoRequestsService {
   ) {}
 
   private ensureCommercialUser(currentUser: CurrentUserPayload) {
-    if (!commercialRoles.includes(currentUser.role as (typeof commercialRoles)[number])) {
+    if (
+      !commercialRoles.includes(
+        currentUser.role as (typeof commercialRoles)[number],
+      )
+    ) {
       throw new ForbiddenException('Accès réservé au back-office commercial.');
     }
   }
@@ -110,7 +118,9 @@ export class DemoRequestsService {
     });
 
     if (!assignedUser) {
-      throw new NotFoundException('Utilisateur commercial introuvable ou non autorisé.');
+      throw new NotFoundException(
+        'Utilisateur commercial introuvable ou non autorisé.',
+      );
     }
   }
 
@@ -127,7 +137,10 @@ export class DemoRequestsService {
     }
   }
 
-  private buildWhere(companyId: number, query: QueryDemoRequestDto): Prisma.DemoRequestWhereInput {
+  private buildWhere(
+    companyId: number,
+    query: QueryDemoRequestDto,
+  ): Prisma.DemoRequestWhereInput {
     const search = this.normalizeText(query.search);
 
     return {
@@ -176,9 +189,9 @@ export class DemoRequestsService {
         entiteId: request.id,
         nouvelleValeur: {
           nom: request.nom,
-          prenom: request.prenom ?? undefined,
+          prenom: request.prenom,
           email: request.email,
-          entreprise: request.entreprise ?? undefined,
+          entreprise: request.entreprise,
           statut: request.statut,
           source: request.source,
         },
@@ -246,34 +259,66 @@ export class DemoRequestsService {
     tomorrow.setDate(now.getDate() + 1);
     tomorrow.setHours(23, 59, 59, 999);
 
-    const [total, pending, contacted, scheduled, done, canceled, scheduledSoon] =
-      await Promise.all([
-        this.prisma.demoRequest.count({ where: { companyId: currentUser.companyId } }),
-        this.prisma.demoRequest.count({
-          where: { companyId: currentUser.companyId, statut: DemoRequestStatut.PENDING },
-        }),
-        this.prisma.demoRequest.count({
-          where: { companyId: currentUser.companyId, statut: DemoRequestStatut.CONTACTED },
-        }),
-        this.prisma.demoRequest.count({
-          where: { companyId: currentUser.companyId, statut: DemoRequestStatut.SCHEDULED },
-        }),
-        this.prisma.demoRequest.count({
-          where: { companyId: currentUser.companyId, statut: DemoRequestStatut.DONE },
-        }),
-        this.prisma.demoRequest.count({
-          where: { companyId: currentUser.companyId, statut: DemoRequestStatut.CANCELED },
-        }),
-        this.prisma.demoRequest.count({
-          where: {
-            companyId: currentUser.companyId,
-            statut: DemoRequestStatut.SCHEDULED,
-            dateDemo: { gte: now, lte: tomorrow },
-          },
-        }),
-      ]);
+    const [
+      total,
+      pending,
+      contacted,
+      scheduled,
+      done,
+      canceled,
+      scheduledSoon,
+    ] = await Promise.all([
+      this.prisma.demoRequest.count({
+        where: { companyId: currentUser.companyId },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.PENDING,
+        },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.CONTACTED,
+        },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.SCHEDULED,
+        },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.DONE,
+        },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.CANCELED,
+        },
+      }),
+      this.prisma.demoRequest.count({
+        where: {
+          companyId: currentUser.companyId,
+          statut: DemoRequestStatut.SCHEDULED,
+          dateDemo: { gte: now, lte: tomorrow },
+        },
+      }),
+    ]);
 
-    return { total, pending, contacted, scheduled, done, canceled, scheduledSoon };
+    return {
+      total,
+      pending,
+      contacted,
+      scheduled,
+      done,
+      canceled,
+      scheduledSoon,
+    };
   }
 
   async getAssignees(currentUser: CurrentUserPayload) {
@@ -311,7 +356,11 @@ export class DemoRequestsService {
     return request;
   }
 
-  async update(id: number, dto: UpdateDemoRequestDto, currentUser: CurrentUserPayload) {
+  async update(
+    id: number,
+    dto: UpdateDemoRequestDto,
+    currentUser: CurrentUserPayload,
+  ) {
     this.ensureCommercialUser(currentUser);
 
     const existing = await this.prisma.demoRequest.findFirst({
@@ -354,44 +403,73 @@ export class DemoRequestsService {
         ? new Date()
         : undefined;
 
-    const updated = await this.prisma.demoRequest.update({
-      where: { id },
-      data: {
-        statut: nextStatut,
-        assignedToId: dto.assignedToId,
-        dateContact: this.toDate(dto.dateContact) ?? automaticDateContact,
-        dateDemo: requestedDateDemo,
-        notes: dto.notes,
-        email: dto.email?.trim().toLowerCase(),
-        telephone:
-          dto.telephone === undefined
-            ? undefined
-            : this.normalizeText(dto.telephone) ?? null,
-      },
-      include: demoRequestInclude,
-    });
+    const nextDateContact =
+      this.toDate(dto.dateContact) ?? automaticDateContact ?? existing.dateContact;
+    const nextNotes = dto.notes === undefined ? existing.notes : dto.notes;
+    const nextEmail =
+      dto.email === undefined
+        ? existing.email
+        : dto.email.trim().toLowerCase();
+    const nextTelephone =
+      dto.telephone === undefined
+        ? existing.telephone
+        : (this.normalizeText(dto.telephone) ?? null);
 
-    await this.auditService.createLog({
-      companyId: currentUser.companyId,
-      userId: currentUser.userId,
-      action: 'DEMO_REQUEST_UPDATED',
-      entite: 'DemoRequest',
-      entiteId: updated.id,
-      ancienneValeur: {
-        statut: existing.statut,
-        assignedToId: existing.assignedToId,
-        dateDemo: existing.dateDemo?.toISOString(),
-      },
-      nouvelleValeur: {
-        statut: updated.statut,
-        assignedToId: updated.assignedToId ?? undefined,
-        dateDemo: updated.dateDemo?.toISOString(),
-        nom: updated.nom,
-        prenom: updated.prenom ?? undefined,
-        email: updated.email,
-        entreprise: updated.entreprise ?? undefined,
-      },
-    });
+    // La demande et sa trace d'audit doivent être enregistrées ensemble.
+    // Si l'une des deux écritures échoue, Prisma annule toute la transaction.
+    const updated = (await this.prisma.$transaction(async (transaction) => {
+      const savedRequest = await transaction.demoRequest.update({
+        where: { id },
+        data: {
+          statut: nextStatut,
+          assignedToId: dto.assignedToId,
+          dateContact: this.toDate(dto.dateContact) ?? automaticDateContact,
+          dateDemo: requestedDateDemo,
+          notes: dto.notes,
+          email: dto.email?.trim().toLowerCase(),
+          telephone:
+            dto.telephone === undefined
+              ? undefined
+              : (this.normalizeText(dto.telephone) ?? null),
+        },
+        include: demoRequestInclude,
+      });
+
+      await transaction.auditLog.create({
+        data: {
+          companyId: currentUser.companyId,
+          userId: currentUser.userId,
+          action: 'DEMO_REQUEST_UPDATED',
+          entite: 'DemoRequest',
+          entiteId: id,
+          ancienneValeur: {
+            statut: existing.statut,
+            assignedToId: existing.assignedToId,
+            dateContact: existing.dateContact?.toISOString() ?? null,
+            dateDemo: existing.dateDemo?.toISOString() ?? null,
+            notes: existing.notes,
+            email: existing.email,
+            telephone: existing.telephone,
+          },
+          nouvelleValeur: {
+            statut: nextStatut,
+            assignedToId: nextAssignedToId,
+            dateContact: nextDateContact?.toISOString() ?? null,
+            dateDemo: nextDateDemo?.toISOString() ?? null,
+            notes: nextNotes,
+            nom: existing.nom,
+            prenom: existing.prenom,
+            email: nextEmail,
+            telephone: nextTelephone,
+            entreprise: existing.entreprise,
+          },
+        },
+      });
+
+      return savedRequest;
+    })) as Prisma.DemoRequestGetPayload<{
+      include: typeof demoRequestInclude;
+    }>;
 
     const eventPayload = {
       reason: 'DEMO_REQUEST_UPDATED',

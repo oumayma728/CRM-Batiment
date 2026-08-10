@@ -101,6 +101,7 @@
       ]
     },
     "moduleNameMapper": {
+      "^../../generated/prisma/client\\.js$": "<rootDir>/test-support/prisma-client.mock.ts",
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
     "collectCoverageFrom": [

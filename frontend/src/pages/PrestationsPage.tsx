@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import type { CatalogueCategorieWithCompositions, OptionPrestation } from '@/types';
+import type { CatalogueCategorieWithCompositions, OptionPrestation, Prestation } from '@/types';
 import { formatCurrency, cn } from '@/lib/utils';
 import {
   Plus, Search, Edit, Trash2, X, Loader2, BookOpen, Download,
@@ -82,6 +82,23 @@ const createDefaultOptionForm = (): PrestationOptionForm => ({
   obligatoire: true,
   choix: [{ nom: '', impactPrix: '' }],
 });
+
+function csvCell(value: unknown) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
+function downloadCsv(filename: string, rows: unknown[][]) {
+  const content = rows.map((row) => row.map(csvCell).join(';')).join('\n');
+  const blob = new Blob([`\uFEFF${content}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
 
 function buildOptionsPayload(options: PrestationOptionForm[]) {
   const payload: OptionPayload[] = [];
@@ -166,6 +183,7 @@ export default function PrestationsPage() {
   const [expandedSubs, setExpandedSubs] = useState<Set<number>>(new Set());
   const [expandedPrestations, setExpandedPrestations] = useState<Set<number>>(new Set());
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<Prestation | null>(null);
   const [form, setForm] = useState<PrestationCreateFormState>(() => createEmptyPrestationForm());
   const [optionsForm, setOptionsForm] = useState<PrestationOptionForm[]>([]);
 
@@ -212,14 +230,22 @@ export default function PrestationsPage() {
     },
     onSuccess: ({ optionsCount }) => {
       queryClient.invalidateQueries({ queryKey: ['catalogue-full'] });
-      setShowModal(false);
-      setForm(createEmptyPrestationForm());
-      setOptionsForm([]);
+      closeModal();
       window.alert(
         optionsCount > 0
           ? `Prestation creee avec ${optionsCount} option(s). Cliquez sur la fleche de la prestation pour voir le raffinement.`
           : 'Prestation creee avec succes.',
       );
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      api.patch(`/prestations/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['catalogue-full'] });
+      closeModal();
+      window.alert('Prestation modifiée avec succès.');
     },
   });
 
@@ -277,6 +303,21 @@ export default function PrestationsPage() {
       return;
     }
 
+    const prestationBody = {
+      nom: form.nom.trim(),
+      description: form.description.trim() || undefined,
+      prixVenteMin: parsedMin,
+      prixVenteMax: parsedMax,
+      unite: form.unite,
+      categorieId: parseInt(form.categorieId),
+      sousCategorieId: form.sousCategorieId ? parseInt(form.sousCategorieId) : undefined,
+    };
+
+    if (editing) {
+      updateMutation.mutate({ id: editing.id, body: prestationBody });
+      return;
+    }
+
     const builtOptions = buildOptionsPayload(optionsForm);
     if ('error' in builtOptions) {
       window.alert(builtOptions.error);
@@ -284,24 +325,44 @@ export default function PrestationsPage() {
     }
 
     createMutation.mutate({
-      prestationBody: {
-      nom: form.nom.trim(),
-      description: form.description.trim() || undefined,
-      prixVenteMin: parsedMin,
-      prixVenteMax: parsedMax,
-      unite: form.unite,
-        categorieId: parseInt(form.categorieId),
-        sousCategorieId: form.sousCategorieId ? parseInt(form.sousCategorieId) : undefined,
-      },
+      prestationBody,
       options: builtOptions.payload,
     });
   }
 
-  const createErrorMessage = (() => {
-    if (!createMutation.error) return null;
+  function closeModal() {
+    setShowModal(false);
+    setEditing(null);
+    setForm(createEmptyPrestationForm());
+    setOptionsForm([]);
+  }
 
-    if (axios.isAxiosError(createMutation.error)) {
-      const data = createMutation.error.response?.data as
+  function openCreate() {
+    closeModal();
+    setShowModal(true);
+  }
+
+  function openEdit(prestation: Prestation) {
+    setEditing(prestation);
+    setForm({
+      nom: prestation.nom,
+      description: prestation.description ?? '',
+      prixVenteMin: String(prestation.prixVenteMin),
+      prixVenteMax: String(prestation.prixVenteMax),
+      unite: prestation.unite as UniteValue,
+      categorieId: String(prestation.categorieId),
+      sousCategorieId: prestation.sousCategorieId ? String(prestation.sousCategorieId) : '',
+    });
+    setOptionsForm([]);
+    setShowModal(true);
+  }
+
+  const createErrorMessage = (() => {
+    const mutationError = editing ? updateMutation.error : createMutation.error;
+    if (!mutationError) return null;
+
+    if (axios.isAxiosError(mutationError)) {
+      const data = mutationError.response?.data as
         | { message?: string | string[] }
         | undefined;
 
@@ -314,11 +375,13 @@ export default function PrestationsPage() {
       }
     }
 
-    if (createMutation.error instanceof Error) {
-      return createMutation.error.message;
+    if (mutationError instanceof Error) {
+      return mutationError.message;
     }
 
-    return 'Erreur lors de la création de la prestation.';
+    return editing
+      ? 'Erreur lors de la modification de la prestation.'
+      : 'Erreur lors de la création de la prestation.';
   })();
 
   const selectedCategory = (catalogue ?? []).find((category) => category.id === Number(form.categorieId));
@@ -379,13 +442,13 @@ export default function PrestationsPage() {
   }
 
   function toggleCat(id: number) {
-    setExpandedCats(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpandedCats(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
   function toggleSub(id: number) {
-    setExpandedSubs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpandedSubs(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
   function togglePrestation(id: number) {
-    setExpandedPrestations(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+    setExpandedPrestations(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   }
   function expandAll() {
     if (!catalogue) return;
@@ -447,6 +510,25 @@ export default function PrestationsPage() {
     });
   });
 
+  function handleExport() {
+    const rows: unknown[][] = [
+      ['Catégorie', 'Sous-catégorie', 'Prestation', 'Unité', 'Prix minimum', 'Prix maximum', 'Description'],
+    ];
+
+    for (const category of catalogue ?? []) {
+      for (const prestation of category.prestations ?? []) {
+        rows.push([category.nom, '', prestation.nom, prestation.unite, prestation.prixVenteMin, prestation.prixVenteMax, prestation.description]);
+      }
+      for (const subCategory of category.sousCategories ?? []) {
+        for (const prestation of subCategory.prestations ?? []) {
+          rows.push([category.nom, subCategory.nom, prestation.nom, prestation.unite, prestation.prixVenteMin, prestation.prixVenteMax, prestation.description]);
+        }
+      }
+    }
+
+    downloadCsv('catalogue-prestations.csv', rows);
+  }
+
   return (
     <div className="max-w-full space-y-5">
       {/* Header */}
@@ -466,11 +548,11 @@ export default function PrestationsPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <button type="button" onClick={handleExport} disabled={totalPrestations === 0} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50">
             <Download size={16} /> Exporter
           </button>
           {isAdmin && (
-            <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
+            <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
               <Plus size={17} /> Nouvelle prestation
             </button>
           )}
@@ -580,6 +662,7 @@ export default function PrestationsPage() {
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
+                          onEdit={() => openEdit(p)}
                           onDelete={() => deleteMutation.mutate(p.id)}
                           canEdit={isAdmin}
                           indent={1}
@@ -611,6 +694,7 @@ export default function PrestationsPage() {
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
+                          onEdit={() => openEdit(p)}
                           onDelete={() => deleteMutation.mutate(p.id)}
                           canEdit={isAdmin}
                           indent={2}
@@ -630,13 +714,10 @@ export default function PrestationsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-950">Nouvelle prestation</h2>
+              <h2 className="text-lg font-bold text-slate-950">{editing ? 'Modifier la prestation' : 'Nouvelle prestation'}</h2>
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setForm(createEmptyPrestationForm());
-                  setOptionsForm([]);
-                }}
+                type="button"
+                onClick={closeModal}
                 className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"
               >
                 <X size={18} />
@@ -710,6 +791,7 @@ export default function PrestationsPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" />
               </div>
+              {!editing ? (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -851,6 +933,11 @@ export default function PrestationsPage() {
                   </div>
                 )}
               </div>
+              ) : (
+                <p className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+                  Les options existantes restent inchangées. Elles peuvent être gérées depuis les détails de la prestation.
+                </p>
+              )}
               {createErrorMessage && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
                   {createErrorMessage}
@@ -859,18 +946,14 @@ export default function PrestationsPage() {
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setForm(createEmptyPrestationForm());
-                    setOptionsForm([]);
-                  }}
+                  onClick={closeModal}
                   className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Annuler
                 </button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Creer
+                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
+                  {editing ? 'Enregistrer' : 'Créer'}
                 </button>
               </div>
             </form>
@@ -889,6 +972,7 @@ function PrestationRow({
   prestation: p,
   expanded,
   onToggle,
+  onEdit,
   onDelete,
   canEdit,
   indent,
@@ -896,6 +980,7 @@ function PrestationRow({
   prestation: CatalogueCategorieWithCompositions['prestations'][0];
   expanded: boolean;
   onToggle: () => void;
+  onEdit: () => void;
   onDelete: () => void;
   canEdit: boolean;
   indent: number;
@@ -934,7 +1019,7 @@ function PrestationRow({
         </span>
         {canEdit && (
           <div className="flex items-center gap-1 ml-2">
-            <button className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50"><Edit size={14} /></button>
+            <button type="button" onClick={onEdit} className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50" title={`Modifier ${p.nom}`}><Edit size={14} /></button>
             <button onClick={onDelete} className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-red-50"><Trash2 size={14} /></button>
           </div>
         )}

@@ -267,6 +267,8 @@ export default function CommandesFournisseurPage() {
 
   useEffect(() => {
     if (!selectedOrder) return;
+    // Initialisation du brouillon lors du changement de commande sélectionnée.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditDrafts((current) => ({
       ...current,
       [selectedOrder.id]: current[selectedOrder.id] ?? buildOrderEditForm(selectedOrder),

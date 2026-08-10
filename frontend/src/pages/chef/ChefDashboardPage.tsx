@@ -64,7 +64,10 @@ export default function ChefDashboardPage() {
     },
   });
 
-  const commandes = commandesQuery.data?.data ?? [];
+  const commandes = useMemo(
+    () => commandesQuery.data?.data ?? [],
+    [commandesQuery.data?.data],
+  );
   const receptionsEnAttente = useMemo(
     () =>
       commandes.filter(

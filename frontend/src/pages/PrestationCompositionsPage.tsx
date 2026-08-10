@@ -254,6 +254,8 @@ export default function PrestationCompositionsPage() {
 
     const firstPrestation = prestationChoices[0]?.id;
     if (firstPrestation) {
+      // Valeur par défaut calculée après le chargement du catalogue.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm((current) => ({ ...current, prestationId: firstPrestation.toString() }));
     }
   }, [showEditor, editingRow, prestationChoices, form.prestationId]);

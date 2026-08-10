@@ -33,6 +33,7 @@ export default function MateriauxPage() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<Materiau | null>(null);
   const [form, setForm] = useState({
     nom: '',
     couleur: '',
@@ -69,15 +70,16 @@ export default function MateriauxPage() {
     mutationFn: (body: Record<string, unknown>) => api.post('/materiaux', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiaux'] });
-      setShowModal(false);
-      setForm({
-        nom: '',
-        couleur: '',
-        finition: '',
-        unite: 'M2' as UniteValue,
-        prixAchatFixe: '',
-        fournisseurId: '',
-      });
+      closeModal();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      api.patch(`/materiaux/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiaux'] });
+      closeModal();
     },
   });
 
@@ -95,7 +97,7 @@ export default function MateriauxPage() {
       return;
     }
 
-    createMutation.mutate({
+    const payload = {
       nom: form.nom.trim(),
       couleur: form.couleur.trim() || undefined,
       finition: form.finition.trim() || undefined,
@@ -104,14 +106,49 @@ export default function MateriauxPage() {
       fournisseurId: form.fournisseurId
         ? Number(form.fournisseurId)
         : undefined,
+    };
+
+    if (editing) updateMutation.mutate({ id: editing.id, body: payload });
+    else createMutation.mutate(payload);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setEditing(null);
+    setForm({
+      nom: '',
+      couleur: '',
+      finition: '',
+      unite: 'M2',
+      prixAchatFixe: '',
+      fournisseurId: '',
     });
   }
 
-  const createErrorMessage = (() => {
-    if (!createMutation.error) return null;
+  function openCreate() {
+    closeModal();
+    setShowModal(true);
+  }
 
-    if (axios.isAxiosError(createMutation.error)) {
-      const data = createMutation.error.response?.data as
+  function openEdit(materiau: Materiau) {
+    setEditing(materiau);
+    setForm({
+      nom: materiau.nom,
+      couleur: materiau.couleur ?? '',
+      finition: materiau.finition ?? '',
+      unite: materiau.unite as UniteValue,
+      prixAchatFixe: String(materiau.prixAchatFixe),
+      fournisseurId: materiau.fournisseurId ? String(materiau.fournisseurId) : '',
+    });
+    setShowModal(true);
+  }
+
+  const createErrorMessage = (() => {
+    const mutationError = editing ? updateMutation.error : createMutation.error;
+    if (!mutationError) return null;
+
+    if (axios.isAxiosError(mutationError)) {
+      const data = mutationError.response?.data as
         | { message?: string | string[] }
         | undefined;
 
@@ -124,7 +161,9 @@ export default function MateriauxPage() {
       }
     }
 
-    return 'Erreur lors de la création du matériau.';
+    return editing
+      ? 'Erreur lors de la modification du matériau.'
+      : 'Erreur lors de la création du matériau.';
   })();
 
   const list = materiaux ?? [];
@@ -144,7 +183,7 @@ export default function MateriauxPage() {
             {isError ? 'Erreur de chargement' : `${list.length} matériau(x) enregistré(s)`}
           </p>
         </div>
-        <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
+        <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
           <Plus size={17} /> Nouveau matériau
         </button>
       </div>
@@ -195,7 +234,7 @@ export default function MateriauxPage() {
                     <td className="px-6 py-4 text-sm text-slate-600">{m.fournisseur?.nom ?? '—'}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50"><Edit size={16} /></button>
+                        <button type="button" onClick={() => openEdit(m)} className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50" title={`Modifier ${m.nom}`}><Edit size={16} /></button>
                         <button onClick={() => deleteMutation.mutate(m.id)} className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50"><Trash2 size={16} /></button>
                       </div>
                     </td>
@@ -212,8 +251,8 @@ export default function MateriauxPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-900">Nouveau matériau</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
+              <h2 className="text-lg font-bold text-slate-900">{editing ? 'Modifier le matériau' : 'Nouveau matériau'}</h2>
+              <button type="button" onClick={closeModal} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
@@ -277,10 +316,10 @@ export default function MateriauxPage() {
                 </p>
               )}
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
+                <button type="button" onClick={closeModal} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
+                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
+                  {editing ? 'Enregistrer' : 'Créer'}
                 </button>
               </div>
             </form>

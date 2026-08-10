@@ -181,7 +181,10 @@ export default function TechnicoAssistantIA() {
     },
     onSuccess: (data) => setDuplicatesResult(data),
   });
-  const allProspects = prospectsQuery.data?.items ?? [];
+  const allProspects = useMemo(
+    () => prospectsQuery.data?.items ?? [],
+    [prospectsQuery.data?.items],
+  );
   const prospects = useMemo(() => {
     let list = [...allProspects];
     if (statutFilter !== 'TOUS') {

@@ -6,6 +6,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 import {
   ChantierStatut,
+  CommandeFournisseurStatut,
   DemoRequestStatut,
   DemandeStatut,
   DevisStatut,
@@ -278,6 +279,117 @@ async function main() {
     prisma.devis.update({ where: { id: devisHatem.id }, data: { chantierId: chantierHatem.id } }),
   ]);
 
+  const commandesReceptionQa = [
+    {
+      reference: 'CMD-QA-001',
+      statutLivraison: CommandeFournisseurStatut.CREEE,
+      date: addDays(now, -2),
+      dateEnvoi: null,
+      dateLivraisonPrevue: addDays(now, 5),
+      notes: 'Commande QA à confirmer par le Chef de chantier.',
+      quantite: 50,
+      prixUnitaire: 35,
+      receptions: [],
+    },
+    {
+      reference: 'CMD-QA-002',
+      statutLivraison: CommandeFournisseurStatut.PARTIELLE,
+      date: addDays(now, -8),
+      dateEnvoi: addDays(now, -7),
+      dateLivraisonPrevue: addDays(now, 1),
+      notes: 'Commande QA avec une réception partielle.',
+      quantite: 30,
+      prixUnitaire: 35,
+      receptions: [
+        {
+          dateReception: addDays(now, -1),
+          quantiteRecue: 12,
+          quantiteAttendue: 30,
+          partielle: true,
+          notes: 'Première livraison partielle — 12 m² reçus.',
+        },
+      ],
+    },
+    {
+      reference: 'CMD-QA-003',
+      statutLivraison: CommandeFournisseurStatut.RECUE,
+      date: addDays(now, -14),
+      dateEnvoi: addDays(now, -13),
+      dateLivraisonPrevue: addDays(now, -3),
+      notes: 'Commande QA entièrement réceptionnée en deux livraisons.',
+      quantite: 20,
+      prixUnitaire: 35,
+      receptions: [
+        {
+          dateReception: addDays(now, -5),
+          quantiteRecue: 8,
+          quantiteAttendue: 20,
+          partielle: true,
+          notes: 'Première livraison — 8 m² reçus.',
+        },
+        {
+          dateReception: addDays(now, -3),
+          quantiteRecue: 12,
+          quantiteAttendue: 20,
+          partielle: false,
+          notes: 'Solde de la commande — réception complète.',
+        },
+      ],
+    },
+  ];
+
+  for (const commandeQa of commandesReceptionQa) {
+    const commande = await prisma.commandeFournisseur.upsert({
+      where: { reference: commandeQa.reference },
+      update: {
+        devisId: devisAmina.id,
+        fournisseurId: fournisseur.id,
+        date: commandeQa.date,
+        statutLivraison: commandeQa.statutLivraison,
+        dateEnvoi: commandeQa.dateEnvoi,
+        dateLivraisonPrevue: commandeQa.dateLivraisonPrevue,
+        notes: commandeQa.notes,
+      },
+      create: {
+        devisId: devisAmina.id,
+        fournisseurId: fournisseur.id,
+        reference: commandeQa.reference,
+        date: commandeQa.date,
+        statutLivraison: commandeQa.statutLivraison,
+        dateEnvoi: commandeQa.dateEnvoi,
+        dateLivraisonPrevue: commandeQa.dateLivraisonPrevue,
+        notes: commandeQa.notes,
+      },
+    });
+
+    await prisma.reception.deleteMany({
+      where: { commandeFournisseurId: commande.id },
+    });
+    await prisma.ligneCommandeFournisseur.deleteMany({
+      where: { commandeFournisseurId: commande.id },
+    });
+
+    await prisma.ligneCommandeFournisseur.create({
+      data: {
+        commandeFournisseurId: commande.id,
+        materiauNom: materiau.nom,
+        quantite: commandeQa.quantite,
+        unite: Unite.M2,
+        prixUnitaire: commandeQa.prixUnitaire,
+        totalHT: commandeQa.quantite * commandeQa.prixUnitaire,
+      },
+    });
+
+    if (commandeQa.receptions.length > 0) {
+      await prisma.reception.createMany({
+        data: commandeQa.receptions.map((reception) => ({
+          commandeFournisseurId: commande.id,
+          ...reception,
+        })),
+      });
+    }
+  }
+
   const [taskChef, taskCarrelage, taskVasque, taskIsolation] = await Promise.all([
     upsertTask({ chantierId: chantierAmina.id, libelle: 'Préparation et sécurisation du chantier', description: 'Protection des zones et préparation du chantier.', statut: TacheStatut.A_FAIRE, dateDebut: addDays(now, 1), dateFin: addDays(now, 3), avancement: 0, ordre: 1 }),
     upsertTask({ chantierId: chantierAmina.id, libelle: 'Pose du carrelage mural', description: 'Pose du carrelage mural blanc 30x60.', statut: TacheStatut.A_FAIRE, dateDebut: addDays(now, 7), dateFin: addDays(now, 12), avancement: 0, ordre: 2 }),
@@ -324,6 +436,7 @@ async function main() {
   console.log(`✅ Comptes : Admin ${admin.id}, Technico ${technico.id}, Assistante ${assistante.id}, Chef ${chef.id}, Sous-traitant ${sousTraitant.id}`);
   console.log(`✅ Clients : ${amina.id}, ${hatem.id}, ${leila.id}`);
   console.log(`✅ Chantiers : ${chantierAmina.reference}, ${chantierHatem.reference}`);
+  console.log(`✅ Réceptions : 3 commandes et 3 événements de réception QA`);
   console.log(`✅ Tâches affectées au Chef et au Sous-traitant`);
   console.log(`✅ Documents, SAV et demandes de démo créés`);
   console.log('\n🎉 Jeu de données QA prêt. Vous pouvez exécuter la checklist manuelle.\n');

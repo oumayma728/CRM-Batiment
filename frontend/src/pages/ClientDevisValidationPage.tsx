@@ -78,6 +78,8 @@ export default function ClientDevisValidationPage() {
   );
 
   useEffect(() => {
+    // Synchronisation avec le paramètre de décision de l'URL.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDecision(initialDecision);
   }, [initialDecision]);
 

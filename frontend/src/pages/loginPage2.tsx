@@ -87,19 +87,18 @@ export default function HomeLandingPage() {
             <nav className="hidden items-center gap-7 text-sm text-white/85 md:flex">
               <a className="transition hover:text-white" href="#fonctionnalites">Accueil</a>
               <a className="transition hover:text-white" href="#fonctionnalites">Fonctionnalites</a>
-              <a className="transition hover:text-white" href="#">Tarifs</a>
-              <a className="transition hover:text-white" href="#">A propos</a>
-              <a className="transition hover:text-white" href="#">Contact</a>
+              <a className="transition hover:text-white" href="#tarifs">Tarifs</a>
+              <a className="transition hover:text-white" href="#a-propos">A propos</a>
+              <a className="transition hover:text-white" href="#contact">Contact</a>
             </nav>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsDemoOpen(true)}
+              <Link
+                to="/demo"
                 className="hidden rounded-lg bg-[#2f66d8] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2a5bc4] sm:inline-flex"
               >
                 Demander une demo
-              </button>
+              </Link>
               <Link
                 to="/login"
                 className="inline-flex rounded-lg bg-white px-4 py-2 text-xs font-semibold text-[#0f2e63] transition hover:bg-[#e6edfb]"
@@ -255,6 +254,48 @@ export default function HomeLandingPage() {
             ))}
           </div>
         </section>
+
+        <section id="tarifs" className="mt-8 scroll-mt-6 rounded-3xl border border-[#dbe5f7] bg-white/80 p-6 backdrop-blur-sm sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2f66d8]">Tarification adaptee</p>
+              <h2 className="mt-2 text-2xl font-bold text-[#102a53]">Une offre dimensionnee selon votre entreprise</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#5e779f]">
+                Le tarif depend du nombre d utilisateurs et des modules necessaires. Demandez une demonstration pour recevoir une proposition adaptee a votre activite.
+              </p>
+            </div>
+            <Link
+              to="/demo"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2f66d8] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2a5bc4]"
+            >
+              Recevoir une proposition <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
+        <section id="a-propos" className="mt-8 scroll-mt-6 rounded-3xl border border-[#dbe5f7] bg-white/80 p-6 backdrop-blur-sm sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#2f66d8]">A propos</p>
+          <h2 className="mt-2 text-2xl font-bold text-[#102a53]">Un CRM pense pour le quotidien du batiment</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[#5e779f]">
+            BatiCRM rassemble le suivi commercial, les devis, les chantiers, les fournisseurs, le stock, la facturation et le SAV dans une interface commune pour les equipes bureau et terrain.
+          </p>
+        </section>
+
+        <section id="contact" className="mt-8 scroll-mt-6 rounded-3xl border border-[#dbe5f7] bg-[#0f2e63] p-6 text-white shadow-[0_16px_45px_rgba(15,46,99,0.22)] sm:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-200">Contact</p>
+              <h2 className="mt-2 text-2xl font-bold">Parlons de vos besoins</h2>
+              <p className="mt-2 text-sm text-blue-100">Remplissez le formulaire public : notre equipe pourra vous recontacter et planifier une demonstration.</p>
+            </div>
+            <Link
+              to="/demo"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#0f2e63] transition hover:bg-blue-50"
+            >
+              Demander une demo <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
       </div>
 
       {/* ===== Demo Modal ===== */}
@@ -320,13 +361,21 @@ export default function HomeLandingPage() {
                 <p className="text-sm text-[#4a6896]">
                   Cette demo presente les ecrans principaux de l application sans quitter la page d accueil.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setIsDemoOpen(false)}
-                  className="rounded-xl bg-[#2f66d8] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a5bc4]"
-                >
-                  Fermer
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsDemoOpen(false)}
+                    className="rounded-xl border border-[#cbd9f3] bg-white px-4 py-2 text-sm font-semibold text-[#325a95] transition hover:bg-[#f3f7ff]"
+                  >
+                    Fermer
+                  </button>
+                  <Link
+                    to="/demo"
+                    className="rounded-xl bg-[#2f66d8] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a5bc4]"
+                  >
+                    Demander une demo
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

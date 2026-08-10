@@ -96,19 +96,19 @@ export default function SousTraitantTachesPage() {
   });
 
   const meta = data?.meta ?? { total: 0, page: 1, limit: 12, totalPages: 1 };
+  const [referenceTime] = useState(() => Date.now());
   const overdueIds = useMemo(() => {
-    const now = Date.now();
     return new Set(
       (data?.data ?? [])
         .filter(
           (task) =>
             task.statut !== 'TERMINEE' &&
             task.dateFin &&
-            new Date(task.dateFin).getTime() < now,
+            new Date(task.dateFin).getTime() < referenceTime,
         )
         .map((task) => task.id),
     );
-  }, [data?.data]);
+  }, [data?.data, referenceTime]);
 
   function openEdit(task: SousTraitantTask) {
     setEditing(task);

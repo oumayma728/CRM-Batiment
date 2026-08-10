@@ -78,6 +78,7 @@ const entityOptions = [
   { value: 'Commande', label: 'Commande fournisseur' },
   { value: 'Prestation', label: 'Prestation' },
   { value: 'Materiau', label: 'Matériau' },
+  { value: 'DemoRequest', label: 'Demande de démo' },
   { value: 'ServiceMo', label: 'Main d’œuvre' },
   { value: 'Utilisateur', label: 'Utilisateur' },
 ];
@@ -91,7 +92,7 @@ export default function AuditPage() {
   const [endDate, setEndDate] = useState('');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
 
-  const { data, isLoading, isFetching, refetch } = useQuery<AuditResponse>({
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery<AuditResponse>({
     queryKey: ['audit-logs', page, search, entite, action, startDate, endDate],
     queryFn: async () => {
       const response = await api.get('/audit-logs', {
@@ -108,7 +109,9 @@ export default function AuditPage() {
 
       return response.data;
     },
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 
   const logs = data?.data ?? [];
@@ -158,6 +161,12 @@ export default function AuditPage() {
           </div>
         </div>
       </section>
+
+      {isError ? (
+        <section className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Impossible de charger l’historique d’audit : {getApiErrorMessage(error)}
+        </section>
+      ) : null}
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <SummaryCard
@@ -630,6 +639,10 @@ function SkeletonLine() {
 function humanizeAction(action: string) {
   const upper = action.toUpperCase();
 
+  if (upper === 'DEMO_REQUEST_CREATED') return 'Création demande de démo';
+  if (upper === 'DEMO_REQUEST_UPDATED') return 'Modification demande de démo';
+  if (upper === 'STOCK_MOVEMENT_CREATED') return 'Mouvement de stock';
+  if (upper === 'STOCK_THRESHOLD_UPDATED') return 'Modification seuil de stock';
   if (isSignatureAction(upper)) return 'Signature devis';
   if (isPriceAction(upper)) return 'Modification prix';
   if (upper.includes('CREATE')) return 'Création';
@@ -694,6 +707,26 @@ function compactJson(value?: JsonValue) {
   return entries
     .map(([key, item]) => `${key}: ${typeof item === 'object' ? JSON.stringify(item) : String(item)}`)
     .join(' · ');
+}
+
+function getApiErrorMessage(error: unknown) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'message' in error.response.data
+  ) {
+    const message = error.response.data.message;
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message)) return message.join(', ');
+  }
+
+  return 'vérifiez le terminal du backend.';
 }
 
 function formatShortDate(value: string) {

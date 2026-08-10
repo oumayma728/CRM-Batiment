@@ -29,6 +29,7 @@ import { AuditModule } from './audit/audit.module.js';
 import { SavModule } from './sav/sav.module.js';
 import { DemoRequestsModule } from './demo-requests/demo-requests.module.js';
 import { SousTraitantModule } from './sous-traitant/sous-traitant.module.js';
+import { StockModule } from './stock/stock.module.js';
 @Module({
   imports: [
     // Configuration globale (.env)
@@ -66,6 +67,7 @@ import { SousTraitantModule } from './sous-traitant/sous-traitant.module.js';
     SavModule,
     DemoRequestsModule,
     SousTraitantModule,
+    StockModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

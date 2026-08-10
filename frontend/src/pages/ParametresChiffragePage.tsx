@@ -134,6 +134,8 @@ export default function ParametresChiffragePage() {
 
   useEffect(() => {
     if (!settings) return;
+    // Hydratation du formulaire depuis les paramètres chargés.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       tvaDefaut: String(settings.tvaDefaut ?? 20),
       devise: settings.devise ?? 'EUR',

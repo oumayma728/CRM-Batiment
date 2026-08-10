@@ -30,6 +30,7 @@ model Company {
   equipes               Equipe[]
   fournisseurs          Fournisseur[]
   materiaux             Materiau[]
+  mouvementsStock       MouvementStock[]
   prestations           Prestation[]
   ragDocuments          RagDocument[]
   savTickets            SavTicket[]
@@ -67,6 +68,7 @@ model User {
   savTicketsAssignes   SavTicket[]        @relation("SavTicketAssigne")
   savTicketNotes       SavTicketNote[]
   demoRequestsAssignes DemoRequest[]      @relation("DemoRequestAssigne")
+  mouvementsStock      MouvementStock[]
 
   @@index([companyId])
   @@index([email])
@@ -305,6 +307,8 @@ model Materiau {
   finition          String?
   unite             Unite                    @default(PIECE)
   prixAchatFixe     Float
+  stockActuel       Float                     @default(0)
+  stockMinimum      Float                     @default(0)
   fournisseurId     Int?
   dateMaj           DateTime                 @default(now())
   actif             Boolean                  @default(true)
@@ -315,10 +319,33 @@ model Materiau {
   company           Company                  @relation(fields: [companyId], references: [id])
   fournisseur       Fournisseur?             @relation(fields: [fournisseurId], references: [id])
   compositions      PrestationComposition[]
+  mouvementsStock   MouvementStock[]
 
   @@index([companyId])
   @@index([fournisseurId])
   @@map("materiaux")
+}
+
+model MouvementStock {
+  id          Int                 @id @default(autoincrement())
+  companyId   Int
+  materiauId  Int
+  userId      Int?
+  type        TypeMouvementStock
+  quantite    Float
+  stockAvant  Float
+  stockApres  Float
+  motif       String?
+  reference   String?
+  createdAt   DateTime            @default(now())
+  company     Company             @relation(fields: [companyId], references: [id])
+  materiau    Materiau            @relation(fields: [materiauId], references: [id])
+  user        User?               @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([materiauId])
+  @@index([createdAt])
+  @@map("mouvements_stock")
 }
 
 model ServiceMainOeuvre {
@@ -986,6 +1013,12 @@ enum Unite {
   LITRE
   KG
   FORFAIT
+}
+
+enum TypeMouvementStock {
+  ENTREE
+  SORTIE
+  AJUSTEMENT
 }
 
 enum ModeValidation {

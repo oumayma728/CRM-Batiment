@@ -116,7 +116,10 @@ export default function TasksChantierPage() {
     },
   });
 
-  const chantierList = chantiersQuery.data?.data ?? [];
+  const chantierList = useMemo(
+    () => chantiersQuery.data?.data ?? [],
+    [chantiersQuery.data?.data],
+  );
   const activeChantierId = useMemo(() => {
     if (!chantierList.length) return null;
     if (selectedChantierId && chantierList.some((c) => c.id === selectedChantierId)) {

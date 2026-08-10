@@ -100,11 +100,15 @@ export default function TechnicoDevisSignature() {
     if (!overviewQuery.data) return;
     const fallbackPhone =
       overviewQuery.data.latestRequest?.telephoneClient ?? overviewQuery.data.devis.client?.telephone;
+    // Préremplissage depuis le devis chargé.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (fallbackPhone) setClientPhone(fallbackPhone);
   }, [overviewQuery.data]);
 
   useEffect(() => {
     if (!profileSignatureQuery.data?.signatureBase64) return;
+    // Préremplissage depuis le profil chargé.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSignatureDraft(profileSignatureQuery.data.signatureBase64);
   }, [profileSignatureQuery.data?.signatureBase64]);
 

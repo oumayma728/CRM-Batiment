@@ -39,6 +39,8 @@ import TasksChantierPage from '@/pages/TasksChantierPage';
 import AuditPage from '@/pages/AuditPage';
 import SavPage from '@/pages/SavPage';
 import DemoRequestsPage from '@/pages/DemoRequestsPage';
+import StockPage from '@/pages/StockPage';
+import AccountSettingsPage from '@/pages/AccountSettingsPage';
 
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
@@ -114,6 +116,7 @@ export default function App() {
               <Route path="prestations" element={<PrestationsPage />} />
               <Route path="prestations-compositions" element={<PrestationCompositionsPage />} />
               <Route path="materiaux" element={<MateriauxPage />} />
+              <Route path="stock" element={<StockPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
               <Route path="fournisseurs" element={<FournisseursPage />} />
               <Route path="taches-chantier" element={<TasksChantierPage />} />
@@ -142,6 +145,7 @@ export default function App() {
               <Route path="prestations" element={<PrestationsPage />} />
               <Route path="prestations-compositions" element={<PrestationCompositionsPage />} />
               <Route path="materiaux" element={<MateriauxPage />} />
+              <Route path="stock" element={<StockPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
             </Route>
           </Route>
@@ -153,6 +157,7 @@ export default function App() {
               <Route path="taches-chantier" element={<TasksChantierPage />} />
               <Route path="receptions" element={<CommandesFournisseurPage />} />
               <Route path="sav" element={<SavPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
               <Route
                 path="commandes-fournisseur"
                 element={<Navigate to="/chef-chantier/receptions" replace />}
@@ -188,6 +193,7 @@ export default function App() {
               <Route path="taches" element={<SousTraitantTachesPage />} />
               <Route path="documents" element={<SousTraitantDocumentsPage />} />
               <Route path="rapports-photos" element={<SousTraitantRapportsPhotosPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
             </Route>
             <Route
               path="fournisseur"

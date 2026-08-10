@@ -2,15 +2,36 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import type { Fournisseur } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Edit, Trash2, X, Truck, Loader2,
   Phone, Mail, Download,
 } from 'lucide-react';
 
+function csvCell(value: unknown) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
+function downloadCsv(filename: string, rows: unknown[][]) {
+  const content = rows.map((row) => row.map(csvCell).join(';')).join('\n');
+  const blob = new Blob([`\uFEFF${content}`], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export default function FournisseursPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState<Fournisseur | null>(null);
   const [form, setForm] = useState({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
 
   const { data: fournisseurs, isLoading } = useQuery({
@@ -27,8 +48,16 @@ export default function FournisseursPage() {
     mutationFn: (body: Record<string, unknown>) => api.post('/fournisseurs', body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
-      setShowModal(false);
-      setForm({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
+      closeModal();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
+      api.patch(`/fournisseurs/${id}`, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fournisseurs'] });
+      closeModal();
     },
   });
 
@@ -46,10 +75,51 @@ export default function FournisseursPage() {
     if (form.adresse) body.adresse = form.adresse;
     if (form.typesMateriaux) body.typesMateriaux = form.typesMateriaux;
     if (form.conditions) body.conditions = form.conditions;
-    createMutation.mutate(body);
+    if (editing) updateMutation.mutate({ id: editing.id, body });
+    else createMutation.mutate(body);
+  }
+
+  function closeModal() {
+    setShowModal(false);
+    setEditing(null);
+    setForm({ nom: '', contact: '', email: '', telephone: '', adresse: '', typesMateriaux: '', conditions: '' });
+  }
+
+  function openCreate() {
+    closeModal();
+    setShowModal(true);
+  }
+
+  function openEdit(fournisseur: Fournisseur) {
+    setEditing(fournisseur);
+    setForm({
+      nom: fournisseur.nom,
+      contact: fournisseur.contact ?? '',
+      email: fournisseur.email ?? '',
+      telephone: fournisseur.telephone ?? '',
+      adresse: fournisseur.adresse ?? '',
+      typesMateriaux: fournisseur.typesMateriaux ?? '',
+      conditions: fournisseur.conditions ?? '',
+    });
+    setShowModal(true);
   }
 
   const list = fournisseurs ?? [];
+
+  function handleExport() {
+    downloadCsv('fournisseurs.csv', [
+      ['Nom', 'Contact', 'Email', 'Téléphone', 'Adresse', 'Types de matériaux', 'Conditions'],
+      ...list.map((fournisseur) => [
+        fournisseur.nom,
+        fournisseur.contact,
+        fournisseur.email,
+        fournisseur.telephone,
+        fournisseur.adresse,
+        fournisseur.typesMateriaux,
+        fournisseur.conditions,
+      ]),
+    ]);
+  }
 
   return (
     <div className="max-w-full space-y-5">
@@ -62,12 +132,14 @@ export default function FournisseursPage() {
           <p className="text-slate-500 text-sm mt-0.5">{list.length} fournisseur(s) enregistré(s)</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium">
+          <button type="button" onClick={handleExport} disabled={list.length === 0} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50">
             <Download size={16} /> Exporter
           </button>
-          <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
-            <Plus size={17} /> Nouveau fournisseur
-          </button>
+          {isAdmin ? (
+            <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
+              <Plus size={17} /> Nouveau fournisseur
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -93,10 +165,12 @@ export default function FournisseursPage() {
                 <div className="w-11 h-11 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                   <Truck size={20} />
                 </div>
-                <div className="flex gap-1">
-                  <button className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50"><Edit size={14} /></button>
-                  <button onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-red-50"><Trash2 size={14} /></button>
-                </div>
+                {isAdmin ? (
+                  <div className="flex gap-1">
+                    <button type="button" onClick={() => openEdit(f)} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50" title={`Modifier ${f.nom}`}><Edit size={14} /></button>
+                    <button type="button" onClick={() => deleteMutation.mutate(f.id)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50" title={`Supprimer ${f.nom}`}><Trash2 size={14} /></button>
+                  </div>
+                ) : null}
               </div>
               <h3 className="font-semibold text-slate-950 mb-2">{f.nom}</h3>
               <div className="space-y-1.5 text-sm text-slate-500">
@@ -124,12 +198,12 @@ export default function FournisseursPage() {
       )}
 
       {/* Create Modal */}
-      {showModal && (
+      {showModal && isAdmin && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-950">Nouveau fournisseur</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
+              <h2 className="text-lg font-bold text-slate-950">{editing ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}</h2>
+              <button type="button" onClick={closeModal} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
@@ -162,12 +236,12 @@ export default function FournisseursPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Conditions</label>
                 <textarea value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" />
               </div>
-              {createMutation.error && <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la création.</p>}
+              {(createMutation.error || updateMutation.error) && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de l’enregistrement.</p>}
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer
+                <button type="button" onClick={closeModal} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
+                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
+                  {editing ? 'Enregistrer' : 'Créer'}
                 </button>
               </div>
             </form>

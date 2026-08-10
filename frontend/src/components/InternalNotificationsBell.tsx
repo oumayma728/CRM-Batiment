@@ -7,7 +7,7 @@ import { cn, formatDate } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import type { InternalNotification, InternalNotificationsResponse, Role } from '@/types';
 
-const allowedRoles: Role[] = ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER', 'TECHNICO'];
+const allowedRoles: Role[] = ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER', 'TECHNICO', 'SOUS_TRAITANT'];
 
 type NotificationFilter = 'ALL' | 'ALERTS' | 'SAV' | 'DEMOS' | 'SIGNATURES' | 'PRICES';
 type NotificationTone = 'info' | 'success' | 'warning' | 'danger';
@@ -48,6 +48,7 @@ const categoryLabels: Record<string, string> = {
   DEMO_REQUEST: 'Démo',
   DEMO_SCHEDULED: 'Démo',
   CHANTIER_DOCUMENT: 'Document chantier',
+  STOCK_BAS: 'Stock',
   AUDIT_RECENT: 'Audit',
 };
 
@@ -74,6 +75,7 @@ function getNotificationFilter(category: string): NotificationFilter {
     category === 'RECEPTION_PARTIELLE' ||
     category === 'RECEPTION_COMPLETE' ||
     category === 'CHANTIER_DOCUMENT'
+    || category === 'STOCK_BAS'
   ) {
     return 'ALERTS';
   }
@@ -209,6 +211,11 @@ export default function InternalNotificationsBell() {
       if (user?.role === 'CHEF_CHANTIER') return '/chef-chantier/chantiers';
       if (user?.role === 'ASSISTANTE') return '/assistante/chantiers';
       if (user?.role === 'ADMIN') return '/admin/chantiers';
+      return getRoleHome();
+    }
+
+    if (category === 'STOCK_BAS') {
+      if (user?.role === 'ADMIN') return '/admin/stock';
       return getRoleHome();
     }
 
