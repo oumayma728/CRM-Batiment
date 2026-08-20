@@ -33,8 +33,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({
-    summary: 'Liste des utilisateurs (Admin)',
+    summary: 'Liste des utilisateurs',
     description: 'Retourne tous les utilisateurs de la même entreprise.',
   })
   @ApiResponse({ status: 200, description: 'Liste des utilisateurs' })

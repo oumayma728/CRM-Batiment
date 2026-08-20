@@ -1,4 +1,4 @@
-﻿import {
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -11,10 +11,14 @@ import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { CreateTacheDto, TaskAssignmentType } from './dto/create-tache.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
+import { WorkflowStateService } from '../common/workflow-state.service.js';
 
 @Injectable()
 export class ChantiersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workflowStateService: WorkflowStateService,
+  ) {}
 
   private isTaskDone(task: { statut: TacheStatut; avancement: number }) {
     return task.statut === 'TERMINEE' || task.avancement >= 100;
@@ -847,7 +851,11 @@ export class ChantiersService {
     dto: UpdateChantierDto,
     currentUser: CurrentUserPayload,
   ) {
-    await this.findOne(id, currentUser);
+    const existing = await this.findOne(id, currentUser);
+
+    if (dto.statut && dto.statut !== existing.statut) {
+      this.workflowStateService.validateChantierTransition(existing.statut, dto.statut);
+    }
 
     if (dto.clientId) {
       await this.ensureClientInCompany(dto.clientId, currentUser.companyId);

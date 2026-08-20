@@ -161,7 +161,7 @@ export class ChantiersController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.ASSISTANTE)//ajoutee pour que les 2 roles puissent acceder a cette route
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)//ajoutee pour que les 3 roles puissent acceder a cette route
   @ApiOperation({ summary: 'Modifier un chantier' })
   @ApiParam({ name: 'id', type: Number })
   update(

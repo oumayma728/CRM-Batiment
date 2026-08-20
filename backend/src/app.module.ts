@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { DevController } from './dev.controller.js';
@@ -22,8 +23,7 @@ import { ChantiersModule } from './chantiers/chantiers.module.js';
 import { FacturesModule } from './factures/factures.module.js';
 import { AssistantModule } from './assistant/assistant.module.js';
 import { RagModule } from './rag/rag.module.js';
-// TODO: Fix imports in CatalogueModule
-// import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
+import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
 
 @Module({
   imports: [
@@ -32,6 +32,9 @@ import { RagModule } from './rag/rag.module.js';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    // Schedule module
+    ScheduleModule.forRoot(),
 
     // Modules fondation
     PrismaModule,
@@ -57,6 +60,7 @@ import { RagModule } from './rag/rag.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
+    SousTraitantsModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

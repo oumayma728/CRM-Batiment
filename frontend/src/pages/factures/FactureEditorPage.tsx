@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Loader2, Mail, Plus, Printer, Save, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PrintDocumentModal } from '@/components/documents/PrintDocumentModal';
+import { CGVDocument } from '@/components/documents/CGVDocument';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import {
   computeFactureLine,
@@ -141,6 +143,10 @@ function buildDraft(detail: FactureDetail): FactureDraft {
 }
 
 export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+  const canSend = user?.role === 'ADMIN' || user?.role === 'ASSISTANTE';
+
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -183,20 +189,57 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
   const computedLines = useMemo(() => {
     if (!draft) return [];
+    if (draft.typeFacture === 'ACOMPTE' && draft.lignes.length === 0 && factureQuery.data) {
+      return [
+        {
+          localId: 'virtual-acompte',
+          description: `Facture d'acompte de ${draft.acomptePercent ?? 30}% pour le devis ${draft.referenceDevis}`,
+          datePrestation: draft.date,
+          quantite: 1,
+          unite: 'FORFAIT',
+          prixUnitaireHT: factureQuery.data.montantHT,
+          tauxTVA: draft.tauxTVA ?? 20,
+          montantHT: factureQuery.data.montantHT,
+          montantTVA: factureQuery.data.montantTVA,
+          montantTTC: factureQuery.data.montantTTC,
+        },
+      ];
+    }
     return draft.lignes.map((line) => computeFactureLine(line));
-  }, [draft]);
+  }, [draft, factureQuery.data]);
 
   const totals = useMemo(() => {
     if (!draft) return { totalHT: 0, totalTVA: 0, totalTTC: 0 };
+    if (draft.typeFacture === 'ACOMPTE' && draft.lignes.length === 0 && factureQuery.data) {
+      return {
+        totalHT: factureQuery.data.montantHT,
+        totalTVA: factureQuery.data.montantTVA,
+        totalTTC: factureQuery.data.montantTTC,
+      };
+    }
     return computeFactureTotals(
       draft.lignes,
       draft.typeFacture,
       draft.acomptePercent,
       undefined,
     );
-  }, [draft]);
+  }, [draft, factureQuery.data]);
 
-  const locked = !draft || !draft.editable || draft.statut === 'PAYEE';
+  const tvaGroups = useMemo(() => {
+    const groups: Record<number, number> = {};
+    computedLines.forEach((line) => {
+      const rate = line.tauxTVA ?? 20;
+      const lineHT = line.montantHT ?? 0;
+      const lineTVA = lineHT * (rate / 100);
+      groups[rate] = (groups[rate] || 0) + lineTVA;
+    });
+    return Object.entries(groups).map(([rate, amount]) => ({
+      rate: Number(rate),
+      amount,
+    }));
+  }, [computedLines]);
+
+  const locked = !draft || !draft.editable || draft.statut === 'PAYEE' || !isAdmin;
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -343,31 +386,26 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={draft.statut}
-            onChange={(event) =>
+            onChange={(event) => {
+              const nextStatus = event.target.value as FactureDraft['statut'];
               setDraft((current) =>
                 current
                   ? {
                       ...current,
-                      statut: event.target.value as FactureDraft['statut'],
+                      statut: nextStatus,
                     }
                   : current,
-              )
-            }
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+              );
+              statutMutation.mutate(nextStatus);
+            }}
+            disabled={statutMutation.isPending || !canSend}
+            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm disabled:opacity-60"
           >
             <option value="BROUILLON">Brouillon</option>
             <option value="ENVOYEE">Envoyee</option>
             <option value="PAYEE">Payee</option>
             <option value="ANNULEE">Annulee</option>
           </select>
-
-          <button
-            onClick={() => statutMutation.mutate(draft.statut)}
-            disabled={statutMutation.isPending}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
-          >
-            {statutMutation.isPending ? 'Maj...' : 'Appliquer statut'}
-          </button>
 
           <button
             onClick={() => setShowPrintPreview(true)}
@@ -379,21 +417,29 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
           <button
             onClick={() => sendMutation.mutate()}
-            disabled={sendMutation.isPending}
-            className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
+            disabled={sendMutation.isPending || !canSend}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition",
+              canSend
+                ? "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                : "border-slate-100 bg-slate-50 text-slate-400 cursor-not-allowed opacity-50"
+            )}
+            title={canSend ? "Envoyer au client par e-mail" : "Non autorisé (réservé à l'Admin ou à l'Assistante)"}
           >
             <Mail size={15} />
             Envoyer au client
           </button>
 
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending || locked}
-            className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
-          >
-            {saveMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            Enregistrer
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || locked}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+            >
+              {saveMutation.isPending ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+              Enregistrer
+            </button>
+          )}
         </div>
       </div>
 
@@ -886,78 +932,153 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
           onClose={() => setShowPrintPreview(false)}
           onPrint={() => window.print()}
         >
-          <article className="mx-auto w-full max-w-[900px] rounded-[24px] bg-white p-6 text-slate-800 shadow-[0_24px_60px_rgba(15,23,42,0.08)] print:rounded-none print:shadow-none">
-            <div className="grid gap-3 border-b border-slate-300 pb-3 md:grid-cols-[1fr_auto]">
+          <div className="devis-print-scroll overflow-y-auto bg-[#f4f1eb] py-8 px-4 flex flex-col gap-6 items-center">
+            
+            {/* PAGE 1: HEADER & ITEMS & ACOMPTES */}
+            <div className="a4-page print-page print:shadow-none print:m-0 print:p-[12mm] bg-white text-slate-800 text-sm leading-relaxed relative flex flex-col justify-between" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 20mm', boxSizing: 'border-box' }}>
               <div>
-                <p className="text-xl font-bold text-slate-900">{draft.companyNom || 'Societe'}</p>
-                <p className="text-[13px] text-slate-700">{draft.companyAdresse}</p>
-                <p className="text-[13px] text-slate-700">{draft.companyEmail} {draft.companyTelephone}</p>
-                <p className="text-[12px] text-slate-600">SIRET: {draft.companySiret || '-'}</p>
-              </div>
-              <div className="rounded-lg border border-slate-300 bg-[#f2f2f2] px-4 py-3 text-[13px] leading-6">
-                <p className="font-semibold text-slate-900">Facture {draft.reference}</p>
-                <p>Date: {formatLongDate(draft.date)}</p>
-                <p>Echeance: {formatLongDate(draft.dateEcheance)}</p>
-                <p>Reference devis: {draft.referenceDevis}</p>
-              </div>
-            </div>
-
-            <div className="mt-3 rounded-lg border border-slate-300 bg-[#f8f8f8] px-4 py-3 text-[13px]">
-              <p className="font-semibold text-slate-900">Client</p>
-              <p>{`${draft.prenomClient} ${draft.nomClient}`.trim()}</p>
-              <p>{draft.adresseClient}</p>
-              <p>{draft.emailClient} {draft.telephoneClient}</p>
-            </div>
-
-            <div className="mt-3 overflow-hidden rounded-lg border border-slate-300">
-              <table className="w-full text-[13px]">
-                <thead>
-                  <tr className="bg-[#e6e6e6] text-slate-800">
-                    <th className="px-3 py-2 text-left font-semibold">Description</th>
-                    <th className="px-3 py-2 text-left font-semibold">Date</th>
-                    <th className="px-3 py-2 text-right font-semibold">Qte</th>
-                    <th className="px-3 py-2 text-right font-semibold">Unite</th>
-                    <th className="px-3 py-2 text-right font-semibold">Prix unitaire</th>
-                    <th className="px-3 py-2 text-right font-semibold">TVA</th>
-                    <th className="px-3 py-2 text-right font-semibold">Montant</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {computedLines.map((line) => (
-                    <tr key={line.localId}>
-                      <td className="px-3 py-2 align-top">{line.description}</td>
-                      <td className="px-3 py-2">{formatLongDate(line.datePrestation)}</td>
-                      <td className="px-3 py-2 text-right">{line.quantite}</td>
-                      <td className="px-3 py-2 text-right">{line.unite}</td>
-                      <td className="px-3 py-2 text-right">{formatCurrency(line.prixUnitaireHT)}</td>
-                      <td className="px-3 py-2 text-right">{line.tauxTVA.toFixed(2)}%</td>
-                      <td className="px-3 py-2 text-right">{formatCurrency(line.montantHT)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-3 ml-auto w-full max-w-xs rounded-lg border border-slate-300 bg-[#f8f8f8] p-3 text-[13px]">
-              <div className="flex justify-between"><span>Total HT</span><span>{formatCurrency(totals.totalHT)}</span></div>
-              <div className="flex justify-between"><span>TVA</span><span>{formatCurrency(totals.totalTVA)}</span></div>
-              <div className="mt-2 border-t border-slate-300 pt-2 flex justify-between text-base font-semibold">
-                <span>Total TTC</span><span>{formatCurrency(totals.totalTTC)}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 rounded-lg border border-slate-300 bg-[#f5f5f5] p-3 text-[13px] leading-6 text-slate-700 whitespace-pre-line">
-              <p><span className="font-semibold text-slate-800">Conditions:</span> {draft.conditionsPaiement}</p>
-              <p><span className="font-semibold text-slate-800">Communication:</span> {draft.communicationPaiement}</p>
-              <p><span className="font-semibold text-slate-800">Reference paiement:</span> {draft.referencePaiement}</p>
-              {draft.notesLegales ? (
-                <div>
-                  <p><span className="font-semibold text-slate-800">Mentions TVA:</span></p>
-                  <p>{draft.notesLegales}</p>
+                <div className="grid grid-cols-[1fr_1fr] gap-6 border-b border-slate-200 pb-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Entreprise</p>
+                    <p className="text-base font-bold text-slate-900 mt-1">{draft.companyNom || 'BATIFLOW'}</p>
+                    <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                      <p>{draft.companyAdresse}</p>
+                      <p>{draft.companyEmail} | {draft.companyTelephone}</p>
+                      {draft.companySiret && <p>SIRET: {draft.companySiret}</p>}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Coordonnées client</p>
+                    <p className="text-base font-bold text-slate-900 mt-1">{`${draft.prenomClient} ${draft.nomClient}`.trim()}</p>
+                    <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                      <p>{draft.adresseClient}</p>
+                      {draft.telephoneClient && <p>{draft.telephoneClient}</p>}
+                      {draft.emailClient && <p>{draft.emailClient}</p>}
+                    </div>
+                  </div>
                 </div>
-              ) : null}
+
+                <div className="mt-8 grid grid-cols-2 gap-4">
+                  <div>
+                    <h1 className="text-xl font-extrabold text-slate-900 tracking-tight uppercase">FACTURE</h1>
+                    <p className="text-xs font-semibold text-slate-500 mt-0.5">Réf: {draft.reference}</p>
+                  </div>
+                  <div className="text-right text-xs text-slate-600 space-y-0.5">
+                    <p>Date d'émission: <span className="font-semibold text-slate-900">{formatLongDate(draft.date)}</span></p>
+                    <p>Date d'échéance: <span className="font-semibold text-slate-900">{formatLongDate(draft.dateEcheance)}</span></p>
+                    <p>Conditions: <span className="font-semibold text-slate-900">{draft.conditionsPaiement || 'Paiement comptant'}</span></p>
+                  </div>
+                </div>
+
+                <table className="w-full mt-8 border-collapse text-[11px] leading-relaxed">
+                  <thead>
+                    <tr className="bg-slate-800 text-white uppercase text-[9px] tracking-wider">
+                      <th className="px-3 py-2 text-left font-semibold rounded-l-md">N°</th>
+                      <th className="px-3 py-2 text-left font-semibold">Description</th>
+                      <th className="px-3 py-2 text-right font-semibold">Qte</th>
+                      <th className="px-3 py-2 text-right font-semibold">PU HT</th>
+                      <th className="px-3 py-2 text-right font-semibold">TVA %</th>
+                      <th className="px-3 py-2 text-right font-semibold">Montant TVA</th>
+                      <th className="px-3 py-2 text-right font-semibold rounded-r-md">Total HT</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {computedLines.map((line, index) => {
+                      const rate = line.tauxTVA ?? 20;
+                      const lineHT = line.montantHT ?? 0;
+                      const lineTVA = lineHT * (rate / 100);
+                      return (
+                        <tr key={line.localId || index}>
+                          <td className="px-3 py-2.5 align-top text-slate-400">{index + 1}.</td>
+                          <td className="px-3 py-2.5 align-top font-medium text-slate-900">{line.description}</td>
+                          <td className="px-3 py-2.5 text-right whitespace-nowrap">{line.quantite} {line.unite}</td>
+                          <td className="px-3 py-2.5 text-right">{formatCurrency(line.prixUnitaireHT)}</td>
+                          <td className="px-3 py-2.5 text-right">{rate}%</td>
+                          <td className="px-3 py-2.5 text-right">{formatCurrency(lineTVA)}</td>
+                          <td className="px-3 py-2.5 text-right font-semibold text-slate-950">{formatCurrency(lineHT)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+                <span>Facture Réf: {draft.reference}</span>
+                <span>Page 1 / 4</span>
+              </div>
             </div>
-          </article>
+
+            {/* PAGE 2: TOTALS, COMM, INFOS BANCAIRES */}
+            <div className="a4-page print-page print:shadow-none print:m-0 print:p-[12mm] bg-white text-slate-800 text-sm relative flex flex-col justify-between" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 20mm', boxSizing: 'border-box' }}>
+              <div>
+                <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-4">
+                  <span className="text-[11px] text-slate-500 font-semibold uppercase">Réf: {draft.reference}</span>
+                  <span className="text-[11px] text-slate-500 font-semibold">Récapitulatif & Paiement</span>
+                </div>
+
+                <div className="grid grid-cols-[1.2fr_0.8fr] gap-6 items-start">
+                  <div className="space-y-4 text-xs">
+                    <div className="rounded-xl border border-slate-200 p-4 bg-slate-50 leading-relaxed text-slate-600">
+                      <p className="font-bold text-slate-800 mb-1">Informations bancaires :</p>
+                      <p>Veuillez effectuer votre virement sur le compte bancaire de la société.</p>
+                      <p className="mt-1 font-semibold text-slate-800">IBAN : LU96 0123 4567 8901 2345</p>
+                      <p>BIC/SWIFT : BATIFLLX</p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 p-4 bg-slate-50 leading-relaxed text-slate-600">
+                      <p className="font-bold text-slate-800 mb-1">Références de paiement :</p>
+                      <p>Veuillez utiliser la référence suivante lors de votre virement : <strong className="text-slate-900">{draft.referencePaiement || draft.reference}</strong></p>
+                      <p className="mt-1">Notre référence dossier : <strong className="text-slate-900">{draft.referenceDevis}</strong></p>
+                    </div>
+                  </div>
+
+                  <div className="border border-slate-200 bg-slate-900 text-white rounded-2xl p-4 text-xs space-y-3 shadow-md">
+                    <div className="flex justify-between text-slate-300 font-medium">
+                      <span>Total HT</span>
+                      <span>{formatCurrency(totals.totalHT)}</span>
+                    </div>
+                    {tvaGroups.map((group) => (
+                      <div key={group.rate} className="flex justify-between text-slate-400">
+                        <span>TVA {group.rate}%</span>
+                        <span>{formatCurrency(group.amount)}</span>
+                      </div>
+                    ))}
+                    <div className="border-t border-slate-700 pt-2 flex justify-between font-bold text-sm">
+                      <span>Total TTC</span>
+                      <span>{formatCurrency(totals.totalTTC)}</span>
+                    </div>
+                    <div className="border-t border-slate-700 pt-2 flex justify-between font-extrabold text-base text-yellow-400">
+                      <span>Montant total</span>
+                      <span>{formatCurrency(totals.totalTTC)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {draft.notesLegales && (
+                  <div className="mt-8 p-3 rounded-lg border border-slate-200 bg-slate-50 text-[10px] text-slate-500 leading-relaxed">
+                    <p className="font-semibold text-slate-700 mb-0.5">Mentions légales & TVA :</p>
+                    <p>{draft.notesLegales}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+                <span>Facture Réf: {draft.reference}</span>
+                <span>Page 2 / 4</span>
+              </div>
+            </div>
+
+            {/* PAGE 3 & 4: CGV */}
+            <CGVDocument
+              companyNom={draft.companyNom}
+              companyEmail={draft.companyEmail}
+              companyTelephone={draft.companyTelephone}
+              companyAdresse={draft.companyAdresse}
+              companySiret={draft.companySiret}
+              pageOffset={3}
+            />
+          </div>
         </PrintDocumentModal>
       )}
     </div>

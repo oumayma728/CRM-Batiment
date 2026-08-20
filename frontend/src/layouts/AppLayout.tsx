@@ -22,6 +22,7 @@ import {
   CheckSquare,
   Receipt,
   Database,
+  Briefcase,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
@@ -52,8 +53,9 @@ const navItems: NavItem[] = [
   { to: '/admin/services-mo', label: 'Main d\'œuvre', icon: <Wrench size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
   // Module 3: Fournisseurs
   { to: '/admin/fournisseurs', label: 'Fournisseurs', icon: <Truck size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Fournisseurs' },
-  { to: '/admin/chantiers', label: 'Chantiers', icon: <HardHat size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Chantiers' },
-  { to: '/admin/taches-chantier', label: 'Taches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'], section: 'Chantiers' },
+  { to: '/admin/sous-traitants', label: 'Sous-traitance', icon: <Briefcase size={19} />, roles: ['ADMIN', 'ASSISTANTE'], section: 'Chantiers' },
+  { to: '/admin/chantiers', label: 'Chantiers', icon: <HardHat size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'] },
+  { to: '/admin/taches-chantier', label: 'Taches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'] },
   // Administration
   { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: <Shield size={19} />, roles: ['ADMIN'], section: 'Administration' },
   { to: '/admin/types-projet', label: 'Types de projet', icon: <FolderKanban size={19} />, roles: ['ADMIN'] },

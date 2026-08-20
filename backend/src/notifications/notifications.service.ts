@@ -7,7 +7,8 @@ type NotificationLevel = 'info' | 'success' | 'warning';
 type NotificationCategory =
   | 'SUPPLIER_STATUS'
   | 'RECEPTION_PARTIELLE'
-  | 'RECEPTION_COMPLETE';
+  | 'RECEPTION_COMPLETE'
+  | 'ASSURANCE_EXPIRATION';
 
 interface CreateInternalNotificationPayload {
   companyId: number;
@@ -77,6 +78,7 @@ export class NotificationsService {
             'NOTIFICATION_RECEPTION_PARTIELLE',
             'NOTIFICATION_RECEPTION_COMPLETE',
             'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+            'NOTIFICATION_ASSURANCE_EXPIRATION',
           ],
         },
       },

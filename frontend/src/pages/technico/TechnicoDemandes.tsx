@@ -96,7 +96,18 @@ export default function TechnicoDemandes() {
     },
   });
 
+  const { data: allDemandesData } = useQuery({
+    queryKey: ['technico-demandes-all', search],
+    queryFn: async () => {
+      const params: Record<string, unknown> = { limit: 1000 };
+      if (search.trim()) params.search = search.trim();
+      const res = await api.get('/demandes-devis', { params });
+      return res.data;
+    },
+  });
+
   const demandes: DemandeDevis[] = data?.data ?? [];
+  const allDemandes: DemandeDevis[] = allDemandesData?.data ?? [];
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
 
   const updateStatutMutation = useMutation({
@@ -104,6 +115,7 @@ export default function TechnicoDemandes() {
       api.patch(`/demandes-devis/${id}/statut`, { statut }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-demandes'] });
+      queryClient.invalidateQueries({ queryKey: ['technico-demandes-all'] });
       queryClient.invalidateQueries({ queryKey: ['demandes-devis'] });
       setSelectedDemande(null);
     },
@@ -143,7 +155,7 @@ export default function TechnicoDemandes() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {statutOrder.map((statut) => {
           const cfg = statutConfig[statut];
-          const count = demandes.filter(
+          const count = allDemandes.filter(
             (demande) => normalizeDemandeStatut(demande.statut as string) === statut,
           ).length;
 

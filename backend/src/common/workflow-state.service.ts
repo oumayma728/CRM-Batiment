@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { BusinessException } from './exceptions/business.exception.js';
 
 // ─────────────────────────────────────────────────────────
 // P0.5 — WorkflowStateService
@@ -39,12 +40,26 @@ const CHANTIER_TRANSITIONS: Record<string, string[]> = {
 @Injectable()
 export class WorkflowStateService {
 
-  // ── Valider une transition de statut Devis ──────────────
+  // ── Valider une transition de statut Devis (retourne un booléen et lève BusinessException) ──
+  validateTransition(currentStatus: string, targetStatus: string): boolean {
+    const allowed = DEVIS_TRANSITIONS[currentStatus] ?? [];
+
+    if (!allowed.includes(targetStatus)) {
+      throw new BusinessException(
+        `Transition Devis interdite : ${currentStatus} → ${targetStatus}. ` +
+        `Transitions autorisées depuis ${currentStatus} : ` +
+        (allowed.length ? allowed.join(', ') : 'aucune (statut final)'),
+      );
+    }
+    return true;
+  }
+
+  // ── Valider une transition de statut Devis (legacy) ──────────────
   validateDevisTransition(current: string, next: string): void {
     const allowed = DEVIS_TRANSITIONS[current] ?? [];
 
     if (!allowed.includes(next)) {
-      throw new BadRequestException(
+      throw new BusinessException(
         `Transition Devis interdite : ${current} → ${next}. ` +
         `Transitions autorisées depuis ${current} : ` +
         (allowed.length ? allowed.join(', ') : 'aucune (statut final)'),
@@ -57,7 +72,7 @@ export class WorkflowStateService {
     const allowed = CHANTIER_TRANSITIONS[current] ?? [];
 
     if (!allowed.includes(next)) {
-      throw new BadRequestException(
+      throw new BusinessException(
         `Transition Chantier interdite : ${current} → ${next}. ` +
         `Transitions autorisées depuis ${current} : ` +
         (allowed.length ? allowed.join(', ') : 'aucune (statut final)'),

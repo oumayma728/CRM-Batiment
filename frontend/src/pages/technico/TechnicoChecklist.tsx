@@ -363,6 +363,7 @@ export default function TechnicoChecklist() {
     return res.data as Devis;
   }
 
+  //logique de changement de statut après génération du devis pour la demande
   async function convertDemandeAfterQuoteGeneration() {
     if (!demandeContext) return;
 
@@ -430,6 +431,7 @@ export default function TechnicoChecklist() {
       const res = await api.post(`/devis/${devisId}/lignes/checklist`, { items });
       return { payload: res.data, devisId };
     },
+    //Soumission et redirection vers l'éditeur de devis
     onSuccess: async () => {
       await refreshDevisQueries();
       if (demandeContext) {
@@ -441,6 +443,7 @@ export default function TechnicoChecklist() {
           refetchType: 'all',
         });
       }
+      // Redirection vers l'éditeur de devis
       setSubmitted(true);
       setCheckedItems(new Map());
       setQuestionResponses(new Map());

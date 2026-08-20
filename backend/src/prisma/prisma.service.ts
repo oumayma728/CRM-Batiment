@@ -128,6 +128,24 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get typeProjet() {
     return this._client.typeProjet;
   }
+  get sousTraitant() {
+    return this._client.sousTraitant;
+  }
+  get contratSousTraitant() {
+    return this._client.contratSousTraitant;
+  }
+  get assuranceSousTraitant() {
+    return this._client.assuranceSousTraitant;
+  }
+  get paiementSousTraitant() {
+    return this._client.paiementSousTraitant;
+  }
+  get disponibiliteSousTraitant() {
+    return this._client.disponibiliteSousTraitant;
+  }
+  get notationSousTraitant() {
+    return this._client.notationSousTraitant;
+  }
 
   // Transaction support
   $transaction(

@@ -15,6 +15,7 @@ import {
 } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
+import { WorkflowStateService } from '../common/workflow-state.service.js';
 import { CreateDevisDto } from './dto/create-devis.dto.js';
 import { UpdateDevisDto } from './dto/update-devis.dto.js';
 import { QueryDevisDto } from './dto/query-devis.dto.js';
@@ -34,16 +35,7 @@ import type {
   Unite,
 } from '../../generated/prisma/client.js';
 
-const TRANSITIONS: Record<string, string[]> = {
-  BROUILLON: ['ENVOYE', 'ANNULE'],
-  ENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ACCEPTE: ['SIGNE', 'ANNULE'],
-  SIGNE: [],
-  REFUSE: ['REVISE', 'ANNULE'],
-  REVISE: ['RENVOYE', 'ANNULE'],
-  RENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ANNULE: [],
-};
+// Transitions defined centrally in WorkflowStateService
 
 const MAX_SIGNATURE_OTP_ATTEMPTS = 3;
 
@@ -124,6 +116,7 @@ export class DevisService {
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly workflowStateService: WorkflowStateService,
   ) {}
 
   private normalizePhone(phone: string) {
@@ -640,41 +633,32 @@ export class DevisService {
     );
     // ── AVANT MODIFICATION ──────────────────────────────────────────
     // let facture = await this.prisma.facture.findFirst({ where: { devisId } });
-    // if (!facture) {
-    //   facture = await this.prisma.facture.create({
-    //     data: {
-    //       devisId,
-    //       reference: await this.generateDocumentReference('FAC', 'facture'),
-    //       montantHT: this.round2(devis.totalHT),
-    //       montantTVA: this.round2(devis.totalTVA),
-    //       montantTTC: this.round2(devis.totalTTC),
-    //       statut: 'BROUILLON',
-    //     },
-    //   });
-    // }
-    // ── APRÈS MODIFICATION (P0.3 — Facture Acompte 30%) ─────────────
     let facture = await this.prisma.facture.findFirst({ where: { devisId } });
     if (!facture) {
-     // Acompte 30% selon cahier des charges
-     const acomptePercent = 30;
-     const acompteMontantHT = this.round2(devis.totalHT * acomptePercent / 100);
-     const acompteMontantTVA = this.round2(acompteMontantHT * (devis.tauxTVA / 100));
-  const acompteMontantTTC = this.round2(acompteMontantHT + acompteMontantTVA);
+      // Acompte selon configuration (30% ou 40%)
+      let acomptePercent = Number(this.configService.get<string | number>('ACOMPTE_PERCENT') ?? 30);
+      if (acomptePercent !== 30 && acomptePercent !== 40) {
+        acomptePercent = 30;
+      }
+      const acompteMontantHT = this.round2(devis.totalHT * acomptePercent / 100);
+      const acompteMontantTVA = this.round2(acompteMontantHT * (devis.tauxTVA / 100));
+      const acompteMontantTTC = this.round2(acompteMontantHT + acompteMontantTVA);
 
-  facture = await this.prisma.facture.create({
-    data: {
-      devisId,
-      reference: await this.generateDocumentReference('FAC', 'facture'),
-      montantHT: acompteMontantHT,
-      montantTVA: acompteMontantTVA,
-      montantTTC: acompteMontantTTC,
-      statut: 'BROUILLON',
-      typeFacture: 'ACOMPTE',
-      acomptePercent,
-      acompteMontant: acompteMontantTTC,
-    },
-  });
-}
+      facture = await this.prisma.facture.create({
+        data: {
+          devisId,
+          reference: await this.generateDocumentReference('FAC', 'facture'),
+          montantHT: acompteMontantHT,
+          montantTVA: acompteMontantTVA,
+          montantTTC: acompteMontantTTC,
+          statut: 'BROUILLON',
+          typeFacture: 'ACOMPTE',
+          acomptePercent,
+          acompteMontant: acompteMontantTTC,
+        },
+      });
+    }
+
     let bonCommande = await this.prisma.bonCommande.findUnique({
       where: { devisId },
     });
@@ -896,7 +880,9 @@ export class DevisService {
         ...(clientId ? { clientId } : {}),
       },
       include: {
-        company: { select: { nom: true } },
+        company: {
+          select: { id: true, nom: true, adresse: true, email: true, telephone: true, siret: true },
+        },
         client: true,
         createur: {
           select: { id: true, nom: true, prenom: true, email: true },
@@ -939,6 +925,9 @@ export class DevisService {
         devis: {
           include: {
             client: true,
+            company: {
+              select: { id: true, nom: true, adresse: true, email: true, telephone: true, siret: true },
+            },
             createur: {
               select: { id: true, nom: true, prenom: true, email: true },
             },
@@ -1121,6 +1110,9 @@ export class DevisService {
       where: { id, companyId },
       include: {
         client: true,
+        company: {
+          select: { id: true, nom: true, adresse: true, email: true, telephone: true, siret: true },
+        },
         createur: {
           select: { id: true, nom: true, prenom: true, email: true },
         },
@@ -1180,13 +1172,10 @@ export class DevisService {
     const current = devis.statut as string;
     const next = dto.statut as string;
 
-    const allowed = TRANSITIONS[current] ?? [];
-    if (!allowed.includes(next)) {
-      throw new BadRequestException(
-        `Transition ${current} -> ${next} non autorisee. Transitions possibles : ${
-          allowed.length ? allowed.join(', ') : 'aucune (statut final)'
-        }`,
-      );
+    this.workflowStateService.validateTransition(current, next);
+
+    if ((next === 'SIGNE' || next === 'ACCEPTE' || next === 'ENVOYE') && devis.lignes.length === 0) {
+      throw new BadRequestException('Impossible de valider ou signer un devis vide.');
     }
 
     const updateData: Record<string, unknown> = { statut: next as DevisStatut };
@@ -1235,6 +1224,10 @@ export class DevisService {
       next === 'ACCEPTE' || next === 'SIGNE'
         ? await this.ensureAcceptedDocumentsGenerated(id, companyId)
         : null;
+
+    if (next === 'ACCEPTE' || next === 'SIGNE') {
+      await this.checkDevisProfitabilityAndNotify(id, companyId);
+    }
 
     return {
       devis: await this.findOne(id, companyId),
@@ -1292,6 +1285,21 @@ export class DevisService {
       validationUrl,
       acceptUrl,
       rejectUrl,
+      companyEmail: devis.company?.email ?? undefined,
+      companyTelephone: devis.company?.telephone ?? undefined,
+      companyAdresse: devis.company?.adresse ?? undefined,
+      companySiret: devis.company?.siret ?? undefined,
+      clientAdresse: devis.client.adresseChantier ?? devis.client.adresseClient ?? undefined,
+      clientEmail: devis.client.email ?? undefined,
+      clientTelephone: devis.client.telephone ?? undefined,
+      lines: devis.lignes.map((line) => ({
+        description: line.description ?? line.prestation?.nom ?? 'Ligne devis',
+        quantite: line.quantite,
+        unite: line.unite,
+        prixUnitaireHT: line.prixUnitaireVente,
+        totalHT: line.totalHT,
+        tauxTVA: devis.tauxTVA ?? 20,
+      })),
     });
 
     const nextStatus: DevisStatut =
@@ -1876,6 +1884,7 @@ export class DevisService {
     });
 
     await this.ensureAcceptedDocumentsGenerated(updated.id, companyId);
+    await this.checkDevisProfitabilityAndNotify(updated.id, companyId);
 
     return {
       message:
@@ -2310,6 +2319,80 @@ export class DevisService {
         margePourcent: this.round2(margePourcent),
       },
     });
+  }
+
+  private async checkDevisProfitabilityAndNotify(
+    devisId: number,
+    companyId: number,
+  ) {
+    try {
+      const devis = await this.prisma.devis.findFirst({
+        where: { id: devisId, companyId },
+        include: {
+          client: { select: { nom: true, prenom: true } },
+          lignes: {
+            include: {
+              materiau: true,
+            },
+          },
+        },
+      });
+
+      if (!devis) return;
+
+      let totalSellingHT = 0;
+      let totalBuyingHT = 0;
+
+      for (const line of devis.lignes) {
+        const qty = line.quantite;
+        totalSellingHT += line.prixUnitaireVente * qty;
+        const buyingPrice =
+          line.materiau?.prixAchatFixe ?? line.prixAchat ?? 0;
+        totalBuyingHT += buyingPrice * qty;
+      }
+
+      const diff = totalSellingHT - totalBuyingHT;
+
+      if (diff < 0) {
+        await this.prisma.auditLog.create({
+          data: {
+            companyId,
+            action: 'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+            entite: 'devis',
+            entiteId: devisId,
+            nouvelleValeur: {
+              audience: 'INTERNAL',
+              category: 'SUPPLIER_STATUS',
+              level: 'warning',
+              title: `⚠️ Rentabilité : Perte de ${Math.abs(diff).toFixed(2)}€`,
+              message: `Le devis ${devis.reference} pour ${devis.client.prenom} ${devis.client.nom} présente une perte de ${Math.abs(diff).toFixed(2)} € HT (Achat : ${totalBuyingHT.toFixed(2)} € HT, Vente : ${totalSellingHT.toFixed(2)} € HT).`,
+              metadata: { devisId, loss: Math.abs(diff) },
+            } as any,
+          },
+        });
+      } else if (diff > 0) {
+        const marginPercent =
+          totalSellingHT > 0 ? (diff / totalSellingHT) * 100 : 0;
+        await this.prisma.auditLog.create({
+          data: {
+            companyId,
+            action: 'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+            entite: 'devis',
+            entiteId: devisId,
+            nouvelleValeur: {
+              audience: 'INTERNAL',
+              category: 'SUPPLIER_STATUS',
+              level: 'success',
+              title: `🎉 Rentabilité : Gain de ${diff.toFixed(2)}€`,
+              message: `Le devis ${devis.reference} pour ${devis.client.prenom} ${devis.client.nom} est rentable avec un gain de ${diff.toFixed(2)} € HT (Marge : ${marginPercent.toFixed(1)}%).`,
+              metadata: { devisId, gain: diff, marginPercent },
+            } as any,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors du calcul de rentabilité:', error);
+    }
   }
 
   async remove(id: number, companyId: number) {

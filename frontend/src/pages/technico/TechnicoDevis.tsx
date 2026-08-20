@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { DevisInvoice } from '@/components/DevisInvoice';
 import { DevisManualEditorModal } from '@/components/devis/DevisManualEditorModal';
@@ -147,6 +148,9 @@ function buildPurchaseOrderFeedback(data: unknown, fallback: string) {
 }
 
 export default function TechnicoDevis() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -587,8 +591,14 @@ export default function TechnicoDevis() {
                     </button>
                     <button
                       onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600"
-                      title="Transformer en facture"
+                      disabled={createFactureFromDevisMutation.isPending || !isAdmin}
+                      className={cn(
+                        "rounded-lg p-2 transition",
+                        isAdmin
+                          ? "text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+                          : "text-slate-200 cursor-not-allowed opacity-40"
+                      )}
+                      title={isAdmin ? "Transformer en facture" : "Non autorisé (réservé à l'Admin)"}
                     >
                       {createFactureFromDevisMutation.isPending ? (
                         <Loader2 size={16} className="animate-spin" />

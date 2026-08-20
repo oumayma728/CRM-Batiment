@@ -1,6 +1,5 @@
 import type { Devis, LigneDevis } from '@/types';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { parseStructuredDevisNotes } from '@/lib/devisStructuredNotes';
 import { Printer, X } from 'lucide-react';
 
 interface DevisInvoiceProps {
@@ -36,7 +35,7 @@ function getAdvisorName(devis: Devis) {
   return `${devis.createur.prenom} ${devis.createur.nom}`.trim();
 }
 
-function getStatusLabel(statut: Devis['statut']) {
+export function getStatusLabel(statut: Devis['statut']) {
   switch (statut) {
     case 'BROUILLON':
       return 'Brouillon';
@@ -59,7 +58,7 @@ function getStatusLabel(statut: Devis['statut']) {
   }
 }
 
-function getModeValidationLabel(mode?: Devis['modeValidation']) {
+export function getModeValidationLabel(mode?: Devis['modeValidation']) {
   switch (mode) {
     case 'EMAIL':
       return 'Validation email';
@@ -90,19 +89,19 @@ function getLineDetails(ligne: LigneDevis) {
   return details.join(' / ');
 }
 
-function getLineCategory(ligne: LigneDevis) {
+export function getLineCategory(ligne: LigneDevis) {
   if (ligne.prestation?.nom) return ligne.prestation.nom;
   if (ligne.materiau?.nom) return 'Fourniture';
   if (ligne.serviceMainOeuvre?.nom) return 'Main d oeuvre';
   return 'Divers';
 }
 
-function getLineMaterials(ligne: LigneDevis) {
+export function getLineMaterials(ligne: LigneDevis) {
   const parts = [ligne.materiau?.nom, ligne.serviceMainOeuvre?.nom].filter(Boolean);
   return parts.length > 0 ? parts.join(' + ') : '—';
 }
 
-function TotalsCard({ label, value, emphasis = false }: { label: string; value: string; emphasis?: boolean }) {
+export function TotalsCard({ label, value, emphasis = false }: { label: string; value: string; emphasis?: boolean }) {
   return (
     <div
       className={
@@ -119,7 +118,7 @@ function TotalsCard({ label, value, emphasis = false }: { label: string; value: 
   );
 }
 
-function DocumentActionButton({
+export function DocumentActionButton({
   label,
   onClick,
 }: {
@@ -145,7 +144,8 @@ function DocumentActionButton({
   );
 }
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { CGVDocument } from './documents/CGVDocument';
 
 export function DevisInvoice({
   devis,
@@ -173,12 +173,21 @@ export function DevisInvoice({
   const [supplierError, setSupplierError] = useState<string | null>(null);
   const lignes = [...(devis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre);
   const totalHT = devis.totalHT ?? 0;
-  const totalTVA = devis.totalTVA ?? 0;
   const totalTTC = devis.totalTTC ?? 0;
-  const tauxTVA = devis.tauxTVA ?? 20;
   const issueDate = formatDate(devis.createdAt);
-  const validationDate = devis.dateValidation ? formatDate(devis.dateValidation) : 'En attente';
-  const structuredNotes = parseStructuredDevisNotes(devis.notes);
+  const tvaGroups = useMemo(() => {
+    const groups: Record<number, number> = {};
+    lignes.forEach((line) => {
+      const rate = devis.tauxTVA ?? 20;
+      const lineHT = line.totalHT ?? 0;
+      const lineTVA = lineHT * (rate / 100);
+      groups[rate] = (groups[rate] || 0) + lineTVA;
+    });
+    return Object.entries(groups).map(([rate, amount]) => ({
+      rate: Number(rate),
+      amount,
+    }));
+  }, [lignes, devis.tauxTVA]);
   const hasGeneratedDocuments =
     (devis.factures?.length ?? 0) > 0 ||
     Boolean(devis.bonCommande) ||
@@ -327,307 +336,247 @@ export function DevisInvoice({
           </div>
         )}
 
-        <div className="devis-print-scroll overflow-y-auto bg-[#f4f1eb] px-4 py-5 md:px-8">
-          <article className="mx-auto w-full max-w-[920px] rounded-[24px] bg-white p-6 text-slate-800 shadow-[0_30px_80px_rgba(15,23,42,0.08)] md:p-8">
-            <header className="rounded-2xl border border-slate-200 bg-white p-5">
-              <div className="grid gap-6 md:grid-cols-[1.25fr_0.75fr]">
+        <div className="devis-print-scroll overflow-y-auto bg-[#f4f1eb] py-8 px-4 flex flex-col gap-6 items-center">
+          
+          {/* PAGE 1: PREPARATION & INTRO */}
+          <div className="a4-page print-page print:shadow-none print:m-0 print:p-[12mm] bg-white text-slate-800 text-sm leading-relaxed relative flex flex-col justify-between" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 20mm', boxSizing: 'border-box' }}>
+            <div>
+              <div className="grid grid-cols-[1fr_1fr] gap-6 border-b border-slate-200 pb-4">
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">BATIFLOW</p>
-                  <p className="mt-1 text-sm text-slate-500">Renovation & Gestion commerciale</p>
-                  <div className="mt-4 space-y-1 text-sm text-slate-600">
-                    <p>contact@crm-batiment.fr</p>
-                    <p>+33 1 23 45 67 89</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Coordonnées entreprise</p>
+                  <p className="text-base font-bold text-slate-900 mt-1">{devis.company?.nom || 'BATIFLOW'}</p>
+                  <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                    <p>{devis.company?.adresse}</p>
+                    <p>{devis.company?.email} | {devis.company?.telephone}</p>
+                    {devis.company?.siret && <p>SIRET: {devis.company.siret}</p>}
                   </div>
                 </div>
-
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Numero devis</span>
-                      <span className="font-semibold text-slate-900">{devis.reference}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Date</span>
-                      <span className="font-medium text-slate-900">{issueDate}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Statut</span>
-                      <span className="font-medium text-slate-900">{getStatusLabel(devis.statut)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-500">TVA</span>
-                      <span className="font-medium text-slate-900">{tauxTVA.toFixed(2)}%</span>
-                    </div>
+                <div className="text-right">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Coordonnées prospect</p>
+                  <p className="text-base font-bold text-slate-900 mt-1">{getClientName(devis)}</p>
+                  <div className="text-xs text-slate-500 mt-1 space-y-0.5">
+                    <p>{getClientAddress(devis)}</p>
+                    {devis.client?.telephone && <p>{devis.client.telephone}</p>}
+                    {devis.client?.email && <p>{devis.client.email}</p>}
                   </div>
                 </div>
               </div>
-            </header>
 
-            <section className="mt-6">
-              <h1 className="text-3xl font-bold text-slate-900">Devis de travaux</h1>
-              <p className="mt-1 text-sm text-slate-500">Proposition commerciale</p>
-            </section>
-
-            <section className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-600">Informations client</p>
-                <p className="mt-2 text-lg font-semibold text-slate-900">{getClientName(devis)}</p>
-                <div className="mt-2 space-y-1 text-sm text-slate-600">
-                  <p>{getClientAddress(devis)}</p>
-                  {devis.client?.telephone && <p>{devis.client.telephone}</p>}
-                  {devis.client?.email && <p>{devis.client.email}</p>}
-                </div>
+              <div className="mt-12">
+                <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">
+                  Devis {devis.reference} / {new Date(devis.createdAt).getFullYear()}
+                </h1>
+                {devis.notes && (
+                  <p className="text-sm font-semibold text-slate-700 mt-1">
+                    Objet: {devis.notes}
+                  </p>
+                )}
+                <p className="text-xs font-bold text-slate-900 mt-4 uppercase tracking-wider">
+                  DEVIS À L'ATTENTION DE : {getClientName(devis)}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-600">Informations devis</p>
-                <div className="mt-2 grid gap-1 text-sm text-slate-600">
-                  <p>Creation: <span className="font-medium text-slate-900">{issueDate}</span></p>
-                  <p>Derniere validation: <span className="font-medium text-slate-900">{validationDate}</span></p>
-                  <p>Conseiller: <span className="font-medium text-slate-900">{getAdvisorName(devis)}</span></p>
-                  <p>Mode validation: <span className="font-medium text-slate-900">{getModeValidationLabel(devis.modeValidation)}</span></p>
-                </div>
+              <div className="mt-8 text-slate-600 text-xs leading-6 space-y-4">
+                <p>
+                  Merci pour l'intérêt que vous portez à nos solutions en rénovation et aménagements professionnels.
+                  Chez <strong>{devis.company?.nom || 'BATIFLOW'}</strong>, nous sommes spécialisés dans les installations
+                  haut de gamme et la valorisation énergétique de vos bâtiments.
+                </p>
+                <p>
+                  Ce devis comprend une analyse détaillée de votre demande et une estimation précise des coûts associés.
+                  Nous mettons un point d'honneur à vous offrir des solutions sur mesure, durables et économiques,
+                  conçues pour s'adapter parfaitement à vos besoins et à votre budget.
+                </p>
+                <p>
+                  Notre équipe reste à votre entière disposition pour vous accompagner de la conception initiale
+                  jusqu'à l'installation finale et la maintenance. N'hésitez pas à contacter votre conseiller pour
+                  toute question ou précision complémentaire.
+                </p>
               </div>
-            </section>
+            </div>
 
-            <section className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
-              <table className="w-full border-collapse text-sm">
-                <colgroup>
-                  <col className="w-[6%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[29%]" />
-                  <col className="w-[16%]" />
-                  <col className="w-[9%]" />
-                  <col className="w-[8%]" />
-                  <col className="w-[9%]" />
-                  <col className="w-[9%]" />
-                </colgroup>
+            <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+              <span>Réf: {devis.reference}</span>
+              <span>Page 1 / 5</span>
+            </div>
+          </div>
+
+          {/* PAGE 2: TABLE DES MATÉRIAUX & PRESTATIONS */}
+          <div className="a4-page print-page print:shadow-none print:m-0 print:p-[12mm] bg-white text-slate-800 text-sm relative flex flex-col justify-between" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 20mm', boxSizing: 'border-box' }}>
+            <div>
+              <div className="flex justify-between items-center border-b border-slate-200 pb-2 mb-4">
+                <span className="text-[11px] text-slate-500 font-semibold uppercase">N° {devis.reference}</span>
+                <span className="text-[11px] text-slate-500 font-semibold">Date: {issueDate}</span>
+              </div>
+
+              <table className="w-full border-collapse text-[11px] leading-relaxed">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700">
-                    <th className="px-3 py-3 text-left font-semibold">N°</th>
-                    <th className="px-3 py-3 text-left font-semibold">Categorie</th>
-                    <th className="px-3 py-3 text-left font-semibold">Tache / Description</th>
-                    <th className="px-3 py-3 text-left font-semibold">Materiaux requis</th>
-                    <th className="px-3 py-3 text-right font-semibold">Qte</th>
-                    <th className="px-3 py-3 text-right font-semibold">TVA</th>
-                    <th className="px-3 py-3 text-right font-semibold">PU HT</th>
-                    <th className="px-3 py-3 text-right font-semibold">Montant HT</th>
+                  <tr className="bg-slate-800 text-white uppercase text-[9px] tracking-wider">
+                    <th className="px-3 py-2 text-left font-semibold rounded-l-md">Description</th>
+                    <th className="px-3 py-2 text-right font-semibold">Quantité</th>
+                    <th className="px-3 py-2 text-right font-semibold">Prix unitaire</th>
+                    <th className="px-3 py-2 text-right font-semibold">TVA %</th>
+                    <th className="px-3 py-2 text-right font-semibold">Montant TVA</th>
+                    <th className="px-3 py-2 text-right font-semibold rounded-r-md">Total</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  {lignes.length > 0 ? (
-                    lignes.map((ligne, index) => {
-                      const details = getLineDetails(ligne);
-
-                      return (
-                        <tr key={ligne.id || index}>
-                          <td className="px-3 py-3 text-slate-500">{index + 1}</td>
-                          <td className="px-3 py-3 font-medium text-slate-700">{getLineCategory(ligne)}</td>
-                          <td className="px-3 py-3 align-top">
-                            <p className="font-semibold text-slate-900 break-words">{getLineTitle(ligne)}</p>
-                            {details ? <p className="mt-1 text-xs text-slate-500 break-words">{details}</p> : null}
-                          </td>
-                          <td className="px-3 py-3 text-slate-600 break-words">{getLineMaterials(ligne)}</td>
-                          <td className="px-3 py-3 text-right text-slate-700">{ligne.quantite} {ligne.unite}</td>
-                          <td className="px-3 py-3 text-right text-slate-700">{tauxTVA.toFixed(2)}%</td>
-                          <td className="px-3 py-3 text-right text-slate-700">{formatCurrency(ligne.prixUnitaireVente ?? 0)}</td>
-                          <td className="px-3 py-3 text-right font-semibold text-slate-900">{formatCurrency(ligne.totalHT ?? 0)}</td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={8} className="px-5 py-8 text-center text-sm text-slate-400">
-                        Aucune ligne de devis pour le moment.
-                      </td>
-                    </tr>
-                  )}
+                <tbody className="divide-y divide-slate-100">
+                  {lignes.map((ligne, index) => {
+                    const rate = devis.tauxTVA ?? 20;
+                    const lineHT = ligne.totalHT ?? 0;
+                    const lineTVA = lineHT * (rate / 100);
+                    return (
+                      <tr key={ligne.id || index}>
+                        <td className="px-3 py-2.5 align-top">
+                          <p className="font-bold text-slate-900">{getLineTitle(ligne)}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5">{getLineDetails(ligne)}</p>
+                        </td>
+                        <td className="px-3 py-2.5 text-right whitespace-nowrap">{ligne.quantite} {ligne.unite}</td>
+                        <td className="px-3 py-2.5 text-right">{formatCurrency(ligne.prixUnitaireVente ?? 0)}</td>
+                        <td className="px-3 py-2.5 text-right">{rate}%</td>
+                        <td className="px-3 py-2.5 text-right">{formatCurrency(lineTVA)}</td>
+                        <td className="px-3 py-2.5 text-right font-semibold text-slate-950">{formatCurrency(lineHT)}</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
-            </section>
 
-            <section className="mt-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <TotalsCard label="Mode de validation" value={getModeValidationLabel(devis.modeValidation)} />
-                <TotalsCard label="Taux TVA" value={`${tauxTVA.toFixed(2)}%`} />
-                <TotalsCard label="Montant HT" value={formatCurrency(totalHT)} />
-                <TotalsCard label="Montant TVA" value={formatCurrency(totalTVA)} />
+              {/* Totals Section */}
+              <div className="mt-6 ml-auto w-full max-w-xs border border-slate-200 bg-slate-50 rounded-xl p-4 text-xs space-y-2">
+                <div className="flex justify-between font-medium">
+                  <span className="text-slate-500">Total HT</span>
+                  <span className="text-slate-900">{formatCurrency(totalHT)}</span>
+                </div>
+                {tvaGroups.map((group) => (
+                  <div key={group.rate} className="flex justify-between text-slate-600">
+                    <span>TVA {group.rate}%</span>
+                    <span>{formatCurrency(group.amount)}</span>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              <div className="rounded-2xl border border-slate-900 bg-slate-900 p-5 text-white">
-                <p className="text-sm font-semibold text-slate-200">Recapitulatif financier</p>
-                <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex items-center justify-between text-slate-200">
-                    <span>Total HT</span>
-                    <span className="font-medium">{formatCurrency(totalHT)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-200">
-                    <span>TVA</span>
-                    <span className="font-medium">{formatCurrency(totalTVA)}</span>
-                  </div>
-                  <div className="mt-3 border-t border-slate-700 pt-3 flex items-center justify-between">
-                    <span className="text-base font-semibold">Total TTC</span>
-                    <span className="text-2xl font-bold">{formatCurrency(totalTTC)}</span>
-                  </div>
+            <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+              <span>Réf: {devis.reference}</span>
+              <span>Page 2 / 5</span>
+            </div>
+          </div>
+
+          {/* PAGE 3: TTC & SIGNATURES */}
+          <div className="a4-page print-page print:shadow-none print:m-0 print:p-[12mm] bg-white text-slate-800 text-sm relative flex flex-col justify-between" style={{ width: '210mm', minHeight: '297mm', padding: '15mm 20mm', boxSizing: 'border-box' }}>
+            <div>
+              {/* Grand Banner Total TTC */}
+              <div className="bg-slate-900 text-white rounded-2xl p-5 flex justify-between items-center">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Total TTC</p>
+                  <p className="text-3xl font-extrabold mt-1">{formatCurrency(totalTTC)}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">Montant total</p>
+                  <p className="text-xl font-bold mt-1">{formatCurrency(totalTTC)}</p>
                 </div>
               </div>
-            </section>
 
-            {showGeneratedDocuments && hasGeneratedDocuments && (
-              <section className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-700">Documents generes</p>
-                <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Facture</p>
-                    <div className="mt-2 space-y-1 text-sm text-slate-500">
-                      {(devis.factures ?? []).length > 0 ? (
-                        (devis.factures ?? []).map((facture) => (
-                          <div key={facture.id} className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2">
-                            <p className="font-medium text-slate-700">{facture.reference}</p>
-                            <DocumentActionButton
-                              label="Apercu facture"
-                              onClick={onOpenFacture ? () => onOpenFacture(facture.id) : undefined}
-                            />
-                          </div>
-                        ))
-                      ) : (
-                        <p>Aucune facture</p>
+              <p className="mt-8 text-center text-xs italic text-slate-500">
+                Les deux parties acceptent le contenu du devis et des conditions générales.
+              </p>
+
+              {/* Documents générés (Uniquement à l'écran) */}
+              {showGeneratedDocuments && hasGeneratedDocuments && (
+                <div className="print-hidden mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm font-semibold text-slate-700">Documents générés associés :</p>
+                  <div className="mt-3 grid gap-3 md:grid-cols-3">
+                    <div>
+                      <p className="text-xs text-slate-500 font-bold uppercase">Facture</p>
+                      {(devis.factures ?? []).map((f) => (
+                        <button key={f.id} onClick={onOpenFacture ? () => onOpenFacture(f.id) : undefined} className="text-xs text-blue-600 block mt-1 hover:underline">
+                          {f.reference} (Aperçu)
+                        </button>
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 font-bold uppercase">Bon de commande</p>
+                      {devis.bonCommande && (
+                        <button onClick={onOpenBonCommande} className="text-xs text-blue-600 block mt-1 hover:underline">
+                          {devis.bonCommande.reference} (Aperçu)
+                        </button>
                       )}
                     </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Bon de commande</p>
-                    <div className="mt-2 text-sm text-slate-500">
-                      {devis.bonCommande ? (
-                        <div className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2">
-                          <p className="font-medium text-slate-700">{devis.bonCommande.reference}</p>
-                          <DocumentActionButton label="Apercu bon de commande" onClick={onOpenBonCommande} />
-                        </div>
-                      ) : (
-                        <p>Non genere</p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Commandes fournisseur</p>
-                    <div className="mt-2 space-y-1 text-sm text-slate-500">
-                      {(devis.commandesFournisseur ?? []).length > 0 ? (
-                        (devis.commandesFournisseur ?? []).map((commande) => (
-                          <div key={commande.id} className="flex items-center justify-between gap-3 rounded-xl bg-white px-3 py-2">
-                            <p className="font-medium text-slate-700">
-                              {commande.reference}
-                              {commande.fournisseur?.nom ? ` - ${commande.fournisseur.nom}` : ''}
-                            </p>
-                            <DocumentActionButton
-                              label="Apercu bon d achat"
-                              onClick={
-                                onOpenCommandeFournisseur
-                                  ? () => onOpenCommandeFournisseur(commande.id)
-                                  : undefined
-                              }
-                            />
-                          </div>
-                        ))
-                      ) : (
-                        <p>Aucune commande</p>
-                      )}
+                    <div>
+                      <p className="text-xs text-slate-500 font-bold uppercase">Commandes fournisseur</p>
+                      {(devis.commandesFournisseur ?? []).map((c) => (
+                        <button key={c.id} onClick={onOpenCommandeFournisseur ? () => onOpenCommandeFournisseur(c.id) : undefined} className="text-xs text-blue-600 block mt-1 hover:underline">
+                          {c.reference} ({c.fournisseur?.nom})
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </section>
-            )}
+              )}
 
-            <section className="mt-6 grid gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-700">Modalites de paiement</p>
-                <div className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
-                  {structuredNotes.paymentTerms.split('\n').map((line, index) => (
-                    <p key={`payment-${index}`}>{line}</p>
-                  ))}
-                  {structuredNotes.communication ? (
-                    <p className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
-                      Communication structuree: {structuredNotes.communication}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-700">Conditions generales</p>
-                <div className="mt-3 space-y-2 text-sm leading-6 text-slate-600">
-                  {structuredNotes.generalConditions.split('\n').map((line, index) => (
-                    <p key={`general-${index}`}>{line}</p>
-                  ))}
-                  {structuredNotes.extraNotes ? (
-                    <p className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-700">
-                      Note complementaire: {structuredNotes.extraNotes}
-                    </p>
-                  ) : null}
-                </div>
-              </div>
-            </section>
-
-            <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-              <div className="border-b border-slate-200 pb-3">
-                <p className="text-sm font-semibold text-slate-700">Signatures</p>
-              </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-sm font-medium text-slate-700">Signature du client</p>
-                  {devis.signatureClientBase64 ? (
-                    <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
-                      <img
-                        src={devis.signatureClientBase64}
-                        alt="Signature client"
-                        className="h-20 w-full object-contain"
-                      />
-                      {devis.signatureClientDate ? (
-                        <p className="mt-2 text-xs text-slate-500">Signe le {formatDate(devis.signatureClientDate)}</p>
-                      ) : null}
-                    </div>
-                  ) : devis.statut === 'SIGNE' ? (
-                    <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-3 text-center">
-                      <p className="text-sm font-semibold text-emerald-700">Signature orale</p>
-                      {devis.signatureClientDate ? (
-                        <p className="mt-1 text-xs text-slate-500">Valide le {formatDate(devis.signatureClientDate)}</p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <div className="mt-5 h-12 border-b border-dashed border-slate-300" />
+              {/* Signatures */}
+              <div className="mt-12 grid grid-cols-2 gap-8">
+                <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                  <p className="text-xs font-bold uppercase text-slate-500 tracking-wider">
+                    Pour {devis.company?.nom || 'BATIFLOW'}
+                  </p>
+                  <p className="text-[11px] text-slate-600 mt-1">{getAdvisorName(devis)}</p>
+                  <div className="mt-6 h-28 flex items-center justify-center bg-white rounded-lg border border-slate-200 p-2">
+                    {devis.signatureConseillerBase64 ? (
+                      <img src={devis.signatureConseillerBase64} alt="Signature Conseiller" className="h-full max-h-24 object-contain" />
+                    ) : (
+                      <span className="text-xs text-slate-300 italic">Signature conseiller</span>
+                    )}
+                  </div>
+                  {devis.signatureConseillerDate && (
+                    <p className="text-[10px] text-slate-400 mt-2">Le {formatDate(devis.signatureConseillerDate)}</p>
                   )}
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                  <p className="text-sm font-medium text-slate-700">Signature du conseiller</p>
-                  {devis.signatureConseillerBase64 ? (
-                    <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-3">
-                      <img
-                        src={devis.signatureConseillerBase64}
-                        alt="Signature conseiller"
-                        className="h-20 w-full object-contain"
-                      />
-                      {devis.signatureConseillerDate ? (
-                        <p className="mt-2 text-xs text-slate-500">Signe le {formatDate(devis.signatureConseillerDate)}</p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <div className="mt-5 h-12 border-b border-dashed border-slate-300" />
+                <div className="border border-slate-200 rounded-xl p-4 bg-slate-50">
+                  <p className="text-xs font-bold uppercase text-slate-500 tracking-wider">
+                    Le Client : {getClientName(devis)}
+                  </p>
+                  <p className="text-[11px] text-slate-600 mt-1">Bon pour accord et acceptation des CGV</p>
+                  <div className="mt-6 h-28 flex items-center justify-center bg-white rounded-lg border border-slate-200 p-2">
+                    {devis.signatureClientBase64 ? (
+                      <img src={devis.signatureClientBase64} alt="Signature Client" className="h-full max-h-24 object-contain" />
+                    ) : devis.statut === 'SIGNE' ? (
+                      <span className="text-xs text-emerald-600 font-bold">ACCORD VERBAL VALIDÉ</span>
+                    ) : (
+                      <span className="text-xs text-slate-300 italic">Signature client</span>
+                    )}
+                  </div>
+                  {devis.signatureClientDate && (
+                    <p className="text-[10px] text-slate-400 mt-2">Le {formatDate(devis.signatureClientDate)}</p>
                   )}
                 </div>
               </div>
-            </section>
+            </div>
 
-            <footer className="mt-6 border-t border-slate-200 pt-3 text-center text-xs text-slate-500">
-              Reference document: {devis.reference}
-            </footer>
-          </article>
+            <div className="flex justify-between items-center border-t border-slate-200 pt-2 text-[10px] text-slate-400">
+              <span>Réf: {devis.reference}</span>
+              <span>Page 3 / 5</span>
+            </div>
+          </div>
+
+          {/* PAGE 4 & 5: CGV */}
+          <CGVDocument
+            companyNom={devis.company?.nom}
+            companyEmail={devis.company?.email}
+            companyTelephone={devis.company?.telephone}
+            companyAdresse={devis.company?.adresse}
+            companySiret={devis.company?.siret}
+            pageOffset={4}
+          />
         </div>
       </div>
 
       <style>{`
         @page {
           size: A4;
-          margin: 8mm;
+          margin: 0;
         }
 
         @media print {
@@ -647,92 +596,37 @@ export function DevisInvoice({
             margin: 0 !important;
           }
 
-          .devis-print-zone,
-          .devis-print-zone * {
-            visibility: visible !important;
-          }
-
-          .devis-print-zone {
-            display: block !important;
-            position: static !important;
-            inset: auto !important;
-            max-height: none !important;
-            max-width: none !important;
-            width: 100% !important;
-            overflow: visible !important;
-            height: auto !important;
-            border-radius: 0 !important;
-            box-shadow: none !important;
-          }
-
           .devis-print-scroll {
             overflow: visible !important;
             max-height: none !important;
             height: auto !important;
             background: white !important;
             padding: 0 !important;
+            display: block !important;
           }
 
-          .devis-print-zone article {
+          .print-page {
+            visibility: visible !important;
+            display: flex !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            min-height: 297mm !important;
+            page-break-after: always !important;
+            break-after: page !important;
             box-shadow: none !important;
-            border-radius: 0 !important;
-            max-width: none !important;
-            width: 100% !important;
+            border: none !important;
             margin: 0 !important;
-            padding: 6mm !important;
-            font-size: 11px !important;
-            line-height: 1.35 !important;
+            padding: 15mm 20mm !important;
+            box-sizing: border-box !important;
           }
 
-          .devis-print-zone .text-4xl {
-            font-size: 28px !important;
-            line-height: 1.1 !important;
+          .print-page * {
+            visibility: visible !important;
           }
 
-          .devis-print-zone .text-3xl {
-            font-size: 22px !important;
-            line-height: 1.15 !important;
-          }
-
-          .devis-print-zone .text-2xl {
-            font-size: 18px !important;
-            line-height: 1.2 !important;
-          }
-
-          .devis-print-zone .mt-8 {
-            margin-top: 3mm !important;
-          }
-
-          .devis-print-zone .mt-6 {
-            margin-top: 2.5mm !important;
-          }
-
-          .devis-print-zone .p-5,
-          .devis-print-zone .p-6 {
-            padding: 2.8mm !important;
-          }
-
-          .devis-print-zone table {
-            width: 100% !important;
-            break-inside: auto;
-            font-size: 10px !important;
-          }
-
-          .devis-print-zone thead {
-            display: table-header-group;
-          }
-
-          .devis-print-zone tr,
-          .devis-print-zone td,
-          .devis-print-zone th {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-
-          .devis-print-zone th,
-          .devis-print-zone td {
-            padding: 2mm 1.5mm !important;
-            vertical-align: top;
+          .print-page-5 {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
           }
 
           .print-hidden {

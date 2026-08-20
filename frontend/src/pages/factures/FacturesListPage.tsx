@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Loader2, Receipt, Search } from 'lucide-react';
@@ -31,6 +32,8 @@ function getClientLabel(item: FactureSourceDevis) {
 }
 
 export default function FacturesListPage({ scope }: FacturesListPageProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
@@ -78,6 +81,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['factures-devis-sources'] });
       queryClient.invalidateQueries({ queryKey: ['factures-list'] });
+      queryClient.invalidateQueries({ queryKey: ['facture-detail', response.data.id] });
       setFeedback({ type: 'success', text: 'Facture creee avec succes depuis le devis.' });
       navigate(`${basePath}/${response.data.id}`);
     },
@@ -196,18 +200,22 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => createFromDevisMutation.mutate(devis.id)}
-                        disabled={createFromDevisMutation.isPending}
-                        className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
-                      >
-                        {createFromDevisMutation.isPending ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <FileSpreadsheet size={12} />
-                        )}
-                        Transformer en facture
-                      </button>
+                      {isAdmin ? (
+                        <button
+                          onClick={() => createFromDevisMutation.mutate(devis.id)}
+                          disabled={createFromDevisMutation.isPending}
+                          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                        >
+                          {createFromDevisMutation.isPending ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <FileSpreadsheet size={12} />
+                          )}
+                          Transformer en facture
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">Non autorise</span>
+                      )}
                     </td>
                   </tr>
                 ))}

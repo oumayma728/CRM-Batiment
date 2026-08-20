@@ -34,7 +34,7 @@ import { FacturesService } from './factures.service.js';
 @ApiTags('Factures')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN', 'ASSISTANTE') //j'ai retiré technico pour que le technico ne puisse pas créer de facture
+@Roles('ADMIN', 'ASSISTANTE', 'TECHNICO')
 @Controller('factures')
 export class FacturesController {
   constructor(private readonly facturesService: FacturesService) {}
@@ -92,7 +92,7 @@ export class FacturesController {
   }
 
   @Patch(':id/statut')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'ASSISTANTE')
   @ApiOperation({ summary: 'Changer le statut d une facture' })
   @ApiParam({ name: 'id', type: Number })
   updateStatut(
@@ -143,7 +143,7 @@ export class FacturesController {
   }
 
   @Post(':id/send-client')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'ASSISTANTE')
   @ApiOperation({ summary: 'Envoyer une facture au client par email' })
   @ApiParam({ name: 'id', type: Number })
   sendToClient(

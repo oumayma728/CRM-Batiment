@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import type { DemandeDevis } from '@/types';
 import { formatDate, cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Plus, Search, Trash2, X, ChevronLeft, ChevronRight,
   FileText, Loader2, Eye, ListChecks,
@@ -37,6 +38,8 @@ const emptyForm: DemandeForm = {
 };
 
 export default function DemandesDevisPage() {
+  const { user } = useAuth();
+  const isAssistante = user?.role === 'ASSISTANTE';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -203,24 +206,28 @@ export default function DemandesDevisPage() {
                     <td className="px-6 py-4 text-[13px] text-gray-500">{formatDate(d.createdAt)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          onClick={() => handleOpenStudy(d)}
-                          disabled={!canOpenStudy(normalizedStatut) || studyDemandeId === d.id}
-                          className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
-                          title={
-                            canOpenStudy(normalizedStatut)
-                              ? 'Etude checklist / generation de devis'
-                              : 'Disponible pour NOUVEAU ou EN_COURS'
-                          }
-                        >
-                          {studyDemandeId === d.id ? (
-                            <Loader2 size={15} className="animate-spin" />
-                          ) : (
-                            <ListChecks size={15} />
-                          )}
-                        </button>
+                        {!isAssistante && (
+                          <button
+                            onClick={() => handleOpenStudy(d)}
+                            disabled={!canOpenStudy(normalizedStatut) || studyDemandeId === d.id}
+                            className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
+                            title={
+                              canOpenStudy(normalizedStatut)
+                                ? 'Etude checklist / generation de devis'
+                                : 'Disponible pour NOUVEAU ou EN_COURS'
+                            }
+                          >
+                            {studyDemandeId === d.id ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <ListChecks size={15} />
+                            )}
+                          </button>
+                        )}
                         <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Eye size={15} /></button>
-                        <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        {!isAssistante && (
+                          <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -312,20 +319,22 @@ export default function DemandesDevisPage() {
               </div>
               <div><p className="text-[11px] font-bold text-gray-400 uppercase">Client</p><p className="text-sm mt-0.5">{detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}</p></div>
               <div><p className="text-[11px] font-bold text-gray-400 uppercase">Créée le</p><p className="text-sm mt-0.5">{formatDate(detailDemande.createdAt)}</p></div>
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => handleOpenStudy(detailDemande)}
-                  disabled={!canOpenStudy(detailDemande.statut) || studyDemandeId === detailDemande.id}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {studyDemandeId === detailDemande.id ? (
-                    <Loader2 size={15} className="animate-spin" />
-                  ) : (
-                    <ListChecks size={15} />
-                  )}
-                  Etude checklist / generer devis
-                </button>
-              </div>
+              {!isAssistante && (
+                <div className="pt-2 flex justify-end">
+                  <button
+                    onClick={() => handleOpenStudy(detailDemande)}
+                    disabled={!canOpenStudy(detailDemande.statut) || studyDemandeId === detailDemande.id}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {studyDemandeId === detailDemande.id ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : (
+                      <ListChecks size={15} />
+                    )}
+                    Etude checklist / generer devis
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

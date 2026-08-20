@@ -34,6 +34,12 @@ model Company {
   servicesMainOeuvre    ServiceMainOeuvre[]
   typesProjet           TypeProjet[]
   utilisateurs          User[]
+  sousTraitants          SousTraitant[]
+  contratsSousTraitant   ContratSousTraitant[]
+  assurancesSousTraitant AssuranceSousTraitant[]
+  paiementsSousTraitant  PaiementSousTraitant[]
+  disponibilitesSousTraitant DisponibiliteSousTraitant[]
+  notationsSousTraitant  NotationSousTraitant[]
 
   @@map("companies")
 }
@@ -623,9 +629,11 @@ model Chantier {
   chefChantier   User?              @relation("ChefChantier", fields: [chefChantierId], references: [id])
   client         Client             @relation(fields: [clientId], references: [id])
   company        Company            @relation(fields: [companyId], references: [id])
-  devis          Devis[]
-  documents      DocumentChantier[]
-  taches         Tache[]
+  devis                  Devis[]
+  documents              DocumentChantier[]
+  taches                 Tache[]
+  contratsSousTraitant   ContratSousTraitant[]
+  notationsSousTraitant  NotationSousTraitant[]
 
   @@index([companyId])
   @@index([clientId])
@@ -883,4 +891,132 @@ enum ModeValidation {
   SIGNATURE
   VERBAL
   AUTRE
+}
+
+model SousTraitant {
+  id             Int                        @id @default(autoincrement())
+  companyId      Int
+  nom            String
+  siret          String?
+  email          String?
+  telephone      String?
+  adresse        String?
+  specialite     String?
+  statut         String                     @default("ACTIF")
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  company        Company                    @relation(fields: [companyId], references: [id])
+  contrats       ContratSousTraitant[]
+  assurances     AssuranceSousTraitant[]
+  paiements      PaiementSousTraitant[]
+  disponibilites DisponibiliteSousTraitant[]
+  notations      NotationSousTraitant[]
+
+  @@index([companyId])
+  @@map("sous_traitants")
+}
+
+model ContratSousTraitant {
+  id             Int                    @id @default(autoincrement())
+  companyId      Int
+  sousTraitantId Int
+  chantierId     Int
+  reference      String                 @unique
+  montantHT      Float
+  statut         String                 @default("BROUILLON")
+  dateDebut      DateTime?
+  dateFin        DateTime?
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  company        Company                @relation(fields: [companyId], references: [id])
+  sousTraitant   SousTraitant           @relation(fields: [sousTraitantId], references: [id])
+  chantier       Chantier               @relation(fields: [chantierId], references: [id])
+  paiements      PaiementSousTraitant[]
+
+  @@index([companyId])
+  @@index([sousTraitantId])
+  @@index([chantierId])
+  @@map("contrats_sous_traitant")
+}
+
+model AssuranceSousTraitant {
+  id                 Int          @id @default(autoincrement())
+  companyId          Int
+  sousTraitantId     Int
+  typeAssurance      String
+  numeroAttestation  String
+  compagnieAssurance String
+  dateExpiration     DateTime
+  documentUrl        String?
+  statut             String       @default("VALIDE")
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  company            Company      @relation(fields: [companyId], references: [id])
+  sousTraitant       SousTraitant @relation(fields: [sousTraitantId], references: [id])
+
+  @@index([companyId])
+  @@index([sousTraitantId])
+  @@map("assurances_sous_traitant")
+}
+
+model PaiementSousTraitant {
+  id             Int                  @id @default(autoincrement())
+  companyId      Int
+  sousTraitantId Int
+  contratId      Int?
+  montantHT      Float
+  montantTTC     Float
+  datePaiement   DateTime
+  modePaiement   String
+  statut         String               @default("REGLE")
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  company        Company              @relation(fields: [companyId], references: [id])
+  sousTraitant   SousTraitant         @relation(fields: [sousTraitantId], references: [id])
+  contrat        ContratSousTraitant? @relation(fields: [contratId], references: [id])
+
+  @@index([companyId])
+  @@index([sousTraitantId])
+  @@index([contratId])
+  @@map("paiements_sous_traitant")
+}
+
+model DisponibiliteSousTraitant {
+  id             Int          @id @default(autoincrement())
+  companyId      Int
+  sousTraitantId Int
+  dateDebut      DateTime
+  dateFin        DateTime
+  disponible     Boolean      @default(true)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  company        Company      @relation(fields: [companyId], references: [id])
+  sousTraitant   SousTraitant @relation(fields: [sousTraitantId], references: [id])
+
+  @@index([companyId])
+  @@index([sousTraitantId])
+  @@map("disponibilites_sous_traitant")
+}
+
+model NotationSousTraitant {
+  id               Int          @id @default(autoincrement())
+  companyId        Int
+  sousTraitantId   Int
+  chantierId       Int?
+  noteQualite      Int
+  noteDelai        Int
+  noteCommunication Int
+  noteGlobale      Float
+  commentaire      String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  company          Company      @relation(fields: [companyId], references: [id])
+  sousTraitant     SousTraitant @relation(fields: [sousTraitantId], references: [id])
+  chantier         Chantier?    @relation(fields: [chantierId], references: [id])
+
+  @@index([companyId])
+  @@index([sousTraitantId])
+  @@index([chantierId])
+  @@map("notations_sous_traitant")
 }

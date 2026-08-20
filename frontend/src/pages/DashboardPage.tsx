@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const { data: demandes } = useQuery({
     queryKey: ['demandes-count'],
     queryFn: async () => {
-      const res = await api.get('/demandes-devis', { params: { page: 1, limit: 1 } });
+      const res = await api.get('/demandes-devis', { params: { page: 1, limit: 1000 } });
       return res.data;
     },
   });
@@ -57,6 +57,14 @@ export default function DashboardPage() {
     queryKey: ['devis-count'],
     queryFn: async () => {
       const res = await api.get('/devis', { params: { page: 1, limit: 1 } });
+      return res.data;
+    },
+  });
+
+  const { data: devisSignes } = useQuery({
+    queryKey: ['devis-signes-sum'],
+    queryFn: async () => {
+      const res = await api.get('/devis', { params: { page: 1, limit: 1000, statut: 'SIGNE' } });
       return res.data;
     },
   });
@@ -88,11 +96,18 @@ export default function DashboardPage() {
   });
 
   const totalClients = clients?.meta?.total ?? 0;
-  const totalDemandes = demandes?.meta?.total ?? 0;
+  const totalAllDemandes = demandes?.meta?.total ?? 0;
+  const totalPendingDemandes = (demandes?.data ?? []).filter((d: any) =>
+    ['NOUVEAU', 'QUALIFIE', 'EN_COURS'].includes(d.statut)
+  ).length;
   const totalDevis = devis?.meta?.total ?? 0;
   const totalPrestations = prestations?.total ?? 0;
   const totalFournisseurs = fournisseurs?.total ?? 0;
   const totalChantiers = chantiers?.meta?.total ?? 0;
+
+  const ca = (devisSignes?.data ?? []).reduce((acc: number, d: any) => acc + (d.totalHT ?? 0), 0);
+  const totalSignedDevis = devisSignes?.meta?.total ?? 0;
+  const totalDevisEnCours = Math.max(0, totalDevis - totalSignedDevis);
 
   // Module cards
   const modules: ModuleCard[] = [
@@ -105,7 +120,7 @@ export default function DashboardPage() {
       iconColor: 'text-blue-600',
       stats: [
         { label: 'Clients', value: totalClients },
-        { label: 'Demandes', value: totalDemandes },
+        { label: 'Demandes', value: totalAllDemandes },
         { label: 'Devis', value: totalDevis },
       ],
       href: '/admin/clients',
@@ -162,7 +177,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Demandes en cours',
-      value: totalDemandes,
+      value: totalPendingDemandes,
       icon: <FileText size={20} />,
       color: 'text-orange-600',
       bg: 'bg-orange-50',
@@ -178,7 +193,7 @@ export default function DashboardPage() {
     },
     {
       label: 'Chiffre d\'affaires',
-      value: formatCurrency(0),
+      value: formatCurrency(ca),
       icon: <Euro size={20} />,
       color: 'text-violet-600',
       bg: 'bg-violet-50',
@@ -307,21 +322,21 @@ export default function DashboardPage() {
             <PipelineCard
               icon={<Clock size={20} />}
               label="En attente"
-              count={totalDemandes}
+              count={totalPendingDemandes}
               color="amber"
               description="Demandes à traiter"
             />
             <PipelineCard
               icon={<FileSpreadsheet size={20} />}
               label="Devis en cours"
-              count={totalDevis}
+              count={totalDevisEnCours}
               color="blue"
               description="Devis non validés"
             />
             <PipelineCard
               icon={<CheckCircle size={20} />}
               label="Acceptés"
-              count={0}
+              count={totalSignedDevis}
               color="emerald"
               description="Devis signés"
             />

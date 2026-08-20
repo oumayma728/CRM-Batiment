@@ -158,6 +158,8 @@ export default function CommandesFournisseurPage() {
     user?.role === 'ADMIN' || user?.role === 'CHEF_CHANTIER';
   const canCurrentUserValidateDevis =
     user?.role === 'ADMIN' || user?.role === 'CHEF_CHANTIER';
+  const canRegisterReception =
+    user?.role === 'ADMIN' || user?.role === 'CHEF_CHANTIER';
   const canShowManualEditButton = Boolean(
     selectedOrder && canEditSelectedOrder && canCurrentUserEditManually,
   );
@@ -842,86 +844,93 @@ export default function CommandesFournisseurPage() {
                     </div>
                   </div>
 
-                  <form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      createReceptionMutation.mutate(receptionForm);
-                    }}
-                    className="rounded-[28px] border border-stone-200 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_100%)] p-5"
-                  >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
-                      <CheckCircle2 size={16} />
-                      Saisie reception chantier
-                    </div>
-
-                    <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                      Quantite restante conseillee: <strong>{remainingQuantity}</strong>
-                    </div>
-
-                    <div className="mt-4 grid gap-4">
-                      <label className="space-y-1.5 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">Quantite recue</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={receptionForm.quantiteRecue}
-                          onChange={(event) => updateReceptionForm({ quantiteRecue: event.target.value })}
-                          className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                        />
-                      </label>
-
-                      <label className="space-y-1.5 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">Date de reception</span>
-                        <div className="relative">
-                          <CalendarClock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-                          <input
-                            type="date"
-                            value={receptionForm.dateReception}
-                            onChange={(event) => updateReceptionForm({ dateReception: event.target.value })}
-                            className="w-full rounded-2xl border border-stone-200 bg-white px-11 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                          />
-                        </div>
-                      </label>
-
-                      <label className="space-y-1.5 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">Note / anomalie</span>
-                        <textarea
-                          value={receptionForm.notes}
-                          onChange={(event) => updateReceptionForm({ notes: event.target.value })}
-                          rows={4}
-                          placeholder="Reserve, colis manque, materiau abime..."
-                          className="w-full resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                        />
-                      </label>
-                    </div>
-
-                    {createReceptionMutation.error ? (
-                      <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {getApiErrorMessage(createReceptionMutation.error, 'Impossible d enregistrer la reception.')}
+                  {canRegisterReception ? (
+                    <form
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        createReceptionMutation.mutate(receptionForm);
+                      }}
+                      className="rounded-[28px] border border-stone-200 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_100%)] p-5"
+                    >
+                      <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
+                        <CheckCircle2 size={16} />
+                        Saisie reception chantier
                       </div>
-                    ) : null}
 
-                    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <button
-                        type="button"
-                        onClick={() => updateReceptionForm({ quantiteRecue: String(remainingQuantity) })}
-                        disabled={remainingQuantity <= 0}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Warehouse size={16} />
-                        Recevoir le restant
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={createReceptionMutation.isPending || remainingQuantity <= 0}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {createReceptionMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <Send size={16} />}
-                        {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Reception complete' : 'Enregistrer reception'}
-                      </button>
+                      <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        Quantite restante conseillee: <strong>{remainingQuantity}</strong>
+                      </div>
+
+                      <div className="mt-4 grid gap-4">
+                        <label className="space-y-1.5 text-sm text-slate-600">
+                          <span className="font-medium text-slate-700">Quantite recue</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={receptionForm.quantiteRecue}
+                            onChange={(event) => updateReceptionForm({ quantiteRecue: event.target.value })}
+                            className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                          />
+                        </label>
+
+                        <label className="space-y-1.5 text-sm text-slate-600">
+                          <span className="font-medium text-slate-700">Date de reception</span>
+                          <div className="relative">
+                            <CalendarClock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                              type="date"
+                              value={receptionForm.dateReception}
+                              onChange={(event) => updateReceptionForm({ dateReception: event.target.value })}
+                              className="w-full rounded-2xl border border-stone-200 bg-white px-11 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                            />
+                          </div>
+                        </label>
+
+                        <label className="space-y-1.5 text-sm text-slate-600">
+                          <span className="font-medium text-slate-700">Note / anomalie</span>
+                          <textarea
+                            value={receptionForm.notes}
+                            onChange={(event) => updateReceptionForm({ notes: event.target.value })}
+                            placeholder="Reserve, colis manque, materiau abime..."
+                            rows={3}
+                            className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 resize-none text-sm placeholder:text-slate-400"
+                          />
+                        </label>
+                      </div>
+
+                      {createReceptionMutation.error ? (
+                        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                          {getApiErrorMessage(createReceptionMutation.error, 'Impossible d enregistrer la reception.')}
+                        </div>
+                      ) : null}
+
+                      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <button
+                          type="button"
+                          onClick={() => updateReceptionForm({ quantiteRecue: String(remainingQuantity) })}
+                          disabled={remainingQuantity <= 0}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Warehouse size={16} />
+                          Recevoir le restant
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={createReceptionMutation.isPending || remainingQuantity <= 0}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {createReceptionMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <Send size={16} />}
+                          {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Reception complete' : 'Enregistrer reception'}
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <div className="rounded-[28px] border border-stone-100 bg-stone-50 p-6 text-center text-sm text-stone-500">
+                      <Warehouse size={32} className="mx-auto mb-2 text-stone-400" />
+                      Seul le Chef de Chantier ou l'Administrateur peut saisir des réceptions matériaux sur le chantier.
                     </div>
-                  </form>
+                  )}
                 </div>
               </div>
             </div>

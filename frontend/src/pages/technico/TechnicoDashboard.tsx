@@ -50,12 +50,12 @@ export default function TechnicoDashboard() {
   const totalDemandes = demandesData?.meta?.total ?? 0;
   const allDevis: Devis[] = devisData?.data ?? [];
   const totalDevis = devisData?.meta?.total ?? 0;
-  const devisAcceptes = allDevis.filter((d) => d.statut === 'ACCEPTE').length;
+  const devisAcceptes = allDevis.filter((d) => ['ACCEPTE', 'SIGNE', 'FACTURE'].includes(d.statut)).length;
   const devisBrouillon = allDevis.filter((d) => d.statut === 'BROUILLON').length;
   const devisEnvoyes = allDevis.filter((d) => d.statut === 'ENVOYE').length;
   const chiffreAffaires = allDevis
-    .filter((d) => d.statut === 'ACCEPTE')
-    .reduce((sum, d) => sum + (d.totalTTC ?? 0), 0);
+    .filter((d) => ['ACCEPTE', 'SIGNE', 'FACTURE'].includes(d.statut))
+    .reduce((sum, d) => sum + (d.totalHT ?? 0), 0);
 
   const recentClients: Client[] = (clientsData?.data ?? []).slice(0, 4);
   const recentDemandes: DemandeDevis[] = (demandesData?.data ?? []).slice(0, 4);

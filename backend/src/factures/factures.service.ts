@@ -455,6 +455,16 @@ export class FacturesService {
       throw new NotFoundException(`Devis #${devisId} introuvable.`);
     }
 
+    if (devis.statut === 'REFUSE') {
+      throw new BadRequestException('Impossible de facturer un devis refusé.');
+    }
+
+    if (!['ACCEPTE', 'SIGNE'].includes(devis.statut)) {
+      throw new BadRequestException(
+        `Impossible de facturer un devis avec le statut ${devis.statut}. Le devis doit d'abord être accepté ou signé.`,
+      );
+    }
+
     const existing = await this.prisma.facture.findFirst({
       where: { devisId },
       orderBy: { createdAt: 'desc' },
@@ -952,14 +962,39 @@ export class FacturesService {
       amountTTC: facture.montantTTC,
       dueDate: facture.dateEcheance?.toISOString(),
       customMessage: this.toNullableString(dto.message) ?? undefined,
-      lines: facture.lignes.map((line) => ({
-        description: line.description,
-        quantite: line.quantite,
-        unite: line.unite,
-        prixUnitaireHT: line.prixUnitaireHT,
-        montantHT: line.montantHT,
-        tauxTVA: line.tauxTVA,
-      })),
+      companyEmail: facture.companyEmail ?? undefined,
+      companyTelephone: facture.companyTelephone ?? undefined,
+      companyAdresse: facture.companyAdresse ?? undefined,
+      companySiret: facture.companySiret ?? undefined,
+      clientAdresse: facture.adresseClient ?? undefined,
+      clientEmail: facture.emailClient ?? undefined,
+      clientTelephone: facture.telephoneClient ?? undefined,
+      referencePaiement: facture.referencePaiement ?? undefined,
+      notesLegales: facture.notesLegales ?? undefined,
+      lines:
+        facture.lignes.length > 0
+          ? facture.lignes.map((line) => ({
+              description: line.description,
+              quantite: line.quantite,
+              unite: line.unite,
+              prixUnitaireHT: line.prixUnitaireHT,
+              montantHT: line.montantHT,
+              tauxTVA: line.tauxTVA,
+            }))
+          : [
+              {
+                description: `Facture d'acompte de ${
+                  facture.acomptePercent ?? 30
+                }% pour le devis ${
+                  facture.referenceDevis ?? facture.devis.reference
+                }`,
+                quantite: 1,
+                unite: 'FORFAIT',
+                prixUnitaireHT: facture.montantHT ?? 0,
+                montantHT: facture.montantHT ?? 0,
+                tauxTVA: facture.tauxTVA ?? 20,
+              },
+            ],
     });
 
     await this.prisma.facture.update({

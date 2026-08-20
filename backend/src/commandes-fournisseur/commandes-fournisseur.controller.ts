@@ -111,6 +111,7 @@ export class CommandesFournisseurController {
     return this.commandesFournisseurService.validateBeforeSend(id, user);
   }
 
+  @Roles(Role.ADMIN, Role.CHEF_CHANTIER)
   @Post(':id/receptions')
   @ApiOperation({
     summary: 'Creer une reception chantier',

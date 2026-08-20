@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   HardHat,
@@ -8,6 +9,8 @@ import {
   RefreshCcw,
   Search,
   Trash2,
+  AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
 import axios from 'axios';
 import api from '@/lib/api';
@@ -103,6 +106,9 @@ function toForm(chantier: Chantier): ChantierFormState {
 }
 
 export default function ChantiersPage() {
+  const { user } = useAuth();
+  const isAssistante = user?.role === 'ASSISTANTE';
+  const isAdmin = user?.role === 'ADMIN';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -111,6 +117,7 @@ export default function ChantiersPage() {
   const [editing, setEditing] = useState<Chantier | null>(null);
   const [form, setForm] = useState<ChantierFormState>(emptyForm);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const listQuery = useQuery({
     queryKey: ['chantiers', page, search, statusFilter],
@@ -133,6 +140,19 @@ export default function ChantiersPage() {
     },
   });
 
+  const usersQuery = useQuery({
+    queryKey: ['users-for-chantiers'],
+    queryFn: async () => {
+      const res = await api.get<any[]>('/users');
+      return res.data;
+    },
+  });
+
+  const chefsChantier = useMemo(() => {
+    const list = usersQuery.data ?? [];
+    return list.filter((u: any) => u.role === 'CHEF_CHANTIER');
+  }, [usersQuery.data]);
+
   const syncMutation = useMutation({
     mutationFn: async () => {
       const res = await api.post('/chantiers/sync-from-devis');
@@ -154,10 +174,12 @@ export default function ChantiersPage() {
   });
 
   useEffect(() => {
-    syncMutation.mutate();
+    if (!isAssistante) {
+      syncMutation.mutate();
+    }
     // Intentional one-shot sync on page mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isAssistante]);
 
   const createMutation = useMutation({
     mutationFn: async (body: ChantierFormState) => {
@@ -180,6 +202,13 @@ export default function ChantiersPage() {
       setShowModal(false);
       setEditing(null);
       setForm(emptyForm);
+      setFeedback({ type: 'success', text: 'Chantier créé avec succès.' });
+    },
+    onError: (error) => {
+      setFeedback({
+        type: 'error',
+        text: getApiErrorMessage(error, "Impossible de créer le chantier."),
+      });
     },
   });
 
@@ -205,6 +234,13 @@ export default function ChantiersPage() {
       setShowModal(false);
       setEditing(null);
       setForm(emptyForm);
+      setFeedback({ type: 'success', text: 'Chantier mis à jour avec succès.' });
+    },
+    onError: (error) => {
+      setFeedback({
+        type: 'error',
+        text: getApiErrorMessage(error, "Impossible de mettre à jour le chantier."),
+      });
     },
   });
 
@@ -258,25 +294,27 @@ export default function ChantiersPage() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Liste des chantiers</h1>
             <p className="mt-2 text-sm text-slate-600">
               Les chantiers sont synchronises automatiquement a partir des devis acceptes/signes.
-              Vous pouvez aussi ajouter, modifier et supprimer des elements manuellement.
+              {isAdmin && " Vous pouvez aussi ajouter, modifier et supprimer des chantiers manuellement."}
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => syncMutation.mutate()}
-              className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-orange-50"
-              disabled={syncMutation.isPending}
-            >
-              {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
-              Synchroniser depuis devis
-            </button>
-            <button
-              onClick={openCreate}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
-            >
-              <Plus size={16} /> Nouveau chantier
-            </button>
-          </div>
+          {isAdmin && (
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => syncMutation.mutate()}
+                className="inline-flex items-center gap-2 rounded-2xl border border-orange-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-orange-50"
+                disabled={syncMutation.isPending}
+              >
+                {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
+                Synchroniser depuis devis
+              </button>
+              <button
+                onClick={openCreate}
+                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
+              >
+                <Plus size={16} /> Nouveau chantier
+              </button>
+            </div>
+          )}
         </div>
 
         {syncMessage ? (
@@ -326,7 +364,7 @@ export default function ChantiersPage() {
                 <th className="px-5 py-3 text-left font-semibold">Description detaillee</th>
                 <th className="px-5 py-3 text-left font-semibold">Statut</th>
                 <th className="px-5 py-3 text-left font-semibold">Mise a jour</th>
-                <th className="px-5 py-3 text-right font-semibold">Actions</th>
+                {(isAdmin || user?.role === 'CHEF_CHANTIER' || user?.role === 'ASSISTANTE') && <th className="px-5 py-3 text-right font-semibold">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -368,25 +406,29 @@ export default function ChantiersPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-slate-500">{formatDate(chantier.updatedAt)}</td>
-                    <td className="px-5 py-4">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(chantier)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
-                          title="Modifier"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(chantier)}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-600 transition hover:bg-rose-50"
-                          title="Supprimer"
-                          disabled={deleteMutation.isPending}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </td>
+                    {(isAdmin || user?.role === 'CHEF_CHANTIER' || user?.role === 'ASSISTANTE') && (
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(chantier)}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
+                            title="Modifier"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => handleDelete(chantier)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-rose-200 text-rose-600 transition hover:bg-rose-50"
+                              title="Supprimer"
+                              disabled={deleteMutation.isPending}
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -440,53 +482,85 @@ export default function ChantiersPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-1">
+            <form onSubmit={handleSubmit} className="space-y-4">               <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1 block">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Client</span>
-                  <select
-                    required
-                    value={form.clientId}
-                    onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))}
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                  >
-                    <option value="">Selectionner un client</option>
-                    {(clientsQuery.data ?? []).map((client) => (
-                      <option key={client.id} value={client.id}>
-                        {client.prenom} {client.nom}
-                      </option>
-                    ))}
-                  </select>
+                  {!isAdmin ? (
+                    <div className="w-full rounded-2xl border border-stone-100 bg-stone-50 px-3 py-2.5 text-sm text-slate-700 font-medium">
+                      {editing?.client ? `${editing.client.prenom} ${editing.client.nom}` : 'Client non renseigné'}
+                    </div>
+                  ) : (
+                    <select
+                      required
+                      value={form.clientId}
+                      onChange={(event) => setForm((current) => ({ ...current, clientId: event.target.value }))}
+                      className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    >
+                      <option value="">Selectionner un client</option>
+                      {(clientsQuery.data ?? []).map((client) => (
+                        <option key={client.id} value={client.id}>
+                          {client.prenom} {client.nom}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </label>
 
-                <label className="space-y-1">
+                <label className="space-y-1 block">
                   <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Reference</span>
                   <input
+                    disabled={!isAdmin}
                     value={form.reference}
                     onChange={(event) => setForm((current) => ({ ...current, reference: event.target.value }))}
                     placeholder="Auto si vide"
-                    className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    className="w-full rounded-2xl border border-stone-200 bg-white disabled:bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
                   />
                 </label>
               </div>
 
-              <label className="space-y-1 block">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Adresse chantier</span>
-                <input
-                  required
-                  value={form.adresse}
-                  onChange={(event) => setForm((current) => ({ ...current, adresse: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                />
-              </label>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="space-y-1 block">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Adresse chantier</span>
+                  <input
+                    required
+                    disabled={!isAdmin}
+                    value={form.adresse}
+                    onChange={(event) => setForm((current) => ({ ...current, adresse: event.target.value }))}
+                    className="w-full rounded-2xl border border-stone-200 bg-white disabled:bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  />
+                </label>
+
+                <label className="space-y-1 block">
+                  <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Chef de chantier</span>
+                  {!isAdmin ? (
+                    <div className="w-full rounded-2xl border border-stone-100 bg-stone-50 px-3 py-2.5 text-sm text-slate-700 font-medium">
+                      {editing?.chefChantier ? `${editing.chefChantier.prenom} ${editing.chefChantier.nom}` : 'Aucun chef affecté'}
+                    </div>
+                  ) : (
+                    <select
+                      value={form.chefChantierId}
+                      onChange={(event) => setForm((current) => ({ ...current, chefChantierId: event.target.value }))}
+                      className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                    >
+                      <option value="">Aucun chef affecte</option>
+                      {chefsChantier.map((chef: any) => (
+                        <option key={chef.id} value={chef.id}>
+                          {chef.prenom} {chef.nom}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </label>
+              </div>
 
               <label className="space-y-1 block">
                 <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Description detaillee</span>
                 <textarea
                   rows={4}
+                  disabled={!isAdmin}
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
-                  className="w-full rounded-2xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
+                  className="w-full rounded-2xl border border-stone-200 bg-white disabled:bg-stone-50 px-3 py-2.5 text-sm outline-none focus:border-orange-400 resize-none"
                 />
               </label>
 
@@ -539,12 +613,6 @@ export default function ChantiersPage() {
                 />
               </label>
 
-              {submitMutation.error ? (
-                <p className="rounded-2xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {getApiErrorMessage(submitMutation.error, 'Impossible d enregistrer ce chantier.')}
-                </p>
-              ) : null}
-
               <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
@@ -569,6 +637,50 @@ export default function ChantiersPage() {
           </div>
         </div>
       ) : null}
+
+      {feedback && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={() => setFeedback(null)}>
+          <div 
+            className="w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition-all border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className={cn(
+                "mb-4 flex h-14 w-14 items-center justify-center rounded-full",
+                feedback.type === 'success' 
+                  ? "bg-emerald-50 text-emerald-600" 
+                  : "bg-red-50 text-red-600"
+              )}>
+                {feedback.type === 'success' ? (
+                  <CheckCircle size={28} />
+                ) : (
+                  <AlertCircle size={28} />
+                )}
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900">
+                {feedback.type === 'success' ? "Succès" : "Action bloquée"}
+              </h3>
+              
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {feedback.text}
+              </p>
+              
+              <button
+                onClick={() => setFeedback(null)}
+                className={cn(
+                  "mt-6 w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition",
+                  feedback.type === 'success'
+                    ? "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800"
+                    : "bg-red-600 hover:bg-red-700 active:bg-red-800"
+                )}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

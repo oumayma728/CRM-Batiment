@@ -619,6 +619,14 @@ export interface Devis {
   bonCommande?: BonCommande;
   commandesFournisseur?: CommandeFournisseur[];
   signatureRequests?: DevisClientSignatureRequest[];
+  company?: {
+    id: number;
+    nom: string;
+    adresse?: string;
+    email?: string;
+    telephone?: string;
+    siret?: string;
+  };
 }
 
 export type DevisClientSignatureRequestStatut =

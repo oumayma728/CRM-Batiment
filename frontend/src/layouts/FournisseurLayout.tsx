@@ -138,12 +138,9 @@ export default function FournisseurLayout() {
                 </span>
               </div>
 
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-stone-200 transition-colors hover:bg-stone-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm ring-1 ring-stone-200">
                 <Bell size={17} />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[9px] font-bold text-slate-900">
-                  1
-                </span>
-              </button>
+              </div>
 
               <div className="hidden items-center gap-3 rounded-2xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-stone-200 md:flex">
                 <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-700 text-white">

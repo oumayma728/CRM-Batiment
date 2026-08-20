@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
@@ -12,6 +13,7 @@ import {
   type SupplierPurchaseDocumentData,
 } from '@/lib/documentBuilders';
 import type { BonCommande, Client, Devis, DevisStatut, Facture } from '@/types';
+import { createPortal } from 'react-dom';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import {
   ChevronLeft,
@@ -25,6 +27,9 @@ import {
   Trash2,
   X,
   Receipt,
+  CheckCircle,
+  AlertCircle,
+  Pencil,
 } from 'lucide-react';
 
 const statutConfig: Record<
@@ -56,6 +61,7 @@ const emptyForm: DevisForm = {
 const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; color: string }[]> = {
   BROUILLON: [
     { label: 'Marquer envoye', value: 'ENVOYE', color: 'text-blue-600' },
+    { label: 'Marquer signe', value: 'SIGNE', color: 'text-emerald-700' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ENVOYE: [
@@ -134,6 +140,9 @@ function buildPurchaseOrderFeedback(data: unknown, fallback: string) {
 }
 
 export default function DevisPage() {
+  const { user } = useAuth();
+  const isAssistante = user?.role === 'ASSISTANTE';
+  const isAdmin = user?.role === 'ADMIN';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
@@ -147,6 +156,7 @@ export default function DevisPage() {
   const [sendingDevisId, setSendingDevisId] = useState<number | null>(null);
   const [updatingDevisId, setUpdatingDevisId] = useState<number | null>(null);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
   );
@@ -192,7 +202,12 @@ export default function DevisPage() {
     mutationFn: (id: number) => api.delete(`/devis/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['devis'] });
+      setFeedback({ type: 'success', text: 'Devis supprimé avec succès.' });
     },
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || err.message || "Erreur lors de la suppression du devis.";
+      setFeedback({ type: 'error', text: msg });
+    }
   });
 
   const sendClientMutation = useMutation({
@@ -367,14 +382,46 @@ export default function DevisPage() {
       </div>
 
       {feedback && (
-        <div
-          className={
-            feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-              : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
-          }
-        >
-          {feedback.text}
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={() => setFeedback(null)}>
+          <div 
+            className="w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition-all border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className={cn(
+                "mb-4 flex h-14 w-14 items-center justify-center rounded-full",
+                feedback.type === 'success' 
+                  ? "bg-emerald-50 text-emerald-600" 
+                  : "bg-red-50 text-red-600"
+              )}>
+                {feedback.type === 'success' ? (
+                  <CheckCircle size={28} />
+                ) : (
+                  <AlertCircle size={28} />
+                )}
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900">
+                {feedback.type === 'success' ? "Succès" : "Action bloquée"}
+              </h3>
+              
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {feedback.text}
+              </p>
+              
+              <button
+                onClick={() => setFeedback(null)}
+                className={cn(
+                  "mt-6 w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition",
+                  feedback.type === 'success'
+                    ? "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800"
+                    : "bg-red-600 hover:bg-red-700 active:bg-red-800"
+                )}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -450,7 +497,7 @@ export default function DevisPage() {
                       <td className="px-6 py-4 text-sm text-slate-500">{formatDate(devis.createdAt)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {canSendToClient(devis.statut) && (
+                          {canSendToClient(devis.statut) && !isAssistante && (
                             <button
                               onClick={() => sendClientMutation.mutate(devis.id)}
                               className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
@@ -464,10 +511,24 @@ export default function DevisPage() {
                             </button>
                           )}
 
-                          {actions.length > 0 && (
+                          {actions.length > 0 && !isAssistante && (
                             <div className="relative">
                               <button
-                                onClick={() => setActionMenuId(actionMenuId === devis.id ? null : devis.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (actionMenuId === devis.id) {
+                                    setActionMenuId(null);
+                                    setMenuPosition(null);
+                                  } else {
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    setMenuPosition({
+                                      top: rect.bottom + window.scrollY,
+                                      left: rect.right - 192 + window.scrollX,
+                                    });
+                                    setActionMenuId(devis.id);
+                                    setUpdatingDevisId(devis.id);
+                                  }
+                                }}
                                 className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
                                 title="Changer statut"
                               >
@@ -478,44 +539,100 @@ export default function DevisPage() {
                                 )}
                               </button>
 
-                              {actionMenuId === devis.id && (
-                                <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-2xl border border-slate-200 bg-white py-1 shadow-lg">
-                                  {actions.map((action) => (
-                                    <MenuAction
-                                      key={action.value}
-                                      label={action.label}
-                                      color={action.color}
-                                      disabled={updateStatutMutation.isPending}
-                                      onClick={() => handleStatutAction(devis.id, action.value)}
-                                    />
-                                  ))}
-                                </div>
+                              {actionMenuId === devis.id && menuPosition && createPortal(
+                                <>
+                                  <div className="fixed inset-0 z-[99998]" onClick={() => { setActionMenuId(null); setMenuPosition(null); }} />
+                                  <div 
+                                    style={{ position: 'absolute', top: menuPosition.top, left: menuPosition.left }}
+                                    className="z-[99999] w-48 rounded-2xl border border-slate-200 bg-white py-1 shadow-lg"
+                                  >
+                                    {actions.map((action) => (
+                                      <MenuAction
+                                        key={action.value}
+                                        label={action.label}
+                                        color={action.color}
+                                        disabled={updateStatutMutation.isPending}
+                                        onClick={() => {
+                                          handleStatutAction(devis.id, action.value);
+                                          setActionMenuId(null);
+                                          setMenuPosition(null);
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                </>,
+                                document.body
                               )}
                             </div>
                           )}
 
+                          {['BROUILLON', 'REVISE'].includes(devis.statut) && !isAssistante && (
+                             <button
+                               onClick={() => {
+                                 setPreviewDevisId(devis.id);
+                                 setShowManualEditor(true);
+                               }}
+                               className="rounded-lg p-2 text-slate-400 transition hover:bg-amber-50 hover:text-amber-600"
+                               title="Modifier"
+                             >
+                               <Pencil size={15} />
+                             </button>
+                           )}
+
+                           <button
+                             onClick={() => {
+                               setPreviewDevisId(devis.id);
+                               setShowManualEditor(false);
+                             }}
+                             className="rounded-lg p-2 text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
+                             title="Apercu"
+                           >
+                             <Eye size={15} />
+                           </button>
+
+                          {(() => {
+                            const canInvoice = isAdmin && ['ACCEPTE', 'SIGNE'].includes(devis.statut);
+                            return (
+                              <button
+                                onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
+                                disabled={createFactureFromDevisMutation.isPending || !canInvoice}
+                                className={cn(
+                                  "rounded-lg p-2 transition",
+                                  canInvoice
+                                    ? "text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+                                    : "text-slate-200 cursor-not-allowed opacity-40"
+                                )}
+                                title={
+                                  !isAdmin 
+                                    ? "Non autorisé (réservé à l'Admin)" 
+                                    : !canInvoice 
+                                      ? "Facturation impossible (Le devis doit être accepté ou signé)" 
+                                      : "Transformer en facture"
+                                }
+                              >
+                                {createFactureFromDevisMutation.isPending ? (
+                                  <Loader2 size={15} className="animate-spin" />
+                                ) : (
+                                  <Receipt size={15} />
+                                )}
+                              </button>
+                            );
+                          })()}
                           <button
-                            onClick={() => setPreviewDevisId(devis.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-primary-50 hover:text-primary-600"
-                            title="Apercu"
-                          >
-                            <Eye size={15} />
-                          </button>
-                          <button
-                            onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600"
-                            title="Transformer en facture"
-                          >
-                            {createFactureFromDevisMutation.isPending ? (
-                              <Loader2 size={15} className="animate-spin" />
-                            ) : (
-                              <Receipt size={15} />
+                            onClick={() => {
+                              setFeedback(null);
+                              if (window.confirm("Êtes-vous sûr de vouloir supprimer ce devis ?")) {
+                                deleteMutation.mutate(devis.id);
+                              }
+                            }}
+                            disabled={!isAdmin}
+                            className={cn(
+                              "rounded-lg p-2 transition",
+                              isAdmin
+                                ? "text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                                : "text-slate-200 cursor-not-allowed opacity-40"
                             )}
-                          </button>
-                          <button
-                            onClick={() => deleteMutation.mutate(devis.id)}
-                            className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
-                            title="Supprimer"
+                            title={isAdmin ? "Supprimer" : "Non autorisé (réservé à l'Admin)"}
                           >
                             <Trash2 size={15} />
                           </button>
@@ -651,11 +768,12 @@ export default function DevisPage() {
           onClose={() => setPreviewDevisId(null)}
           onPrint={() => window.print()}
           showGeneratedDocuments={false}
-          onManualEdit={() => setShowManualEditor(true)}
+          onManualEdit={isAssistante ? undefined : () => setShowManualEditor(true)}
           onOpenFacture={handleOpenFacture}
           onOpenBonCommande={handleOpenBonCommande}
           onOpenCommandeFournisseur={handleOpenCommandeFournisseur}
           onValidateBonCommandeAndSend={
+            !isAssistante &&
             previewDevis.bonCommande &&
             ['ACCEPTE', 'SIGNE'].includes(previewDevis.statut) &&
             (previewDevis.bonCommande.statut !== 'ENVOYE' ||

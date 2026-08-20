@@ -30,6 +30,7 @@ import TypesProjetPage from '@/pages/TypesProjetPage';
 import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import TasksChantierPage from '@/pages/TasksChantierPage';
+import SousTraitantsPage from '@/pages/SousTraitantsPage';
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
@@ -113,6 +114,7 @@ export default function App() {
               <Route path="materiaux" element={<MateriauxPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
               <Route path="fournisseurs" element={<FournisseursPage />} />
+              <Route path="sous-traitants" element={<SousTraitantsPage />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
