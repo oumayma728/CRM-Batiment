@@ -18,14 +18,9 @@ async function bootstrap() {
     }),
   );
 
-  // CORS (autorise le frontend React en dev)
+  // CORS (autorise localhost en dev et Netlify en prod)
   app.enableCors({
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://localhost:3001',
-      'http://localhost:3000',
-    ],
+    origin: true,
     credentials: true,
   });
 
