@@ -1,0 +1,2 @@
+modele,nb_cas,score_metier_moyen_0_5,taux_parsabilite_json,latency_p50_ms,latency_p95_ms,cout_total_eur,cout_moyen_par_appel_eur
+Gemini 3.5 Flash,17,4.0,1,13783.9,42953.8,0.018576,0.001093

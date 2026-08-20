@@ -1,0 +1,242 @@
+[
+  {
+    "sku": "BAT-001",
+    "prestation": "Audit énergétique",
+    "unite": "Forfait",
+    "prix_ht_eur": 350.0
+  },
+  {
+    "sku": "BAT-002",
+    "prestation": "Isolation des combles perdus",
+    "unite": "m²",
+    "prix_ht_eur": 32.0
+  },
+  {
+    "sku": "BAT-003",
+    "prestation": "Isolation toiture par l'intérieur",
+    "unite": "m²",
+    "prix_ht_eur": 68.0
+  },
+  {
+    "sku": "BAT-004",
+    "prestation": "Isolation toiture par l'extérieur (sarking)",
+    "unite": "m²",
+    "prix_ht_eur": 180.0
+  },
+  {
+    "sku": "BAT-005",
+    "prestation": "Isolation des murs par l'intérieur (ITI)",
+    "unite": "m²",
+    "prix_ht_eur": 62.0
+  },
+  {
+    "sku": "BAT-006",
+    "prestation": "Isolation des murs par l'extérieur (ITE)",
+    "unite": "m²",
+    "prix_ht_eur": 145.0
+  },
+  {
+    "sku": "BAT-007",
+    "prestation": "Isolation du sol",
+    "unite": "m²",
+    "prix_ht_eur": 48.0
+  },
+  {
+    "sku": "BAT-008",
+    "prestation": "Isolation cave / sous-sol",
+    "unite": "m²",
+    "prix_ht_eur": 55.0
+  },
+  {
+    "sku": "BAT-009",
+    "prestation": "Remplacement fenêtre PVC double vitrage",
+    "unite": "unité",
+    "prix_ht_eur": 520.0
+  },
+  {
+    "sku": "BAT-010",
+    "prestation": "Remplacement fenêtre Aluminium",
+    "unite": "unité",
+    "prix_ht_eur": 780.0
+  },
+  {
+    "sku": "BAT-011",
+    "prestation": "Porte d'entrée PVC",
+    "unite": "unité",
+    "prix_ht_eur": 1450.0
+  },
+  {
+    "sku": "BAT-012",
+    "prestation": "Porte d'entrée Aluminium",
+    "unite": "unité",
+    "prix_ht_eur": 2150.0
+  },
+  {
+    "sku": "BAT-013",
+    "prestation": "Porte de garage sectionnelle",
+    "unite": "unité",
+    "prix_ht_eur": 2600.0
+  },
+  {
+    "sku": "BAT-014",
+    "prestation": "Volet roulant électrique",
+    "unite": "unité",
+    "prix_ht_eur": 420.0
+  },
+  {
+    "sku": "BAT-015",
+    "prestation": "Pompe à chaleur Air/Eau 8 kW",
+    "unite": "unité",
+    "prix_ht_eur": 8900.0
+  },
+  {
+    "sku": "BAT-016",
+    "prestation": "Pompe à chaleur Air/Eau 12 kW",
+    "unite": "unité",
+    "prix_ht_eur": 11900.0
+  },
+  {
+    "sku": "BAT-017",
+    "prestation": "Chauffe-eau thermodynamique",
+    "unite": "unité",
+    "prix_ht_eur": 2450.0
+  },
+  {
+    "sku": "BAT-018",
+    "prestation": "Chaudière gaz condensation",
+    "unite": "unité",
+    "prix_ht_eur": 4800.0
+  },
+  {
+    "sku": "BAT-019",
+    "prestation": "Climatisation réversible monosplit",
+    "unite": "unité",
+    "prix_ht_eur": 1850.0
+  },
+  {
+    "sku": "BAT-020",
+    "prestation": "Climatisation multisplit",
+    "unite": "unité",
+    "prix_ht_eur": 4600.0
+  },
+  {
+    "sku": "BAT-021",
+    "prestation": "Panneaux photovoltaïques 3 kWc",
+    "unite": "installation",
+    "prix_ht_eur": 6500.0
+  },
+  {
+    "sku": "BAT-022",
+    "prestation": "Panneaux photovoltaïques 6 kWc",
+    "unite": "installation",
+    "prix_ht_eur": 9800.0
+  },
+  {
+    "sku": "BAT-023",
+    "prestation": "Batterie de stockage 5 kWh",
+    "unite": "unité",
+    "prix_ht_eur": 4300.0
+  },
+  {
+    "sku": "BAT-024",
+    "prestation": "Ventilation simple flux",
+    "unite": "unité",
+    "prix_ht_eur": 1350.0
+  },
+  {
+    "sku": "BAT-025",
+    "prestation": "Ventilation double flux",
+    "unite": "unité",
+    "prix_ht_eur": 4500.0
+  },
+  {
+    "sku": "BAT-026",
+    "prestation": "Réfection toiture tuiles",
+    "unite": "m²",
+    "prix_ht_eur": 140.0
+  },
+  {
+    "sku": "BAT-027",
+    "prestation": "Traitement charpente",
+    "unite": "m²",
+    "prix_ht_eur": 28.0
+  },
+  {
+    "sku": "BAT-028",
+    "prestation": "Nettoyage toiture",
+    "unite": "m²",
+    "prix_ht_eur": 18.0
+  },
+  {
+    "sku": "BAT-029",
+    "prestation": "Peinture intérieure",
+    "unite": "m²",
+    "prix_ht_eur": 29.0
+  },
+  {
+    "sku": "BAT-030",
+    "prestation": "Carrelage sol",
+    "unite": "m²",
+    "prix_ht_eur": 55.0
+  },
+  {
+    "sku": "BAT-031",
+    "prestation": "Faïence murale",
+    "unite": "m²",
+    "prix_ht_eur": 48.0
+  },
+  {
+    "sku": "BAT-032",
+    "prestation": "Salle de bain complète",
+    "unite": "Forfait",
+    "prix_ht_eur": 8900.0
+  },
+  {
+    "sku": "BAT-033",
+    "prestation": "Cuisine clé en main",
+    "unite": "Forfait",
+    "prix_ht_eur": 12500.0
+  },
+  {
+    "sku": "BAT-034",
+    "prestation": "Installation électrique complète",
+    "unite": "m²",
+    "prix_ht_eur": 95.0
+  },
+  {
+    "sku": "BAT-035",
+    "prestation": "Rénovation plomberie",
+    "unite": "m²",
+    "prix_ht_eur": 78.0
+  },
+  {
+    "sku": "BAT-036",
+    "prestation": "Création cloison BA13",
+    "unite": "m²",
+    "prix_ht_eur": 42.0
+  },
+  {
+    "sku": "BAT-037",
+    "prestation": "Faux plafond BA13",
+    "unite": "m²",
+    "prix_ht_eur": 52.0
+  },
+  {
+    "sku": "BAT-038",
+    "prestation": "Enduit façade",
+    "unite": "m²",
+    "prix_ht_eur": 38.0
+  },
+  {
+    "sku": "BAT-039",
+    "prestation": "Ravalement façade",
+    "unite": "m²",
+    "prix_ht_eur": 72.0
+  },
+  {
+    "sku": "BAT-040",
+    "prestation": "Extension maison",
+    "unite": "m²",
+    "prix_ht_eur": 1850.0
+  }
+]

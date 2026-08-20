@@ -1,0 +1,2 @@
+modele,nb_cas,score_metier_moyen_0_5,taux_parsabilite_json,latency_p50_ms,latency_p95_ms,cout_total_eur,cout_moyen_par_appel_eur
+Mistral Small,31,3.645,0,5466.6,6573.4,0.006986,0.000225

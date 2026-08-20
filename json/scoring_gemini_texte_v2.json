@@ -1,0 +1,880 @@
+{
+  "summary": {
+    "nb_cas_total": 31,
+    "nb_cas_scorables": 17,
+    "taux_parsabilite_json_moyen": 1.0,
+    "note_metier_heuristique_moyenne": 4.0,
+    "note_avertissement": "Note heuristique automatique, PAS validee par un profil technico-commercial -- cf. cahier des charges section 3.2.2."
+  },
+  "reference_schema_cible": {
+    "prestations": [
+      {
+        "description": "str",
+        "quantite": "float",
+        "prix_unitaire_eur": "float",
+        "tva_pct": "float",
+        "montant_tva_eur": "float",
+        "total_eur": "float"
+      }
+    ],
+    "total_ht_eur": "float",
+    "total_tva_eur": "float",
+    "total_ttc_eur": "float"
+  },
+  "cas": [
+    {
+      "case_id": "TXT-001",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Carrelage",
+      "devis_reference_id": "DEVIS_001",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose de l'ancien carrelage",
+          "Évacuation des gravats et mise en décharge",
+          "Préparation du support (nettoyage et primaire d'accrochage)",
+          "Pose droite de carrelage en grès cérame 60x60",
+          "Réalisation des joints de carrelage",
+          "Pose de plinthes assorties (optionnel, non spécifié)"
+        ],
+        "materiaux": [
+          "Carrelage grès cérame 60x60 (incluant 10% de perte pour coupes) (20 m²)",
+          "Primaire d'accrochage (18 m²)",
+          "Mortier colle haute performance (C2S1) (90 kg)",
+          "Mortier joint (10 kg)"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 7902.021699992474,
+      "tokens_output": 319,
+      "estimated_cost_eur": 0.0008035280000000001
+    },
+    {
+      "case_id": "TXT-002",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Menuiserie",
+      "devis_reference_id": "DEVIS_002",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose totale et évacuation des anciennes fenêtres en bois",
+          "Pose de 4 fenêtres en PVC double vitrage (dimensions 120x100cm)",
+          "Installation de 4 volets roulants électriques intégrés ou monoblocs",
+          "Raccordement électrique des moteurs de volets roulants",
+          "Travaux d'étanchéité (joints silicone intérieur/extérieur) et finitions (habillages)"
+        ],
+        "materiaux": [
+          "Fenêtre PVC double vitrage (4/16/4, Uw <= 1.3) - 120x100cm (4 unité)",
+          "Volet roulant électrique en aluminium motorisé (filaire ou radio) (4 unité)",
+          "Kit de fixation, chevilles et vis d'ancrage (1 lot)",
+          "Mousse imprégnée, fonds de joint et cartouches de mastic d'étanchéité (1 lot)",
+          "Profilés d'habillage extérieur et intérieur en PVC (4 lot)",
+          "Câblage électrique et goulottes de finition (longueur selon configuration non précisée) (1 lot)"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 12424.819600011688,
+      "tokens_output": 443,
+      "estimated_cost_eur": 0.00108652
+    },
+    {
+      "case_id": "TXT-003",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Ravalement",
+      "devis_reference_id": "DEVIS_003",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Installation de l'échafaudage et protection du chantier",
+          "Nettoyage haute pression de la façade",
+          "Application d'un traitement anti-mousse et fongicide",
+          "Préparation des supports et traitement des fissures éventuelles",
+          "Application d'un sous-enduit d'imperméabilisation",
+          "Application d'un enduit de finition monocouche, finition grattée talochée",
+          "Nettoyage de fin de chantier et repli de l'échafaudage"
+        ],
+        "materiaux": [
+          "Échafaudage de façade (location et montage) (1 forfait)",
+          "Bâches et rubans de masquage pour protection (1 forfait)",
+          "Produit de traitement anti-mousse et algicide (Non déterminée avec confiance (dépend de la surface réelle développée des murs) litres)",
+          "Enduit monocouche d'imperméabilisation et de finition (Non déterminée avec confiance (la surface au sol de 140m2 ne permet pas de calculer précisément la surface de façade développée sans la hauteur des murs) kg)"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 16710.3638999979,
+      "tokens_output": 390,
+      "estimated_cost_eur": 0.000963516
+    },
+    {
+      "case_id": "TXT-004",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "VMC",
+      "devis_reference_id": "DEVIS_004",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose et mise en décharge de l'ancien système de ventilation vétuste",
+          "Installation d'un caisson de VMC simple flux hygroréglable basse consommation dans les combles ou faux-plafond",
+          "Raccordement des gaines isolées existantes ou neuves aux bouches d'extraction",
+          "Pose et raccordement d'une bouche d'extraction hygroréglable en cuisine",
+          "Pose et raccordement d'une bouche d'extraction hygroréglable dans la salle de bain",
+          "Pose et raccordement d'une bouche d'extraction à détection de présence ou temporisée dans les WC",
+          "Raccordement électrique du caisson de VMC au tableau de répartition",
+          "Essais, mesures de débit/dépression et mise en service de l'installation"
+        ],
+        "materiaux": [
+          "Kit VMC simple flux hygroréglable (type Hygro B) (1 unité)",
+          "Bouche d'extraction hygroréglable Cuisine (1 unité)",
+          "Bouche d'extraction hygroréglable Salle de Bain (1 unité)",
+          "Bouche d'extraction WC (à piles ou secteur) (1 unité)",
+          "Gaine isolée diamètre 125mm (Cuisine) (1 couronne (6m))",
+          "Gaine isolée diamètre 80mm (SDB/WC) (2 couronne (6m))",
+          "Petites fournitures (colliers de serrage, adhésif alu, raccordements électriques) (1 lot)"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 13720.475799986161,
+      "tokens_output": 557,
+      "estimated_cost_eur": 0.001347616
+    },
+    {
+      "case_id": "TXT-005",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Peinture",
+      "devis_reference_id": "DEVIS_005",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Protection du mobilier et des sols avec bâche et ruban de masquage",
+          "Préparation des supports : lessivage, ponçage léger et rebouchage des petites fissures",
+          "Application d'une sous-couche d'impression sur les murs et le plafond",
+          "Application de deux couches de peinture de finition blanc cassé sur les murs (30m² au sol, soit environ 75m² de surface murale)",
+          "Application de deux couches de peinture de finition blanc mat au plafond (30m²)",
+          "Nettoyage du chantier et repli des protections"
+        ],
+        "materiaux": [
+          "Peinture acrylique blanc cassé (murs) - finition velours ou satin (15 litres)",
+          "Peinture acrylique blanc mat (plafond) (10 litres)",
+          "Sous-couche d'impression universelle (15 litres)",
+          "Enduit de rebouchage et de lissage (2 kg)",
+          "Fournitures de protection (bâches, ruban de masquage, abrasifs) (1 lot)"
+        ],
+        "nb_quantites_detectees": 5,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 9043.709499994293,
+      "tokens_output": 406,
+      "estimated_cost_eur": 0.0009989360000000002
+    },
+    {
+      "case_id": "TXT-006",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Revetement_sol",
+      "devis_reference_id": "DEVIS_006",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Préparation du support (nettoyage et vérification de la planéité du sol)",
+          "Pose d'une sous-couche isolante phonique",
+          "Pose flottante d'un parquet contrecollé en chêne",
+          "Découpe et pose de plinthes assorties en périphérie",
+          "Pose de barres de seuil pour les jonctions de portes",
+          "Nettoyage du chantier et évacuation des déchets"
+        ],
+        "materiaux": [
+          "Parquet contrecollé Chêne (comprenant 10% de perte pour coupes) (28 m²)",
+          "Sous-couche isolante phonique (28 m²)",
+          "Plinthes assorties en chêne (30 mètres linéaires)",
+          "Colle pour plinthes (cartouches) (4 unités)",
+          "Barres de seuil (2 unités)"
+        ],
+        "nb_quantites_detectees": 5,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 15339.818899985403,
+      "tokens_output": 363,
+      "estimated_cost_eur": 0.0008992080000000001
+    },
+    {
+      "case_id": "TXT-007",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Plomberie_salle_de_bain",
+      "devis_reference_id": "DEVIS_007",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose et évacuation de l'ancienne baignoire et des anciens revêtements",
+          "Préparation des supports (murs et sol) et application d'un système d'étanchéité sous carrelage (SPEC)",
+          "Création de l'évacuation et raccordements plomberie pour la douche",
+          "Pose d'un receveur de douche extra-plat",
+          "Pose de carrelage au sol (6 m²)",
+          "Pose de faïence murale",
+          "Installation de la robinetterie thermostatique et de la colonne de douche",
+          "Pose d'une paroi de douche vitrée",
+          "Réalisation des joints d'étanchéité silicone et joints de carrelage"
+        ],
+        "materiaux": [
+          "Receveur de douche extra-plat (1 u)",
+          "Kit d'étanchéité sous carrelage (SPEC) (1 kit)",
+          "Carrelage de sol (7 m²)",
+          "Faïence murale (surface exacte non spécifiée, estimation standard) (15 m²)",
+          "Colle à carrelage et mortier à joints (1 lot)",
+          "Mitigeur thermostatique avec colonne de douche (1 u)",
+          "Paroi de douche en verre sécurit (1 u)",
+          "Tuyaux PVC, raccords et bonde de douche haut débit (1 lot)"
+        ],
+        "nb_quantites_detectees": 8,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 31723.903300007805,
+      "tokens_output": 546,
+      "estimated_cost_eur": 0.001322592
+    },
+    {
+      "case_id": "TXT-008",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Electricite",
+      "devis_reference_id": "DEVIS_008",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose de l'ancienne installation électrique",
+          "Pose et raccordement d'un nouveau tableau électrique complet aux normes NF C 15-100",
+          "Remplacement du disjoncteur différentiel général",
+          "Création des réseaux de distribution encastrés ou sous goulottes pour les prises et éclairages",
+          "Installation de points lumineux et appareillages d'éclairage LED",
+          "Pose et raccordement de nouvelles prises de courant (confort et cuisine)",
+          "Tests, mise en service et contrôle de conformité de l'installation"
+        ],
+        "materiaux": [
+          "Tableau électrique équipé (disjoncteurs divisionnaires, interrupteurs différentiels 30mA) (1 u)",
+          "Disjoncteur différentiel général (1 u)",
+          "Appareillage mural (prises de courant et interrupteurs) (15 u)",
+          "Spots ou dalles LED encastrables (8 u)",
+          "Couronnes de câbles électriques (RO2V 1.5mm² et 2.5mm²) (3 couronne)",
+          "Gaines ICTA et conduits de protection (1 lot)",
+          "Boîtes d'encastrement multimatériaux (12 u)"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 9692.240400006995,
+      "tokens_output": 486,
+      "estimated_cost_eur": 0.0011818319999999998
+    },
+    {
+      "case_id": "TXT-009",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Erreur API Gemini : 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "case_id": "TXT-010",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Erreur API Gemini : 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "case_id": "TXT-011",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Chauffage",
+      "devis_reference_id": "DEVIS_011",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose et évacuation de l'ancienne chaudière fioul et de ses accessoires",
+          "Installation d'une nouvelle chaudière gaz à condensation",
+          "Raccordement hydraulique au réseau de chauffage existant",
+          "Raccordement au réseau de gaz et création de l'alimentation si nécessaire",
+          "Pose du conduit d'évacuation des fumées (ventouse)",
+          "Raccordement des condensats à l'égout",
+          "Remplissage, purge et embouage/désembouage du réseau si nécessaire",
+          "Mise en service et réglages de l'installation"
+        ],
+        "materiaux": [
+          "Chaudière murale ou au sol gaz à condensation (puissance moyenne 20-25 kW) (1 u)",
+          "Thermostat d'ambiance programmable (1 u)",
+          "Kit de raccordement hydraulique et vannes (1 kit)",
+          "Terminal ventouse (évacuation des fumées) (1 u)",
+          "Inhibiteur de corrosion / traitement de l'eau (1 litre)",
+          "Petite fourniture (raccords cuivre, fixations, tube PVC condensats) (1 lot)"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 24396.749900013674,
+      "tokens_output": 447,
+      "estimated_cost_eur": 0.001092684
+    },
+    {
+      "case_id": "TXT-012",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Placo_isolation",
+      "devis_reference_id": "DEVIS_012",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Pose d'une isolation thermique en laine de verre ou de roche entre chevrons",
+          "Pose d'un pare-vapeur indépendant avec étanchéité à l'air",
+          "Fourniture et pose d'une ossature métallique (suspentes et fourrures)",
+          "Pose de plaques de plâtre standards (BA13) sur les rampants et plafonds des combles (hors salle d'eau)",
+          "Fourniture et pose de plaques de plâtre hydrofuges (BA13 H1) dans la zone salle d'eau",
+          "Jointoiement des plaques (bandes et enduit de finition en 3 passes)"
+        ],
+        "materiaux": [
+          "Isolant thermique (ex: Laine de verre semi-rigide) (40 m²)",
+          "Membrane pare-vapeur et adhésifs d'étanchéité (48 m²)",
+          "Plaques de plâtre BA13 standard (Non déterminable précisément sans plan (surface totale des rampants/murs non spécifiée pour 40m² au sol) m²)",
+          "Plaques de plâtre BA13 Hydrofuge (Non déterminable précisément sans les dimensions de la salle d'eau m²)",
+          "Ossature métallique (fourrures, suspentes, rails et montants) (Non déterminable précisément sans plan de calepinage ml)",
+          "Enduit à joint et bandes armées/papier (1 lot)"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 40215.89019999374,
+      "tokens_output": 512,
+      "estimated_cost_eur": 0.001241632
+    },
+    {
+      "case_id": "TXT-013",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Erreur API Gemini : 503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    },
+    {
+      "case_id": "TXT-014",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Menuiserie_interieure",
+      "devis_reference_id": "DEVIS_014",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Prise de mesures et conception des plans du dressing sur mesure",
+          "Préparation du chantier et protection de la chambre",
+          "Découpe et assemblage de la structure en bois (caissons, étagères, tiroirs)",
+          "Pose des rails et installation des portes coulissantes avec miroir",
+          "Ajustements, finitions et nettoyage du chantier"
+        ],
+        "materiaux": [
+          "Panneaux de bois mélaminé (épaisseur 18mm pour structure et étagères) (12 m²)",
+          "Portes coulissantes avec miroir intégré et profils aluminium (2 unité)",
+          "Kit de rails de guidage haut et bas pour portes coulissantes (1 kit)",
+          "Kits de tiroirs complets avec coulisses à amortisseurs (4 unité)",
+          "Tringles de penderie en acier chromé avec supports (2 unité)",
+          "Quincaillerie diverse (vis, tourillons, équerres d'assemblage, taquets d'étagères) (1 lot)"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 21903.806300018914,
+      "tokens_output": 412,
+      "estimated_cost_eur": 0.001010528
+    },
+    {
+      "case_id": "TXT-015",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Cloture_portail",
+      "devis_reference_id": "DEVIS_015",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose et évacuation de l'ancien portail (si existant)",
+          "Création d'un seuil béton (longrine) pour le guidage du portail coulissant avec découpe de l'enrobé existant",
+          "Pose du rail de guidage au sol et du poteau de guidage/réception",
+          "Installation et réglage du portail coulissant en aluminium de 4m",
+          "Pose et raccordement de la motorisation électrique",
+          "Installation et programmation des accessoires de sécurité (cellules photoélectriques, feu clignotant)",
+          "Installation et configuration du digicode filaire ou sans fil et synchronisation des télécommandes",
+          "Mise en service, essais et explications de fonctionnement"
+        ],
+        "materiaux": [
+          "Portail coulissant en aluminium (largeur 4m, hauteur standard environ 1m60/1m80) (1 u)",
+          "Kit de motorisation pour portail coulissant (moteur, logique de commande, récepteur) (1 u)",
+          "Rail de guidage au sol en acier galvanisé (8 m)",
+          "Digicode (clavier à code) (1 u)",
+          "Télécommandes de contrôle à distance (2 u)",
+          "Kit d'accessoires de sécurité (paire de photocellules + feu orange clignotant) (1 pack)",
+          "Béton prêt à l'emploi pour la longrine et gaines électriques (1 forfait)"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 21991.757999989204,
+      "tokens_output": 540,
+      "estimated_cost_eur": 0.0013054800000000001
+    },
+    {
+      "case_id": "TXT-016",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Assainissement",
+      "devis_reference_id": "DEVIS_016",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Étude de sol et définition du projet d'assainissement non collectif (ANC)",
+          "Terrassement et excavation pour la fosse toutes eaux et les tranchées d'épandage",
+          "Pose et raccordement de la fosse toutes eaux de 3000 litres",
+          "Création du réseau d'épandage (pose des drains et des regards de répartition/bouclage)",
+          "Remblayage, mise à niveau et remise en état du terrain",
+          "Mise en service et passage du SPANC pour conformité"
+        ],
+        "materiaux": [
+          "Fosse toutes eaux en polyéthylène (PEHD) 3000L (1 u)",
+          "Tuyaux d'épandage perforés (drains) Ø100 (60 m)",
+          "Géotextile de protection (100 m²)",
+          "Gravier lavé calibre 20/40 pour drainage (30 tonnes)",
+          "Sable de carrière pour lit de pose (10 tonnes)",
+          "Regards de répartition, de bouclage et de collecte (3 u)",
+          "Tuyaux PVC rigides Ø100 d'évacuation et de ventilation (15 m)"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 53905.323899991345,
+      "tokens_output": 484,
+      "estimated_cost_eur": 0.0011772319999999998
+    },
+    {
+      "case_id": "TXT-017",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Cuisine",
+      "devis_reference_id": "DEVIS_017",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Dépose et évacuation de l'ancienne cuisine (si existante)",
+          "Préparation des supports (murs et sols) pour la pose",
+          "Assemblage et pose des meubles bas et meubles hauts (cuisine de 15m2)",
+          "Pose et ajustement du plan de travail en quartz",
+          "Pose de la crédence en carrelage (colle, joints et finitions)",
+          "Raccordement de l'électroménager encastrable (plaque de cuisson, four, lave-vaisselle, hotte)",
+          "Raccordement de la plomberie (évier et mitigeur)",
+          "Nettoyage de fin de chantier"
+        ],
+        "materiaux": [
+          "Meubles de cuisine bas et hauts (Non déterminée (selon plan d'implantation du client) lot)",
+          "Plan de travail en quartz (Non déterminée (selon métré linéaire précis) mètre linéaire)",
+          "Carrelage pour crédence (Non déterminée (selon hauteur de crédence souhaitée) m²)",
+          "Colle et joint à carrelage (1 lot)",
+          "Fournitures de raccordement plomberie et électricité (flexibles, siphons, câbles) (1 lot)"
+        ],
+        "nb_quantites_detectees": 5,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 13783.932099991944,
+      "tokens_output": 442,
+      "estimated_cost_eur": 0.0010825640000000003
+    },
+    {
+      "case_id": "TXT-018",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Traitement_humidite",
+      "devis_reference_id": "DEVIS_018",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Préparation des supports (décapage, nettoyage des murs de la cave)",
+          "Application d'un système de cuvelage étanche sur les parois (35m² au sol, surface murale à déterminer)",
+          "Injection de résine hydrofuge en bas des murs enterrés pour barrière capillaire",
+          "Fourniture et pose d'un système de ventilation mécanique (VPH ou VMC double flux ponctuelle) pour le traitement de l'humidité de l'air"
+        ],
+        "materiaux": [
+          "Mortier de cuvelage d'étanchéité (150 kg)",
+          "Résine d'injection hydrofuge de masse (40 litres)",
+          "Injecteurs et canules de diffusion (50 pieces)",
+          "Centrale de ventilation positive (VPH/VMI) ou extracteur d'air hygrorégulé (1 unite)"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [],
+      "latency_ms": 8014.901499962434,
+      "tokens_output": 338,
+      "estimated_cost_eur": 0.000840604
+    },
+    {
+      "case_id": "TXT-019",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Amenagement_exterieur",
+      "devis_reference_id": "DEVIS_019",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Tracé et implantation du carport sur la dalle béton existante",
+          "Fixation des platines métalliques d'ancrage au sol par chevillage mécanique ou chimique",
+          "Assemblage et levage de la structure porteuse en bois (poteaux, pannes, chevrons)",
+          "Pose de la couverture en bac acier avec fixations étanches (vis cavaliers)",
+          "Pose des accessoires de finition (rives, faîtage si nécessaire, et évacuation des eaux pluviales)"
+        ],
+        "materiaux": [
+          "Kit carport double en bois traité autoclave (6x5m) (1 u)",
+          "Plaques de couverture bac acier avec feutre régulateur de condensation (30 m²)",
+          "Platines d'ancrage métalliques réglables pour poteaux bois (6 u)",
+          "Kit de fixation pour béton (goujons d'ancrage ou résine chimique) (1 lot)",
+          "Visserie BTP, vis cavaliers et rondelles d'étanchéité pour bac acier (1 lot)",
+          "Gouttière PVC ou zinc avec descente et accessoires (12 ml)"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 3367.9401999688707,
+      "tokens_output": 437,
+      "estimated_cost_eur": 0.00106582
+    },
+    {
+      "case_id": "TXT-020",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": true,
+      "type_prestation": "Climatisation",
+      "devis_reference_id": "DEVIS_020",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 1,
+      "json_parsability_methode": "direct",
+      "extraction": {
+        "prestations": [
+          "Installation et fixation d'une unité extérieure",
+          "Installation et fixation de 3 unités intérieures (multi-split)",
+          "Perçage des murs périphériques et passage des liaisons frigorifiques",
+          "Pose des goulottes de protection et des réseaux de condensats",
+          "Raccordement électrique des unités",
+          "Mise en service par un technicien certifié (manipulation des fluides frigorigènes)",
+          "Test d'étanchéité sous pression d'azote et tirage au vide",
+          "Explication du fonctionnement et remise de la notice d'utilisation"
+        ],
+        "materiaux": [
+          "Groupe extérieur multi-split (compatible 3 sorties) (1 unité)",
+          "Unités intérieures murales (3 unités)",
+          "Liaisons frigorifiques isolées en cuivre (30 mètres)",
+          "Câble d'interconnexion électrique et alimentation (35 mètres)",
+          "Tube d'évacuation des condensats (20 mètres)",
+          "Goulottes de protection en PVC blanc (15 mètres)",
+          "Supports muraux ou de sol pour unité extérieure (avec plots antivibratiles) (1 kit)"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 4486.266799969599,
+      "tokens_output": 474,
+      "estimated_cost_eur": 0.0011561639999999999
+    },
+    {
+      "case_id": "TXT-021",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 814.510203ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-022",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 716.742275ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-023",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 620.466164ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-024",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 508.866788ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-025",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 414.427436ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-026",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 321.330052ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-027",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 233.630934ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-028",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 140.189082ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-029",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 48.089317ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "case_id": "TXT-030",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 59.958310826s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '59s'}]}}"
+    },
+    {
+      "case_id": "TXT-031",
+      "model_label": "Gemini 3.5 Flash",
+      "scorable": false,
+      "raison_non_scorable": "[gemini] Quota JOURNALIER Gemini epuise (limite tier gratuit) : 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\\nPlease retry in 59.854635933s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash', 'location': 'global'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '59s'}]}}"
+    }
+  ]
+}

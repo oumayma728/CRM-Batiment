@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Documents generes / de test (artefacts, pas du code source)
+devis_generes/
+devis_genere_test.docx
+devis_telecharge.docx
+DEV-2026-95064.docx

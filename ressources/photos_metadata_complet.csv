@@ -1,0 +1,45 @@
+﻿id,nom_fichier,piece,elements_visibles,surface_approx_m2,objet_reference_present,description_objet_reference,statut,chemin_image
+MGR-01,1.jpeg,Atelier_stock_fenetres,"Fenetres PVC Optimaline neuves en stock, hors contexte de pose",Extérieur,Non,,REJETE_PAS_UNE_SCENE_DE_CHANTIER,D:\Me\My projects\3LM Solutions\Benchmark\Photos\01.jpeg
+MGR-02,2.jpeg,Atelier_stock_fenetres,"Fenetre PVC Optimaline en atelier, machine-outil en arriere-plan",Extérieur,Non,,REJETE_PAS_UNE_SCENE_DE_CHANTIER,D:\Me\My projects\3LM Solutions\Benchmark\Photos\02.jpeg
+MGR-03,3.jpeg,Facade_maison_isolation,"Facade avec isolation exterieure, echafaudage, ouvrier en hauteur",Extérieur,Non,,VALIDE_FACADE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\03.jpeg
+MGR-04,4.jpeg,Facade_extension_ouverture,"Extension arriere, ouverture avec fenetre posee, isolation, bonbonnes de gaz",Extérieur,Non,,VALIDE_FACADE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\04.jpeg
+MGR-05,5.jpeg,Toiture_detail_tuiles,"Vue rapprochee tuiles de toiture, mousse et lichen visibles",Extérieur,Non,,VALIDE_TOITURE_DETAIL,D:\Me\My projects\3LM Solutions\Benchmark\Photos\05.jpeg
+MGR-06,6.jpeg,Toiture_facade_corniche,"Toiture tuiles, corniche bois degradee, facade brique",Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\06.jpeg
+MGR-07,7.jpeg,Toiture_solin_cheminee,Solin zinc autour d une cheminee brique,Extérieur,Non,,VALIDE_TOITURE_DETAIL,D:\Me\My projects\3LM Solutions\Benchmark\Photos\07.jpeg
+MGR-08,8.jpeg,Toiture_vue_plongeante,Vue plongeante toiture tuiles depuis hauteur,Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\08.jpeg
+MGR-09,9.jpeg,Branches_arbre_maison_masquee,"Branches d arbre masquant la facade, sujet principal cache",Extérieur,Non,,REJETE_SUJET_MASQUE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\09.jpeg
+MGR-10,10.jpeg,Toiture_ecran_sous_toiture,"Pose membrane sous-toiture Titan, ouvrier torse nu sur toit",Extérieur,Non,,VALIDE_TOITURE_RESERVE_EPI,D:\Me\My projects\3LM Solutions\Benchmark\Photos\10.jpeg
+MGR-11,11.jpeg,Materiel_stock_isolant,"Panneaux isolants IKO empiles dans un jardin, livraison materiel",Extérieur,Non,,RESERVE_MATERIEL_LIVRAISON,D:\Me\My projects\3LM Solutions\Benchmark\Photos\11.jpeg
+MGR-12,12.jpeg,Toiture_charpente_isolation,"Volige et isolant IKO sur charpente, toiture en cours de pose",Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\12.jpeg
+MGR-13,13.jpeg,Toiture_nacelle_elevatrice,"Nacelle elevatrice au travail sur toiture, ouvrier en hauteur",Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\13.jpeg
+MGR-14,14.jpeg,Toiture_detail_zinguerie,"Detail noue de toiture en zinc, raccord tuiles",Extérieur,Non,,VALIDE_TOITURE_DETAIL,D:\Me\My projects\3LM Solutions\Benchmark\Photos\14.jpeg
+MGR-15,15.jpeg,Toiture_charpente_ancienne,"Charpente ancienne degradee mise a nu, etat avant travaux",Extérieur,Non,,VALIDE_TOITURE_ETAT_AVANT,D:\Me\My projects\3LM Solutions\Benchmark\Photos\15.jpeg
+MGR-16,16.jpeg,Toiture_vue_tuiles,"Vue toiture tuiles depuis le toit, jardin en arriere-plan",Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\16.jpeg
+MGR-17,17.jpeg,Toiture_ouvriers_zinguerie,"Deux ouvriers torse nu sur echafaudage, pose zinc",Extérieur,Non,,VALIDE_TOITURE_RESERVE_EPI,D:\Me\My projects\3LM Solutions\Benchmark\Photos\17.jpeg
+MGR-18,18.jpeg,Facade_pignon_cheminee,"Pignon de toit, cheminee, antenne satellite, facade brique",Extérieur,Non,,VALIDE_FACADE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\18.jpeg
+MGR-19,19.jpeg,Toiture_ouvriers_faitage,"Deux ouvriers torse nu sur echafaudage, travail au faitage",Extérieur,Non,,VALIDE_TOITURE_RESERVE_EPI,D:\Me\My projects\3LM Solutions\Benchmark\Photos\19.jpeg
+MGR-20,20.jpeg,Ciel_coin_toiture,"Essentiellement ciel et nuages, coin de toiture a peine visible",Extérieur,Non,,REJETE_SUJET_INSUFFISANT,D:\Me\My projects\3LM Solutions\Benchmark\Photos\20.jpeg
+MGR-21,21.jpeg,Terrain_debris_chantier,"Herbe et debris de chantier au sol, mur ancien en arriere-plan",Extérieur,Non,,REJETE_PAS_DE_SUJET_EXPLOITABLE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\21.jpeg
+MGR-22,22.jpeg,Terrain_vague_camionnette,"Terrain vague, camionnette, mur ancien, hors sujet devis",Extérieur,Non,,REJETE_HORS_SUJET,D:\Me\My projects\3LM Solutions\Benchmark\Photos\22.jpeg
+MGR-23,23.jpeg,Facade_corniche_pignon,"Corniche zinc et pignon brique, cadrage tres oriente vers le ciel",Extérieur,Non,,RESERVE_CADRAGE_LIMITE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\23.jpeg
+MGR-24,24.jpeg,Outillage_decoupe_briques,"Machine a couper les briques (Boels Rental), gros plan materiel",Extérieur,Non,,RESERVE_OUTILLAGE_PAS_UNE_PIECE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\24.jpeg
+MGR-25,25.jpeg,Facade_briques_echafaudage,"Facade briques en cours de montage, echafaudage, fenetres",Extérieur,Non,,VALIDE_FACADE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\25.jpeg
+MGR-26,26.jpeg,Facade_complete_briques,"Facade complete en briques neuves, echafaudage, poubelles",Extérieur,Non,,VALIDE_FACADE_EXCELLENT,D:\Me\My projects\3LM Solutions\Benchmark\Photos\26.jpeg
+MGR-27,27.jpeg,Facade_briques_ouvrier,"Meme chantier, ouvrier en action de pose",Extérieur,Non,,VALIDE_FACADE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\27.jpeg
+MGR-28,28.jpeg,Materiau_briques_empilees,"Gros plan briques empilees, pas de scene de piece",Extérieur,Non,,RESERVE_MATERIAU_SEUL,D:\Me\My projects\3LM Solutions\Benchmark\Photos\28.jpeg
+MGR-29,29.jpeg,Facade_briques_vue_complete,"Facade briques, ouvrier posant, vue d ensemble complete",Extérieur,Non,,VALIDE_FACADE_EXCELLENT,D:\Me\My projects\3LM Solutions\Benchmark\Photos\29.jpeg
+MGR-30,30.jpeg,Toiture_ouvrier_cheminee,Ouvrier sur toiture pres d une cheminee,Extérieur,Non,,VALIDE_TOITURE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\30.jpeg
+MGR-31,31.jpeg,Toiture_veranda_facade,"Ouvrier sur toit plat de veranda, facade brique",Extérieur,Non,,VALIDE_TOITURE_VERANDA,D:\Me\My projects\3LM Solutions\Benchmark\Photos\31.jpeg
+MGR-32,32.jpeg,Veranda_pignon_toit_zingue,"Veranda, pignon brique, toit zingue",Extérieur,Non,,VALIDE_TOITURE_VERANDA,D:\Me\My projects\3LM Solutions\Benchmark\Photos\32.jpeg
+MGR-33,33.jpeg,Toiture_cheminee_reparation,"Cheminee en cours de reparation, ouvrier au travail",Extérieur,Non,,VALIDE_TOITURE_DETAIL,D:\Me\My projects\3LM Solutions\Benchmark\Photos\33.jpeg
+MGR-34,34.jpeg,Facade_briques_neuves_pose,"Facade briques neuves en cours de pose, fenetre PVC, seau de mortier",Extérieur,Non,,VALIDE_FACADE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\34.jpeg
+MGR-35,35.jpg,Cloison_en_construction,"Montage cloison briques creuses avec ouverture porte, pilier pierre apparent",14-18,Oui,"Seaux, porte",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\35.jpg
+MGR-36,36.jpg,Piece_vide_gros_oeuvre,"Radiateurs fonte, portes-fenetres, briques creuses empilees, betonniere",28-35,Oui,"Radiateur, fenêtres, bétonnière",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\36.jpg
+MGR-37,37.jpg,Piece_en_gros_oeuvre_non_identifiee,"Cloisons briques creuses terre cuite, echelle, bassine au sol, tuyauterie",7-Apr,Oui,"Échelle, cloisons",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\37.jpg
+MGR-38,38.jpg,Piece_vide_avant_pose_lambris,"Traçage diagonal au crayon sur mur, bache plastique, echelle, sac de gravats",12–16,Oui,"Échelle, prises électriques, ouvrier",VALIDE_RISQUE_GEOGRAPHIQUE_MODERE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\38.jpg
+MGR-39,39.jpg,Piece_en_gros_oeuvre_electricite,"Gaines ICTA rouges encastrees sur mur parpaing, boitiers electriques, echelle",15-22,Oui,"Ouvrier, échelle, câblage",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\39.jpg
+MGR-40,40.jpg,Cloison_en_montage,"Ossature metallique rails et montants avec plaques de platre, porte blindee au fond",18-22,Oui,"2 échelles, porte, plaques de plâtre",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\40.jpg
+MGR-41,41.jpg,Cloison_placo_finition,"Pose profile angle aluminium sur placo, plaque verte hydrofuge, fenetre protegee",14-16,Oui,"Ouvrier, fenêtres",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\41.jpg
+MGR-42,42.jpg,Piece_en_travaux_peinture_pistolet,"Pulverisation peinture au pistolet, protection integrale plastique piece complete",15-20,Oui,"Ouvrier, ouverture de porte",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\42.jpg
+MGR-43,43.jpg,Piece_en_travaux_peinture,"Application sous-couche au rouleau sur beton brut, echelle, fenetre bois protegee",18-25,Oui,"Échelle, rouleau, fenêtre",VALIDE_STOCK_PEXELS_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\43.jpg
+MGR-44,44.jpg,Piece_en_demolition_gros_oeuvre,"Mur brique et platre partiellement demoli, etaiement, ouvriers en action",25-35,Oui,"Ouvriers, échelles, grandes ouvertures",VALIDE_STOCK_UNSPLASH_LIBRE,D:\Me\My projects\3LM Solutions\Benchmark\Photos\44.jpg

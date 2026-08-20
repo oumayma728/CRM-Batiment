@@ -1,0 +1,1659 @@
+{
+  "summary": {
+    "nb_cas_total": 31,
+    "nb_cas_scorables": 31,
+    "taux_parsabilite_json_moyen": 0.0,
+    "note_metier_heuristique_moyenne": 3.6451612903225805,
+    "note_avertissement": "Note heuristique automatique, PAS validee par un profil technico-commercial -- cf. cahier des charges section 3.2.2."
+  },
+  "reference_schema_cible": {
+    "prestations": [
+      {
+        "description": "str",
+        "quantite": "float",
+        "prix_unitaire_eur": "float",
+        "tva_pct": "float",
+        "montant_tva_eur": "float",
+        "total_eur": "float"
+      }
+    ],
+    "total_ht_eur": "float",
+    "total_tva_eur": "float",
+    "total_ttc_eur": "float"
+  },
+  "cas": [
+    {
+      "case_id": "TXT-001",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Carrelage",
+      "devis_reference_id": "DEVIS_001",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Dépose de l’ancien carrelage** (y compris préparation du support)",
+          "**Évacuation et gestion des gravats** (transport et mise en décharge)",
+          "**Pose de carrelage en grès cérame 60x60** (pose droite, jointoiement inclus)",
+          "**Nettoyage final des lieux**"
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité** | **Prix unitaire (€ HT)** | **Prix total (€ HT)**",
+          "----------------------------|----------------------|-----------|--------------------------|-----------------------",
+          "Carrelage grès cérame 60x60 | 20 (18 m² + 10% de chute) | m²        | [Prix au m²]             | [Total]",
+          "Mortier-colle (C2)         | 150 kg               | kg        | [Prix/kg]                | [Total]",
+          "Joint de carrelage (2 mm)  | 10 kg                | kg        | [Prix/kg]                | [Total]",
+          "Primaire d’accrochage      | 5 L                  | L         | [Prix/L]                 | [Total]"
+        ],
+        "nb_quantites_detectees": 9,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 5.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 5248.829899996053,
+      "tokens_output": 767,
+      "estimated_cost_eur": 0.0002254
+    },
+    {
+      "case_id": "TXT-002",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Menuiserie",
+      "devis_reference_id": "DEVIS_002",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Dépose** des 4 fenêtres existantes (bois, dimensions 120x100 cm).",
+          "**Pose** de 4 nouvelles fenêtres PVC double vitrage (120x100 cm) avec :",
+          "Étanchéité (joints, mousse polyuréthane).",
+          "Calage et fixation conforme aux normes.",
+          "**Installation** de 4 volets roulants électriques (intégrés aux fenêtres) :",
+          "Motorisation individuelle par fenêtre.",
+          "Pose des coffres et rails.",
+          "Raccordement électrique (alimentation depuis tableau existant).",
+          "**Nettoyage** du chantier (évacuation des gravats, dépoussiérage)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Détails**                                                                 | **Quantité** | **Prix unitaire (€ HT)** | **Total (€ HT)**",
+          "--------------------------|-----------------------------------------------------------------------------|--------------|--------------------------|------------------",
+          "**Fenêtres PVC**         | Fenêtre PVC double vitrage (120x100 cm), classe A*, Uw ≤ 1,3 W/m².K        | 4            | 450                      | 1 800",
+          "**Volets roulants**      | Volet roulant électrique intégré (lame aluminium 41 mm), moteur 230V       | 4            | 320                      | 1 280",
+          "**Accessoires**          | Joints d’étanchéité, mousse polyuréthane, fixations (chevilles, vis)       | Lot          | 80                       | 80",
+          "**Électricité**          | Câble 3G1,5 mm², gaine ICTA, interrupteur mural par fenêtre                | Lot          | 120                      | 120",
+          "**Main d’œuvre**         | Dépose, pose, raccordement électrique, nettoyage                            | Forfait      | -                        | 1 600"
+        ],
+        "nb_quantites_detectees": 0,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 0,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune quantite chiffree detectee (m2, kg, unites, heures...).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 4920.392600004561,
+      "tokens_output": 676,
+      "estimated_cost_eur": 0.00019945599999999998
+    },
+    {
+      "case_id": "TXT-003",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Ravalement",
+      "devis_reference_id": "DEVIS_003",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Nettoyage haute pression** (démoussage et désencrassement) de la façade.",
+          "**Traitement anti-mousse** (application d’un produit fongicide).",
+          "**Réparation des fissures** (rebouchage avec mortier adapté).",
+          "**Application d’un enduit gratté taloché** (2 couches).",
+          "**Protection des menuiseries et sols** pendant les travaux.",
+          "**Nettoyage final du chantier**."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité**",
+          "----------------------------|----------------------|-----------",
+          "Produit anti-mousse        | 5 à 10               | litres",
+          "Enduit gratté taloché      | 150 à 200            | kg",
+          "Mortier de rebouchage      | 20 à 30              | kg",
+          "Primer d’accrochage        | 5 à 10               | litres",
+          "Peinture de finition (si nécessaire) | 10 à 15       | litres"
+        ],
+        "nb_quantites_detectees": 9,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 4569.087799987756,
+      "tokens_output": 703,
+      "estimated_cost_eur": 0.000206724
+    },
+    {
+      "case_id": "TXT-004",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "VMC",
+      "devis_reference_id": "DEVIS_004",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "Dépose des gaines existantes et des bouches d'extraction.",
+          "Évacuation des matériaux en déchetterie (frais inclus).",
+          "Pose de l'unité centrale (plafond ou combles, selon configuration).",
+          "Raccordement électrique (alimentation 230V, câblage inclus).",
+          "Mise en service et test de fonctionnement.",
+          "Cuisine : 1 bouche hygroréglable (débit 45 m³/h).",
+          "Salle de bain : 1 bouche hygroréglable (débit 30 m³/h).",
+          "WC : 1 bouche hygroréglable (débit 20 m³/h).",
+          "Gaines souples isolées (diamètre 125 mm pour cuisine, 80 mm pour autres pièces).",
+          "Étanchéité et fixation des gaines.",
+          "Nettoyage des zones de travail.",
+          "Remise en état des murs/plafonds si nécessaire (peinture non incluse)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Description**                          | **Quantité** | **Prix unitaire (€)** | **Total (€)**",
+          "--------------------------|------------------------------------------|--------------|-----------------------|---------------",
+          "**Unité VMC**            | VMC simple flux hygroréglable (ex: Aldes ou Atlantic) | 1            | 300 – 500             | 300 – 500",
+          "**Bouches d'extraction** | Hygroréglables (cuisine, salle de bain, WC) | 3            | 20 – 40               | 60 – 120",
+          "**Gaines souples**       | Diamètre 125 mm (cuisine) et 80 mm (autres) | 20 m         | 5 – 10/m              | 100 – 200",
+          "**Isolation des gaines** | Manchons isolants (épaisseur 20 mm)      | 20 m         | 3 – 8/m               | 60 – 160",
+          "**Fixations**            | Colliers, suspentes, ruban adhésif aluminium | Lot         | 20 – 40               | 20 – 40",
+          "**Électricité**          | Câble 3G1.5 mm², interrupteur différentiel | Lot         | 30 – 60               | 30 – 60",
+          "**Divers**               | Ruban étanche, mousse polyuréthane, etc. | Lot         | 15 – 30               | 15 – 30"
+        ],
+        "nb_quantites_detectees": 3,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5197.038699989207,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.000233404
+    },
+    {
+      "case_id": "TXT-005",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Peinture",
+      "devis_reference_id": "DEVIS_005",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Préparation des surfaces :**",
+          "Dépoussiérage et nettoyage des murs et plafond.",
+          "Rebouchage des petites fissures (≤ 2 mm) avec enduit de rebouchage.",
+          "Ponçage des zones traitées et des anciennes peintures écaillées.",
+          "Protection des sols, fenêtres, prises et interrupteurs avec bâches et ruban de masquage.",
+          "Protection du mobilier (démontage si nécessaire ou recouvrement complet).",
+          "**Application de la peinture :**",
+          "Application de **2 couches** de peinture blanche cassée (teinte RAL 9001 ou équivalent) sur murs et plafond.",
+          "Finitions soignées (angles, plinthes, joints).",
+          "**Nettoyage post-travaux :**",
+          "Retrait des protections et nettoyage des résidus.",
+          "Évacuation des déchets (emballages, chiffons, etc.)."
+        ],
+        "materiaux": [
+          "**Matériau**                     | **Quantité estimée** | **Détails**",
+          "-----------------------------------|----------------------|--------------------------------------",
+          "Peinture intérieure (blanc cassé) | 10 à 12 L            | Rendement : ~10 m²/L/couche",
+          "Enduit de rebouchage              | 1 à 2 kg             | Pour fissures ≤ 2 mm",
+          "Ruban de masquage                 | 2 rouleaux           | Largeur 25 mm",
+          "Bâche de protection               | 30 m²                | Épaisseur 50 µm",
+          "Sous-couche (si nécessaire)       | 5 à 6 L              | Pour murs poreux ou tachés",
+          "Chiffons et rouleaux de peinture  | 5 à 6 unités         | Rouleaux à poils moyens (10-12 mm)",
+          "Pinceau                           | 2 unités             | Pour angles et finitions",
+          "Papier de verre (grain 120-180)   | 1 paquet             | Pour ponçage",
+          "Enduit de lissage (optionnel)     | 1 à 2 kg             | Pour défauts de surface plus importants"
+        ],
+        "nb_quantites_detectees": 13,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5308.302599994931,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023312799999999998
+    },
+    {
+      "case_id": "TXT-006",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Revetement_sol",
+      "devis_reference_id": "DEVIS_006",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Préparation du support** :",
+          "Nettoyage et vérification de la planéité du sol (tolérance ≤ 3 mm sous la règle de 2 m).",
+          "Pose d’une sous-couche isolante phonique (épaisseur 2 mm).",
+          "**Pose du parquet contrecollé chêne** :",
+          "Pose flottante avec système de clipsage (méthode recommandée pour les parquets contrecollés).",
+          "Découpe et ajustement autour des portes et obstacles.",
+          "Pose des plinthes assorties (hauteur 70 mm) avec finition (peinture ou teinte assortie).",
+          "**Finitions** :",
+          "Nettoyage des résidus et poussière après pose.",
+          "Vérification de l’horizontalité et de la stabilité du revêtement."
+        ],
+        "materiaux": [
+          "**Article**                     | **Marque/Modèle**       | **Quantité** | **Prix unitaire (€)** | **Prix total (€)**",
+          "----------------------------------|-------------------------|--------------|-----------------------|--------------------",
+          "Parquet contrecollé chêne        | Ex. : Tarkett, Quick-Step | 25 m²        | 45,00                 | 1 125,00",
+          "Sous-couche phonique (2 mm)      | Ex. : Polyéthylène      | 25 m²        | 3,50                  | 87,50",
+          "Plinthes chêne (2,5 m)           | Assorties au parquet    | 15 ml        | 8,00                  | 120,00",
+          "Profilés de transition (si besoin)| Ex. : Aluminium         | 2 ml         | 12,00                 | 24,00",
+          "**Total matériaux**              |                         |              |                       | **1 356,50**"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 5.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 5468.601200031117,
+      "tokens_output": 781,
+      "estimated_cost_eur": 0.000227424
+    },
+    {
+      "case_id": "TXT-007",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Plomberie_salle_de_bain",
+      "devis_reference_id": "DEVIS_007",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Dépose et évacuation** :",
+          "Dépose de l'ancienne baignoire (démontage, évacuation des gravats).",
+          "Démontage des anciens carrelages mural et sol (si nécessaire).",
+          "Nettoyage et préparation des supports.",
+          "**Installation de la douche italienne** :",
+          "Pose d'un receveur extra-plat (hauteur ≤ 2 cm).",
+          "Étanchéité du sol et des murs (membrane d'étanchéité + raccordement au siphon).",
+          "Pose de la paroi de douche (verre sécurisé ou paroi fixe selon choix).",
+          "Raccordement à l'évacuation des eaux usées.",
+          "**Carrelage** :",
+          "Pose de carrelage mural (hauteur standard ou jusqu'au plafond).",
+          "Pose de carrelage au sol (format adapté à la douche italienne).",
+          "Jointoiement et finitions.",
+          "**Robinetterie** :",
+          "Pose d'une robinetterie thermostatique murale (mitigeur thermostatique + pommeau de douche).",
+          "Raccordement à l'arrivée d'eau chaude/froide.",
+          "**Finitions** :",
+          "Pose de plinthes et accessoires (porte-serviettes, étagères, etc.).",
+          "Nettoyage du chantier."
+        ],
+        "materiaux": [
+          "**Poste**               | **Description**                                                                 | **Quantité estimée**",
+          "--------------------------|---------------------------------------------------------------------------------|----------------------------",
+          "**Dépose**               | Sacs de gravats, outils de démontage                                            | 10-15 sacs (50L)",
+          "**Receveur de douche**   | Receveur extra-plat (60x60 cm ou 70x70 cm) + système d'évacuation intégré       | 1 unité",
+          "**Étanchéité**           | Membrane d'étanchéité liquide ou en rouleau + ruban étanche                    | 10-12 m²",
+          "**Carrelage mural**      | Carrelage émaillé (format 20x20 cm ou 30x60 cm) + colle à carrelage             | 12-15 m²",
+          "**Carrelage sol**        | Carrelage antidérapant (format 30x30 cm ou 40x40 cm) + colle + jointoiement     | 6-7 m²",
+          "**Robinetterie**         | Mitigeur thermostatique mural + flexible d'alimentation + pommeau de douche    | 1 kit",
+          "**Accessoires**          | Porte-serviettes, étagère, miroir (optionnel)                                   | 1-2 unités",
+          "**Jointoiement**         | Joint silicone sanitaire (blanc) + coulis de jointoiement                        | 2-3 tubes + 1 sac",
+          "**Plinthes**             | Plinthes carrelées ou PVC (hauteur 5-7 cm)                                      | 10-12 ml"
+        ],
+        "nb_quantites_detectees": 7,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5519.190000020899,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.000233496
+    },
+    {
+      "case_id": "TXT-008",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Electricite",
+      "devis_reference_id": "DEVIS_008",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Mise aux normes du tableau électrique** (conformément à la norme NF C 15-100)",
+          "**Remplacement du disjoncteur différentiel** (type A ou F selon besoins)",
+          "**Installation de prises de courant** (nombre et emplacement à définir)",
+          "**Pose d’éclairages LED** (nombre et type à définir)",
+          "**Pose de gaines ICTA** (si nécessaire)",
+          "**Tests et mise en service** (vérification des circuits, mise sous tension)",
+          "**Fourniture des attestations de conformité** (Consuel)"
+        ],
+        "materiaux": [
+          "**Poste**                     | **Description**                                                                 | **Quantité estimée**",
+          "--------------------------------|---------------------------------------------------------------------------------|----------------------",
+          "**Tableau électrique**         | Tableau modulaire 12 à 18 modules (selon besoins)                              | 1",
+          "**Disjoncteur différentiel**   | Type A ou F, 30 mA, intensité adaptée (ex. 30A ou 40A)                          | 1",
+          "**Disjoncteurs divisionnaires**| 16A ou 20A (selon circuits)                                                     | 6 à 10",
+          "**Prises de courant**          | Prises 16A avec terre, encastrées (blanc ou autre finition)                     | 8 à 12",
+          "**Éclairages LED**             | Spots encastrés ou appliques murales (selon choix)                              | 4 à 8",
+          "**Gaines ICTA**                | Diamètre 16mm ou 20mm (selon longueur)                                          | 30 à 50 m",
+          "**Câbles électriques**         | 1,5 mm² (éclairage), 2,5 mm² (prises)                                           | 100 à 150 m",
+          "**Boîtes d’encastrement**      | Pour prises et interrupteurs                                                    | 10 à 15",
+          "**Interrupteurs**              | Simple ou va-et-vient (selon choix)                                            | 2 à 4",
+          "**Accessoires**                | Chevilles, vis, colliers de fixation, etc.                                      | Lot standard"
+        ],
+        "nb_quantites_detectees": 3,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5309.858099964913,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023266800000000003
+    },
+    {
+      "case_id": "TXT-009",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Isolation",
+      "devis_reference_id": "DEVIS_009",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "Nettoyage et dégagement des combles (enlèvement des gravats, poussière, etc.).",
+          "Vérification de l’étanchéité à l’air et traitement des points singuliers (lucarnes, trappes, etc.).",
+          "Pose d’un pare-vapeur (si nécessaire) avant soufflage.",
+          "Soufflage de **laine de verre** en vrac (densité ~25 kg/m³) sur une épaisseur de **30 cm**.",
+          "Répartition homogène pour garantir une résistance thermique (R ≥ 7 m².K/W).",
+          "Vérification de l’uniformité du soufflage (épaisseur, absence de trous).",
+          "Pose d’un **pare-vapeur** (si non inclus dans la laine) pour éviter les problèmes d’humidité."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité** | **Prix unitaire HT** | **Prix total HT**",
+          "----------------------------|----------------------|-----------|----------------------|-------------------",
+          "Laine de verre (vrac)      | 30                   | m³        | [X] €                | [X] €",
+          "Pare-vapeur (si nécessaire)| 100                  | m²        | [Y] €                | [Y] €",
+          "Ruban adhésif pour pare-vapeur | 1                  | rouleau   | [Z] €                | [Z] €"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5649.779500032309,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023303600000000005
+    },
+    {
+      "case_id": "TXT-010",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Amenagement_exterieur",
+      "devis_reference_id": "DEVIS_010",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Prestation** | **Description détaillée**",
+          "----------------|--------------------------",
+          "**Préparation du sol** | Nivellement, compactage et pose d’un géotextile pour éviter la pousse des mauvaises herbes.",
+          "**Pose des plots réglables** | Installation de plots en polypropylène (hauteur réglable) espacés à 50 cm pour une terrasse stable.",
+          "**Pose de l’ossature bois** | Structure porteuse en bois exotique (ipé ou cumaru) traité autoclave, section 45x70 mm, fixée sur les plots.",
+          "**Pose du revêtement bois** | Planches en bois exotique (ipé ou cumaru) de 21x140 mm, fixées avec des clips inox.",
+          "**Pose des garde-corps aluminium** | Garde-corps en aluminium anodisé (hauteur 90 cm) avec main courante et remplissage en lames horizontales.",
+          "**Éclairage intégré dans les marches** | Pose de spots LED étanches (12V) dans les marches, alimentés par un transformateur et un système de minuterie.",
+          "**Traitement et finitions** | Application d’un saturateur ou huile pour bois exotique pour protéger et sublimer l’aspect naturel."
+        ],
+        "materiaux": [
+          "**Matériau** | **Quantité** | **Unité** | **Prix unitaire (€ HT)** | **Prix total (€ HT)**",
+          "--------------|-------------|-----------|--------------------------|-----------------------",
+          "**Bois exotique (ipé ou cumaru)** | 20 | m² | 80 | 1 600",
+          "**Plots réglables polypropylène** | 40 | unités | 5 | 200",
+          "**Ossature bois (45x70 mm)** | 40 | ml | 15 | 600",
+          "**Clips inox pour fixation** | 200 | unités | 0,50 | 100",
+          "**Vis inox (5x60 mm)** | 500 | unités | 0,15 | 75",
+          "**Garde-corps aluminium (90 cm)** | 10 | ml | 120 | 1 200",
+          "**Spots LED étanches (12V)** | 10 | unités | 25 | 250",
+          "**Transformateur 12V** | 1 | unité | 80 | 80",
+          "**Minuterie** | 1 | unité | 50 | 50",
+          "**Géotextile** | 25 | m² | 2 | 50",
+          "**Saturateur ou huile pour bois** | 5 | L | 30 | 150",
+          "**Main d’œuvre** | - | - | - | 2 500"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5245.784400030971,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023220800000000002
+    },
+    {
+      "case_id": "TXT-011",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Chauffage",
+      "devis_reference_id": "DEVIS_011",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Dépose et évacuation** de l'ancienne chaudière fioul (y compris cuve si nécessaire).",
+          "**Installation** d'une chaudière gaz à condensation (modèle : [préciser modèle, ex. Viessmann Vitodens 222-F]).",
+          "**Raccordement** au réseau gaz existant (vérification et adaptation si nécessaire).",
+          "**Mise en service** et test de fonctionnement.",
+          "**Évacuation des déchets** (conforme à la réglementation)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Description**                          | **Quantité** | **Prix unitaire (€ HT)** | **Total (€ HT)**",
+          "--------------------------|------------------------------------------|--------------|--------------------------|------------------",
+          "Chaudière gaz            | Modèle condensation (ex. Viessmann)      | 1            | [Prix]                   | [Total]",
+          "Kit de raccordement      | Tuyaux, vannes, raccords gaz             | 1            | [Prix]                   | [Total]",
+          "Évacuation des fumées    | Tubage concentrique (si nécessaire)       | [Longueur]   | [Prix/m]                 | [Total]",
+          "Régulation               | Thermostat connecté (optionnel)          | 1            | [Prix]                   | [Total]",
+          "Main d'œuvre            | Dépose, installation, mise en service     | [Heures]     | [Taux horaire]           | [Total]"
+        ],
+        "nb_quantites_detectees": 2,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 4517.543399997521,
+      "tokens_output": 680,
+      "estimated_cost_eur": 0.00019936400000000002
+    },
+    {
+      "case_id": "TXT-012",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Placo_isolation",
+      "devis_reference_id": "DEVIS_012",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage/préparation** : Nettoyage et préparation des surfaces (si nécessaire).",
+          "**Isolation thermique** :",
+          "Pose d’isolant entre chevrons (laine minérale ou équivalent, λ ≤ 0,035 W/m.K).",
+          "Épaisseur adaptée à la réglementation (ex. 200 mm pour RT 2020).",
+          "**Doublage des murs** :",
+          "Pose de plaques de plâtre hydrofuges (BA13H) dans la salle d’eau (zone humide).",
+          "Pose de plaques standard (BA13) pour le reste.",
+          "**Traitement des joints** : Rebouchage et lissage des joints (enduit + bande à joint).",
+          "**Finitions** : Peinture (1 couche primaire + 2 couches finition, couleur au choix)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Détails**                          | **Quantité**       | **Unité**",
+          "--------------------------|--------------------------------------|--------------------|-----------",
+          "**Isolation**            | Laine minérale (λ ≤ 0,035)           | 80                 | m²",
+          "**Plaques hydrofuges**   | BA13H (1,2 x 0,9 m)                  | 30                 | m²",
+          "**Plaques standard**     | BA13 (1,2 x 0,9 m)                   | 50                 | m²",
+          "**Ossature métallique**  | Rails + montants (48 mm)             | 120                | ml",
+          "**Fixations**            | Vis à placo, chevilles, etc.         | 1                  | lot",
+          "**Enduit de jointoiement** | Enduit + bande à joint               | 5                  | kg",
+          "**Peinture**             | 1 primaire + 2 finitions (ex. RAL)  | 10                 | L",
+          "**Accessoires**          | Profilés d’angle, etc.               | 1                  | lot"
+        ],
+        "nb_quantites_detectees": 3,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5821.538699965458,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023248400000000003
+    },
+    {
+      "case_id": "TXT-013",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Toiture",
+      "devis_reference_id": "DEVIS_013",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage et évacuation** :",
+          "Démontage de l'ancienne toiture (tuiles, liteaux, voliges).",
+          "Démontage partiel de la charpente (estimation 30% à remplacer).",
+          "Évacuation des gravats (2 à 3 benne de 10m³).",
+          "**Travaux de charpente** :",
+          "Remplacement des éléments de charpente endommagés (pannes, chevrons, fermes).",
+          "Traitement préventif contre les insectes xylophages et les champignons.",
+          "Renforcement des points critiques (faîtage, noues).",
+          "**Pose de l'écran sous toiture** :",
+          "Pose d'un écran de sous-toiture HPV (Haute Perméabilité à la Vapeur d'eau) en rouleaux.",
+          "Fixation conforme aux DTU (Document Technique Unifié).",
+          "**Pose de la couverture en tuiles mécaniques** :",
+          "Pose de tuiles mécaniques en terre cuite (format standard 30x40 cm, couleur [à préciser]).",
+          "Pose des liteaux et contre-liteaux.",
+          "Pose des accessoires (faitage, arêtiers, solins).",
+          "**Pose des gouttières en zinc** :",
+          "Pose de gouttières en zinc (diamètre 125 mm) avec chéneaux et descentes.",
+          "Fixation avec crochets en zinc et colliers de descente.",
+          "Pose des naissances et des joints étanches.",
+          "**Finition et étanchéité** :",
+          "Pose des closoirs ventilés au faîtage.",
+          "Vérification de l'étanchéité et des pentes.",
+          "Nettoyage du chantier et évacuation des déchets."
+        ],
+        "materiaux": [
+          "**Matériau**                     | **Quantité estimée** | **Unité** | **Prix unitaire (€ HT)** | **Prix total (€ HT)**",
+          "-----------------------------------|----------------------|-----------|--------------------------|-----------------------",
+          "Tuiles mécaniques terre cuite     | 1 200                | m²        | 35                       | 42 000",
+          "Liteaux et contre-liteaux         | 300                  | ml        | 2                        | 600",
+          "Écrans sous toiture HPV           | 100                  | m²        | 5                        | 500",
+          "Charpente (bois traité classe 2)  | 1,5                  | m³        | 800                      | 1 200",
+          "Traitement charpente              | 1                    | lot       | 150                      | 150",
+          "Gouttières zinc (125 mm)          | 30                   | ml        | 25                       | 750",
+          "Crochets et accessoires           | 1                    | lot       | 200                      | 200",
+          "Fournitures diverses (clous, vis)| 1                    | lot       | 100                      | 100",
+          "**Total Matériaux**               |                      |           |                          | **45 500**"
+        ],
+        "nb_quantites_detectees": 0,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 0,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune quantite chiffree detectee (m2, kg, unites, heures...).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5724.638300016522,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023303600000000005
+    },
+    {
+      "case_id": "TXT-014",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Menuiserie_interieure",
+      "devis_reference_id": "DEVIS_014",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Étude et conception** du dressing sur mesure (plan 3D inclus)",
+          "**Démontage** de l'ancien rangement (si nécessaire)",
+          "**Pose** de la structure en bois (mélaminé ou massif selon choix)",
+          "**Installation** des portes coulissantes miroir (2 ou 3 vantaux selon espace)",
+          "**Montage** des étagères ajustables (quantité à définir)",
+          "**Intégration** de tiroirs avec systèmes de fermeture douce",
+          "**Finitions** (ponçage, peinture ou vernis, pose de plinthes si nécessaire)",
+          "**Nettoyage** du chantier"
+        ],
+        "materiaux": [],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": false
+      },
+      "note_metier_heuristique_0_5": 2.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 0,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune section 'Materiaux necessaires' detectee.",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 6136.691999970935,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023202400000000003
+    },
+    {
+      "case_id": "TXT-015",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Cloture_portail",
+      "devis_reference_id": "DEVIS_015",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage du portail existant** (si applicable) : 1h",
+          "**Pose des piliers de support** (2 piliers en béton armé, dimensions adaptées) : 4h",
+          "**Installation du portail coulissant** (largeur 4m, aluminium) : 6h",
+          "**Pose du motoréducteur** (automatique, compatible avec digicode) : 3h",
+          "**Branchement électrique** (alimentation 230V, protection adaptée) : 2h",
+          "**Installation du digicode** (clavier étanche, programmation) : 1h",
+          "**Configuration des télécommandes** (2 émetteurs fournis) : 0,5h",
+          "**Tests et mise en service** : 1h",
+          "**Nettoyage du chantier** : 0,5h"
+        ],
+        "materiaux": [
+          "**Poste**                     | **Description**                                                                 | **Quantité** | **Prix unitaire (€)** | **Total (€)**",
+          "--------------------------------|---------------------------------------------------------------------------------|--------------|-----------------------|---------------",
+          "**Portail**                    | Portail coulissant aluminium, largeur 4m, hauteur 1,8m, finition anodisée      | 1            | 2 500                 | 2 500",
+          "**Motorisation**               | Kit motoréducteur 230V, force adaptée, compatible digicode, télécommandes incluses | 1            | 1 200                 | 1 200",
+          "**Digicode**                   | Clavier étanche, 4 à 10 codes programmables                                    | 1            | 150                   | 150",
+          "**Télécommandes supplémentaires** | 2 émetteurs supplémentaires (si besoin)                                        | 2            | 50                    | 100",
+          "**Piliers béton**              | 2 piliers préfabriqués (H 1,2m, L 0,3m, ép. 0,2m) ou coulage sur place         | 2            | 120                   | 240",
+          "**Fondations**                 | Béton dosé à 350 kg/m³ (0,5 m³) + armature (treillis soudé 6mm)                | 0,5 m³       | 100                   | 50",
+          "**Quincaillerie**              | Roulements, galets, rails, serrure électrique (si intégrée)                     | 1 kit        | 200                   | 200",
+          "**Câblage électrique**         | Câble 3G1,5 mm², gaine ICTA 20mm, boîtier de protection IP55                   | 20 m         | 1,50                  | 30",
+          "**Protection anti-corrosion**  | Peinture antirouille pour piliers (si non galvanisés)                          | 1            | 30                    | 30",
+          "**Main d'œuvre**               | Tarif horaire (incluant déplacement dans un rayon de 50 km)                    | 18h          | 60                    | 1 080"
+        ],
+        "nb_quantites_detectees": 13,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 7265.019099984784,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.0002323
+    },
+    {
+      "case_id": "TXT-016",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Assainissement",
+      "devis_reference_id": "DEVIS_016",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démolition et évacuation** :",
+          "Démolition du système d’assainissement existant (fosse, canalisations, etc.).",
+          "Évacuation des matériaux de démolition (déchetterie agréée).",
+          "**Terrassement** :",
+          "Fouille pour la fosse (dimensions : ~3,5 m x 2 m x 1,5 m).",
+          "Fouille pour le réseau d’épandage (longueur : ~20 m, profondeur : 0,8 m).",
+          "Compactage du fond de fouille et préparation du lit de pose.",
+          "**Pose de la fosse toutes eaux 3000 L** :",
+          "Fourniture et pose d’une fosse en béton ou polyéthylène (marque : [ex. SOTRALENTZ, PRESTO]).",
+          "Raccordement des canalisations d’entrée/sortie (DN 100 ou 150).",
+          "Mise en place des regards de visite.",
+          "**Réseau d’épandage** :",
+          "Pose de drains en PVC perforé (DN 100, longueur : 20 m).",
+          "Remplissage avec gravier drainant (épaisseur : 20 cm).",
+          "Pose de géotextile pour éviter l’envasement.",
+          "**Raccordement et mise en service** :",
+          "Raccordement au réseau existant (si applicable).",
+          "Test d’étanchéité et mise en eau.",
+          "Remise en état du terrain (régalage, ensemencement)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Description**                          | **Quantité**       | **Prix unitaire (€)** | **Prix total (€)**",
+          "--------------------------|------------------------------------------|--------------------|-----------------------|--------------------",
+          "Fosse toutes eaux        | 3000 L, béton ou polyéthylène            | 1                  | 1 200 – 1 800         | 1 200 – 1 800",
+          "Drains d’épandage        | PVC perforé DN 100, longueur 20 m        | 20 m               | 5 – 8                 | 100 – 160",
+          "Graviers drainants       | Granulométrie 10/20 mm                   | 10 m³              | 30 – 50               | 300 – 500",
+          "Géotextile               | Rouleau 2 m x 50 m                       | 1                  | 50 – 80               | 50 – 80",
+          "Regards de visite        | PVC DN 100                               | 2                  | 30 – 60               | 60 – 120",
+          "Canalisations           | PVC DN 100 ou 150, longueur 10 m         | 10 m               | 5 – 10                | 50 – 100",
+          "**Total matériaux**      |                                        |                    |                       | **1 760 – 2 760**"
+        ],
+        "nb_quantites_detectees": 2,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5539.462900022045,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023248400000000003
+    },
+    {
+      "case_id": "TXT-017",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Cuisine",
+      "devis_reference_id": "DEVIS_017",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage et évacuation** des anciens meubles et équipements (si nécessaire).",
+          "**Pose de meubles bas et hauts** (dimensions à confirmer selon le projet).",
+          "**Pose d’un plan de travail en quartz** (épaisseur 3 cm, finition polie).",
+          "**Pose d’une crédence en carrelage** (hauteur 60 cm, pose collée).",
+          "**Raccordement électrique** pour électroménager encastrable (four, plaques, lave-vaisselle, etc.).",
+          "**Vérification et mise aux normes** des installations électriques et de plomberie (si nécessaire)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Description**                                                                 | **Quantité estimée**",
+          "--------------------------|---------------------------------------------------------------------------------|----------------------",
+          "**Meubles bas**          | Meuble sous évier, meuble de rangement, tiroirs (dimensions à adapter).         | 4 à 6 modules",
+          "**Meubles hauts**        | Étagères ou armoires murales (hauteur 80 cm à 120 cm).                          | 3 à 5 modules",
+          "**Plan de travail**      | Quartz (épaisseur 3 cm, couleur à définir).                                    | 1 (longueur ~3 m)",
+          "**Crédence**             | Carrelage (format 30x60 cm ou 60x60 cm, couleur à définir).                     | ~10 m²",
+          "**Électroménager**       | Four, plaques de cuisson, lave-vaisselle (si non fournis par le client).        | 3 à 4 appareils",
+          "**Colle et joints**      | Colle à carrelage, joint silicone (couleur à définir).                          | 5 kg / 1 tube",
+          "**Équipements électriques** | Câbles, gaines ICTA, prises renforcées, interrupteurs différentiels (si mise aux normes). | Selon diagnostic"
+        ],
+        "nb_quantites_detectees": 6,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5018.350700032897,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023312799999999998
+    },
+    {
+      "case_id": "TXT-018",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Traitement_humidite",
+      "devis_reference_id": "DEVIS_018",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Prestation**                          | **Détails**",
+          "-----------------------------------------|-----------------------------------------------------------------------------",
+          "**Diagnostic préalable**                | Analyse des causes d’humidité (remontées capillaires, infiltrations, etc.).",
+          "**Préparation des surfaces**            | Nettoyage, brossage, rebouchage des fissures et trous.",
+          "**Injection de résine hydrofuge**       | Application sur murs enterrés (hauteur : ~2 m) pour créer une barrière étanche.",
+          "**Pose d’un cuvelage**                  | Revêtement étanche (type membrane bitumineuse ou enduit ciment hydrofuge).",
+          "**Installation ventilation mécanique**  | Mise en place d’un système de ventilation (VMC simple flux ou déshumidificateur).",
+          "**Contrôle final**                      | Test d’étanchéité et vérification du bon fonctionnement."
+        ],
+        "materiaux": [
+          "**Matériau**                     | **Quantité estimée** | **Unité** | **Remarques**",
+          "----------------------------------|----------------------|-----------|----------------------------------------",
+          "Résine hydrofuge (polyuréthane)  | 10–15                | kg        | Selon porosité des murs.",
+          "Enduit hydrofuge (ciment)        | 200–250              | kg        | Pour cuvelage (épaisseur : 2–3 mm).",
+          "Membrane bitumineuse (si applicable) | 40–50            | m²        | Alternative à l’enduit.",
+          "Ventilation mécanique (VMC)      | 1                    | unité     | Débit adapté à 35 m² (ex. 150 m³/h).",
+          "Fixations (chevilles, profilés)  | 50–100               | unités    | Pour fixation membrane/VMC.",
+          "Produits de rebouchage (mortier) | 20–30                | kg        | Fissures et trous."
+        ],
+        "nb_quantites_detectees": 5,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5773.08010001434,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.0002323
+    },
+    {
+      "case_id": "TXT-019",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Amenagement_exterieur",
+      "devis_reference_id": "DEVIS_019",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage et évacuation** (si nécessaire) de l’ancien carport (forfait).",
+          "**Préparation du support** : Nettoyage et vérification de la dalle béton existante.",
+          "**Traitement préventif** du bois (autoclave classe 3 ou 4 selon exposition).",
+          "**Montage de la structure** :",
+          "Pose des poteaux (4 ou 6 selon configuration) ancrés dans la dalle.",
+          "Assemblage des poutres et pannes.",
+          "Fixation des liteaux pour support bac acier.",
+          "**Pose de la toiture** :",
+          "Découpe et pose du bac acier (ondulé ou trapézoïdal, épaisseur 0,5 à 0,7 mm).",
+          "Étanchéité des joints (ruban butyle ou mousse polyuréthane).",
+          "Pose des accessoires (faîtière, closoirs, gouttières si option).",
+          "**Finition** :",
+          "Pose des habillages latéraux (optionnel : persiennes, panneaux bois).",
+          "Traitement des coupes et angles."
+        ],
+        "materiaux": [
+          "**Poste**               | **Détails**                                                                 | **Quantité**       | **Unité**",
+          "--------------------------|-----------------------------------------------------------------------------|--------------------|-----------",
+          "**Structure bois**       | Poteaux 10x10 cm (hauteur 2,5 à 3 m)                                        | 4 à 6              | u",
+          "| Poutres principales (10x15 cm)                                              | 4                  | u",
+          "| Pannes (5x10 cm)                                                            | 10                 | u",
+          "| Liteaux (3x5 cm)                                                            | 30                 | u",
+          "**Fixations**            | Équerres métalliques galvanisées                                            | 20                 | u",
+          "| Vis inox (pour bois et bac acier)                                           | 500                | u",
+          "| Chevilles à expansion (pour dalle béton)                                    | 20                 | u",
+          "**Toiture bac acier**    | Bac acier 6x5 m (ondulé ou trapézoïdal, épaisseur 0,5 mm)                   | 30                 | m²",
+          "**Accessoires**          | Faîtière + closoirs                                                         | 1                  | jeu",
+          "| Ruban butyle ou mousse polyuréthane (étanchéité)                            | 10                 | m",
+          "| Gouttières (optionnel)                                                      | 6                  | m",
+          "**Traitement bois**      | Produit autoclave (classe 3 ou 4)                                           | 20                 | L",
+          "**Évacuation déchets**   | Sacs ou benne (forfait)                                                     | 1                  | forfait"
+        ],
+        "nb_quantites_detectees": 0,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 2.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 0,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune quantite chiffree detectee (m2, kg, unites, heures...).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5466.57290001167,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.000231564
+    },
+    {
+      "case_id": "TXT-020",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Climatisation",
+      "devis_reference_id": "DEVIS_020",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Prestation** | **Description**",
+          "----------------|----------------",
+          "**Étude technique** | Analyse des besoins thermiques, choix des emplacements des unités intérieures et extérieures, vérification de la compatibilité électrique.",
+          "**Installation des unités intérieures** | Pose de 3 unités murales (salon, chambre 1, chambre 2) avec fixation, raccordement frigorifique et électrique.",
+          "**Installation de l'unité extérieure** | Pose de l'unité extérieure (jardin ou terrasse), fixation sur support adapté, raccordement frigorifique et électrique.",
+          "**Raccordement frigorifique** | Pose des liaisons frigorifiques (cuivre) entre unités intérieures et extérieures, isolation des tuyaux.",
+          "**Raccordement électrique** | Mise en place des câbles électriques, disjoncteur dédié, raccordement au tableau électrique.",
+          "**Mise en service** | Vérification des raccordements, purge du circuit frigorifique, test d'étanchéité, mise en marche et réglage des paramètres.",
+          "**Nettoyage et finitions** | Nettoyage des zones de travail, vérification de l'étanchéité des murs, remise en état des lieux."
+        ],
+        "materiaux": [
+          "**Matériel** | **Quantité** | **Description**",
+          "--------------|-------------|----------------",
+          "**Unité extérieure** | 1 | Climatiseur réversible multi-split (puissance adaptée à 110 m², ex. 12-14 kW).",
+          "**Unités intérieures** | 3 | Climatiseurs muraux (puissance adaptée aux pièces, ex. 3-5 kW par unité).",
+          "**Liaisons frigorifiques** | 1 jeu | Tuyaux en cuivre isolés (diamètre adapté à la puissance), longueur estimée à 20-25 m.",
+          "**Câbles électriques** | 1 jeu | Câbles de section adaptée (ex. 3x2,5 mm² pour l'alimentation électrique).",
+          "**Supports muraux** | 3 | Fixations pour unités intérieures (incluses avec les unités).",
+          "**Support extérieur** | 1 | Support en acier galvanisé pour unité extérieure (si non fourni).",
+          "**Isolation des tuyaux** | 1 jeu | Manchons isolants en mousse élastomère (épaisseur 13-19 mm).",
+          "**Disjoncteur différentiel** | 1 | Disjoncteur 30 mA dédié (si non existant).",
+          "**Accessoires** | 1 jeu | Manchons de raccordement, vannes d'arrêt, colliers de fixation, etc."
+        ],
+        "nb_quantites_detectees": 5,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5966.677899996284,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023322
+    },
+    {
+      "case_id": "TXT-021",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Placo_isolation",
+      "devis_reference_id": "DEVIS_021",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage** (si nécessaire) : 1h",
+          "**Tracé et pose de l'ossature métallique** (rails + montants) : 4h",
+          "**Découpe et pose des plaques de placo BA13** (2 faces) : 6h",
+          "**Pose de l'isolant phonique** (laine de roche 45mm) : 2h",
+          "**Pose de la porte (73cm)** : 3h",
+          "**Finition** (jointoiement, ponçage) : 4h",
+          "**Nettoyage du chantier** : 1h"
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité** | **Prix unitaire HT** | **Total HT**",
+          "----------------------------|-------------|----------------------|-------------",
+          "Plaque de placo BA13 (1,2x2,5m) | 10 plaques  | 12 €                 | 120 €",
+          "Ossature métallique (rails + montants) | 1 kit      | 80 €                 | 80 €",
+          "Isolant phonique (laine de roche 45mm) | 10 m²      | 5 €                  | 50 €",
+          "Porte intérieure (73cm, pré-peinte) | 1 porte    | 150 €                | 150 €",
+          "Vis, chevilles, ruban à joint | 1 kit       | 20 €                 | 20 €",
+          "Enduit de jointoiement     | 2 sacs      | 15 €                 | 30 €",
+          "**Total matériaux**        |             |                      | **450 €**"
+        ],
+        "nb_quantites_detectees": 10,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 5.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 4464.130100037437,
+      "tokens_output": 657,
+      "estimated_cost_eur": 0.000192372
+    },
+    {
+      "case_id": "TXT-022",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Peinture",
+      "devis_reference_id": "DEVIS_022",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Préparation des surfaces** :",
+          "Nettoyage et dépoussiérage des murs/plafonds.",
+          "Rebouchage des fissures et trous (si nécessaire).",
+          "Ponçage léger pour uniformiser.",
+          "**Protection de la pièce** :",
+          "Pose de bâches de protection au sol, fenêtres et meubles.",
+          "Masquage des plinthes, prises et interrupteurs.",
+          "**Application des couches** :",
+          "**1 sous-couche** (primaire d’accroche).",
+          "**2 couches de finition** (peinture acrylique mate ou satinée blanche)."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité** | **Unité** | **Remarques**",
+          "----------------------------|-------------|-----------|-----------------------------------",
+          "Peinture blanche (sous-couche) | 1           | Litre     | Rendement : ~10 m²/L",
+          "Peinture blanche (finition)    | 2           | Litres    | Rendement : ~10 m²/L",
+          "Primaire d’accroche            | 1           | Litre     | Selon support (ex. : Tiefgrund)",
+          "Ruban de masquage              | 1           | Rouleau   | Largeur : 2,5 cm",
+          "Bâche de protection            | 2           | m²        | Épaisseur : 30 µm",
+          "Enduit de rebouchage           | 0,5         | kg        | Pour petites réparations",
+          "Papier de verre (grain 120)    | 1           | Feuille   | Pour ponçage"
+        ],
+        "nb_quantites_detectees": 11,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5496.28219997976,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023184
+    },
+    {
+      "case_id": "TXT-023",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Toiture",
+      "devis_reference_id": "DEVIS_023",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage** du solin en zinc existant dégradé.",
+          "**Nettoyage** et préparation de la surface (brique et toiture).",
+          "**Pose d'un nouveau solin en zinc** (épaisseur 0,65 mm, qualité standard).",
+          "**Étanchéité complémentaire** de la toiture autour de la cheminée :",
+          "Application d'un mastic d'étanchéité (type polyuréthane ou silicone).",
+          "Pose d'une bande d'étanchéité auto-adhésive (si nécessaire).",
+          "**Vérification** de l'étanchéité et des finitions."
+        ],
+        "materiaux": [
+          "**Matériau**                     | **Quantité estimée** | **Prix unitaire (€)** | **Prix total (€)**",
+          "-----------------------------------|----------------------|-----------------------|--------------------",
+          "Solin en zinc (0,65 mm)           | 5 à 8 mètres linéaires | 25 à 40 €/m           | 125 à 320 €",
+          "Mastic d'étanchéité (polyuréthane)| 1 tube (310 ml)      | 15 à 25 €             | 15 à 25 €",
+          "Bande d'étanchéité auto-adhésive  | 2 à 3 mètres         | 10 à 20 €/m           | 20 à 60 €",
+          "Vis inox (pour fixation)          | 20 à 30 unités       | 0,20 à 0,50 €/unité   | 4 à 15 €",
+          "Primaire d'accrochage (si besoin) | 1 pot (500 ml)       | 20 à 40 €             | 20 à 40 €",
+          "**Total matériaux**               |                      |                       | **184 à 460 €**"
+        ],
+        "nb_quantites_detectees": 4,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5064.658499963116,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.000231564
+    },
+    {
+      "case_id": "TXT-024",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Toiture",
+      "devis_reference_id": "DEVIS_024",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Prix unitaire (€)** | **Prix total (€)**",
+          "----------------------------|----------------------|-----------------------|--------------------",
+          "Écran sous-toiture HPV     | 100 m²               | 2,50                  | 250,00",
+          "Liteaux (25x38 mm)         | 300 m                | 1,20                  | 360,00",
+          "Contre-liteaux (25x50 mm)  | 200 m                | 1,50                  | 300,00",
+          "Tuiles neuves (modèle identique) | 50 pièces       | 12,00                 | 600,00",
+          "Clous et fixations         | 1 lot                | 50,00                 | 50,00",
+          "**Total matériaux**        |                      |                       | **1 560,00**"
+        ],
+        "nb_quantites_detectees": 8,
+        "section_prestations_trouvee": false,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 0,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune section 'Prestations a realiser' detectee.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5965.439399995375,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.000231472
+    },
+    {
+      "case_id": "TXT-025",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Isolation",
+      "devis_reference_id": "DEVIS_025",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Préparation du support** :",
+          "Nettoyage haute pression de la façade (brique + enduit existant).",
+          "Réparation des fissures et imperfections (rebouchage à la colle à carrelage ou mortier de réparation).",
+          "Pose d’un **profilé de départ** en aluminium (pour ancrage et étanchéité).",
+          "**Pose de l’isolant** :",
+          "Collage de **panneaux de polystyrène expansé (PSE) haute densité** (λ = 0,032 W/m.K, épaisseur 14 cm).",
+          "Fixation mécanique complémentaire avec **chevilles à rosace** (6 fixations/m²).",
+          "Traitement des joints entre panneaux (mousse polyuréthane ou bande adhésive).",
+          "**Pose du système d’enduit mince** :",
+          "Application d’une **armature en fibre de verre** (treillis 160 g/m²) noyée dans un **mortier colle** (épaisseur 4-5 mm).",
+          "Application d’une **sous-couche d’accrochage** (primer).",
+          "Pose d’un **enduit mince taloché** (2 couches : 6 mm + 4 mm) en finition lissée ou grattée (teinte au choix).",
+          "**Finition** :",
+          "Protection des angles avec **profilés en aluminium** (angles sortants/rentrants).",
+          "Nettoyage du chantier et évacuation des déchets (tri sélectif)."
+        ],
+        "materiaux": [
+          "**Poste**               | **Désignation**                          | **Quantité**       | **Unité** | **Prix unitaire (€)** | **Total (€ HT)**",
+          "--------------------------|------------------------------------------|--------------------|-----------|-----------------------|------------------",
+          "**Isolant**              | Panneaux PSE haute densité (14 cm)       | 120                | m²        | 12,50                 | 1 500,00",
+          "**Fixations**            | Chevilles à rosace (6/m²)                | 720                | u         | 0,35                  | 252,00",
+          "**Armature**             | Treillis fibre de verre (160 g/m²)       | 120                | m²        | 1,80                  | 216,00",
+          "**Mortier colle**        | Mortier colle pour PSE (sac 25 kg)       | 15                 | sac       | 18,00                 | 270,00",
+          "**Sous-couche**          | Primer d’accrochage                      | 3                  | L         | 12,00                 | 36,00",
+          "**Enduit mince**         | Enduit taloché (2 couches)               | 120                | m²        | 22,00                 | 2 640,00",
+          "**Profilés**             | Profilés aluminium (départ + angles)      | 30                 | ml        | 8,50                  | 255,00",
+          "**Mousse PU**            | Jointoiement panneaux                    | 2                  | cartouche | 15,00                 | 30,00"
+        ],
+        "nb_quantites_detectees": 2,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 4.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5643.005800026003,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023174800000000002
+    },
+    {
+      "case_id": "TXT-026",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Maconnerie",
+      "devis_reference_id": "DEVIS_026",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Préparation du chantier** :",
+          "Nettoyage et nivellement de la zone d'intervention.",
+          "Vérification de la fondation (épaisseur, alignement, résistance).",
+          "Pose d'un lit de mortier (épaisseur 1 cm) pour la première rangée de briques.",
+          "**Élévation du mur en briques creuses** :",
+          "Pose des briques creuses (20x20x50 cm) avec jointoiement (épaisseur 1 cm).",
+          "Respect des normes d'alignement et de verticalité (contrôle au niveau à bulle).",
+          "Intégration d'un **linteau préfabriqué en béton armé** (dimensions adaptées à la baie vitrée).",
+          "Renforts éventuels (chaînages verticaux/horizontaux) selon les contraintes structurelles.",
+          "**Finition** :",
+          "Jointoiement des briques (mortier ou enduit de finition).",
+          "Nettoyage des résidus de mortier.",
+          "**Sécurité** :",
+          "Mise en place de protections collectives (filets, garde-corps) si nécessaire."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité** | **Détails**",
+          "----------------------------|----------------------|-----------|--------------------------------------",
+          "Briques creuses (20x20x50) | 50 à 70              | Unité     | Selon hauteur du mur (ex. 2,5 m).",
+          "Mortier (dosage 1:3)       | 0,1 à 0,15           | m³        | Pour joints et lit de pose.",
+          "Linteau préfabriqué        | 1                    | Unité     | Dimensions : L = largeur baie + 20 cm.",
+          "Armature (chaînage)        | 5 à 10               | mètre     | Tiges ferraillage (Ø 6-8 mm).",
+          "Enduit de jointoiement     | 5 à 10               | kg        | Couleur au choix (optionnel).",
+          "Protection temporaire      | 1                    | Forfait   | Filets de sécurité (si besoin)."
+        ],
+        "nb_quantites_detectees": 2,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 3.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5898.475199996028,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023101200000000003
+    },
+    {
+      "case_id": "TXT-027",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Toiture",
+      "devis_reference_id": "DEVIS_027",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Démontage** de l’ancienne étanchéité (si nécessaire) et nettoyage de la surface.",
+          "**Pose d’une membrane bitumineuse soudée** (type SBS ou APP) en 2 couches croisées.",
+          "**Relevés d’étanchéité** en zinc (épaisseur 8/10 mm) sur pignon brique, avec fixation mécanique et soudure.",
+          "**Traitement des points singuliers** (angles, noues, chéneaux).",
+          "**Contrôle d’étanchéité** par test à l’eau (si applicable)."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité** | **Prix unitaire HT** | **Prix total HT**",
+          "----------------------------|----------------------|-----------|----------------------|-------------------",
+          "Membrane bitumineuse SBS   | 50                   | m²        | [X] €                | [X] €",
+          "Primaire d’accrochage      | 5                    | L         | [X] €                | [X] €",
+          "Colle bitumineuse          | 2                    | kg        | [X] €                | [X] €",
+          "Zinc (8/10 mm)             | 15                   | m²        | [X] €                | [X] €",
+          "Fixations mécaniques       | 50                   | u         | [X] €                | [X] €",
+          "Soudure (fil/baguettes)    | 2                    | kg        | [X] €                | [X] €",
+          "**Total Matériaux**        |                      |           |                      | **[X] €**"
+        ],
+        "nb_quantites_detectees": 0,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 2.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 0,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune quantite chiffree detectee (m2, kg, unites, heures...).",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse."
+      ],
+      "latency_ms": 4510.882999980822,
+      "tokens_output": 678,
+      "estimated_cost_eur": 0.00019798399999999998
+    },
+    {
+      "case_id": "TXT-028",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Demolition_gros_oeuvre",
+      "devis_reference_id": "DEVIS_028",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Étude préalable** : Vérification de la nature porteuse du mur (diagnostic structurel si nécessaire).",
+          "**Pose d'étais métalliques** : Installation temporaire pour soutenir la structure avant démolition.",
+          "**Démolition du mur porteur** : Dépose contrôlée des briques avec outils adaptés (brise-béton, masse).",
+          "**Évacuation des gravats** : Chargement et transport vers une décharge agréée (distance estimée : [X] km).",
+          "**Nettoyage du chantier** : Évacuation des résidus et dépoussiérage."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité**",
+          "----------------------------|----------------------|-----------",
+          "Étais métalliques (type H) | 4 à 6                | Unité",
+          "Planches de bois (pour calage) | 10 à 15          | m²",
+          "Sacs de gravats            | 20 à 30              | Unité",
+          "Film de protection         | 50                  | m²"
+        ],
+        "nb_quantites_detectees": 3,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 5.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 5013.9972000033595,
+      "tokens_output": 779,
+      "estimated_cost_eur": 0.000225584
+    },
+    {
+      "case_id": "TXT-029",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Plomberie_generale",
+      "devis_reference_id": "DEVIS_029",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [],
+        "materiaux": [
+          "**Matériel**                          | **Quantité estimée** | **Unité** | **Prix unitaire HT** | **Prix total HT**",
+          "---------------------------------------|----------------------|-----------|----------------------|-------------------",
+          "**Tubes PER**                         |                      |           |                      |",
+          "- Tube PER 16x2.0 mm (eau froide)     | 50                   | ml        | 0,45 €               | 22,50 €",
+          "- Tube PER 16x2.2 mm (eau chaude)     | 50                   | ml        | 0,50 €               | 25,00 €",
+          "**Collecteurs**                       |                      |           |                      |",
+          "- Collecteur eau froide (1\" ou 3/4\")  | 2                    | unité     | 35,00 €              | 70,00 €",
+          "- Collecteur eau chaude (1\" ou 3/4\")  | 2                    | unité     | 35,00 €              | 70,00 €",
+          "- Vannes d'arrêt (pour collecteurs)   | 4                    | unité     | 8,00 €               | 32,00 €",
+          "**Isolation**                         |                      |           |                      |"
+        ],
+        "nb_quantites_detectees": 2,
+        "section_prestations_trouvee": false,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 2.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 0,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune section 'Prestations a realiser' detectee.",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 5293.854399991687,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023138
+    },
+    {
+      "case_id": "TXT-030",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Terrassement",
+      "devis_reference_id": "DEVIS_030",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [
+          "**Décaissement** : Excavation manuelle/mécanisée sur 1 m de profondeur selon les plans.",
+          "**Évacuation des terres** : Chargement et transport des déblais vers une décharge agréée (distance estimée : [X] km).",
+          "**Préparation du fond de fouille** : Nivellement et compactage du sol pour recevoir les fondations.",
+          "**Géotextile** (si nécessaire) : Pose d’un film anti-contaminant entre le sol et le lit de gravier.",
+          "**Remblaiement partiel** : Remplissage avec gravier concassé (épaisseur : 20 cm) pour drainage."
+        ],
+        "materiaux": [
+          "**Matériau**               | **Quantité estimée** | **Unité** | **Prix unitaire HT** | **Total HT**",
+          "----------------------------|----------------------|-----------|----------------------|--------------",
+          "Gravier concassé 0/20      | 15                   | m³        | [Prix/m³]            | [Montant]",
+          "Géotextile (si applicable) | 50                   | m²        | [Prix/m²]            | [Montant]",
+          "**Total Matériaux**        |                      |           |                      | **[Montant]**"
+        ],
+        "nb_quantites_detectees": 1,
+        "section_prestations_trouvee": true,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 5.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 1,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 1,
+        "reponse_non_tronquee": 1
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON)."
+      ],
+      "latency_ms": 4717.243899998721,
+      "tokens_output": 687,
+      "estimated_cost_eur": 0.000200376
+    },
+    {
+      "case_id": "TXT-031",
+      "model_label": "Mistral Small",
+      "scorable": true,
+      "type_prestation": "Serrurerie_metallerie",
+      "devis_reference_id": "DEVIS_031",
+      "reference_structuree_disponible": false,
+      "json_parsability_score": 0,
+      "json_parsability_methode": "aucune",
+      "extraction": {
+        "prestations": [],
+        "materiaux": [
+          "**Poste**               | **Description**                                                                 | **Quantité estimée** | **Prix unitaire (€)** | **Prix total (€)**",
+          "--------------------------|---------------------------------------------------------------------------------|----------------------|-----------------------|--------------------",
+          "**Structure principale** | Profilé acier (ex. 40x40 mm ou 50x30 mm) pour poteaux et lisses.                | Selon longueur       | 25 – 40               | À calculer",
+          "**Thermolaquage**        | Revêtement noir (épaisseur 60-80 µm).                                           | 1 lot                | 15 – 25/m²            | À calculer",
+          "**Fixations**            | Équerres de fixation, vis inox, chevilles (selon support).                      | 1 lot                | 5 – 15                | À calculer",
+          "**Accessoires**          | Capuchons de finition, joints d’étanchéité (si nécessaire).                     | 1 lot                | 2 – 10                | À calculer",
+          "**Préparation**          | Primaire antirouille, peinture de retouche.                                     | 1 lot                | 10 – 20               | À calculer"
+        ],
+        "nb_quantites_detectees": 1,
+        "section_prestations_trouvee": false,
+        "section_materiaux_trouvee": true
+      },
+      "note_metier_heuristique_0_5": 2.0,
+      "note_metier_detail": {
+        "section_prestations_presente": 0,
+        "section_materiaux_presente": 1,
+        "quantites_chiffrees_presentes": 1,
+        "coherence_type_prestation": 0,
+        "reponse_non_tronquee": 0
+      },
+      "note_metier_est_une_validation_expert": false,
+      "ecarts": [
+        "Sortie non parseable en JSON (prompt systeme actuel produit du Markdown, pas du JSON).",
+        "Aucune section 'Prestations a realiser' detectee.",
+        "Le type de prestation attendu n'apparait pas explicitement dans la reponse.",
+        "Reponse tronquee : tokens_output=800 atteint la limite max_tokens=800 configuree dans benchmark_texte.py."
+      ],
+      "latency_ms": 7010.123900021426,
+      "tokens_output": 800,
+      "estimated_cost_eur": 0.00023174800000000002
+    }
+  ]
+}

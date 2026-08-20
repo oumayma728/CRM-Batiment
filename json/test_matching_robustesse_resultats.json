@@ -1,0 +1,372 @@
+[
+  {
+    "case_id": "TXT-001",
+    "type_prestation": "Carrelage",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 1,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-030",
+        "label_prestation": "Carrelage sol (pose incluse)",
+        "quantite_estimee": 18.0,
+        "prix_unitaire": 55.0,
+        "sous_total": 990.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Dépose de l'ancien carrelage et évacuation des gravats",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-002",
+    "type_prestation": "Menuiserie",
+    "success": true,
+    "nb_lignes_trouvees": 2,
+    "nb_lignes_non_trouvees": 0,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-009",
+        "label_prestation": "Remplacement fenêtre PVC double vitrage",
+        "quantite_estimee": 4.0,
+        "prix_unitaire": 520.0,
+        "sous_total": 2080.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": "BAT-014",
+        "label_prestation": "Volet roulant électrique",
+        "quantite_estimee": 4.0,
+        "prix_unitaire": 420.0,
+        "sous_total": 1680.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-003",
+    "type_prestation": "Ravalement",
+    "success": true,
+    "nb_lignes_trouvees": 2,
+    "nb_lignes_non_trouvees": 2,
+    "confiance_moyenne": 0.9,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-039",
+        "label_prestation": "Ravalement façade",
+        "quantite_estimee": 140.0,
+        "prix_unitaire": 72.0,
+        "sous_total": 10080.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": "BAT-028",
+        "label_prestation": "Nettoyage toiture",
+        "quantite_estimee": 140.0,
+        "prix_unitaire": 18.0,
+        "sous_total": 2520.0,
+        "matching_confidence": 0.8,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Traitement anti-mousse pour façade",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Application enduit gratté taloché",
+        "quantite_estimee": 140.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-005",
+    "type_prestation": "Peinture",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 2,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-029",
+        "label_prestation": "Peinture intérieure (murs et plafond)",
+        "quantite_estimee": 60.0,
+        "prix_unitaire": 29.0,
+        "sous_total": 1740.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Rebouchage de petites fissures",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Protection du mobilier",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-008",
+    "type_prestation": "Electricite",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 4,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-034",
+        "label_prestation": "Installation électrique complète",
+        "quantite_estimee": 28.0,
+        "prix_unitaire": 95.0,
+        "sous_total": 2660.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Mise aux normes du tableau électrique",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Ajout de prises",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Ajout d'éclairages LED",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Remplacement du disjoncteur différentiel",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-009",
+    "type_prestation": "Isolation",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 0,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-002",
+        "label_prestation": "Isolation des combles perdus",
+        "quantite_estimee": 100.0,
+        "prix_unitaire": 32.0,
+        "sous_total": 3200.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-011",
+    "type_prestation": "Chauffage",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 3,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-018",
+        "label_prestation": "Chaudière gaz condensation",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": 4800.0,
+        "sous_total": 4800.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Dépose de l'ancienne chaudière fioul",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Raccordement au réseau existant",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Mise en service",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-013",
+    "type_prestation": "Toiture",
+    "success": true,
+    "nb_lignes_trouvees": 2,
+    "nb_lignes_non_trouvees": 2,
+    "confiance_moyenne": 0.9,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-026",
+        "label_prestation": "Réfection toiture tuiles",
+        "quantite_estimee": 90.0,
+        "prix_unitaire": 140.0,
+        "sous_total": 12600.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": "BAT-027",
+        "label_prestation": "Traitement charpente",
+        "quantite_estimee": 90.0,
+        "prix_unitaire": 28.0,
+        "sous_total": 2520.0,
+        "matching_confidence": 0.8,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Pose écran sous toiture",
+        "quantite_estimee": 90.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Pose gouttières zinc",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-020",
+    "type_prestation": "Climatisation",
+    "success": true,
+    "nb_lignes_trouvees": 1,
+    "nb_lignes_non_trouvees": 1,
+    "confiance_moyenne": 1.0,
+    "lignes": [
+      {
+        "sku_catalogue": "BAT-020",
+        "label_prestation": "Climatisation multisplit",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": 4600.0,
+        "sous_total": 4600.0,
+        "matching_confidence": 1.0,
+        "non_trouve_dans_catalogue": false
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Mise en service et test d'étanchéité",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  },
+  {
+    "case_id": "TXT-030",
+    "type_prestation": "Terrassement",
+    "success": true,
+    "nb_lignes_trouvees": 0,
+    "nb_lignes_non_trouvees": 3,
+    "confiance_moyenne": null,
+    "lignes": [
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Terrassement pour fondations de maison individuelle",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Décaissement sur 1m de profondeur",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      },
+      {
+        "sku_catalogue": null,
+        "label_prestation": "Évacuation des terres",
+        "quantite_estimee": 1.0,
+        "prix_unitaire": null,
+        "sous_total": null,
+        "matching_confidence": 0.0,
+        "non_trouve_dans_catalogue": true
+      }
+    ]
+  }
+]

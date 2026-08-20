@@ -1,0 +1,146 @@
+[
+  {
+    "case_id": "TXT-001",
+    "success": true,
+    "provider": "mistral",
+    "model": "mistral-small-latest",
+    "fallback_niveau": 0,
+    "latency_ms": 2432.4417000170797,
+    "schema_valide": true,
+    "ecarts_schema": [],
+    "contenu": {
+      "prestations": [
+        "Dépose de l'ancien carrelage",
+        "Évacuation et gestion des gravats",
+        "Préparation du support (ragréage si nécessaire)",
+        "Pose du carrelage grès cérame 60x60 en pose droite",
+        "Jointoiement des carreaux",
+        "Nettoyage final des surfaces"
+      ],
+      "materiaux": [
+        {
+          "nom": "Carrelage grès cérame 60x60 (qualité standard)",
+          "quantite": 20,
+          "unite": "m2"
+        },
+        {
+          "nom": "Colle à carrelage (C2 selon norme EN 12004)",
+          "quantite": 150,
+          "unite": "kg"
+        },
+        {
+          "nom": "Joint de carrelage (largeur 2-3mm)",
+          "quantite": 10,
+          "unite": "kg"
+        },
+        {
+          "nom": "Primaire d'accrochage (si nécessaire)",
+          "quantite": 5,
+          "unite": "L"
+        },
+        {
+          "nom": "Gravats (évacuation incluse)",
+          "quantite": 1,
+          "unite": "forfait"
+        }
+      ],
+      "estimation_prix_total_eur": "2500-4000"
+    }
+  },
+  {
+    "case_id": "TXT-002",
+    "success": true,
+    "provider": "mistral",
+    "model": "mistral-small-latest",
+    "fallback_niveau": 0,
+    "latency_ms": 2754.922299995087,
+    "schema_valide": true,
+    "ecarts_schema": [],
+    "contenu": {
+      "prestations": [
+        "Dépose des 4 anciennes fenêtres bois (y compris vitrage et huisseries)",
+        "Pose de 4 nouvelles fenêtres PVC double vitrage (120x100cm) avec isolation renforcée",
+        "Installation de 4 volets roulants électriques (commande individuelle par fenêtre)",
+        "Calage, étanchéité et finitions (joints, peinture des montants si nécessaire)",
+        "Nettoyage du chantier et évacuation des gravats",
+        "Vérification du bon fonctionnement des volets roulants électriques"
+      ],
+      "materiaux": [
+        {
+          "nom": "Fenêtre PVC double vitrage 120x100cm (4 unités)",
+          "quantite": 4,
+          "unite": "unité"
+        },
+        {
+          "nom": "Volet roulant électrique avec moteur intégré (4 unités)",
+          "quantite": 4,
+          "unite": "unité"
+        },
+        {
+          "nom": "Kit d'étanchéité et joints de calage",
+          "quantite": 1,
+          "unite": "lot"
+        },
+        {
+          "nom": "Vis, chevilles et fixations spécifiques",
+          "quantite": 1,
+          "unite": "lot"
+        },
+        {
+          "nom": "Peinture pour retouches des montants (si nécessaire)",
+          "quantite": "à déterminer",
+          "unite": "lot"
+        }
+      ],
+      "estimation_prix_total_eur": "6000-9000"
+    }
+  },
+  {
+    "case_id": "TXT-003",
+    "success": true,
+    "provider": "mistral",
+    "model": "mistral-small-latest",
+    "fallback_niveau": 0,
+    "latency_ms": 2102.2349999984726,
+    "schema_valide": true,
+    "ecarts_schema": [],
+    "contenu": {
+      "prestations": [
+        "Nettoyage haute pression de la façade",
+        "Traitement anti-mousse",
+        "Application d'un enduit gratté taloché",
+        "Préparation des surfaces (rebouchage des fissures, traitement des joints)",
+        "Protection des menuiseries et éléments adjacents",
+        "Échafaudage et mise en sécurité du chantier"
+      ],
+      "materiaux": [
+        {
+          "nom": "Enduit gratté taloché (type RPE ou équivalent)",
+          "quantite": "140",
+          "unite": "m2"
+        },
+        {
+          "nom": "Produit anti-mousse (type algicide)",
+          "quantite": "5",
+          "unite": "L"
+        },
+        {
+          "nom": "Mortier de rebouchage (pour fissures)",
+          "quantite": "20",
+          "unite": "kg"
+        },
+        {
+          "nom": "Peinture d'accrochage (primer)",
+          "quantite": "10",
+          "unite": "L"
+        },
+        {
+          "nom": "Protection des menuiseries (bâches)",
+          "quantite": "10",
+          "unite": "m2"
+        }
+      ],
+      "estimation_prix_total_eur": "12000-18000"
+    }
+  }
+]

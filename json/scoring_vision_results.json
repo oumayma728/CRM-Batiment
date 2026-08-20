@@ -1,0 +1,1120 @@
+{
+  "summary": {
+    "nb_photos_total": 44,
+    "nb_scorables": 44,
+    "taux_parsabilite_json_moyen": 1.0,
+    "nb_surfaces_comparables": 3,
+    "ecart_surface_pct_moyen": 31.333333333333332,
+    "note_pertinence_materiaux_moyenne": 1.6159090909090907,
+    "avertissement": "note_pertinence_materiaux est une heuristique automatique, PAS une validation par un expert technico-commercial."
+  },
+  "cas": [
+    {
+      "nom_fichier": "1.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_PAS_UNE_SCENE_DE_CHANTIER",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage partiel et absence d'échelle de référence)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "optimaline"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4480.723200016655,
+      "estimated_cost_eur": 0.000282624
+    },
+    {
+      "nom_fichier": "10.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_RESERVE_EPI",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": 35,
+      "surface_estimee_m2_extraite": 35.0,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "membrane"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3390.5830000294372,
+      "estimated_cost_eur": 0.00036887400000000005
+    },
+    {
+      "nom_fichier": "11.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "RESERVE_MATERIEL_LIVRAISON",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "indéterminable sans dimension précise des panneaux",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'indéterminable sans dimension précise des panneaux' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.7,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "panneaux",
+          "isolants"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2531.9126000395045,
+      "estimated_cost_eur": 0.000279588
+    },
+    {
+      "nom_fichier": "12.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel et absence d'échelle de référence)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"incertain (cadrage partiel et absence d'échelle de référence)\" | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "charpente",
+          "toiture"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3876.4791000867262,
+      "estimated_cost_eur": 0.000286764
+    },
+    {
+      "nom_fichier": "13.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage partiel et absence de repères de taille)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage partiel et absence de repères de' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "toiture"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4386.209800024517,
+      "estimated_cost_eur": 0.000285246
+    },
+    {
+      "nom_fichier": "14.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_DETAIL",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage insuffisant pour estimer la surface totale couverte)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage insuffisant pour estimer la surf' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.2,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 4,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "tuiles"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4255.690500023775,
+      "estimated_cost_eur": 0.000291318
+    },
+    {
+      "nom_fichier": "15.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_ETAT_AVANT",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec confiance (élément isolé, pas de référence d'échelle ou de surface complète visible)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"impossible à déterminer avec confiance (élément isolé, pas de référence d'échell\" | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 0,
+        "mots_retrouves": []
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3036.2679000245407,
+      "estimated_cost_eur": 0.00028842
+    },
+    {
+      "nom_fichier": "16.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel et absence d'échelle de référence, estimation impossible sans vue complète ou mesure précise)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"incertain (cadrage partiel et absence d'échelle de référence, estimation impossi\" | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "toiture",
+          "tuiles"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3935.1076999446377,
+      "estimated_cost_eur": 0.00028345199999999996
+    },
+    {
+      "nom_fichier": "17.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_RESERVE_EPI",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage partiel et absence de repères de surface)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage partiel et absence de repères de' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 3,
+        "mots_reference_retrouves": 0,
+        "mots_retrouves": []
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4971.533600008115,
+      "estimated_cost_eur": 0.000289662
+    },
+    {
+      "nom_fichier": "18.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": {
+        "toiture_visible": "impossible à estimer avec précision (angle et cadrage insuffisants)",
+        "mur_maçonnerie": "impossible à estimer avec précision (hauteur et longueur non visibles en totalité)",
+        "lucarne": "impossible à estimer avec précision (taille non visible en entier)"
+      },
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "objet imbrique (plusieurs sous-surfaces) -- non conforme au schema attendu | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5228.07329997886,
+      "estimated_cost_eur": 0.000287592
+    },
+    {
+      "nom_fichier": "19.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_RESERVE_EPI",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage partiel et absence d'échelle de référence)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"incapable de déterminer avec précision (cadrage partiel et absence d'échelle de \" | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "echafaudage"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4488.994300016202,
+      "estimated_cost_eur": 0.000286902
+    },
+    {
+      "nom_fichier": "2.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_PAS_UNE_SCENE_DE_CHANTIER",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage insuffisant pour mesurer les dimensions exactes)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "fenetre",
+          "optimaline",
+          "outil"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5468.608400085941,
+      "estimated_cost_eur": 0.00028911000000000003
+    },
+    {
+      "nom_fichier": "20.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_SUJET_INSUFFISANT",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage insuffisant et angle de vue partiel)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "toiture"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2480.4936998989433,
+      "estimated_cost_eur": 0.00028069200000000003
+    },
+    {
+      "nom_fichier": "21.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_PAS_DE_SUJET_EXPLOITABLE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "non applicable (pas de surface constructible identifiable)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "debris"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2490.547199966386,
+      "estimated_cost_eur": 0.00027875999999999997
+    },
+    {
+      "nom_fichier": "22.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_HORS_SUJET",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertaine (environ 10 à 15 m² visibles, mais longueur totale non estimable sans référence de taille)",
+      "surface_estimee_m2_extraite": 12.5,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "ancien"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3030.311599955894,
+      "estimated_cost_eur": 0.00028717799999999997
+    },
+    {
+      "nom_fichier": "23.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "RESERVE_CADRAGE_LIMITE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel, impossible d'estimer la surface totale sans vue complète ou mesures)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"incertain (cadrage partiel, impossible d'estimer la surface totale sans vue comp\" | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2894.1662999568507,
+      "estimated_cost_eur": 0.00028842
+    },
+    {
+      "nom_fichier": "24.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "RESERVE_OUTILLAGE_PAS_UNE_PIECE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "non applicable (équipement, pas de surface à estimer)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'non applicable (équipement, pas de surface à estimer)' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.7,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "machine",
+          "briques"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 8003.873600042425,
+      "estimated_cost_eur": 0.000287316
+    },
+    {
+      "nom_fichier": "25.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel et absence de repères de mesure précis, estimation impossible sans référence de taille)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incertain (cadrage partiel et absence de repères de mesure précis, estimation im' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "briques"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5599.065000074916,
+      "estimated_cost_eur": 0.00037549800000000004
+    },
+    {
+      "nom_fichier": "26.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE_EXCELLENT",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": {
+        "façade_visible": 25,
+        "muret_visible": 8,
+        "note": "Estimation approximative basée sur la hauteur et la largeur visibles des éléments. À affiner avec des mesures précises sur site."
+      },
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "objet imbrique (plusieurs sous-surfaces) -- non conforme au schema attendu | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "facade",
+          "briques",
+          "echafaudage"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4270.765200024471,
+      "estimated_cost_eur": 0.000383364
+    },
+    {
+      "nom_fichier": "27.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage partiel et absence de repères complets)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incapable de déterminer avec précision (cadrage partiel et absence de repères co' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 3,
+        "mots_reference_retrouves": 0,
+        "mots_retrouves": []
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5785.672000027262,
+      "estimated_cost_eur": 0.00028690199999999996
+    },
+    {
+      "nom_fichier": "28.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "RESERVE_MATERIAU_SEUL",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (nombre de briques non visible en totalité, empilement partiel)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (nombre de briques non visible en totalit' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.2,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 4,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "briques"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3583.3389000035822,
+      "estimated_cost_eur": 0.000284832
+    },
+    {
+      "nom_fichier": "29.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE_EXCELLENT",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage partiel et absence de repères dimensionnels clairs)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage partiel et absence de repères di' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "briques"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2777.4532000767067,
+      "estimated_cost_eur": 0.00028759200000000003
+    },
+    {
+      "nom_fichier": "3.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": 120,
+      "surface_estimee_m2_extraite": 120.0,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "facade",
+          "exterieure",
+          "echafaudage"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2909.653599956073,
+      "estimated_cost_eur": 0.00036694200000000004
+    },
+    {
+      "nom_fichier": "30.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage partiel et absence de repères)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incapable de déterminer avec précision (cadrage partiel et absence de repères)' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 3.3,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 3,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "toiture",
+          "cheminee"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3567.6289000548422,
+      "estimated_cost_eur": 0.00028510799999999995
+    },
+    {
+      "nom_fichier": "31.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_VERANDA",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel, pas de repère de taille visible pour estimation précise)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incertain (cadrage partiel, pas de repère de taille visible pour estimation préc' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 4,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "facade",
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2375.0705000711605,
+      "estimated_cost_eur": 0.000282348
+    },
+    {
+      "nom_fichier": "32.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_VERANDA",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": {
+        "toiture_principal": "incertain (cadrage insuffisant pour estimation précise)",
+        "extension_vitrée": "incertain (manque de repères pour calculer la surface exacte, environ 4x2.5 m = 10 m² à titre indicatif)"
+      },
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "objet imbrique (plusieurs sous-surfaces) -- non conforme au schema attendu | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 4,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "veranda",
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3704.3578000739217,
+      "estimated_cost_eur": 0.00037605000000000006
+    },
+    {
+      "nom_fichier": "33.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_DETAIL",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec confiance (cadrage insuffisant et absence de repères)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incapable de déterminer avec confiance (cadrage insuffisant et absence de repère' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 0,
+        "mots_retrouves": []
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2646.334300050512,
+      "estimated_cost_eur": 0.0003651480000000001
+    },
+    {
+      "nom_fichier": "34.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": 2.5,
+      "surface_estimee_m2_extraite": 2.5,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 3.3,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 4,
+        "mots_retrouves": [
+          "briques",
+          "neuves",
+          "fenetre",
+          "mortier"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2515.8440000377595,
+      "estimated_cost_eur": 0.000281382
+    },
+    {
+      "nom_fichier": "35.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "environ 12 m² (estimation basée sur la taille apparente des éléments et de l'ouverture de porte)",
+      "surface_estimee_m2_extraite": 12.0,
+      "surface_reference_m2": 16.0,
+      "ecart_surface_pct": 25.0,
+      "surface_non_comparable_raison": "",
+      "note_pertinence_materiaux_0_5": 2.2,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 9,
+        "mots_reference_retrouves": 4,
+        "mots_retrouves": [
+          "cloison",
+          "briques",
+          "pierre",
+          "apparent"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4491.704799933359,
+      "estimated_cost_eur": 0.000341964
+    },
+    {
+      "nom_fichier": "36.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "environ 20 m² (estimation basée sur la perspective et la taille apparente des éléments comme le radiateur et la porte)",
+      "surface_estimee_m2_extraite": 20.0,
+      "surface_reference_m2": 31.5,
+      "ecart_surface_pct": 36.5,
+      "surface_non_comparable_raison": "",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 8,
+        "mots_reference_retrouves": 4,
+        "mots_retrouves": [
+          "radiateurs",
+          "fenetres",
+          "briques",
+          "betonniere"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5285.718200029805,
+      "estimated_cost_eur": 0.000339066
+    },
+    {
+      "nom_fichier": "37.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage partiel et absence d'échelle de référence)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 7.0,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"impossible à déterminer avec précision (cadrage partiel et absence d'échelle de \"",
+      "note_pertinence_materiaux_0_5": 1.9,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 8,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "briques",
+          "creuses",
+          "echelle"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3437.559899990447,
+      "estimated_cost_eur": 0.000333546
+    },
+    {
+      "nom_fichier": "38.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_RISQUE_GEOGRAPHIQUE_MODERE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage insuffisant pour estimer la surface totale)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 14.0,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incertain (cadrage insuffisant pour estimer la surface totale)'",
+      "note_pertinence_materiaux_0_5": 1.4,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "plastique",
+          "echelle"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2824.933100026101,
+      "estimated_cost_eur": 0.000331752
+    },
+    {
+      "nom_fichier": "39.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage partiel et absence de repères)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 18.5,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage partiel et absence de repères)'",
+      "note_pertinence_materiaux_0_5": 2.1,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "gaines",
+          "electriques",
+          "echelle"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 6696.705700014718,
+      "estimated_cost_eur": 0.00033796200000000003
+    },
+    {
+      "nom_fichier": "4.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_FACADE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "environ 3 à 4 m² (estimation basée sur la taille apparente de l'ouverture, sans mesure précise)",
+      "surface_estimee_m2_extraite": 3.5,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.4,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 2,
+        "mots_retrouves": [
+          "ouverture",
+          "fenetre"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 6257.266799919307,
+      "estimated_cost_eur": 0.00037687800000000003
+    },
+    {
+      "nom_fichier": "40.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "environ 12 à 15 m² (estimation basée sur la taille apparente des éléments et des outils présents, mais non mesurable précisément)",
+      "surface_estimee_m2_extraite": 13.5,
+      "surface_reference_m2": 20.0,
+      "ecart_surface_pct": 32.5,
+      "surface_non_comparable_raison": "",
+      "note_pertinence_materiaux_0_5": 3.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 8,
+        "mots_reference_retrouves": 6,
+        "mots_retrouves": [
+          "ossature",
+          "metallique",
+          "montants",
+          "plaques",
+          "platre",
+          "porte"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5173.663499997929,
+      "estimated_cost_eur": 0.000337686
+    },
+    {
+      "nom_fichier": "41.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "non applicable (élément linéaire, longueur estimée impossible sans référence de taille)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 15.0,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'non applicable (élément linéaire, longueur estimée impossible sans référence de '",
+      "note_pertinence_materiaux_0_5": 0.6,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 9,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "profile"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3335.4233000427485,
+      "estimated_cost_eur": 0.000327612
+    },
+    {
+      "nom_fichier": "42.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage insuffisant et absence de repères de taille)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 17.5,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incapable de déterminer avec précision (cadrage insuffisant et absence de repère'",
+      "note_pertinence_materiaux_0_5": 2.5,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 8,
+        "mots_reference_retrouves": 4,
+        "mots_retrouves": [
+          "peinture",
+          "pistolet",
+          "protection",
+          "plastique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 5290.790600003675,
+      "estimated_cost_eur": 0.00033133800000000003
+    },
+    {
+      "nom_fichier": "43.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_PEXELS_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage partiel, pas de repère de taille visible pour estimation précise)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 21.5,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incertain (cadrage partiel, pas de repère de taille visible pour estimation préc'",
+      "note_pertinence_materiaux_0_5": 2.1,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "rouleau",
+          "echelle",
+          "fenetre"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 3364.937499980442,
+      "estimated_cost_eur": 0.000332718
+    },
+    {
+      "nom_fichier": "44.jpg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_STOCK_UNSPLASH_LIBRE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertain (cadrage insuffisant pour estimer la surface exacte de l'ouverture ou des murs adjacents)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": 30.0,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : \"incertain (cadrage insuffisant pour estimer la surface exacte de l'ouverture ou \"",
+      "note_pertinence_materiaux_0_5": 2.1,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "brique",
+          "partiellement",
+          "etaiement"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 4825.741500011645,
+      "estimated_cost_eur": 0.000217212
+    },
+    {
+      "nom_fichier": "5.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_DETAIL",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incertaine (cadrage partiel, pas de repère de dimension visible)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incertaine (cadrage partiel, pas de repère de dimension visible)' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 0.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "visibles"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2079.061000025831,
+      "estimated_cost_eur": 0.000279174
+    },
+    {
+      "nom_fichier": "6.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": {
+        "toiture_ardesier": "Impossible à déterminer avec précision (cadrage partiel et absence d'échelle)",
+        "façade_brique": "Impossible à déterminer avec précision (cadrage partiel et absence d'échelle)"
+      },
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "objet imbrique (plusieurs sous-surfaces) -- non conforme au schema attendu | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 3.3,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 6,
+        "mots_reference_retrouves": 4,
+        "mots_retrouves": [
+          "toiture",
+          "tuiles",
+          "facade",
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2639.382699970156,
+      "estimated_cost_eur": 0.00029062799999999997
+    },
+    {
+      "nom_fichier": "7.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE_DETAIL",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à déterminer avec précision (cadrage insuffisant et absence de repères)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'impossible à déterminer avec précision (cadrage insuffisant et absence de repère' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 3.8,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 4,
+        "mots_reference_retrouves": 3,
+        "mots_retrouves": [
+          "autour",
+          "cheminee",
+          "brique"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 1984.2338999733329,
+      "estimated_cost_eur": 0.000280968
+    },
+    {
+      "nom_fichier": "8.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "VALIDE_TOITURE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "incapable de déterminer avec précision (cadrage partiel et absence de repères de surface)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "aucun nombre extractible dans : 'incapable de déterminer avec précision (cadrage partiel et absence de repères de' | aucun nombre extractible dans : 'Extérieur'",
+      "note_pertinence_materiaux_0_5": 1.0,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 5,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "tuiles"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 1943.254900048487,
+      "estimated_cost_eur": 0.000279036
+    },
+    {
+      "nom_fichier": "9.jpeg",
+      "model_label": "Mistral Pixtral",
+      "scorable": true,
+      "statut_reference": "REJETE_SUJET_MASQUE",
+      "json_parsability_score": 1,
+      "json_parsability_methode": "bloc_json_fence",
+      "surface_estimee_m2_brute": "impossible à estimer avec précision (angle de vue et détails manquants)",
+      "surface_estimee_m2_extraite": null,
+      "surface_reference_m2": null,
+      "ecart_surface_pct": null,
+      "surface_non_comparable_raison": "photo REJETEE (pas une scene de chantier standard) -- comparaison de surface non pertinente",
+      "note_pertinence_materiaux_0_5": 0.7,
+      "detail_pertinence_materiaux": {
+        "mots_reference_totaux": 7,
+        "mots_reference_retrouves": 1,
+        "mots_retrouves": [
+          "facade"
+        ]
+      },
+      "note_est_une_validation_expert": false,
+      "latency_ms": 2365.9406000515446,
+      "estimated_cost_eur": 0.00028055399999999997
+    }
+  ]
+}

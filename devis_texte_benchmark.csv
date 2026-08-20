@@ -1,0 +1,32 @@
+﻿id,description,type_prestation,devis_reference
+TXT-001,"Bonjour, je souhaite un devis pour la pose de carrelage dans une cuisine de 18m2. Carrelage grès cérame 60x60, pose droite, avec dépose de l'ancien carrelage et évacuation des gravats.",Carrelage,DEVIS_001
+TXT-002,"Remplacement de 4 fenêtres PVC double vitrage dans un appartement des années 70, dimensions standards 120x100cm, avec dépose des anciennes fenêtres bois et pose de nouvelles avec volets roulants électriques.",Menuiserie,DEVIS_002
+TXT-003,"Ravalement de façade complet sur maison individuelle de 140m2 de surface au sol, façade en parpaing, nettoyage haute pression, traitement anti-mousse, application enduit gratté taloché.",Ravalement,DEVIS_003
+TXT-004,"Installation d'une VMC simple flux hygroréglable dans un appartement T3 de 65m2, remplacement d'un système vétuste, avec bouches d'extraction cuisine, salle de bain et WC.",VMC,DEVIS_004
+TXT-005,"Peinture intérieure complète d'un salon-séjour de 30m2, murs et plafond, deux couches, teinte blanc cassé, avec rebouchage de petites fissures et protection du mobilier.",Peinture,DEVIS_005
+TXT-006,"Pose d'un parquet contrecollé chêne dans deux chambres, environ 25m2 au total, avec sous-couche isolante phonique et plinthes assorties.",Revetement_sol,DEVIS_006
+TXT-007,"Rénovation complète d'une salle de bain de 6m2 : dépose ancienne baignoire, pose douche italienne avec receveur extra-plat, carrelage mural et sol, robinetterie thermostatique.",Plomberie_salle_de_bain,DEVIS_007
+TXT-008,"Installation électrique complète d'un studio de 28m2, mise aux normes du tableau électrique, ajout de prises et éclairages LED, remplacement du disjoncteur différentiel.",Electricite,DEVIS_008
+TXT-009,"Isolation thermique des combles perdus d'une maison de 100m2, soufflage de laine de verre, épaisseur 30cm, avec pose d'un pare-vapeur.",Isolation,DEVIS_009
+TXT-010,"Construction d'une terrasse en bois exotique sur plots, environ 20m2, avec garde-corps aluminium et éclairage intégré dans les marches.",Amenagement_exterieur,DEVIS_010
+TXT-011,"Remplacement d'une chaudière gaz à condensation dans une maison individuelle, dépose de l'ancienne chaudière fioul, raccordement au réseau existant et mise en service.",Chauffage,DEVIS_011
+TXT-012,"Pose de placo dans des combles aménagés de 40m2, isolation entre chevrons, doublage avec plaques hydrofuges dans la partie salle d'eau.",Placo_isolation,DEVIS_012
+TXT-013,"Réfection complète de toiture en tuiles mécaniques sur maison de 90m2 au sol, remplacement de la charpente partiellement, pose d'écran sous toiture et gouttières zinc.",Toiture,DEVIS_013
+TXT-014,"Aménagement d'un dressing sur mesure dans une chambre de 12m2, structure bois avec portes coulissantes miroir, étagères et tiroirs.",Menuiserie_interieure,DEVIS_014
+TXT-015,"Installation d'un portail coulissant motorisé en aluminium, largeur 4m, avec digicode et télécommandes, sur allée existante en enrobé.",Cloture_portail,DEVIS_015
+TXT-016,"Remplacement du système d'assainissement individuel d'une maison, pose d'une fosse toutes eaux 3000L avec épandage, terrassement inclus.",Assainissement,DEVIS_016
+TXT-017,"Rénovation d'une cuisine ouverte de 15m2 : pose de meubles bas et hauts, plan de travail quartz, crédence carrelage, raccordement électroménager encastrable.",Cuisine,DEVIS_017
+TXT-018,"Traitement d'humidité par cuvelage dans une cave de 35m2, injection de résine hydrofuge sur murs enterrés, ventilation mécanique associée.",Traitement_humidite,DEVIS_018
+TXT-019,"Pose d'un carport bois double, dimensions 6x5m, toiture bac acier, sur dalle béton existante.",Amenagement_exterieur,DEVIS_019
+TXT-020,"Installation d'une climatisation réversible multi-split dans une maison de 110m2, 3 unités intérieures et une unité extérieure, avec mise en service et test d'étanchéité.",Climatisation,DEVIS_020
+TXT-021,Pose de cloison en placo BA13 sur ossature métallique avec isolant phonique et pose d'une porte de 73cm,Placo_isolation,DEVIS_021
+TXT-022,Mise en peinture blanche de 20m2 (sous-couche et deux couches de finition) après protection complète de la pièce.,Peinture,DEVIS_022
+TXT-023,Remplacement d'un solin en zinc dégradé autour d'une cheminée en brique et étanchéité de toiture,Toiture,DEVIS_023
+TXT-024,"Réfection de toiture : pose d'un écran sous-toiture, litonnage et remplacement de tuiles endommagées",Toiture,DEVIS_024
+TXT-025,Isolation thermique par l'extérieur (ITE) de 120m2 de façade en brique avec enduit mince taloché.,Isolation,DEVIS_025
+TXT-026,Élévation d'un mur en briques creuses pour extension avec linteau pour baie vitrée,Maconnerie,DEVIS_026
+TXT-027,Étanchéité de toit plat de véranda par membrane bitumineuse soudée et relevés en zinc sur pignon brique.,Toiture,DEVIS_027
+TXT-028,Démolition d'un mur porteur en brique avec pose d'étais métalliques et évacuation des gravats.,Demolition_gros_oeuvre,DEVIS_028
+TXT-029,Création d'un réseau de distribution d'eau froide et chaude en tube PER sous pieuvre pour une maison neuve.,Plomberie_generale,DEVIS_029
+TXT-030,"Terrassement pour fondations de maison individuelle, décaissement sur 1m de profondeur et évacuation des terres.",Terrassement,DEVIS_030
+TXT-031,Fourniture et pose d'un garde-corps rampant en acier thermolaqué noir avec lisses horizontales pour escalier intérieur.,Serrurerie_metallerie,DEVIS_031

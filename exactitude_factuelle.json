@@ -1,0 +1,642 @@
+[
+  {
+    "nom_fichier": "1.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "surface_m2": "120",
+      "ville": "namur",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "12cm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "10.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "mons",
+      "nom_client": "Simon Dumont",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kwh"
+      ],
+      "nb_specs_totales": 2,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "11.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "surface_m2": "120",
+      "ville": "liege",
+      "nom_client": "Maxime De Raet",
+      "specs_techniques": [
+        "14cm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": false,
+      "specs_trouvees": [
+        "14cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "12.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Martin",
+      "specs_techniques": [
+        "8kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 1,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "8kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "13.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "surface_m2": "80",
+      "ville": "liege",
+      "nom_client": "Xavier Dupont"
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true
+    }
+  },
+  {
+    "nom_fichier": "14.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "specs_techniques": [
+        "12cm"
+      ]
+    },
+    "verification": {
+      "specs_trouvees": [
+        "12cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "15.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Dupont",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 1,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "5kw",
+        "5kwh"
+      ],
+      "nb_specs_totales": 3,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "2.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "namur",
+      "nom_client": "Maxime Gérard"
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true
+    }
+  },
+  {
+    "nom_fichier": "3.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "bruxelles",
+      "nom_client": "Maxime De Raedt"
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": false
+    }
+  },
+  {
+    "nom_fichier": "4.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "12kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "5.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kw"
+      ],
+      "nb_specs_totales": 2,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "6.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Buffon",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ],
+      "nb_specs_totales": 3,
+      "nb_specs_trouvees": 3
+    }
+  },
+  {
+    "nom_fichier": "7.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "surface_m2": "100",
+      "ville": "liege",
+      "nom_client": "Jean Renard",
+      "specs_techniques": [
+        "300mm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "300mm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "8.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "surface_m2": "100",
+      "ville": "liege",
+      "nom_client": "Jean Jacques",
+      "specs_techniques": [
+        "300mm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "300mm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "9.mp3",
+    "model_label": "Mistral Voxtral",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Simon Renard",
+      "specs_techniques": [
+        "12kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "1.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "surface_m2": "120",
+      "ville": "namur",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "12cm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "10.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "mons",
+      "nom_client": "Simon Dumont",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kwh"
+      ],
+      "nb_specs_totales": 2,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "11.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "surface_m2": "120",
+      "ville": "liege",
+      "nom_client": "Maxime De Raet",
+      "specs_techniques": [
+        "14cm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": false,
+      "specs_trouvees": [
+        "14cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "12.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Martin",
+      "specs_techniques": [
+        "8kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 1,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "8kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "13.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "surface_m2": "80",
+      "ville": "liege",
+      "nom_client": "Xavier Dupont"
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true
+    }
+  },
+  {
+    "nom_fichier": "14.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "specs_techniques": [
+        "12cm"
+      ]
+    },
+    "verification": {
+      "specs_trouvees": [
+        "12cm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "15.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Dupont",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 1,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "5kw",
+        "5kwh"
+      ],
+      "nb_specs_totales": 3,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "2.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "namur",
+      "nom_client": "Maxime Gérard"
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true
+    }
+  },
+  {
+    "nom_fichier": "3.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "bruxelles",
+      "nom_client": "Maxime De Raedt"
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 1,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": false
+    }
+  },
+  {
+    "nom_fichier": "4.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "12kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "5.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Renard",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kw"
+      ],
+      "nb_specs_totales": 2,
+      "nb_specs_trouvees": 2
+    }
+  },
+  {
+    "nom_fichier": "6.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Maxime Buffon",
+      "specs_techniques": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "4.6kwc",
+        "5kw",
+        "5kwh"
+      ],
+      "nb_specs_totales": 3,
+      "nb_specs_trouvees": 3
+    }
+  },
+  {
+    "nom_fichier": "7.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "surface_m2": "100",
+      "ville": "liege",
+      "nom_client": "Jean Renard",
+      "specs_techniques": [
+        "300mm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": false,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 0
+    }
+  },
+  {
+    "nom_fichier": "8.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "surface_m2": "100",
+      "ville": "liege",
+      "nom_client": "Jean Jacques",
+      "specs_techniques": [
+        "300mm"
+      ]
+    },
+    "verification": {
+      "surface_correcte": true,
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "300mm"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  },
+  {
+    "nom_fichier": "9.mp3",
+    "model_label": "Whisper large-v3 (auto-heberge)",
+    "faits_reference": {
+      "ville": "liege",
+      "nom_client": "Simon Renard",
+      "specs_techniques": [
+        "12kw"
+      ]
+    },
+    "verification": {
+      "ville_correcte": true,
+      "nom_client_mots_trouves": 2,
+      "nom_client_mots_totaux": 2,
+      "nom_client_correct": true,
+      "specs_trouvees": [
+        "12kw"
+      ],
+      "nb_specs_totales": 1,
+      "nb_specs_trouvees": 1
+    }
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "photo": {
+    "success": true,
+    "provider": "mistral",
+    "model": "pixtral-12b-2409",
+    "fallback_niveau": 0,
+    "latency_ms": 2997.982000000775,
+    "schema_valide": true,
+    "ecarts_schema": [],
+    "contenu": {
+      "type_piece": "fenêtres et portes-fenêtres (menuiserie aluminium avec vitrage)",
+      "surface_estimee_m2": "incapable de déterminer avec précision (cadrage et absence d'échelle)",
+      "materiaux_identifies": [
+        "aluminium (profilé)",
+        "verre (vitrage, simple ou double vitrage non identifiable précisément)",
+        "joints d'étanchéité (visible sur certains éléments)",
+        "scellant ou mastic (présent autour des vitrages)",
+        "emballage carton (pour protection des menuiseries)"
+      ],
+      "reference_visible_oui_non": "oui"
+    }
+  },
+  "vocal": {
+    "success": true,
+    "provider": "mistral_voxtral",
+    "model": "voxtral-mini-latest",
+    "fallback_niveau": 0,
+    "latency_ms": 2010.443800012581,
+    "sortie_non_vide": true,
+    "transcription": "Nouveau de vie de voiture. Client Maxime Renard. Adresse rue École numéro 15. Namur. Surface, 120 m², dépose de l'enceinte couverture. Et repose nouvelle fourniture. Pose une isolation de toiture de 12 cm, pose un écran de sous-toiture, des litos et contre-litos. Fourniture et pose de la nouvelle couverture avec toutes les finitions, fêtage, rive et tonchité, nettoyage du chantier et évacuation des déchets. Prévoir un échauffaudage. Génère un devis professionnel détaillé avec le matériel, l'amendeur, la TVA et le total TVA comprise."
+  }
+}

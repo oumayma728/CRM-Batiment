@@ -1,0 +1,19 @@
+{
+  "hypothese_1_photos_floues_latence": {
+    "nb_cas_limitation": 10,
+    "nb_cas_principal": 34,
+    "latence_moyenne_limitation_ms": 3733.0,
+    "latence_moyenne_principal_ms": 3922.1,
+    "ecart_ms": -189.1,
+    "hypothese_confirmee": false
+  },
+  "hypothese_2_reference_absente_ecart": {
+    "nb_cas_avec_ecart_calculable": 3,
+    "nb_cas_total": 44,
+    "nb_avec_objet_reference": 3,
+    "nb_sans_objet_reference": 0,
+    "ecart_moyen_avec_objet_reference_pct": 31.3,
+    "ecart_moyen_sans_objet_reference_pct": null,
+    "avertissement_echantillon": "Seulement 3 cas au total ont un ecart calculable -- trop peu pour tirer une conclusion statistique fiable, meme si un ecart apparait entre les deux groupes."
+  }
+}

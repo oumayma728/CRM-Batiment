@@ -1,0 +1,2 @@
+﻿modele,nb_cas,score_precision_surface_0_5,nb_cas_surface_comparable,score_materials_0_5,latency_p50_ms,latency_p95_ms,cout_total_eur,cout_moyen_par_appel_eur
+Mistral Pixtral,44,3.43,3,1.62,3575.5,6186.5,0.013535,0.000308
