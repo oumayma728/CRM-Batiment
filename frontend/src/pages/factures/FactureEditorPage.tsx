@@ -21,7 +21,7 @@ interface FactureDraft {
   reference: string;
   statut: 'BROUILLON' | 'ENVOYEE' | 'PAYEE' | 'ANNULEE';
   date: string;
-  dateEcheance: string;
+  dateÉchéance: string;
   typeFacture: 'ACOMPTE' | 'FINALE';
   acomptePercent: number;
   tauxTVA: number;
@@ -101,7 +101,7 @@ function buildDraft(detail: FactureDetail): FactureDraft {
     reference: detail.reference,
     statut: detail.statut,
     date: toInputDate(detail.date),
-    dateEcheance: toInputDate(detail.dateEcheance),
+    dateÉchéance: toInputDate(detail.dateEcheance),
     typeFacture: detail.typeFacture ?? 'FINALE',
     acomptePercent: detail.acomptePercent ?? 30,
     tauxTVA: detail.tauxTVA ?? 20,
@@ -207,7 +207,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
       const payload = {
         reference: draft.reference,
         date: draft.date,
-        dateEcheance: draft.dateEcheance || null,
+        dateÉchéance: draft.dateÉchéance || null,
         typeFacture: draft.typeFacture,
         acomptePercent: draft.typeFacture === 'ACOMPTE' ? draft.acomptePercent : null,
         tauxTVA: draft.tauxTVA,
@@ -412,7 +412,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Societe</h2>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Société</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               value={draft.companyNom}
@@ -557,10 +557,10 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
           />
           <input
             type="date"
-            value={draft.dateEcheance}
+            value={draft.dateÉchéance}
             onChange={(event) =>
               setDraft((current) =>
-                current ? { ...current, dateEcheance: event.target.value } : current
+                current ? { ...current, dateÉchéance: event.target.value } : current
               )
             }
             disabled={locked}
@@ -886,43 +886,58 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
           onClose={() => setShowPrintPreview(false)}
           onPrint={() => window.print()}
         >
-          <article className="mx-auto w-full max-w-[900px] rounded-[24px] bg-white p-6 text-slate-800 shadow-[0_24px_60px_rgba(15,23,42,0.08)] print:rounded-none print:shadow-none">
-            <div className="grid gap-3 border-b border-slate-300 pb-3 md:grid-cols-[1fr_auto]">
+          <article className="mx-auto w-full max-w-[900px] rounded-lg bg-white p-7 text-slate-800 shadow-[0_24px_60px_rgba(15,23,42,0.08)] print:rounded-none print:shadow-none">
+            <div className="grid gap-6 border-b border-slate-200 pb-6 md:grid-cols-[1fr_320px]">
               <div>
-                <p className="text-xl font-bold text-slate-900">{draft.companyNom || 'Societe'}</p>
-                <p className="text-[13px] text-slate-700">{draft.companyAdresse}</p>
-                <p className="text-[13px] text-slate-700">{draft.companyEmail} {draft.companyTelephone}</p>
-                <p className="text-[12px] text-slate-600">SIRET: {draft.companySiret || '-'}</p>
+                <p className="text-2xl font-bold tracking-tight text-slate-900">{draft.companyNom || 'Société'}</p>
+                <div className="mt-3 space-y-1 text-[13px] leading-5 text-slate-600">
+                  <p>{draft.companyAdresse || 'Adresse société non renseignée'}</p>
+                  <p>{[draft.companyEmail, draft.companyTelephone].filter(Boolean).join(' | ') || 'Contact non renseigné'}</p>
+                  <p>SIRET: {draft.companySiret || '-'}</p>
+                </div>
               </div>
-              <div className="rounded-lg border border-slate-300 bg-[#f2f2f2] px-4 py-3 text-[13px] leading-6">
-                <p className="font-semibold text-slate-900">Facture {draft.reference}</p>
-                <p>Date: {formatLongDate(draft.date)}</p>
-                <p>Echeance: {formatLongDate(draft.dateEcheance)}</p>
-                <p>Reference devis: {draft.referenceDevis}</p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-5 text-[13px] leading-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Facture</p>
+                <p className="mt-2 text-xl font-bold text-slate-900">{draft.reference}</p>
+                <div className="mt-3 space-y-1 text-slate-600">
+                  <p>Date: <span className="font-medium text-slate-900">{formatLongDate(draft.date)}</span></p>
+                  <p>Échéance: <span className="font-medium text-slate-900">{formatLongDate(draft.dateÉchéance)}</span></p>
+                  <p>Devis source: <span className="font-medium text-slate-900">{draft.referenceDevis}</span></p>
+                  <p>Type: <span className="font-medium text-slate-900">{draft.typeFacture === 'ACOMPTE' ? `Acompte ${draft.acomptePercent}%` : 'Finale'}</span></p>
+                </div>
               </div>
             </div>
 
-            <div className="mt-3 rounded-lg border border-slate-300 bg-[#f8f8f8] px-4 py-3 text-[13px]">
-              <p className="font-semibold text-slate-900">Client</p>
-              <p>{`${draft.prenomClient} ${draft.nomClient}`.trim()}</p>
-              <p>{draft.adresseClient}</p>
-              <p>{draft.emailClient} {draft.telephoneClient}</p>
+            <div className="mt-6 grid gap-4 md:grid-cols-[1fr_0.8fr]">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[13px]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Facturer à</p>
+                <p className="mt-2 text-base font-semibold text-slate-900">{`${draft.prenomClient} ${draft.nomClient}`.trim() || 'Client non renseigné'}</p>
+                <div className="mt-2 space-y-1 text-slate-600">
+                  <p>{draft.adresseClient || 'Adresse client non renseignée'}</p>
+                  <p>{[draft.emailClient, draft.telephoneClient].filter(Boolean).join(' | ') || 'Contact client non renseigné'}</p>
+                </div>
+              </div>
+              <div className="rounded-lg bg-slate-900 px-5 py-4 text-white">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Total à payer</p>
+                <p className="mt-3 text-3xl font-bold">{formatCurrency(totals.totalTTC)}</p>
+                <p className="mt-2 text-xs text-slate-300">Référence paiement: {draft.referencePaiement || draft.reference}</p>
+              </div>
             </div>
 
-            <div className="mt-3 overflow-hidden rounded-lg border border-slate-300">
+            <div className="mt-6 overflow-hidden rounded-lg border border-slate-200">
               <table className="w-full text-[13px]">
                 <thead>
-                  <tr className="bg-[#e6e6e6] text-slate-800">
+                  <tr className="bg-slate-900 text-white">
                     <th className="px-3 py-2 text-left font-semibold">Description</th>
                     <th className="px-3 py-2 text-left font-semibold">Date</th>
-                    <th className="px-3 py-2 text-right font-semibold">Qte</th>
-                    <th className="px-3 py-2 text-right font-semibold">Unite</th>
+                    <th className="px-3 py-2 text-right font-semibold">Qté</th>
+                    <th className="px-3 py-2 text-right font-semibold">Unité</th>
                     <th className="px-3 py-2 text-right font-semibold">Prix unitaire</th>
                     <th className="px-3 py-2 text-right font-semibold">TVA</th>
                     <th className="px-3 py-2 text-right font-semibold">Montant</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-slate-200 bg-white">
                   {computedLines.map((line) => (
                     <tr key={line.localId}>
                       <td className="px-3 py-2 align-top">{line.description}</td>
@@ -938,21 +953,21 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
               </table>
             </div>
 
-            <div className="mt-3 ml-auto w-full max-w-xs rounded-lg border border-slate-300 bg-[#f8f8f8] p-3 text-[13px]">
-              <div className="flex justify-between"><span>Total HT</span><span>{formatCurrency(totals.totalHT)}</span></div>
-              <div className="flex justify-between"><span>TVA</span><span>{formatCurrency(totals.totalTVA)}</span></div>
-              <div className="mt-2 border-t border-slate-300 pt-2 flex justify-between text-base font-semibold">
+            <div className="mt-5 ml-auto w-full max-w-sm rounded-lg border border-slate-200 bg-slate-50 p-4 text-[13px]">
+              <div className="flex justify-between"><span>Total HT</span><span className="font-medium text-slate-900">{formatCurrency(totals.totalHT)}</span></div>
+              <div className="mt-1 flex justify-between"><span>TVA</span><span className="font-medium text-slate-900">{formatCurrency(totals.totalTVA)}</span></div>
+              <div className="mt-3 flex justify-between border-t border-slate-300 pt-3 text-base font-semibold">
                 <span>Total TTC</span><span>{formatCurrency(totals.totalTTC)}</span>
               </div>
             </div>
 
-            <div className="mt-4 rounded-lg border border-slate-300 bg-[#f5f5f5] p-3 text-[13px] leading-6 text-slate-700 whitespace-pre-line">
-              <p><span className="font-semibold text-slate-800">Conditions:</span> {draft.conditionsPaiement}</p>
-              <p><span className="font-semibold text-slate-800">Communication:</span> {draft.communicationPaiement}</p>
-              <p><span className="font-semibold text-slate-800">Reference paiement:</span> {draft.referencePaiement}</p>
+            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-[13px] leading-6 text-slate-700 whitespace-pre-line">
+              <p><span className="font-semibold text-slate-800">Conditions de paiement :</span> {draft.conditionsPaiement}</p>
+              <p><span className="font-semibold text-slate-800">Communication :</span> {draft.communicationPaiement}</p>
+              <p><span className="font-semibold text-slate-800">Référence paiement:</span> {draft.referencePaiement}</p>
               {draft.notesLegales ? (
-                <div>
-                  <p><span className="font-semibold text-slate-800">Mentions TVA:</span></p>
+                <div className="mt-3 border-t border-slate-200 pt-3">
+                  <p><span className="font-semibold text-slate-800">Mentions TVA :</span></p>
                   <p>{draft.notesLegales}</p>
                 </div>
               ) : null}
