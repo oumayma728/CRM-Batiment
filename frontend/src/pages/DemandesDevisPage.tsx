@@ -117,25 +117,27 @@ export default function DemandesDevisPage() {
 
       navigate(`${workspaceBasePath}/checklist?demandeId=${demande.id}`);
     } catch (err: unknown) {
-      setStudyError(err instanceof Error ? err.message : 'Impossible d ouvrir la checklist.');
+      setStudyError(
+        err instanceof Error ? err.message : "Impossible d'ouvrir la checklist.",
+      );    
     } finally {
       setStudyDemandeId(null);
     }
   }
 
   return (
-    <div className="max-w-full space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-950 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <FileText size={24} className="text-blue-600" />
             Demandes de Devis
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5">{meta.total} demande(s) au total</p>
+          <p className="text-gray-500 text-sm mt-0.5">{meta.total} demande(s) au total</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
+          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
         >
           <Plus size={17} /> Nouvelle demande
         </button>
@@ -154,42 +156,42 @@ export default function DemandesDevisPage() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
+      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
         {isLoading ? (
-          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={32} /></div>
+          <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary-600" size={32} /></div>
         ) : demandes.length === 0 ? (
-          <div className="text-center py-20 text-slate-500">
-            <FileText size={48} className="mx-auto mb-4 text-slate-300" />
+          <div className="text-center py-20 text-gray-500">
+            <FileText size={48} className="mx-auto mb-4 text-gray-300" />
             <p className="text-lg font-medium">Aucune demande trouvée</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200">
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Description</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Client</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Statut</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Source</th>
-                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Date</th>
-                  <th className="text-right px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Actions</th>
+                <tr className="bg-gray-50/80 border-b border-gray-100">
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Description</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Client</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Statut</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Source</th>
+                  <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Date</th>
+                  <th className="text-right px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {demandes.map((d) => {
                   const normalizedStatut = normalizeDemandeStatut(d.statut);
                   const st = statutConfig[normalizedStatut] ?? {
-                    bg: 'bg-slate-50',
-                    text: 'text-slate-600',
-                    dot: 'bg-slate-400',
+                    bg: 'bg-gray-50',
+                    text: 'text-gray-600',
+                    dot: 'bg-gray-400',
                     label: normalizedStatut,
                   };
                   return (
-                  <tr key={d.id} className="hover:bg-blue-50/30 transition-colors group">
+                  <tr key={d.id} className="hover:bg-primary-50/30 transition-colors group">
                     <td className="px-6 py-4">
-                      <p className="font-semibold text-slate-950 text-[14px] truncate max-w-xs">{d.description}</p>
+                      <p className="font-semibold text-gray-900 text-[14px] truncate max-w-xs">{d.description}</p>
                     </td>
-                    <td className="px-6 py-4 text-[13px] text-slate-600">
+                    <td className="px-6 py-4 text-[13px] text-gray-600">
                       {d.client ? `${d.client.prenom} ${d.client.nom}` : '—'}
                     </td>
                     <td className="px-6 py-4">
@@ -199,20 +201,20 @@ export default function DemandesDevisPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">
+                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-gray-50 text-gray-600 border border-gray-100">
                         {d.source}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-[13px] text-slate-500">{formatDate(d.createdAt)}</td>
+                    <td className="px-6 py-4 text-[13px] text-gray-500">{formatDate(d.createdAt)}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleOpenStudy(d)}
                           disabled={!canOpenStudy(normalizedStatut) || studyDemandeId === d.id}
-                          className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-slate-400 disabled:hover:bg-transparent"
+                          className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                           title={
                             canOpenStudy(normalizedStatut)
-                              ? 'Etude checklist / generation de devis'
+                              ? 'Étude checklist / génération de devis'
                               : 'Disponible pour NOUVEAU ou EN_COURS'
                           }
                         >
@@ -222,8 +224,8 @@ export default function DemandesDevisPage() {
                             <ListChecks size={15} />
                           )}
                         </button>
-                        <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"><Eye size={15} /></button>
-                        <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
+                        <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"><Eye size={15} /></button>
+                        <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
                       </div>
                     </td>
                   </tr>
@@ -235,11 +237,11 @@ export default function DemandesDevisPage() {
         )}
 
         {meta.lastPage > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50/50">
-            <p className="text-[13px] text-slate-500">Page <span className="font-semibold text-slate-700">{meta.page}</span> sur <span className="font-semibold text-slate-700">{meta.lastPage}</span></p>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+            <p className="text-[13px] text-gray-500">Page <span className="font-semibold text-gray-700">{meta.page}</span> sur <span className="font-semibold text-gray-700">{meta.lastPage}</span></p>
             <div className="flex items-center gap-1.5">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-2xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronLeft size={16} /></button>
-              <button onClick={() => setPage((p) => Math.min(meta.lastPage, p + 1))} disabled={page === meta.lastPage} className="p-2 rounded-2xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronRight size={16} /></button>
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronLeft size={16} /></button>
+              <button onClick={() => setPage((p) => Math.min(meta.lastPage, p + 1))} disabled={page === meta.lastPage} className="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronRight size={16} /></button>
             </div>
           </div>
         )}
@@ -248,15 +250,15 @@ export default function DemandesDevisPage() {
       {/* Create Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-950">Nouvelle demande de devis</h2>
-              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Nouvelle demande de devis</h2>
+              <button onClick={() => setShowModal(false)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Client *</label>
-                <select required value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Client *</label>
+                <select required value={form.clientId} onChange={(e) => setForm({ ...form, clientId: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                   <option value="">Sélectionner un client</option>
                   {(clientsList ?? []).map((c: { id: number; prenom: string; nom: string }) => (
                     <option key={c.id} value={c.id}>{c.prenom} {c.nom}</option>
@@ -264,12 +266,12 @@ export default function DemandesDevisPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Description *</label>
-                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Ex: Renovation salle de bain 8m2, fuite sous douche, intervention souhaitee sous 7 jours." className="w-full px-4 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description *</label>
+                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Ex : rénovation salle de bain 8 m², fuite sous douche, intervention souhaitée sous 7 jours." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Source</label>
-                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all bg-white">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Source</label>
+                <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 transition-all bg-white">
                   <option value="AUTRE">Autre</option>
                   <option value="CHATBOT">Chatbot</option>
                   <option value="TECHNICO_COMMERCIAL">Technico-Commercial</option>
@@ -279,13 +281,13 @@ export default function DemandesDevisPage() {
                 </select>
               </div>
               {createMutation.error && (
-                <p className="text-sm text-blue-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Erreur lors de la creation. Verifiez le client selectionne et la description.
+                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                  Erreur lors de la création. Vérifiez le client sélectionné et la description.
                 </p>
               )}
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
+                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Créer
                 </button>
@@ -298,23 +300,23 @@ export default function DemandesDevisPage() {
       {/* Detail Modal */}
       {detailDemande && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-              <h2 className="text-lg font-bold text-slate-950">Détail de la demande</h2>
-              <button onClick={() => setDetailDemande(null)} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><X size={18} /></button>
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Détail de la demande</h2>
+              <button onClick={() => setDetailDemande(null)} className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"><X size={18} /></button>
             </div>
             <div className="p-6 space-y-4">
-              <div><p className="text-[11px] font-bold text-slate-400 uppercase">Description</p><p className="text-sm text-slate-700 mt-0.5">{detailDemande.description || '—'}</p></div>
+              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Description</p><p className="text-sm text-gray-700 mt-0.5">{detailDemande.description || '—'}</p></div>
               <div className="grid grid-cols-2 gap-4">
-                <div><p className="text-[11px] font-bold text-slate-400 uppercase">Statut</p>
-                  {(() => { const normalizedStatut = normalizeDemandeStatut(detailDemande.statut); const st = statutConfig[normalizedStatut] ?? { bg: 'bg-slate-50', text: 'text-slate-600', dot: 'bg-slate-400', label: normalizedStatut }; return (
+                <div><p className="text-[11px] font-bold text-gray-400 uppercase">Statut</p>
+                  {(() => { const normalizedStatut = normalizeDemandeStatut(detailDemande.statut); const st = statutConfig[normalizedStatut] ?? { bg: 'bg-gray-50', text: 'text-gray-600', dot: 'bg-gray-400', label: normalizedStatut }; return (
                     <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold mt-0.5', st.bg, st.text)}><span className={cn('w-1.5 h-1.5 rounded-full', st.dot)} />{st.label}</span>
                   ); })()}
                 </div>
-                <div><p className="text-[11px] font-bold text-slate-400 uppercase">Source</p><p className="text-sm mt-0.5">{detailDemande.source}</p></div>
+                <div><p className="text-[11px] font-bold text-gray-400 uppercase">Source</p><p className="text-sm mt-0.5">{detailDemande.source}</p></div>
               </div>
-              <div><p className="text-[11px] font-bold text-slate-400 uppercase">Client</p><p className="text-sm mt-0.5">{detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}</p></div>
-              <div><p className="text-[11px] font-bold text-slate-400 uppercase">Créée le</p><p className="text-sm mt-0.5">{formatDate(detailDemande.createdAt)}</p></div>
+              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Client</p><p className="text-sm mt-0.5">{detailDemande.client ? `${detailDemande.client.prenom} ${detailDemande.client.nom}` : '—'}</p></div>
+              <div><p className="text-[11px] font-bold text-gray-400 uppercase">Créée le</p><p className="text-sm mt-0.5">{formatDate(detailDemande.createdAt)}</p></div>
               <div className="pt-2 flex justify-end">
                 <button
                   onClick={() => handleOpenStudy(detailDemande)}
@@ -326,7 +328,7 @@ export default function DemandesDevisPage() {
                   ) : (
                     <ListChecks size={15} />
                   )}
-                  Etude checklist / generer devis
+                  Étude checklist / générer devis
                 </button>
               </div>
             </div>
