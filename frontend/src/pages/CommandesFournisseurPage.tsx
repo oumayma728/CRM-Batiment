@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -69,97 +68,13 @@ const buildOrderEditForm = (order: FournisseurCommandeDetail): OrderEditFormStat
 });
 
 const statusMeta: Record<SupplierOrderStatus, { label: string; badge: string }> = {
-  CREEE: { label: 'À confirmer', badge: 'bg-blue-50 text-blue-700 ring-1 ring-blue-100' },
-  ENVOYEE: { label: 'Confirmée', badge: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200' },
-  EXPEDIEE: { label: 'En livraison', badge: 'bg-violet-50 text-violet-700 ring-1 ring-violet-100' },
-  PARTIELLE: { label: 'Partielle', badge: 'bg-orange-50 text-orange-700 ring-1 ring-orange-100' },
-  RECUE: { label: 'Reçue', badge: 'bg-blue-50 text-blue-700 ring-1 ring-blue-100' },
-  CLOTUREE: { label: 'Clôturée', badge: 'bg-slate-100 text-slate-600 ring-1 ring-slate-200' },
+  CREEE: { label: 'À confirmer', badge: 'bg-stone-200 text-stone-700' },
+  ENVOYEE: { label: 'Confirmée', badge: 'bg-sky-100 text-sky-700' },
+  EXPEDIEE: { label: 'En livraison', badge: 'bg-amber-100 text-amber-700' },
+  PARTIELLE: { label: 'Partielle', badge: 'bg-orange-100 text-orange-700' },
+  RECUE: { label: 'Reçue', badge: 'bg-emerald-100 text-emerald-700' },
+  CLOTUREE: { label: 'Clôturée', badge: 'bg-teal-100 text-teal-700' },
 };
-
-type HeroKpiTone = 'blue' | 'amber' | 'violet' | 'emerald';
-
-function HeroKpiCard({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string;
-  value: number;
-  icon: ReactNode;
-  tone: HeroKpiTone;
-}) {
-  const tones: Record<HeroKpiTone, string> = {
-    blue: 'bg-blue-50 text-blue-600 ring-blue-100',
-    amber: 'bg-amber-50 text-amber-600 ring-amber-100',
-    violet: 'bg-violet-50 text-violet-600 ring-violet-100',
-    emerald: 'bg-emerald-50 text-emerald-600 ring-emerald-100',
-  };
-
-  return (
-    <div className="rounded-[22px] border border-slate-200 bg-white/90 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-      <div className={`mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl ring-1 ${tones[tone]}`}>
-        {icon}
-      </div>
-      <p className="text-2xl font-semibold text-slate-950">{value}</p>
-      <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
-    </div>
-  );
-}
-
-
-function ProcessingSteps({
-  steps,
-  onSelectStatus,
-}: {
-  steps: {
-    status: SupplierOrderStatus;
-    label: string;
-    value: number;
-    icon: ReactNode;
-  }[];
-  onSelectStatus: (status: StatusFilter) => void;
-}) {
-  return (
-    <div className="overflow-x-auto pb-1">
-      <div className="grid min-w-[660px] grid-cols-6 items-start gap-2">
-        {steps.map((step, index) => (
-          <button
-            key={step.status}
-            type="button"
-            onClick={() => onSelectStatus(step.status)}
-            className="group relative flex flex-col items-center text-center"
-          >
-            {index < steps.length - 1 && (
-              <span className="absolute left-1/2 top-6 h-px w-full bg-slate-200" />
-            )}
-
-            <span
-              className={cn(
-                'relative z-10 flex h-12 w-12 items-center justify-center rounded-full border bg-white transition',
-                index === 0
-                  ? 'border-blue-500 text-blue-600 shadow-[0_0_0_6px_rgba(37,99,235,0.08)]'
-                  : 'border-slate-200 text-slate-500 group-hover:border-blue-200 group-hover:text-blue-600',
-              )}
-            >
-              {step.icon}
-            </span>
-
-            <span className="mt-3 min-h-[32px] text-xs font-semibold leading-4 text-slate-700">
-              {step.label}
-            </span>
-
-            <span className="mt-2 inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-slate-100 px-2 text-xs font-semibold text-slate-700">
-              {step.value}
-            </span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 
 function getApiErrorMessage(error: unknown, fallback: string) {
   if (axios.isAxiosError(error)) {
@@ -184,7 +99,6 @@ export default function CommandesFournisseurPage() {
   const [draftForms, setDraftForms] = useState<Record<number, ReceptionFormState>>({});
   const [editDrafts, setEditDrafts] = useState<Record<number, OrderEditFormState>>({});
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null);
-  const [showNewOrderModal, setShowNewOrderModal] = useState(false);
   const [supplierDocumentPreview, setSupplierDocumentPreview] =
     useState<SupplierPurchaseDocumentData | null>(null);
 
@@ -221,7 +135,7 @@ export default function CommandesFournisseurPage() {
     const groups = new Map<string, { key: string; chantierRef: string; chantierAdresse: string; orders: FournisseurCommandeDetail[] }>();
     for (const order of orders) {
       const chantierRef = order.devis.chantier?.reference ?? 'Sans chantier';
-      const chantierAdresse = order.devis.chantier?.adresse ?? 'Adresse non renseignee';
+      const chantierAdresse = order.devis.chantier?.adresse ?? 'Adresse non renseignée';
       const key = `${chantierRef}-${chantierAdresse}`;
       if (!groups.has(key)) {
         groups.set(key, { key, chantierRef, chantierAdresse, orders: [] });
@@ -267,8 +181,6 @@ export default function CommandesFournisseurPage() {
 
   useEffect(() => {
     if (!selectedOrder) return;
-    // Initialisation du brouillon lors du changement de commande sélectionnée.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEditDrafts((current) => ({
       ...current,
       [selectedOrder.id]: current[selectedOrder.id] ?? buildOrderEditForm(selectedOrder),
@@ -332,10 +244,10 @@ export default function CommandesFournisseurPage() {
 
   const createReceptionMutation = useMutation({
     mutationFn: async (payload: ReceptionFormState) => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const quantiteRecue = Number(payload.quantiteRecue);
       if (!Number.isFinite(quantiteRecue) || quantiteRecue <= 0) {
-        throw new Error('La quantite recue doit etre superieure a zero.');
+        throw new Error('La quantité reçue doit être supérieure à zéro.');
       }
 
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/receptions`, {
@@ -357,7 +269,7 @@ export default function CommandesFournisseurPage() {
 
   const updateOrderMutation = useMutation({
     mutationFn: async (payload: OrderEditFormState) => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
 
       const lignes = payload.lignes.map((line) => {
         const quantite = Number(line.quantite);
@@ -368,7 +280,7 @@ export default function CommandesFournisseurPage() {
         }
 
         if (!Number.isFinite(quantite) || quantite <= 0) {
-          throw new Error('Chaque ligne doit avoir une quantite superieure a zero.');
+          throw new Error('Chaque ligne doit avoir une quantité supérieure à zéro.');
         }
 
         if (!Number.isFinite(prixUnitaire) || prixUnitaire < 0) {
@@ -403,7 +315,7 @@ export default function CommandesFournisseurPage() {
 
   const sendOrderMutation = useMutation({
     mutationFn: async () => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/send`);
       return response.data as { message: string; order: FournisseurCommandeDetail };
     },
@@ -419,7 +331,7 @@ export default function CommandesFournisseurPage() {
 
   const validateOrderBeforeSendMutation = useMutation({
     mutationFn: async () => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/validate`);
       return response.data as { message: string; order: FournisseurCommandeDetail };
     },
@@ -434,7 +346,7 @@ export default function CommandesFournisseurPage() {
 
   const validateDevisAndSendMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedOrder) throw new Error('Aucune commande selectionnee.');
+      if (!selectedOrder) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(
         `/devis/${selectedOrder.devisId}/bon-commande/validate-send`,
       );
@@ -448,121 +360,47 @@ export default function CommandesFournisseurPage() {
 
   const kpis = useMemo(
     () => [
-      {
-        label: 'Commandes',
-        value: ordersQuery.data?.meta.total ?? 0,
-        icon: <ClipboardList size={19} />,
-        tone: 'blue' as const,
-      },
-      {
-        label: 'En attente',
-        value: orders.filter((order) => order.tracking.reception.state === 'EN_ATTENTE').length,
-        icon: <CalendarClock size={19} />,
-        tone: 'amber' as const,
-      },
-      {
-        label: 'Partielles',
-        value: orders.filter((order) => order.tracking.reception.state === 'PARTIELLE').length,
-        icon: <Truck size={19} />,
-        tone: 'violet' as const,
-      },
-      {
-        label: 'Complètes',
-        value: orders.filter((order) => order.tracking.reception.state === 'COMPLETE').length,
-        icon: <PackageCheck size={19} />,
-        tone: 'emerald' as const,
-      },
+      { label: 'Commandes', value: ordersQuery.data?.meta.total ?? 0, icon: <ClipboardList size={18} /> },
+      { label: 'En attente', value: orders.filter((order) => order.tracking.reception.state === 'EN_ATTENTE').length, icon: <Warehouse size={18} /> },
+      { label: 'Partielles', value: orders.filter((order) => order.tracking.reception.state === 'PARTIELLE').length, icon: <Truck size={18} /> },
+      { label: 'Complètes', value: orders.filter((order) => order.tracking.reception.state === 'COMPLETE').length, icon: <PackageCheck size={18} /> },
     ],
     [orders, ordersQuery.data?.meta.total],
-  );
-
-  const stepItems = useMemo(
-    () => [
-      {
-        status: 'CREEE' as SupplierOrderStatus,
-        label: 'À confirmer',
-        value: orders.filter((order) => order.statutLivraison === 'CREEE').length,
-        icon: <ClipboardList size={18} />,
-      },
-      {
-        status: 'ENVOYEE' as SupplierOrderStatus,
-        label: 'Confirmée',
-        value: orders.filter((order) => order.statutLivraison === 'ENVOYEE').length,
-        icon: <CheckCircle2 size={18} />,
-      },
-      {
-        status: 'EXPEDIEE' as SupplierOrderStatus,
-        label: 'En livraison',
-        value: orders.filter((order) => order.statutLivraison === 'EXPEDIEE').length,
-        icon: <Truck size={18} />,
-      },
-      {
-        status: 'PARTIELLE' as SupplierOrderStatus,
-        label: 'Réception partielle',
-        value: orders.filter((order) => order.statutLivraison === 'PARTIELLE').length,
-        icon: <Warehouse size={18} />,
-      },
-      {
-        status: 'RECUE' as SupplierOrderStatus,
-        label: 'Reçue',
-        value: orders.filter((order) => order.statutLivraison === 'RECUE').length,
-        icon: <PackageCheck size={18} />,
-      },
-      {
-        status: 'CLOTUREE' as SupplierOrderStatus,
-        label: 'Clôturée',
-        value: orders.filter((order) => order.statutLivraison === 'CLOTUREE').length,
-        icon: <CheckCircle2 size={18} />,
-      },
-    ],
-    [orders],
   );
 
   const queryError = ordersQuery.error;
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-blue-100 bg-[radial-gradient(circle_at_10%_20%,rgba(37,99,235,0.12),transparent_24%),linear-gradient(135deg,#ffffff_0%,#f8fbff_48%,#eef6ff_100%)] p-5 shadow-[0_16px_45px_rgba(15,23,42,0.05)]">
-        <div className="grid gap-6 xl:grid-cols-[1fr_700px] xl:items-center">
-          <div className="flex items-center gap-5">
-            <div className="hidden h-28 w-28 shrink-0 items-center justify-center rounded-[28px] bg-white/80 shadow-sm ring-1 ring-blue-100 md:flex">
-              <div className="relative">
-                <div className="flex h-20 w-16 items-center justify-center rounded-2xl border-2 border-blue-200 bg-blue-50 text-blue-600">
-                  <ClipboardList size={34} />
-                </div>
-                <div className="absolute -bottom-3 -right-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
-                  <Warehouse size={22} />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-700 ring-1 ring-blue-100">
-                <span className="h-2 w-2 rounded-full bg-blue-600" />
-                Réception chantier
-              </div>
-
-              <h1 className="mt-4 max-w-xl text-3xl font-semibold tracking-tight text-slate-950">
-                Bons d’achat fournisseur et réceptions matériaux
-              </h1>
-
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-                Suivez les commandes fournisseur et les réceptions de matériaux en temps réel.
-                Validez, envoyez et clôturez les bons d’achat en quelques étapes simples.
-              </p>
-            </div>
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_52%,#eff6ff_100%)] p-5 lg:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Réception chantier</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">
+              Bons d’achat fournisseur et réceptions matériaux
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              Contrôlez les commandes issues des devis validés, confirmez les envois et saisissez
+              les quantités reçues sur chantier avec un suivi par fournisseur.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
             {kpis.map((kpi) => (
-              <HeroKpiCard key={kpi.label} {...kpi} />
+              <div key={kpi.label} className="rounded-lg border border-white/10 bg-white/10 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
+                  {kpi.icon}
+                </div>
+                <p className="text-2xl font-bold text-white">{kpi.value}</p>
+                <p className="text-sm text-slate-300">{kpi.label}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-xl flex-1">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -570,81 +408,54 @@ export default function CommandesFournisseurPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher par chantier, devis, fournisseur ou client"
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-12 py-3 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
             />
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap gap-2">
             {statusOptions.map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition-all',
-                  statusFilter === status
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                    : 'bg-slate-100 text-slate-600 hover:bg-blue-50 hover:text-blue-700',
+                  'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                  statusFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                 )}
               >
                 {status === 'ALL' ? 'Tous' : statusMeta[status].label}
               </button>
             ))}
-
-            <button
-              type="button"
-              title="Les commandes fournisseur sont générées depuis les devis validés."
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
-              onClick={() => setShowNewOrderModal(true)}
-            >
-              <Plus size={17} />
-              Nouvelle commande
-            </button>
           </div>
         </div>
       </section>
 
       {queryError ? (
-        <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700">
+        <section className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
           {getApiErrorMessage(queryError, 'Impossible de charger les commandes fournisseur.')}
         </section>
       ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Par chantier</h2>
+              <h2 className="text-lg font-bold text-slate-950">Par chantier</h2>
               <p className="text-sm text-slate-500">{ordersQuery.data?.meta.total ?? 0} bon(s) d’achat</p>
             </div>
-            {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-blue-700" /> : null}
+            {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-emerald-700" /> : null}
           </div>
 
           <div className="space-y-4">
             {ordersQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-32 animate-pulse rounded-3xl bg-slate-100" />
+                <div key={index} className="h-32 animate-pulse rounded-lg bg-slate-100" />
               ))
             ) : groupedOrders.length === 0 ? (
-              <div className="rounded-[24px] border border-dashed border-blue-200 bg-slate-50 px-5 py-12 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-white text-blue-500 shadow-sm ring-1 ring-slate-200">
-                  <Warehouse size={28} />
-                </div>
-                <p className="mt-4 text-sm font-semibold text-slate-900">Aucune commande fournisseur à afficher</p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Les commandes apparaissent ici après validation des devis.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setStatusFilter('CREEE')}
-                  className="mt-5 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
-                >
-                  <Plus size={16} />
-                  Voir les commandes à confirmer
-                </button>
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-12 text-center text-sm text-slate-500">
+                Aucune commande fournisseur à afficher.
               </div>
             ) : (
               groupedOrders.map((group) => (
-                <div key={group.key} className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+                <div key={group.key} className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
                   <div className="mb-3">
                     <p className="text-sm font-semibold text-slate-900">{group.chantierRef}</p>
                     <p className="text-sm text-slate-500">{group.chantierAdresse}</p>
@@ -656,7 +467,7 @@ export default function CommandesFournisseurPage() {
                         onClick={() => setSelectedOrderId(order.id)}
                         className={cn(
                           'w-full rounded-3xl border p-4 text-left transition-all',
-                          activeOrderId === order.id ? 'border-blue-300 bg-blue-50/60' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                          activeOrderId === order.id ? 'border-emerald-300 bg-emerald-50/60' : 'border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50',
                         )}
                       >
                         <div className="flex items-start justify-between gap-3">
@@ -683,54 +494,14 @@ export default function CommandesFournisseurPage() {
           </div>
         </div>
 
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
           {!selectedOrder ? (
-            <div className="space-y-4">
-              <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                      <Warehouse size={18} />
-                    </div>
-                    <div>
-                      <h2 className="text-base font-semibold text-slate-950">Réceptions récentes</h2>
-                      <p className="text-xs text-slate-500">Les réceptions de matériaux apparaîtront ici.</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setStatusFilter('RECUE')}
-                    className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                  >
-                    Voir toutes
-                  </button>
-                </div>
-
-                <div className="flex min-h-[180px] flex-col items-center justify-center rounded-[22px] bg-slate-50 text-center">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-white text-blue-500 shadow-sm ring-1 ring-slate-200">
-                    <PackageCheck size={24} />
-                  </div>
-                  <p className="mt-4 text-sm font-semibold text-slate-900">Aucune réception récente</p>
-                  <p className="mt-1 text-xs text-slate-500">Sélectionnez une commande pour saisir une réception chantier.</p>
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-slate-200 bg-white p-5">
-                <div className="mb-5 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                    <ClipboardList size={18} />
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-slate-950">Étapes de traitement</h2>
-                    <p className="text-xs text-slate-500">Suivi global des bons d’achat fournisseur.</p>
-                  </div>
-                </div>
-                <ProcessingSteps steps={stepItems} onSelectStatus={setStatusFilter} />
-              </div>
+            <div className="flex min-h-[420px] items-center justify-center rounded-[24px] border border-dashed border-stone-300 bg-stone-50 text-center text-sm text-slate-500">
+              Sélectionnez un bon d’achat pour saisir une réception.
             </div>
           ) : (
             <div className="space-y-6">
-              <div className="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-4 border-b border-stone-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-bold text-slate-900">{selectedOrder.reference}</h2>
@@ -739,9 +510,9 @@ export default function CommandesFournisseurPage() {
                     </span>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-sm text-slate-600">
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5">{selectedOrder.fournisseur.nom}</span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5">Devis {selectedOrder.devis.reference}</span>
-                    <span className="rounded-full bg-slate-100 px-3 py-1.5">Client {selectedOrder.devis.client?.prenom} {selectedOrder.devis.client?.nom}</span>
+                    <span className="rounded-full bg-stone-100 px-3 py-1.5">{selectedOrder.fournisseur.nom}</span>
+                    <span className="rounded-full bg-stone-100 px-3 py-1.5">Devis {selectedOrder.devis.reference}</span>
+                    <span className="rounded-full bg-stone-100 px-3 py-1.5">Client {selectedOrder.devis.client?.prenom} {selectedOrder.devis.client?.nom}</span>
                   </div>
                 </div>
                 <div className="space-y-3">
@@ -752,16 +523,17 @@ export default function CommandesFournisseurPage() {
                         buildSupplierPurchaseDocumentDataFromOrderDetail(selectedOrder),
                       )
                     }
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
                   >
                     <FileText size={16} />
                     Aperçu bon d’achat / PDF
                   </button>
-                  <div className="rounded-3xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reste a réceptionner</p>
+                  <div className="rounded-3xl bg-stone-50 p-4 ring-1 ring-stone-200">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reste à réceptionner</p>
                     <p className="mt-2 text-3xl font-bold text-slate-900">{remainingQuantity}</p>
-                    <p className="mt-1 text-sm text-slate-500">{selectedOrder.metrics.totalQuantiteRecue} / {selectedOrder.metrics.totalQuantiteCommandee} déjà reçus</p>
-                  </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedOrder.metrics.totalQuantiteRecue} / {selectedOrder.metrics.totalQuantiteCommandee} déjà reçus
+                    </p>                  </div>
                   <div className="flex flex-col gap-2">
                     {canShowManualEditButton ? (
                       <button
@@ -773,7 +545,7 @@ export default function CommandesFournisseurPage() {
                             [selectedOrder.id]: buildOrderEditForm(selectedOrder),
                           }));
                         }}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
                       >
                         <Pencil size={16} />
                         Modifier manuellement
@@ -798,7 +570,7 @@ export default function CommandesFournisseurPage() {
                               <CheckCircle2 size={16} />
                             )}
                             {isSelectedOrderValidated
-                              ? 'Commande déjà validee'
+                              ? 'Commande déjà validée'
                               : 'Valider avant envoi'}
                           </button>
                         ) : null}
@@ -811,7 +583,7 @@ export default function CommandesFournisseurPage() {
                             !selectedOrder.fournisseur.email ||
                             !isSelectedOrderValidated
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {sendOrderMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                           Envoyer cette commande
@@ -837,18 +609,18 @@ export default function CommandesFournisseurPage() {
                         ) : null}
                       </>
                     ) : (
-                      <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                         Commande envoyée {selectedOrder.dateEnvoi ? `le ${formatDate(selectedOrder.dateEnvoi)}` : 'au fournisseur'}.
                       </div>
                     )}
                     {selectedOrder.statutLivraison === 'CREEE' && !selectedOrder.fournisseur.email ? (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        Ajoutez un email au fournisseur avant l envoi.
+                        Ajoutez un email au fournisseur avant l’envoi.
                       </div>
                     ) : null}
                     {selectedOrder.statutLivraison === 'CREEE' && !isSelectedOrderValidated ? (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        Validez d abord le bon de commande avant d envoyer au fournisseur.
+                        Validez d’abord le bon de commande avant de l’envoyer au fournisseur.
                       </div>
                     ) : null}
                     {sendOrderMutation.error && editingOrderId !== selectedOrder.id ? (
@@ -872,14 +644,14 @@ export default function CommandesFournisseurPage() {
 
               <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr]">
                 <div className="space-y-4">
-                  <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="font-bold text-slate-900">Lignes matériaux</h3>
                       {editingOrderId === selectedOrder.id ? (
                         <button
                           type="button"
                           onClick={addEditLine}
-                          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          className="inline-flex items-center gap-2 rounded-2xl border border-stone-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
                         >
                           <Plus size={15} />
                           Ajouter ligne
@@ -892,14 +664,14 @@ export default function CommandesFournisseurPage() {
                           const lineTotal =
                             (Number(line.quantite) || 0) * (Number(line.prixUnitaire) || 0);
                           return (
-                            <div key={`${selectedOrder.id}-${index}`} className="rounded-3xl bg-white p-4 ring-1 ring-slate-200">
+                            <div key={`${selectedOrder.id}-${index}`} className="rounded-3xl bg-white p-4 ring-1 ring-stone-200">
                               <div className="grid gap-3 lg:grid-cols-[1.5fr_0.75fr_0.75fr_0.8fr_auto]">
                                 <input
                                   type="text"
                                   value={line.materiauNom}
                                   onChange={(event) => updateEditLine(index, { materiauNom: event.target.value })}
                                   placeholder="Nom du matériau"
-                                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                                  className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 />
                                 <input
                                   type="number"
@@ -908,12 +680,12 @@ export default function CommandesFournisseurPage() {
                                   value={line.quantite}
                                   onChange={(event) => updateEditLine(index, { quantite: event.target.value })}
                                   placeholder="Quantité"
-                                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                                  className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 />
                                 <select
                                   value={line.unite}
                                   onChange={(event) => updateEditLine(index, { unite: event.target.value })}
-                                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                                  className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 >
                                   {unitOptions.map((unit) => (
                                     <option key={unit} value={unit}>
@@ -928,7 +700,7 @@ export default function CommandesFournisseurPage() {
                                   value={line.prixUnitaire}
                                   onChange={(event) => updateEditLine(index, { prixUnitaire: event.target.value })}
                                   placeholder="Prix U."
-                                  className="rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                                  className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 />
                                 <button
                                   type="button"
@@ -949,7 +721,7 @@ export default function CommandesFournisseurPage() {
                         })
                       ) : (
                         selectedOrder.lignes?.map((line) => (
-                          <div key={line.id} className="rounded-3xl bg-white p-4 ring-1 ring-slate-200">
+                          <div key={line.id} className="rounded-3xl bg-white p-4 ring-1 ring-stone-200">
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="font-semibold text-slate-900">{line.materiauNom}</p>
@@ -965,15 +737,15 @@ export default function CommandesFournisseurPage() {
                       <div className="mt-4 space-y-3">
                         <div className="grid gap-4 lg:grid-cols-2">
                           <label className="space-y-1.5 text-sm text-slate-600">
-                            <span className="font-medium text-slate-700">Date livraison prevue</span>
+                            <span className="font-medium text-slate-700">Date livraison prévue</span>
                             <input
                               type="date"
                               value={editForm.dateLivraisonPrevue}
                               onChange={(event) => updateEditForm({ dateLivraisonPrevue: event.target.value })}
-                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                              className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                             />
                           </label>
-                          <div className="rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200">
+                          <div className="rounded-2xl bg-white px-4 py-3 ring-1 ring-stone-200">
                             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Total HT</p>
                             <p className="mt-2 text-2xl font-bold text-slate-900">
                               {formatCurrency(
@@ -995,7 +767,7 @@ export default function CommandesFournisseurPage() {
                             onChange={(event) => updateEditForm({ notes: event.target.value })}
                             rows={4}
                             placeholder="Informations internes avant envoi fournisseur"
-                            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                            className="w-full resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                           />
                         </label>
                         {updateOrderMutation.error ? (
@@ -1018,7 +790,7 @@ export default function CommandesFournisseurPage() {
                                 [selectedOrder.id]: buildOrderEditForm(selectedOrder),
                               }));
                             }}
-                            className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                            className="rounded-2xl border border-stone-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
                           >
                             Annuler
                           </button>
@@ -1036,21 +808,21 @@ export default function CommandesFournisseurPage() {
                     ) : null}
                   </div>
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4">
+                  <div className="rounded-3xl border border-stone-200 bg-white p-4">
                     <h3 className="font-bold text-slate-900">Historique réception</h3>
                     <div className="mt-4 space-y-3">
                       {selectedOrder.receptions.length === 0 ? (
-                        <div className="rounded-2xl bg-slate-50 px-4 py-6 text-sm text-slate-500">Aucune réception saisie.</div>
+                        <div className="rounded-2xl bg-stone-50 px-4 py-6 text-sm text-slate-500">Aucune réception saisie.</div>
                       ) : (
                         selectedOrder.receptions.map((reception) => (
-                          <div key={reception.id} className="rounded-2xl bg-slate-50 px-4 py-3">
+                          <div key={reception.id} className="rounded-2xl bg-stone-50 px-4 py-3">
                             <div className="flex items-center justify-between gap-3">
                               <p className="font-semibold text-slate-800">{formatDate(reception.dateReception)}</p>
-                              <span className={cn('rounded-full px-2.5 py-1 text-[11px] font-semibold', reception.partielle ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-blue-700')}>
-                                {reception.partielle ? 'Réception partielle' : 'Réception complete'}
+                              <span className={cn('rounded-full px-2.5 py-1 text-[11px] font-semibold', reception.partielle ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700')}>
+                                {reception.partielle ? 'Réception partielle' : 'Réception complète'}
                               </span>
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">Reçu: {reception.quantiteRecue} / Attendu: {reception.quantiteAttendue}</p>
+                            <p className="mt-2 text-sm text-slate-600">Reçu : {reception.quantiteRecue} / Attendu: {reception.quantiteAttendue}</p>
                             {reception.notes ? <p className="mt-2 text-sm text-slate-500">{reception.notes}</p> : null}
                           </div>
                         ))
@@ -1060,16 +832,16 @@ export default function CommandesFournisseurPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4">
+                  <div className="rounded-3xl border border-stone-200 bg-white p-4">
                     <h3 className="font-bold text-slate-900">Coordonnées chantier</h3>
                     <div className="mt-4 space-y-3 text-sm text-slate-600">
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
+                      <div className="rounded-2xl bg-stone-50 px-3 py-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Chantier</p>
                         <p className="mt-1 font-medium text-slate-800">{selectedOrder.devis.chantier?.reference ?? 'Sans chantier'}</p>
-                        <p className="mt-1">{selectedOrder.devis.chantier?.adresse ?? 'Adresse non renseignee'}</p>
+                        <p className="mt-1">{selectedOrder.devis.chantier?.adresse ?? 'Adresse non renseignée'}</p>
                       </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Date livraison prevue</p>
+                      <div className="rounded-2xl bg-stone-50 px-3 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Date livraison prévue</p>
                         <p className="mt-1 font-medium text-slate-800">{selectedOrder.dateLivraisonPrevue ? formatDate(selectedOrder.dateLivraisonPrevue) : 'À communiquer'}</p>
                       </div>
                     </div>
@@ -1080,14 +852,14 @@ export default function CommandesFournisseurPage() {
                       event.preventDefault();
                       createReceptionMutation.mutate(receptionForm);
                     }}
-                    className="rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_100%)] p-5"
+                    className="rounded-[28px] border border-stone-200 bg-[linear-gradient(135deg,#ffffff_0%,#f8fafc_100%)] p-5"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
                       <CheckCircle2 size={16} />
                       Saisie réception chantier
                     </div>
 
-                    <div className="mt-4 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                       Quantité restante conseillee: <strong>{remainingQuantity}</strong>
                     </div>
 
@@ -1100,7 +872,7 @@ export default function CommandesFournisseurPage() {
                           min="0"
                           value={receptionForm.quantiteRecue}
                           onChange={(event) => updateReceptionForm({ quantiteRecue: event.target.value })}
-                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                          className="w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                         />
                       </label>
 
@@ -1112,7 +884,7 @@ export default function CommandesFournisseurPage() {
                             type="date"
                             value={receptionForm.dateReception}
                             onChange={(event) => updateReceptionForm({ dateReception: event.target.value })}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-11 py-3 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                            className="w-full rounded-2xl border border-stone-200 bg-white px-11 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                           />
                         </div>
                       </label>
@@ -1123,8 +895,8 @@ export default function CommandesFournisseurPage() {
                           value={receptionForm.notes}
                           onChange={(event) => updateReceptionForm({ notes: event.target.value })}
                           rows={4}
-                          placeholder="Reserve, colis manque, matériau abime..."
-                          className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
+                          placeholder="Réserve, colis manquant, matériau abîmé..."
+                          className="w-full resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                         />
                       </label>
                     </div>
@@ -1140,7 +912,7 @@ export default function CommandesFournisseurPage() {
                         type="button"
                         onClick={() => updateReceptionForm({ quantiteRecue: String(remainingQuantity) })}
                         disabled={remainingQuantity <= 0}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 px-4 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-stone-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Warehouse size={16} />
                         Recevoir le restant
@@ -1148,10 +920,10 @@ export default function CommandesFournisseurPage() {
                       <button
                         type="submit"
                         disabled={createReceptionMutation.isPending || remainingQuantity <= 0}
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {createReceptionMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <Send size={16} />}
-                        {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Réception complete' : 'Enregistrer réception'}
+                        {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Réception complète' : 'Enregistrer réception'}
                       </button>
                     </div>
                   </form>
@@ -1161,59 +933,6 @@ export default function CommandesFournisseurPage() {
           )}
         </div>
       </section>
-
-      {showNewOrderModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-[2rem] bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                  Nouvelle commande fournisseur
-                </p>
-                <h2 className="mt-1 text-xl font-semibold text-slate-950">
-                  Commandes générées depuis les devis
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowNewOrderModal(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50"
-                aria-label="Fermer"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4 p-5">
-              <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-800">
-                Les commandes fournisseur sont créées automatiquement à partir des devis validés.
-                Vous pouvez afficher les commandes à confirmer, puis les vérifier avant envoi.
-              </div>
-
-              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowNewOrderModal(false)}
-                  className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStatusFilter('CREEE');
-                    setShowNewOrderModal(false);
-                  }}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
-                >
-                  <ClipboardList size={17} />
-                  Voir les commandes à confirmer
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {supplierDocumentPreview && (
         <CommandeFournisseurDocument
