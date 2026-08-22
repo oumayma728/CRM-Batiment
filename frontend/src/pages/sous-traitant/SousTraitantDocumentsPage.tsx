@@ -44,7 +44,7 @@ export default function SousTraitantDocumentsPage() {
         </p>
       </div>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 shadow-sm focus-within:border-teal-300 focus-within:ring-4 focus-within:ring-teal-500/10">
         <Search size={18} className="text-slate-400" />
         <input
           value={search}
@@ -71,7 +71,7 @@ export default function SousTraitantDocumentsPage() {
           <Loader2 className="animate-spin" size={26} />
         </div>
       ) : !data?.data.length ? (
-        <div className="flex min-h-64 flex-col items-center justify-center rounded-[28px] border border-slate-200 bg-white text-center shadow-sm">
+        <div className="flex min-h-64 flex-col items-center justify-center rounded-[28px] bg-white text-center shadow-sm ring-1 ring-stone-200">
           <FolderOpen size={32} className="text-slate-300" />
           <h3 className="mt-4 font-semibold text-slate-800">Aucun document disponible</h3>
           <p className="mt-1 text-sm text-slate-400">
@@ -79,7 +79,7 @@ export default function SousTraitantDocumentsPage() {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-stone-200">
           <div className="divide-y divide-slate-100">
             {data.data.map((document) => {
               const clientName = `${document.chantier.client.prenom ?? ''} ${document.chantier.client.nom}`.trim();
@@ -88,7 +88,7 @@ export default function SousTraitantDocumentsPage() {
                   key={document.id}
                   className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center"
                 >
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
                     <FileText size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -107,7 +107,7 @@ export default function SousTraitantDocumentsPage() {
                         setDownloadError('Impossible d’ouvrir ce document.'),
                       );
                     }}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
                   >
                     <Download size={16} /> Ouvrir
                   </button>
