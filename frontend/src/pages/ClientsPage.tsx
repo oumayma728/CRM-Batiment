@@ -14,7 +14,7 @@ import {
   Info, HardHat, AlertTriangle, CheckCircle2, Sparkles,
 } from 'lucide-react';
 
-/* ───── Config labels ───── */
+/* ÔöÇÔöÇÔöÇÔöÇÔöÇ Config labels ÔöÇÔöÇÔöÇÔöÇÔöÇ */
 const sourceLabels: Record<string, { label: string; bg: string; text: string }> = {
   CHATBOT: { label: 'Chatbot', bg: 'bg-cyan-50', text: 'text-cyan-700' },
   TECHNICO_COMMERCIAL: { label: 'Technico-Commercial', bg: 'bg-blue-50', text: 'text-blue-700' },
@@ -51,7 +51,7 @@ const besoinConfig: Record<string, { label: string; bg: string; text: string }> 
   DEVIS_RENDEZ_VOUS: { label: 'Veut un devis et un rendez-vous', bg: 'bg-purple-50', text: 'text-purple-700' },
 };
 
-/* ───── Types ───── */
+/* ÔöÇÔöÇÔöÇÔöÇÔöÇ Types ÔöÇÔöÇÔöÇÔöÇÔöÇ */
 interface ClientForm {
   nom: string;
   prenom: string;
@@ -153,7 +153,7 @@ export default function ClientsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['clients'] }); setDeleteId(null); },
   });
 
-  // Mutation : générer une demande de devis automatiquement
+  // Mutation : g├®n├®rer une demande de devis automatiquement
   const generateDemandeMutation = useMutation({
     mutationFn: (body: { clientId: number; description: string; source: string }) =>
       api.post('/demandes-devis', body),
@@ -244,7 +244,7 @@ export default function ClientsPage() {
         } catch (error) {
           apiErrors.push({
             rowNumber: row.rowNumber,
-            reason: getImportErrorMessage(error, 'Creation impossible.'),
+            reason: getImportErrorMessage(error, 'Création impossible.'),
           });
         }
       }
@@ -267,7 +267,7 @@ export default function ClientsPage() {
 
       setImportFeedback({
         type: status,
-        message: `Import termine: ${createdCount} cree(s), ${failedCount} echec(s), ${parsed.skippedRows} ligne(s) vide(s) ignoree(s).${details}`,
+        message: `Import terminé : ${createdCount} créé(s), ${failedCount} échec(s), ${parsed.skippedRows} ligne(s) vide(s) ignorée(s).${details}`,
       });
     } catch (error) {
       setImportFeedback({
@@ -304,12 +304,12 @@ export default function ClientsPage() {
             type="button"
             onClick={() => importInputRef.current?.click()}
             disabled={isImporting}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-60 disabled:cursor-not-allowed transition-colors text-sm font-medium"
           >
             {isImporting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             {isImporting ? 'Import en cours...' : 'Importer Excel'}
           </button>
-          <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20">
+          <button onClick={openCreate} className="inline-flex items-center gap-2 rounded-lg bg-[#185FA5] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0F4780] hover:shadow-lg hover:shadow-blue-500/20">
             <UserPlus size={17} /> Nouveau client
           </button>
         </div>
@@ -334,17 +334,17 @@ export default function ClientsPage() {
           <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" placeholder="Rechercher par nom, email, téléphone..." value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none" />
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] text-sm transition-all outline-none" />
         </div>
       </div>
 
       {/* Table */}
-      <div className="max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="max-w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
         {isLoading ? (
           <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={32} /></div>
         ) : clients.length === 0 ? (
           <div className="text-center py-20 text-slate-500">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><Users size={32} className="text-slate-300" /></div>
+            <div className="w-16 h-16 bg-slate-50 rounded-lg flex items-center justify-center mx-auto mb-4"><Users size={32} className="text-slate-300" /></div>
             <p className="text-lg font-semibold text-slate-700">Aucun client trouvé</p>
             <p className="text-sm text-slate-400 mt-1">Commencez par ajouter votre premier client.</p>
             <button onClick={openCreate} className="mt-4 inline-flex items-center gap-2 text-blue-600 font-medium text-sm hover:text-blue-700"><UserPlus size={16} /> Ajouter un client</button>
@@ -501,13 +501,13 @@ export default function ClientsPage() {
                         </td>
                       </tr>
 
-                      {/* ─── Expandable Panel ─── */}
+                      {/* ÔöÇÔöÇÔöÇ Expandable Panel ÔöÇÔöÇÔöÇ */}
                       {isExpanded && (
                         <tr key={`${client.id}-expand`} className="bg-slate-50/50">
                           <td colSpan={8} className="px-3 py-3">
                             <div className="grid grid-cols-1 gap-3 lg:grid-cols-3" onClick={(e) => e.stopPropagation()}>
-                              {/* Col 1: Détails client */}
-                              <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 space-y-2">
+                              {/* Col 1: D├®tails client */}
+                              <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-3 space-y-2">
                                 <h4 className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Détails du client</h4>
                                 <div className="space-y-2 text-sm">
                                   {client.adresseClient && (
@@ -529,7 +529,7 @@ export default function ClientsPage() {
                               </div>
 
                               {/* Col 2: Type de projet détaillé */}
-                              <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 space-y-2">
+                              <div className="min-w-0 rounded-lg border border-slate-200 bg-white p-3 space-y-2">
                                 <h4 className="text-[12px] font-bold text-slate-500 uppercase tracking-wide">Projet</h4>
                                 {projectTypes.length > 0 ? (
                                   <div className="space-y-2">
@@ -558,7 +558,7 @@ export default function ClientsPage() {
                                 )}
                               </div>
 
-                              {/* Col 3: Action — Générer demande de devis */}
+                              {/* Col 3: Action — G├®n├®rer demande de devis */}
                               <div className={cn(
                                 'min-w-0 rounded-xl p-3 space-y-2 border-2',
                                 wantsDevis ? 'border-emerald-200 bg-emerald-50/50' : 'border-dashed border-slate-200 bg-white',
@@ -592,7 +592,7 @@ export default function ClientsPage() {
                                     'w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all',
                                     wantsDevis
                                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:shadow-lg hover:shadow-emerald-500/20'
-                                      : 'bg-blue-600 text-white hover:shadow-lg hover:shadow-blue-500/20',
+                                      : 'bg-[#185FA5] text-white hover:shadow-lg hover:shadow-blue-500/20',
                                     generateDemandeMutation.isPending && 'opacity-50',
                                   )}
                                 >
@@ -616,7 +616,7 @@ export default function ClientsPage() {
                 })}
               </tbody>
             </table>
-            {/* Version mobile : cartes empilées (le tableau est masqué < md) */}
+            {/* Version mobile : cartes empil├®es (le tableau est masqu├® < md) */}
             <div className="md:hidden divide-y divide-gray-100">
               {clients.map((client) => {
                 const bCfg = besoinConfig[client.besoin ?? ''];
@@ -645,8 +645,8 @@ export default function ClientsPage() {
                       )}
                     </div>
                     <div className="text-sm text-gray-600 space-y-0.5">
-                      {client.telephone && <div>📱 {client.telephone}</div>}
-                      {client.email && <div className="truncate">📧 {client.email}</div>}
+                      {client.telephone && <div>­ƒô▒ {client.telephone}</div>}
+                      {client.email && <div className="truncate">­ƒôº {client.email}</div>}
                     </div>
                     <div className="flex items-center justify-between pt-1">
                       <span className="text-[11px] text-gray-400">{client.source ?? ''}</span>
@@ -677,17 +677,17 @@ export default function ClientsPage() {
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50/50">
             <p className="text-[13px] text-slate-500">Page <span className="font-semibold text-slate-700">{meta.page}</span> sur <span className="font-semibold text-slate-700">{meta.totalPages}</span></p>
             <div className="flex items-center gap-1.5">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-2xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronLeft size={16} /></button>
-              <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="p-2 rounded-2xl border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronRight size={16} /></button>
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronLeft size={16} /></button>
+              <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page === meta.totalPages} className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-white hover:shadow-sm disabled:opacity-40 transition-all"><ChevronRight size={16} /></button>
             </div>
           </div>
         )}
       </div>
 
-      {/* ─── Create / Edit Modal ─── */}
+      {/* ÔöÇÔöÇÔöÇ Create / Edit Modal ÔöÇÔöÇÔöÇ */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
               <h2 className="text-lg font-bold text-slate-950">{editingClient ? 'Modifier le client' : 'Nouveau client'}</h2>
               <button onClick={closeModal} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"><X size={18} /></button>
@@ -699,10 +699,10 @@ export default function ClientsPage() {
                 <InputField label="Prénom" value={form.prenom} onChange={(v) => setForm({ ...form, prenom: v })} />
               </div>
 
-              {/* Email / Téléphone */}
+              {/* Email / T├®l├®phone */}
               <div className="grid grid-cols-2 gap-4">
                 <InputField label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                <InputField label="Téléphone" value={form.telephone} onChange={(v) => setForm({ ...form, telephone: v })} />
+                <InputField label="T├®l├®phone" value={form.telephone} onChange={(v) => setForm({ ...form, telephone: v })} />
               </div>
 
               {/* Adresses */}
@@ -722,16 +722,16 @@ export default function ClientsPage() {
                 <div>
                   <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Source</label>
                   <select value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none bg-white">
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] text-sm transition-all outline-none bg-white">
                     {sourceOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
               </div>
 
-              {/* ─── Besoin rapide ─── */}
+              {/* ÔöÇÔöÇÔöÇ Besoin rapide ÔöÇÔöÇÔöÇ */}
               <div>
                 <label className="block text-[13px] font-semibold text-slate-700 mb-2">
-                  Besoin du client <span className="text-slate-400 font-normal text-[12px]">— cliquez pour sélectionner</span>
+                  Besoin du client <span className="text-slate-400 font-normal text-[12px]">ÔÇö cliquez pour sélectionner</span>
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {besoinOptions.map((b) => {
@@ -760,7 +760,7 @@ export default function ClientsPage() {
               <div>
                 <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Notes</label>
                 <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm resize-none transition-all"
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] text-sm resize-none transition-all"
                   placeholder="Informations complémentaires, détails du besoin..." />
               </div>
 
@@ -772,7 +772,7 @@ export default function ClientsPage() {
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={closeModal} className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
-                <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                <button type="submit" disabled={saving} className="px-6 py-2.5 text-sm font-semibold text-white rounded-lg bg-[#185FA5] hover:bg-[#0F4780] hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
                   {saving && <Loader2 size={16} className="animate-spin" />}
                   {editingClient ? 'Enregistrer' : 'Créer le client'}
                 </button>
@@ -782,11 +782,11 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* ─── Delete Confirmation ─── */}
+      {/* ÔöÇÔöÇÔöÇ Delete Confirmation ÔöÇÔöÇÔöÇ */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 text-center shadow-2xl">
-            <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4"><Trash2 className="text-blue-600" size={24} /></div>
+          <div className="bg-white rounded-xl w-full max-w-sm p-6 text-center shadow-2xl">
+            <div className="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-4"><Trash2 className="text-blue-600" size={24} /></div>
             <h3 className="text-lg font-bold text-slate-950 mb-2">Supprimer ce client ?</h3>
             <p className="text-sm text-slate-500 mb-6">Cette action est irréversible. Toutes les données associées seront supprimées.</p>
             <div className="flex gap-3">
@@ -803,7 +803,7 @@ export default function ClientsPage() {
   );
 }
 
-/* ─── Reusable InputField ─── */
+/* ÔöÇÔöÇÔöÇ Reusable InputField ÔöÇÔöÇÔöÇ */
 function InputField({ label, value, onChange, type = 'text', required = false }: {
   label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean;
 }) {
@@ -811,7 +811,7 @@ function InputField({ label, value, onChange, type = 'text', required = false }:
     <div>
       <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">{label}</label>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required}
-        className="w-full px-4 py-2.5 border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none" />
+        className="w-full px-4 py-2.5 border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] text-sm transition-all outline-none" />
     </div>
   );
 }
