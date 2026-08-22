@@ -42,7 +42,7 @@ const statutConfig: Record<
   },
   CONVERTI: {
     label: 'Convertie',
-    color: 'bg-blue-100 text-blue-700 border-blue-200',
+    color: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     icon: <CheckCircle2 size={14} />,
     helper: 'La demande a été transformée en opportunité traitée.',
   },
@@ -82,6 +82,7 @@ export default function TechnicoDemandes() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState<DemandeDevisStatut | ''>('');
+  const [sortBy, setSortBy] = useState('recent');
   const [selectedDemande, setSelectedDemande] = useState<DemandeDevis | null>(null);
   const limit = 10;
 
@@ -97,6 +98,14 @@ export default function TechnicoDemandes() {
   });
 
   const demandes: DemandeDevis[] = data?.data ?? [];
+  const sortedDemandes = [...demandes].sort((a, b) => {
+    if (sortBy === 'client') return getClientLabel(a).localeCompare(getClientLabel(b));
+    if (sortBy === 'statut') {
+      return statutOrder.indexOf(normalizeDemandeStatut(a.statut as string)) -
+        statutOrder.indexOf(normalizeDemandeStatut(b.statut as string));
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
 
   const updateStatutMutation = useMutation({
@@ -129,12 +138,12 @@ export default function TechnicoDemandes() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-950">Demandes de devis</h2>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <h2 className="text-xl font-bold text-gray-900">Demandes de devis</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
             {meta.total} demande{meta.total > 1 ? 's' : ''} dans votre pipeline technico
           </p>
         </div>
-        <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        <div className="rounded-2xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm text-teal-700">
           Les demandes créées depuis <span className="font-semibold">Mes Clients</span> arrivent
           ici automatiquement avec le statut <span className="font-semibold">NOUVEAU</span>.
         </div>
@@ -157,8 +166,8 @@ export default function TechnicoDemandes() {
               className={cn(
                 'rounded-xl border p-4 text-left transition-all',
                 statutFilter === statut
-                  ? 'border-blue-400 bg-white ring-2 ring-blue-100 shadow-sm'
-                  : 'border-slate-100 bg-white hover:border-slate-200',
+                  ? 'border-teal-400 bg-white ring-2 ring-teal-100 shadow-sm'
+                  : 'border-gray-100 bg-white hover:border-gray-200',
               )}
             >
               <div className="flex items-center gap-2 mb-2">
@@ -170,32 +179,44 @@ export default function TechnicoDemandes() {
                 >
                   {cfg.icon}
                 </span>
-                <span className="text-xs font-semibold text-slate-500">{cfg.label}</span>
+                <span className="text-xs font-semibold text-gray-500">{cfg.label}</span>
               </div>
-              <p className="text-2xl font-extrabold text-slate-950">{count}</p>
-              <p className="mt-1 text-xs text-slate-400">{cfg.helper}</p>
+              <p className="text-2xl font-extrabold text-gray-900">{count}</p>
+              <p className="mt-1 text-xs text-gray-400">{cfg.helper}</p>
             </button>
           );
         })}
       </div>
 
-      <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-        <Search size={18} className="text-slate-400" />
-        <input
-          type="text"
-          placeholder="Rechercher une demande..."
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-            setPage(1);
-          }}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-slate-300 hover:text-slate-500">
-            <X size={16} />
-          </button>
-        )}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-1 items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
+          <Search size={18} className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher une demande..."
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 shadow-sm outline-none"
+          aria-label="Trier les demandes"
+        >
+          <option value="recent">Tri : plus récent</option>
+          <option value="client">Tri : client A-Z</option>
+          <option value="statut">Tri : statut</option>
+        </select>
       </div>
 
       {error && (
@@ -207,36 +228,36 @@ export default function TechnicoDemandes() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((item) => (
-            <div key={item} className="bg-white rounded-2xl border border-slate-100 p-5 animate-pulse">
-              <div className="h-4 bg-slate-200 rounded w-1/3 mb-3" />
-              <div className="h-3 bg-slate-100 rounded w-2/3" />
+            <div key={item} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+              <div className="h-3 bg-gray-100 rounded w-2/3" />
             </div>
           ))}
         </div>
       ) : demandes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-amber-50 rounded-full flex items-center justify-center">
             <FileText size={28} className="text-amber-400" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-950">Aucune demande</h3>
-          <p className="text-sm text-slate-400 mt-1">
-            Crée une demande depuis la fiche client pour alimenter ce tableau.
+          <h3 className="text-lg font-semibold text-gray-900">Aucune demande</h3>
+          <p className="text-sm text-gray-400 mt-1">
+            Créez une demande depuis la fiche client pour alimenter ce tableau.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {demandes.map((demande) => {
+          {sortedDemandes.map((demande) => {
             const workflowStatut = normalizeDemandeStatut(demande.statut as string);
             const cfg = statutConfig[workflowStatut];
             const studyButtonLabel =
               workflowStatut === 'NOUVEAU'
-                ? 'Generer le devis'
+                ? 'Générer le devis'
                 : 'Modifier devis';
 
             return (
               <div
                 key={demande.id}
-                className="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden"
               >
                 <div className="p-5">
                   <div className="flex items-start gap-4">
@@ -245,7 +266,7 @@ export default function TechnicoDemandes() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-sm font-bold text-slate-950">Demande #{demande.id}</span>
+                        <span className="text-sm font-bold text-gray-900">Demande #{demande.id}</span>
                         <span
                           className={cn(
                             'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border',
@@ -255,8 +276,8 @@ export default function TechnicoDemandes() {
                           {cfg.icon} {cfg.label}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-600 line-clamp-2">{demande.description}</p>
-                      <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-400">
+                      <p className="text-sm text-gray-600 line-clamp-2">{demande.description}</p>
+                      <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-400">
                         <span>Client : {getClientLabel(demande)}</span>
                         <span>Source : {demande.source}</span>
                         <span>{formatDate(demande.createdAt)}</span>
@@ -264,7 +285,7 @@ export default function TechnicoDemandes() {
                     </div>
                     <button
                       onClick={() => setSelectedDemande(demande)}
-                      className="shrink-0 px-3 py-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all text-xs font-medium flex items-center gap-1"
+                      className="shrink-0 px-3 py-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-teal-50 hover:border-teal-200 hover:text-teal-600 transition-all text-xs font-medium flex items-center gap-1"
                     >
                       <Eye size={14} /> Détails
                     </button>
@@ -272,8 +293,8 @@ export default function TechnicoDemandes() {
                 </div>
 
                 {canOpenStudy(workflowStatut) && (
-                  <div className="px-5 py-3 bg-slate-50/60 border-t border-slate-100 flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-slate-400 mr-auto">Étape suivante :</span>
+                  <div className="px-5 py-3 bg-gray-50/60 border-t border-gray-100 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-gray-400 mr-auto">Étape suivante :</span>
                     <button
                       onClick={() => handleStudyNavigation(demande)}
                       disabled={updateStatutMutation.isPending}
@@ -295,17 +316,17 @@ export default function TechnicoDemandes() {
           <button
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             disabled={page <= 1}
-            className="p-2 rounded-lg border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition"
+            className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-sm text-slate-600 font-medium px-3">
+          <span className="text-sm text-gray-600 font-medium px-3">
             Page {page} / {meta.totalPages}
           </span>
           <button
             onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
             disabled={page >= meta.totalPages}
-            className="p-2 rounded-lg border border-slate-200 disabled:opacity-30 hover:bg-slate-50 transition"
+            className="p-2 rounded-lg border border-gray-200 disabled:opacity-30 hover:bg-gray-50 transition"
           >
             <ChevronRight size={18} />
           </button>
@@ -315,14 +336,14 @@ export default function TechnicoDemandes() {
       {selectedDemande && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-950">Demande #{selectedDemande.id}</h3>
-                <p className="text-sm text-slate-500 mt-1">{getClientLabel(selectedDemande)}</p>
+                <h3 className="text-lg font-bold text-gray-900">Demande #{selectedDemande.id}</h3>
+                <p className="text-sm text-gray-500 mt-1">{getClientLabel(selectedDemande)}</p>
               </div>
               <button
                 onClick={() => setSelectedDemande(null)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400"
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
               >
                 <X size={20} />
               </button>
@@ -341,7 +362,7 @@ export default function TechnicoDemandes() {
 
               {canOpenStudy(normalizeDemandeStatut(selectedDemande.statut as string)) && (
                 <div>
-                  <p className="text-xs font-medium text-slate-400 mb-2">Action principale</p>
+                  <p className="text-xs font-medium text-gray-400 mb-2">Action principale</p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => handleStudyNavigation(selectedDemande)}
@@ -349,7 +370,7 @@ export default function TechnicoDemandes() {
                       className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold transition bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-60"
                     >
                       {normalizeDemandeStatut(selectedDemande.statut as string) === 'NOUVEAU'
-                        ? 'Generer le devis'
+                        ? 'Générer le devis'
                         : 'Modifier devis'}
                       <ArrowRight size={12} />
                     </button>
@@ -367,8 +388,8 @@ export default function TechnicoDemandes() {
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs font-medium text-slate-400 mb-0.5">{label}</p>
-      <p className="text-sm text-slate-950">{value}</p>
+      <p className="text-xs font-medium text-gray-400 mb-0.5">{label}</p>
+      <p className="text-sm text-gray-900">{value}</p>
     </div>
   );
 }
