@@ -61,8 +61,8 @@ export default function SousTraitantDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[28px] border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6 shadow-sm lg:p-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">
+      <section className="rounded-[30px] bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(135deg,#ffffff_0%,#f5fbfa_55%,#f8fafc_100%)] p-6 shadow-sm ring-1 ring-stone-200 lg:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-700">
           Espace sous-traitant
         </p>
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -71,13 +71,13 @@ export default function SousTraitantDashboardPage() {
               Tableau de bord opérationnel
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Consultez uniquement les chantiers et les tâches qui vous sont affectés.
+              Consultez uniquement les chantiers et les tâches qui vous sont affectées.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
               to="/sous-traitant/taches"
-              className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+              className="inline-flex items-center gap-2 rounded-2xl bg-teal-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800"
             >
               Voir mes tâches <ArrowRight size={16} />
             </Link>
@@ -121,7 +121,7 @@ export default function SousTraitantDashboardPage() {
         />
       </section>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm lg:p-6">
+      <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200 lg:p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="text-lg font-semibold text-slate-950">Dernières tâches</h3>
@@ -131,7 +131,7 @@ export default function SousTraitantDashboardPage() {
           </div>
           <Link
             to="/sous-traitant/taches"
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            className="text-sm font-semibold text-teal-700 hover:text-teal-800"
           >
             Tout voir
           </Link>
@@ -183,7 +183,7 @@ export default function SousTraitantDashboardPage() {
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-100">
                       <div
-                        className="h-full rounded-full bg-blue-600"
+                        className="h-full rounded-full bg-teal-700"
                         style={{ width: `${Math.min(100, Math.max(0, task.avancement))}%` }}
                       />
                     </div>
@@ -214,7 +214,7 @@ function KpiCard({
       <div
         className={cn(
           'flex h-10 w-10 items-center justify-center rounded-2xl',
-          danger ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600',
+          danger ? 'bg-red-50 text-red-600' : 'bg-teal-50 text-teal-700',
         )}
       >
         {icon}
