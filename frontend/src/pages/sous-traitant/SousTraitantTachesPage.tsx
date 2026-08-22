@@ -126,9 +126,9 @@ export default function SousTraitantTachesPage() {
         </p>
       </div>
 
-      <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-[24px] bg-white p-4 shadow-sm ring-1 ring-stone-200">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl border border-stone-200 px-4 py-3 focus-within:border-teal-300 focus-within:ring-4 focus-within:ring-teal-500/10">
             <Search size={18} className="text-slate-400" />
             <input
               value={search}
@@ -152,8 +152,8 @@ export default function SousTraitantTachesPage() {
                 className={cn(
                   'rounded-full px-4 py-2 text-xs font-semibold transition',
                   status === option.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+                    ? 'bg-teal-700 text-white'
+                    : 'bg-stone-100 text-slate-600 hover:bg-stone-200',
                 )}
               >
                 {option.label}
@@ -188,7 +188,7 @@ export default function SousTraitantTachesPage() {
             return (
               <article
                 key={task.id}
-                className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm"
+                className="rounded-[24px] bg-white p-5 shadow-sm ring-1 ring-stone-200 transition hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -208,14 +208,14 @@ export default function SousTraitantTachesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs font-medium text-blue-600">
+                    <p className="mt-1 text-xs font-medium text-teal-700">
                       {task.chantier.reference} · {clientName}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => openEdit(task)}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
                     aria-label="Mettre à jour la tâche"
                     title="Mettre à jour"
                   >
@@ -243,7 +243,7 @@ export default function SousTraitantTachesPage() {
                   </div>
                   <div className="h-2.5 overflow-hidden rounded-full bg-slate-100">
                     <div
-                      className="h-full rounded-full bg-blue-600"
+                      className="h-full rounded-full bg-teal-700"
                       style={{ width: `${Math.min(100, Math.max(0, task.avancement))}%` }}
                     />
                   </div>
@@ -295,7 +295,7 @@ export default function SousTraitantTachesPage() {
           >
             <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
                   Mise à jour
                 </p>
                 <h3 className="mt-1 text-lg font-semibold text-slate-950">
@@ -322,7 +322,7 @@ export default function SousTraitantTachesPage() {
                     if (nextStatus === 'TERMINEE') setProgress(100);
                     if (nextStatus === 'A_FAIRE') setProgress(0);
                   }}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 >
                   {statusOptions
                     .filter((option) => option.value)
@@ -337,7 +337,7 @@ export default function SousTraitantTachesPage() {
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-sm font-medium text-slate-700">Avancement</label>
-                  <span className="text-sm font-semibold text-blue-600">{progress}%</span>
+                  <span className="text-sm font-semibold text-teal-700">{progress}%</span>
                 </div>
                 <input
                   type="range"
@@ -351,7 +351,7 @@ export default function SousTraitantTachesPage() {
                     if (next === 100) setFormStatus('TERMINEE');
                     else if (next > 0 && formStatus === 'A_FAIRE') setFormStatus('EN_COURS');
                   }}
-                  className="w-full accent-blue-600"
+                  className="w-full accent-teal-700"
                 />
               </div>
 
@@ -362,7 +362,7 @@ export default function SousTraitantTachesPage() {
                   onChange={(event) => setComment(event.target.value)}
                   rows={4}
                   placeholder="Ajoutez une note sur l’intervention..."
-                  className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
 
@@ -384,7 +384,7 @@ export default function SousTraitantTachesPage() {
               <button
                 type="submit"
                 disabled={updateMutation.isPending}
-                className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-2xl bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:opacity-60"
               >
                 {updateMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                 Enregistrer
