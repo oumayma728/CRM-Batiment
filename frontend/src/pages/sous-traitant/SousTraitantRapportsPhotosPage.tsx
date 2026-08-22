@@ -134,14 +134,14 @@ export default function SousTraitantRapportsPhotosPage() {
         </p>
       </div>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
         <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
           Chantier concerné
         </label>
         <select
           value={chantierId}
           onChange={(event) => { setChantierId(event.target.value); setFeedback(null); }}
-          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+          className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
         >
           <option value="">Sélectionner un chantier</option>
           {chantiers.map((chantier) => (
@@ -152,10 +152,10 @@ export default function SousTraitantRapportsPhotosPage() {
         </select>
 
         {selectedChantier ? (
-          <div className="mt-4 grid gap-3 rounded-2xl bg-blue-50 p-4 text-sm text-blue-900 sm:grid-cols-3">
-            <div><p className="text-xs text-blue-600">Client</p><p className="font-semibold">{selectedChantier.client.prenom} {selectedChantier.client.nom}</p></div>
-            <div><p className="text-xs text-blue-600">Début intervention</p><p className="font-semibold">{formatDate(selectedChantier.taches[0]?.dateDebut ?? selectedChantier.dateDebut)}</p></div>
-            <div><p className="text-xs text-blue-600">Fin prévue</p><p className="font-semibold">{formatDate(selectedChantier.taches.at(-1)?.dateFin ?? selectedChantier.dateFin)}</p></div>
+          <div className="mt-4 grid gap-3 rounded-2xl bg-teal-50 p-4 text-sm text-teal-900 sm:grid-cols-3">
+            <div><p className="text-xs text-teal-700">Client</p><p className="font-semibold">{selectedChantier.client.prenom} {selectedChantier.client.nom}</p></div>
+            <div><p className="text-xs text-teal-700">Début intervention</p><p className="font-semibold">{formatDate(selectedChantier.taches[0]?.dateDebut ?? selectedChantier.dateDebut)}</p></div>
+            <div><p className="text-xs text-teal-700">Fin prévue</p><p className="font-semibold">{formatDate(selectedChantier.taches.at(-1)?.dateFin ?? selectedChantier.dateFin)}</p></div>
           </div>
         ) : null}
       </section>
@@ -173,9 +173,9 @@ export default function SousTraitantRapportsPhotosPage() {
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
-        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"><FileText size={21} /></div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><FileText size={21} /></div>
             <div><h3 className="font-bold text-slate-950">Nouveau rapport</h3><p className="text-xs text-slate-500">Compte rendu d’intervention enregistré en fichier Markdown.</p></div>
           </div>
 
@@ -185,19 +185,19 @@ export default function SousTraitantRapportsPhotosPage() {
               onChange={(event) => setReportTitle(event.target.value)}
               placeholder="Titre du rapport"
               maxLength={140}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
             />
             <textarea
               value={reportContent}
               onChange={(event) => setReportContent(event.target.value)}
               placeholder="Travaux réalisés, difficultés, décisions et actions restantes..."
-              className="min-h-52 w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+              className="min-h-52 w-full resize-y rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
             />
             <button
               type="button"
               disabled={!canSubmitReport || reportMutation.isPending}
               onClick={() => reportMutation.mutate()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {reportMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <UploadCloud size={17} />}
               Déposer le rapport
@@ -205,9 +205,9 @@ export default function SousTraitantRapportsPhotosPage() {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600"><Camera size={21} /></div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700"><Camera size={21} /></div>
             <div><h3 className="font-bold text-slate-950">Nouvelle photographie</h3><p className="text-xs text-slate-500">Formats JPG, PNG ou WEBP. Taille maximale : 10 Mo.</p></div>
           </div>
 
@@ -217,10 +217,10 @@ export default function SousTraitantRapportsPhotosPage() {
               onChange={(event) => setPhotoTitle(event.target.value)}
               placeholder="Légende ou titre de la photo"
               maxLength={140}
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-400 focus:ring-4 focus:ring-teal-100"
             />
-            <label className="flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 text-center transition hover:border-blue-300 hover:bg-blue-50">
-              <ImageIcon size={32} className="text-blue-500" />
+            <label className="flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 text-center transition hover:border-teal-300 hover:bg-teal-50">
+              <ImageIcon size={32} className="text-teal-600" />
               <span className="mt-3 text-sm font-semibold text-slate-700">{photoFile?.name || 'Choisir une photographie'}</span>
               <span className="mt-1 text-xs text-slate-400">Cliquez pour sélectionner le fichier</span>
               <input
@@ -234,7 +234,7 @@ export default function SousTraitantRapportsPhotosPage() {
               type="button"
               disabled={!canSubmitPhoto || photoMutation.isPending}
               onClick={() => photoMutation.mutate()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-teal-700 px-4 py-3 text-sm font-semibold text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {photoMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <UploadCloud size={17} />}
               Déposer la photo
@@ -243,7 +243,7 @@ export default function SousTraitantRapportsPhotosPage() {
         </section>
       </div>
 
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-[28px] bg-white shadow-sm ring-1 ring-stone-200">
         <div className="border-b border-slate-100 px-5 py-4">
           <h3 className="font-bold text-slate-950">Historique des dépôts</h3>
           <p className="mt-1 text-xs text-slate-500">Rapports et photographies accessibles sur vos chantiers.</p>
@@ -256,7 +256,7 @@ export default function SousTraitantRapportsPhotosPage() {
           <div className="divide-y divide-slate-100">
             {uploadedDocuments.map((document) => (
               <div key={document.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
                   {document.type === 'PHOTO' ? <ImageIcon size={18} /> : <FileText size={18} />}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -266,7 +266,7 @@ export default function SousTraitantRapportsPhotosPage() {
                 <button
                   type="button"
                   onClick={() => downloadSousTraitantDocument(document).catch((error) => setFeedback({ tone: 'error', message: getErrorMessage(error) }))}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700"
                 >
                   <Download size={16} /> Télécharger
                 </button>
