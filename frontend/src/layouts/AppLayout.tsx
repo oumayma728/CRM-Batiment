@@ -1,175 +1,224 @@
-import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { NavLink, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, type ReactNode } from 'react';
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  FileSpreadsheet,
-  List,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
+import {
   Box,
-  Wrench,
-  Truck,
-  Shield,
-  LogOut,
   Building2,
-  Settings,
-  Menu,
-  History,
-  LifeBuoy,
-  X,
-  FolderKanban,
-  PackageCheck,
-  HardHat,
+  Calculator,
   CheckSquare,
-  Receipt,
+  ChevronRight,
   Database,
-  ChevronDown,
+  FileSpreadsheet,
+  FileText,
+  FolderKanban,
+  HardHat,
+  History,
+  LayoutDashboard,
+  LifeBuoy,
+  List,
+  LogOut,
+  Menu,
+  Moon,
+  PackageCheck,
+  Receipt,
+  Shield,
+  Sun,
+  Truck,
+  Users,
   Warehouse,
+  Wrench,
+  X,
 } from 'lucide-react';
+
+import { useAuth } from '@/contexts/AuthContext';
+import InternalNotificationsBell from '@/components/InternalNotificationsBell';
+import { useDarkMode } from '@/hooks/useDarkMode';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
-import InternalNotificationsBell from '@/components/InternalNotificationsBell';
 
 interface NavItem {
   to: string;
   label: string;
+  description: string;
+  group: string;
   icon: ReactNode;
   roles: Role[];
-  badge?: string;
-  section?: string;
 }
 
 const navItems: NavItem[] = [
   {
     to: '/admin',
     label: 'Tableau de bord',
-    icon: <LayoutDashboard size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'],
-  },
-  {
-    to: '/admin/clients',
-    label: 'Clients',
-    icon: <Users size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
-    section: 'Gestion commerciale',
-  },
-  {
-    to: '/admin/demandes-devis',
-    label: 'Demandes',
-    icon: <FileText size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
-  },
-  {
-    to: '/admin/demo-requests',
-    label: 'Demandes de démo',
-    icon: <FileText size={17} />,
+    description: 'Vue générale',
+    group: 'Pilotage',
+    icon: <LayoutDashboard size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/devis',
-    label: 'Devis',
-    icon: <FileSpreadsheet size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'],
+    to: '/admin/chantiers',
+    label: 'Chantiers',
+    description: 'Suivi des chantiers',
+    group: 'Pilotage',
+    icon: <HardHat size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/factures',
-    label: 'Factures',
-    icon: <Receipt size={17} />,
+    to: '/admin/taches-chantier',
+    label: 'Tâches chantier',
+    description: 'Planning et tâches',
+    group: 'Pilotage',
+    icon: <CheckSquare size={18} />,
+    roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/commandes-fournisseur',
+    label: 'Commandes fournisseur',
+    description: 'Commandes et réceptions',
+    group: 'Pilotage',
+    icon: <PackageCheck size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
     to: '/admin/sav',
     label: 'SAV',
-    icon: <LifeBuoy size={17} />,
-    roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    description: 'Tickets et interventions',
+    group: 'Pilotage',
+    icon: <LifeBuoy size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+
+  {
+    to: '/admin/clients',
+    label: 'Clients',
+    description: 'Fiches clients',
+    group: 'Commercial',
+    icon: <Users size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/commandes-fournisseur',
-    label: 'Commandes fournisseur',
-    icon: <PackageCheck size={17} />,
-    roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    to: '/admin/demandes-devis',
+    label: 'Demandes',
+    description: 'Demandes de devis',
+    group: 'Commercial',
+    icon: <FileText size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/fournisseurs',
-    label: 'Fournisseurs',
-    icon: <Truck size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
-    section: 'Pilotage chantier',
+    to: '/admin/demo-requests',
+    label: 'Demandes de démo',
+    description: 'Demandes reçues',
+    group: 'Commercial',
+    icon: <FileText size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/chantiers',
-    label: 'Chantiers',
-    icon: <HardHat size={17} />,
-    roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    to: '/admin/devis',
+    label: 'Devis',
+    description: 'Création et suivi',
+    group: 'Commercial',
+    icon: <FileSpreadsheet size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
-    to: '/admin/taches-chantier',
-    label: 'Tâches chantier',
-    icon: <CheckSquare size={17} />,
-    roles: ['ADMIN', 'CHEF_CHANTIER'],
+    to: '/admin/factures',
+    label: 'Factures',
+    description: 'Facturation et paiements',
+    group: 'Commercial',
+    icon: <Receipt size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
+
   {
     to: '/admin/prestations',
     label: 'Prestations',
-    icon: <List size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
-    section: 'Catalogue & référentiels',
+    description: 'Catalogue prestations',
+    group: 'Référentiel',
+    icon: <List size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
     to: '/admin/prestations-compositions',
     label: 'Compositions',
-    icon: <FileSpreadsheet size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    description: 'Composition prestations',
+    group: 'Référentiel',
+    icon: <FileSpreadsheet size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
     to: '/admin/materiaux',
     label: 'Matériaux',
-    icon: <Box size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    description: 'Catalogue matériaux',
+    group: 'Référentiel',
+    icon: <Box size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
     to: '/admin/stock',
     label: 'Stock',
-    icon: <Warehouse size={17} />,
+    description: 'État du stock',
+    group: 'Référentiel',
+    icon: <Warehouse size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
   {
     to: '/admin/services-mo',
-    label: 'Main d’œuvre',
-    icon: <Wrench size={17} />,
-    roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'],
+    label: "Main d'œuvre",
+    description: 'Services et coûts',
+    group: 'Référentiel',
+    icon: <Wrench size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
   },
+  {
+    to: '/admin/fournisseurs',
+    label: 'Fournisseurs',
+    description: 'Contacts et tarifs',
+    group: 'Référentiel',
+    icon: <Truck size={18} />,
+    roles: ['ADMIN', 'ASSISTANTE'],
+  },
+
   {
     to: '/admin/utilisateurs',
     label: 'Utilisateurs',
-    icon: <Shield size={17} />,
+    description: 'Comptes et rôles',
+    group: 'Administration',
+    icon: <Shield size={18} />,
     roles: ['ADMIN'],
-    section: 'Administration',
   },
   {
     to: '/admin/types-projet',
     label: 'Types de projet',
-    icon: <FolderKanban size={17} />,
+    description: 'Référentiel projets',
+    group: 'Administration',
+    icon: <FolderKanban size={18} />,
     roles: ['ADMIN'],
   },
   {
     to: '/admin/base-ia',
     label: 'Base IA / RAG',
-    icon: <Database size={17} />,
+    description: 'Documents métier',
+    group: 'Administration',
+    icon: <Database size={18} />,
     roles: ['ADMIN'],
   },
   {
     to: '/admin/parametres-chiffrage',
     label: 'Paramètres',
-    icon: <Settings size={17} />,
+    description: 'Règles de chiffrage',
+    group: 'Administration',
+    icon: <Calculator size={18} />,
     roles: ['ADMIN'],
   },
   {
     to: '/admin/audit',
     label: 'Audit',
-    icon: <History size={17} />,
+    description: 'Journal des activités',
+    group: 'Administration',
+    icon: <History size={18} />,
     roles: ['ADMIN'],
   },
 ];
@@ -182,145 +231,124 @@ const roleLabels: Record<Role, string> = {
   SOUS_TRAITANT: 'Sous-traitant',
 };
 
-const routeLabels: Record<string, string> = {
-  admin: 'Admin',
-  assistante: 'Assistante',
-  clients: 'Clients',
-  'demandes-devis': 'Demandes',
-  'demo-requests': 'Demandes de démo',
-  devis: 'Devis',
-  factures: 'Factures',
-  sav: 'SAV',
-  'commandes-fournisseur': 'Commandes fournisseur',
-  fournisseurs: 'Fournisseurs',
-  chantiers: 'Chantiers',
-  'taches-chantier': 'Tâches chantier',
-  prestations: 'Prestations',
-  'prestations-compositions': 'Compositions',
-  materiaux: 'Matériaux',
-  stock: 'Stock',
-  'services-mo': 'Main d’œuvre',
-  utilisateurs: 'Utilisateurs',
-  'types-projet': 'Types de projet',
-  'base-ia': 'Base IA / RAG',
-  'parametres-chiffrage': 'Paramètres',
-  audit: 'Audit',
-};
-
 export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { darkMode, toggleDarkMode } = useDarkMode();
+
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  const userMenuRef = useRef<HTMLDivElement | null>(null);
+  const basePath =
+    user?.role === 'ASSISTANTE'
+      ? '/assistante'
+      : '/admin';
 
-  const basePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
   const visibleItems = navItems
-    .filter((item) => user && item.roles.includes(user.role))
+    .filter((item) =>
+      user ? item.roles.includes(user.role) : false,
+    )
     .map((item) => ({
       ...item,
       to: item.to.replace(/^\/admin/, basePath),
     }));
 
-  const currentPage =
-    [...visibleItems]
-      .sort((a, b) => b.to.length - a.to.length)
-      .find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ??
-    visibleItems[0];
-
-  const breadcrumbs = useMemo(() => {
-    const parts = location.pathname.split('/').filter(Boolean);
-
-    if (!parts.length) {
-      return [{ label: 'Bâtiflow', to: basePath }];
-    }
-
-    return parts.map((part, index) => ({
-      label: routeLabels[part] ?? formatPathLabel(part),
-      to: `/${parts.slice(0, index + 1).join('/')}`,
-    }));
-  }, [basePath, location.pathname]);
+  const currentItem = [...visibleItems]
+    .sort((a, b) => b.to.length - a.to.length)
+    .find(
+      (item) =>
+        location.pathname === item.to ||
+        location.pathname.startsWith(`${item.to}/`),
+    );
 
   const initials = user
-    ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase()
-    : 'SA';
+    ? `${user.prenom?.charAt(0) ?? ''}${
+        user.nom?.charAt(0) ?? ''
+      }`.toUpperCase()
+    : 'A';
 
-  const displayName = user ? `${user.prenom ?? ''} ${user.nom ?? ''}`.trim() : 'Super Admin';
-
-  useEffect(() => {
-    const closeOnOutsideClick = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', closeOnOutsideClick);
-
-    return () => {
-      document.removeEventListener('mousedown', closeOnOutsideClick);
-    };
-  }, []);
+  const displayName = user
+    ? `${user.prenom ?? ''} ${user.nom ?? ''}`.trim()
+    : 'Administrateur';
 
   const handleLogout = () => {
-    setUserMenuOpen(false);
     logout();
     navigate('/login');
   };
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-[#f6f9ff] text-slate-900">
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+
+      {/* Overlay mobile */}
       {mobileOpen && (
         <button
           type="button"
           aria-label="Fermer le menu"
-          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
+      {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[244px] flex-col border-r border-slate-200 bg-white text-slate-600 shadow-[8px_0_30px_rgba(15,23,42,0.04)] transition-transform duration-300',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-[292px] flex-col',
+          'bg-[linear-gradient(180deg,#143b68_0%,#185fa5_46%,#2380b8_100%)]',
+          'text-white shadow-2xl shadow-slate-900/20',
+          'transition-transform duration-300',
+          'dark:bg-[linear-gradient(180deg,#020617_0%,#0f2746_48%,#123f63_100%)]',
+          mobileOpen
+            ? 'translate-x-0'
+            : '-translate-x-full lg:translate-x-0',
         )}
       >
-        <div className="px-5 py-6">
+        {/* Logo */}
+        <div className="border-b border-white/15 px-5 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20">
-              <Building2 className="h-5 w-5 text-white" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 shadow-lg ring-1 ring-white/20">
+              <Building2 size={23} />
             </div>
 
-            <div>
-              <h2 className="text-[18px] font-semibold leading-tight tracking-tight text-slate-950">
-                BÂTIFLOW
-              </h2>
-              <p className="mt-0.5 text-[11px] text-slate-500">
-                Gestion bâtiment
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100/80">
+                {user?.role === 'ASSISTANTE'
+                  ? 'Espace assistante'
+                  : 'Espace admin'}
               </p>
+
+              <h1 className="truncate text-lg font-bold">
+                BÂTIFLOW
+              </h1>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="ml-auto rounded-xl p-2 text-white/70 transition hover:bg-white/10 hover:text-white lg:hidden"
+              aria-label="Fermer le menu"
+            >
+              <X size={18} />
+            </button>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
           {visibleItems.map((item, index) => {
-            const previousSection = visibleItems
-              .slice(0, index)
-              .reverse()
-              .find((previous) => previous.section)?.section;
+            const previousItem =
+              visibleItems[index - 1];
 
-            const showSection = item.section && item.section !== previousSection;
+            const showGroup =
+              index === 0 ||
+              item.group !== previousItem?.group;
 
             return (
               <div key={item.to}>
-                {showSection && (
-                  <div className="px-3 pb-2 pt-5">
-                    <p className="text-[11px] font-medium text-slate-500">
-                      {item.section}
-                    </p>
-                  </div>
+                {showGroup && (
+                  <p className="px-3 pb-2 pt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-100/55 first:pt-0">
+                    {item.group}
+                  </p>
                 )}
 
                 <NavLink
@@ -329,20 +357,50 @@ export default function AppLayout() {
                   onClick={() => setMobileOpen(false)}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
+                      'group mb-1 flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition-all',
                       isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950',
+                        ? 'bg-white/18 text-white shadow-lg shadow-slate-900/10 ring-1 ring-white/15'
+                        : 'text-white/78 hover:bg-white/10 hover:text-white',
                     )
                   }
                 >
-                  <span className="transition group-hover:scale-105">{item.icon}</span>
-                  <span className="truncate">{item.label}</span>
+                  {({ isActive }) => (
+                    <>
+                      <span
+                        className={cn(
+                          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition',
+                          isActive
+                            ? 'bg-white/20 text-cyan-50'
+                            : 'bg-white/8 text-cyan-100/70',
+                        )}
+                      >
+                        {item.icon}
+                      </span>
 
-                  {item.badge && (
-                    <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                      {item.badge}
-                    </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-semibold">
+                          {item.label}
+                        </span>
+
+                        <span
+                          className={cn(
+                            'block truncate text-[11px]',
+                            isActive
+                              ? 'text-cyan-50/90'
+                              : 'text-cyan-100/55',
+                          )}
+                        >
+                          {item.description}
+                        </span>
+                      </span>
+
+                      {isActive && (
+                        <ChevronRight
+                          size={16}
+                          className="text-cyan-100/80"
+                        />
+                      )}
+                    </>
                   )}
                 </NavLink>
               </div>
@@ -350,179 +408,127 @@ export default function AppLayout() {
           })}
         </nav>
 
-        <div className="border-t border-slate-100 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
-                {initials || 'SA'}
+        {/* Profil bas sidebar */}
+        <div className="border-t border-white/15 px-4 py-4">
+          <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-100 text-sm font-bold text-[#185FA5]">
+                {initials || 'A'}
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-slate-950">
-                  {displayName || 'Super Admin'}
+                <p className="truncate text-sm font-semibold">
+                  {displayName}
                 </p>
-                <p className="truncate text-[11px] text-slate-500">
+
+                <p className="truncate text-xs text-cyan-100/70">
                   {roleLabels[user?.role ?? 'ADMIN']}
                 </p>
               </div>
-            </div>
 
-            <button
-              type="button"
-              onClick={handleLogout}
-              aria-label="Se déconnecter"
-              title="Déconnexion"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            >
-              <LogOut size={17} />
-            </button>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white/75 transition hover:bg-red-500/25 hover:text-red-100"
+                title="Se déconnecter"
+                aria-label="Se déconnecter"
+              >
+                <LogOut size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 lg:ml-[244px]">
-        <header className="fixed left-0 right-0 top-0 z-[90] border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-xl lg:left-[244px] lg:px-7">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+      {/* Contenu principal */}
+      <main className="min-h-screen min-w-0 flex-1 lg:ml-[292px]">
+
+        {/* Header */}
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900/95">
+          <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-8">
+
+            <div className="flex min-w-0 items-center gap-4">
               <button
                 type="button"
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+                onClick={() =>
+                  setMobileOpen((value) => !value)
+                }
+                className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
+                aria-label="Ouvrir le menu"
               >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {mobileOpen ? (
+                  <X size={20} />
+                ) : (
+                  <Menu size={20} />
+                )}
               </button>
 
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-1 text-[12px] text-slate-400">
-                  <Link to={basePath} className="transition hover:text-blue-600">
-                    Bâtiflow
-                  </Link>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#185FA5] dark:text-blue-400">
+                  {user?.role === 'ASSISTANTE'
+                    ? 'Assistante'
+                    : 'Administration'}
+                </p>
 
-                  {breadcrumbs
-                    .filter((crumb) => crumb.label !== 'Admin' && crumb.label !== 'Assistante')
-                    .map((crumb) => (
-                      <span key={crumb.to} className="flex items-center gap-1">
-                        <span>/</span>
-                        <Link to={crumb.to} className="transition hover:text-blue-600">
-                          {crumb.label}
-                        </Link>
-                      </span>
-                    ))}
-                </div>
-
-                <h1 className="mt-0.5 truncate text-[18px] font-semibold text-slate-950">
-                  {currentPage?.label ?? 'Tableau de bord'}
-                </h1>
+                <h2 className="truncate text-base font-bold text-slate-900 dark:text-slate-100 sm:text-lg">
+                  {currentItem?.label ??
+                    'Tableau de bord'}
+                </h2>
               </div>
             </div>
 
+            {/* Actions header */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={toggleDarkMode}
+                className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                title={
+                  darkMode
+                    ? 'Mode clair'
+                    : 'Mode sombre'
+                }
+                aria-label={
+                  darkMode
+                    ? 'Activer le mode clair'
+                    : 'Activer le mode sombre'
+                }
+              >
+                {darkMode ? (
+                  <Sun size={17} />
+                ) : (
+                  <Moon size={17} />
+                )}
+              </button>
+
               <InternalNotificationsBell />
 
-              <div ref={userMenuRef} className="relative">
-                <button
-                  type="button"
-                  onClick={() => setUserMenuOpen((open) => !open)}
-                  className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition hover:bg-slate-50"
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
-                    {initials || 'SA'}
-                  </div>
+              <div className="hidden h-8 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
-                  <div className="hidden text-left md:block">
-                    <p className="text-[13px] font-semibold leading-none text-slate-800">
-                      {displayName || 'Super Admin'}
-                    </p>
-                    <p className="mt-1 text-[10px] font-semibold text-slate-500">
-                      {roleLabels[user?.role ?? 'ADMIN']}
-                    </p>
-                  </div>
+              <div className="hidden items-center gap-2 sm:flex">
+                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#185FA5] text-xs font-bold text-white">
+                  {initials || 'A'}
+                </div>
 
-                  <ChevronDown
-                    size={15}
-                    className={cn(
-                      'hidden text-slate-400 transition md:block',
-                      userMenuOpen && 'rotate-180',
-                    )}
-                  />
-                </button>
+                <div className="hidden text-sm md:block">
+                  <p className="max-w-[160px] truncate font-semibold text-slate-800 dark:text-slate-100">
+                    {displayName}
+                  </p>
 
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_20px_55px_rgba(15,23,42,0.16)]">
-                    <div className="border-b border-slate-100 px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white">
-                          {initials || 'SA'}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-slate-950">
-                            {displayName || 'Super Admin'}
-                          </p>
-                          <p className="mt-0.5 text-xs text-slate-500">
-                            {roleLabels[user?.role ?? 'ADMIN']}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-2">
-                      {user?.role === 'ADMIN' && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              navigate('/admin/parametres-chiffrage');
-                            }}
-                            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                          >
-                            <Settings size={17} />
-                            Paramètres
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUserMenuOpen(false);
-                              navigate('/admin/audit');
-                            }}
-                            className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-                          >
-                            <History size={17} />
-                            Audit
-                          </button>
-
-                          <div className="my-2 h-px bg-slate-100" />
-                        </>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
-                      >
-                        <LogOut size={17} />
-                        Déconnexion
-                      </button>
-                    </div>
-                  </div>
-                )}
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    {roleLabels[user?.role ?? 'ADMIN']}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="min-w-0 overflow-x-hidden p-4 pt-[92px] lg:p-6 lg:pt-[96px]">
+        {/* Pages */}
+        <div className="min-w-0 overflow-x-hidden px-3 py-4 transition-colors sm:px-4 sm:py-5 lg:px-8 lg:py-8">
           <Outlet />
         </div>
       </main>
     </div>
   );
-}
-
-function formatPathLabel(value: string) {
-  return value
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
 }
