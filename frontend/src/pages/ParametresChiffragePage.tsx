@@ -23,7 +23,7 @@ interface CatalogueValidationResponse {
   isValid: boolean;
   validatedAt: string;
   stats: {
-    activeCategories: number;
+    activeCatégories: number;
     activePrestations: number;
     errors: number;
     warnings: number;
@@ -49,7 +49,7 @@ interface PublicationHistoryItem {
     email: string;
   } | null;
   validationStats: {
-    activeCategories: number | null;
+    activeCatégories: number | null;
     activePrestations: number | null;
     errors: number | null;
     warnings: number | null;
@@ -134,8 +134,6 @@ export default function ParametresChiffragePage() {
 
   useEffect(() => {
     if (!settings) return;
-    // Hydratation du formulaire depuis les paramètres chargés.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setForm({
       tvaDefaut: String(settings.tvaDefaut ?? 20),
       devise: settings.devise ?? 'EUR',
@@ -206,31 +204,31 @@ export default function ParametresChiffragePage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Settings size={24} className="text-blue-600" />
-            Parametres de chiffrage
+            Paramètres de chiffrage
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5">
-            Configurer les regles globales de calcul et piloter la publication catalogue.
+          <p className="text-gray-500 text-sm mt-0.5">
+            Configurer les règles globales de calcul et piloter la publication du catalogue.
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
-          <form onSubmit={handleSave} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.04)] space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">Regles de calcul globales</h2>
+          <form onSubmit={handleSave} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">Règles de calcul globales</h2>
 
             {loadingSettings ? (
-              <div className="flex items-center gap-2 text-sm text-slate-500">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Loader2 size={16} className="animate-spin" />
-                Chargement des parametres...
+                Chargement des paramètres...
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="TVA par defaut (%)"
+                    label="TVA par défaut (%)"
                     value={form.tvaDefaut}
                     onChange={(value) => setForm((current) => ({ ...current, tvaDefaut: value }))}
                     type="number"
@@ -251,7 +249,7 @@ export default function ParametresChiffragePage() {
                     step="0.01"
                   />
                   <Field
-                    label="Frais fixes de deplacement"
+                    label="Frais fixes de déplacement"
                     value={form.fraisFixeDeplacement}
                     onChange={(value) =>
                       setForm((current) => ({ ...current, fraisFixeDeplacement: value }))
@@ -280,7 +278,7 @@ export default function ParametresChiffragePage() {
                   <button
                     type="submit"
                     disabled={saveMutation.isPending}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl batiflow-gradient text-white text-sm font-medium disabled:opacity-50"
                   >
                     {saveMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                     Enregistrer
@@ -290,17 +288,17 @@ export default function ParametresChiffragePage() {
             )}
           </form>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.04)] mt-6 space-y-4">
-            <h2 className="text-lg font-semibold text-slate-900">Validation et publication du catalogue</h2>
-            <p className="text-sm text-slate-500">
-              La publication est bloquee tant que la validation detecte des erreurs.
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mt-6 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900">Validation et publication du catalogue</h2>
+            <p className="text-sm text-gray-500">
+              La publication est bloquée tant que la validation détecte des erreurs.
             </p>
 
             <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => validateMutation.mutate()}
                 disabled={validateMutation.isPending}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
               >
                 {validateMutation.isPending ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -313,7 +311,7 @@ export default function ParametresChiffragePage() {
               <button
                 onClick={() => publishMutation.mutate()}
                 disabled={publishMutation.isPending}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
               >
                 {publishMutation.isPending ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -329,26 +327,26 @@ export default function ParametresChiffragePage() {
             )}
 
             {effectiveValidation && (
-              <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+              <div className="rounded-xl border border-gray-200 p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   {effectiveValidation.isValid ? (
-                    <CheckCircle2 size={16} className="text-blue-600" />
+                    <CheckCircle2 size={16} className="text-emerald-600" />
                   ) : (
                     <AlertTriangle size={16} className="text-amber-600" />
                   )}
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-gray-900">
                     {effectiveValidation.isValid
                       ? 'Catalogue valide'
                       : 'Catalogue non valide'}
                   </p>
                 </div>
 
-                <p className="text-xs text-slate-500">
-                  Verifie le {formatDateTime(effectiveValidation.validatedAt)}
+                <p className="text-xs text-gray-500">
+                  Vérifié le {formatDateTime(effectiveValidation.validatedAt)}
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <StatChip label="Categories" value={effectiveValidation.stats.activeCategories} />
+                  <StatChip label="Catégories" value={effectiveValidation.stats.activeCatégories} />
                   <StatChip label="Prestations" value={effectiveValidation.stats.activePrestations} />
                   <StatChip label="Erreurs" value={effectiveValidation.stats.errors} danger />
                   <StatChip label="Alertes" value={effectiveValidation.stats.warnings} />
@@ -369,51 +367,51 @@ export default function ParametresChiffragePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_10px_25px_rgba(15,23,42,0.04)] h-fit">
-          <h3 className="text-sm font-semibold text-slate-900">Etat de publication</h3>
-          <p className="text-xs text-slate-500 mt-1">
-            Derniere publication du catalogue pour cette entreprise.
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-fit">
+          <h3 className="text-sm font-semibold text-gray-900">État de publication</h3>
+          <p className="text-xs text-gray-500 mt-1">
+            Dernière publication du catalogue pour cette entreprise.
           </p>
 
           <div className="mt-4 space-y-3 text-sm">
             <div>
-              <p className="text-slate-500">Derniere publication</p>
-              <p className="text-slate-900 font-semibold">
+              <p className="text-gray-500">Dernière publication</p>
+              <p className="text-gray-900 font-semibold">
                 {formatDateTime(publicationStatus?.lastPublication?.publishedAt ?? null)}
               </p>
             </div>
 
             <div>
-              <p className="text-slate-500">Derniere maj parametres</p>
-              <p className="text-slate-900 font-semibold">
+              <p className="text-gray-500">Dernière mise à jour des paramètres</p>
+              <p className="text-gray-900 font-semibold">
                 {formatDateTime(publicationStatus?.chiffrageSettings?.updatedAt ?? settings?.updatedAt ?? null)}
               </p>
             </div>
           </div>
 
-          <div className="mt-5 pt-4 border-t border-slate-100">
-            <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">
-              Historique recent
+          <div className="mt-5 pt-4 border-t border-gray-100">
+            <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              Historique récent
             </p>
 
             {loadingPublicationHistory ? (
-              <div className="flex items-center gap-2 text-xs text-slate-500 mt-3">
+              <div className="flex items-center gap-2 text-xs text-gray-500 mt-3">
                 <Loader2 size={14} className="animate-spin" />
                 Chargement de l'historique...
               </div>
             ) : publicationHistory && publicationHistory.length > 0 ? (
               <div className="mt-3 space-y-3">
                 {publicationHistory.slice(0, 8).map((item) => (
-                  <div key={item.id} className="rounded-xl border border-slate-200 px-3 py-2.5">
-                    <p className="text-xs font-semibold text-slate-900">
+                  <div key={item.id} className="rounded-xl border border-gray-100 px-3 py-2.5">
+                    <p className="text-xs font-semibold text-gray-900">
                       {formatDateTime(item.publishedAt)}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-[11px] text-gray-500 mt-0.5">
                       Par {item.publishedBy?.fullName || 'Utilisateur inconnu'}
                     </p>
                     {item.validationStats && (
-                      <p className="text-[11px] text-slate-600 mt-1">
-                        {item.validationStats.activeCategories ?? '-'} cat. |{' '}
+                      <p className="text-[11px] text-gray-600 mt-1">
+                        {item.validationStats.activeCatégories ?? '-'} cat. |{' '}
                         {item.validationStats.activePrestations ?? '-'} prest. |{' '}
                         {item.validationStats.errors ?? '-'} err. |{' '}
                         {item.validationStats.warnings ?? '-'} alertes
@@ -423,7 +421,7 @@ export default function ParametresChiffragePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-500 mt-3">Aucune publication enregistree.</p>
+              <p className="text-xs text-gray-500 mt-3">Aucune publication enregistrée.</p>
             )}
           </div>
         </div>
@@ -447,13 +445,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">{label}</label>
+      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">{label}</label>
       <input
         type={type}
         value={value}
         step={step}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400"
+        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400"
       />
     </div>
   );
@@ -471,7 +469,7 @@ function StatChip({
   return (
     <div
       className={`rounded-lg px-2.5 py-2 ${
-        danger ? 'bg-red-50 text-red-700' : 'bg-slate-50 text-slate-700'
+        danger ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-700'
       }`}
     >
       <p className="text-[10px] uppercase tracking-wide">{label}</p>
