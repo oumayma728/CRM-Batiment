@@ -69,6 +69,7 @@ type DeletableEntity = {
 export default function TechnicoCatalogueExplorer() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'count'>('name');
   const [currentCatId, setCurrentCatId] = useState<number | null>(null);
   const [currentScId, setCurrentScId] = useState<number | null>(null);
   const [currentPrestId, setCurrentPrestId] = useState<number | null>(null);
@@ -330,10 +331,10 @@ export default function TechnicoCatalogueExplorer() {
 
   // ───── Search filter (global — categories level only) ─────
   const filteredCatalogue = useMemo(() => {
-    if (!catalogue || !search) return catalogue ?? [];
+    if (!catalogue) return [];
     const lc = search.toLowerCase();
-    return catalogue
-      .map((cat) => {
+    const baseCatalogue = search
+      ? catalogue.map((cat) => {
         const filteredSubs =
           cat.sousCategories
             ?.map((sc) => {
@@ -350,8 +351,21 @@ export default function TechnicoCatalogueExplorer() {
             .filter((sc) => sc.prestations.length > 0) ?? [];
         return { ...cat, sousCategories: filteredSubs };
       })
-      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0);
-  }, [catalogue, search]);
+      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0)
+      : [...catalogue];
+
+    return baseCatalogue
+      .sort((a, b) => {
+        const countA =
+          (a.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (a.prestations?.length ?? 0);
+        const countB =
+          (b.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (b.prestations?.length ?? 0);
+        if (sortBy === 'count') return countB - countA;
+        return a.nom.localeCompare(b.nom);
+      });
+  }, [catalogue, search, sortBy]);
 
   // ───── Stats ─────
   const stats = useMemo(() => {
@@ -375,8 +389,8 @@ export default function TechnicoCatalogueExplorer() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="animate-spin text-blue-500" size={32} />
-        <span className="ml-3 text-slate-500 text-sm">Chargement du catalogue...</span>
+        <Loader2 className="animate-spin text-teal-500" size={32} />
+        <span className="ml-3 text-gray-500 text-sm">Chargement du catalogue...</span>
       </div>
     );
   }
@@ -385,12 +399,12 @@ export default function TechnicoCatalogueExplorer() {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h2 className="text-xl font-bold text-slate-950 flex items-center gap-2">
-          <Layers size={22} className="text-blue-600" />
+        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <Layers size={22} className="text-teal-600" />
           Explorateur Catalogue
         </h2>
-        <p className="text-sm text-slate-400 mt-0.5">
-          {stats.cats} catégories · {stats.subs} sous-catégories · {stats.prests} prestations
+        <p className="text-sm text-gray-400 mt-0.5">
+          {stats.cats} catégories • {stats.subs} sous-catégories • {stats.prests} prestations
         </p>
       </div>
 
@@ -399,15 +413,15 @@ export default function TechnicoCatalogueExplorer() {
         <div className="flex items-center gap-1.5 text-sm">
           <button
             onClick={goBack}
-            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="flex items-center gap-1 text-teal-600 hover:text-teal-700 font-medium transition-colors"
           >
             <ChevronLeft size={16} />
             <span>Retour</span>
           </button>
-          <span className="text-slate-300 mx-1">|</span>
+          <span className="text-gray-300 mx-1">|</span>
           {breadcrumbs.map((bc, i) => (
             <span key={i} className="flex items-center gap-1">
-              {i > 0 && <ChevronRight size={14} className="text-slate-300" />}
+              {i > 0 && <ChevronRight size={14} className="text-gray-300" />}
               <button
                 onClick={() => {
                   if (bc.level === 'categories') goToCategories();
@@ -417,8 +431,8 @@ export default function TechnicoCatalogueExplorer() {
                 className={cn(
                   'transition-colors',
                   i === breadcrumbs.length - 1
-                    ? 'text-slate-950 font-semibold cursor-default'
-                    : 'text-blue-600 hover:text-blue-700 font-medium',
+                    ? 'text-gray-900 font-semibold cursor-default'
+                    : 'text-teal-600 hover:text-teal-700 font-medium',
                 )}
               >
                 {bc.label}
@@ -432,28 +446,45 @@ export default function TechnicoCatalogueExplorer() {
       {viewLevel === 'categories' && (
         <>
           {/* Search */}
-          <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all max-w-md">
-            <Search size={18} className="text-slate-400" />
-            <input
-              type="text"
-              placeholder="Rechercher catégorie, sous-catégorie, prestation..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="text-slate-300 hover:text-slate-500">
-                <X size={16} />
-              </button>
-            )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-1 items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all max-w-md">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher catégorie, sous-catégorie, prestation..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="text-gray-300 hover:text-gray-500"
+                  aria-label="Effacer la recherche"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'count')}
+              className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+              aria-label="Trier le catalogue"
+            >
+              <option value="name">Trier par nom</option>
+              <option value="count">Trier par nombre de prestations</option>
+            </select>
           </div>
 
           {/* Category grid */}
           {filteredCatalogue.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
-              <BookOpen size={32} className="mx-auto mb-3 text-slate-300" />
-              <h3 className="font-semibold text-slate-950">Aucun résultat</h3>
-              <p className="text-sm text-slate-400 mt-1">Essayez un autre terme de recherche.</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <BookOpen size={32} className="mx-auto mb-3 text-gray-300" />
+              <h3 className="font-semibold text-gray-900">Aucun résultat</h3>
+              <p className="text-sm text-gray-400 mt-1">Essayez un autre terme de recherche.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -465,19 +496,19 @@ export default function TechnicoCatalogueExplorer() {
                 return (
                   <div
                     key={cat.id}
-                    className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 text-left hover:border-blue-300 hover:shadow-md transition-all group"
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-left hover:border-teal-300 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl flex items-center justify-center group-hover:from-blue-200 group-hover:to-blue-200 transition-colors">
-                          <Layers size={20} className="text-blue-600" />
+                        <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-xl flex items-center justify-center group-hover:from-teal-200 group-hover:to-emerald-200 transition-colors">
+                          <Layers size={20} className="text-teal-600" />
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditCategorie(cat);
                           }}
-                          className="p-2 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
                           title="Modifier cette catégorie"
                         >
                           <Edit size={15} />
@@ -487,7 +518,7 @@ export default function TechnicoCatalogueExplorer() {
                             e.stopPropagation();
                             handleDeleteCategorie(cat);
                           }}
-                          className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
                           title="Supprimer cette catégorie"
                         >
                           <Trash2 size={15} />
@@ -495,23 +526,23 @@ export default function TechnicoCatalogueExplorer() {
                       </div>
                       <button
                         onClick={() => goToSousCategories(cat.id)}
-                        className="p-1 rounded-md hover:bg-blue-50"
+                        className="p-1 rounded-md hover:bg-teal-50"
                         title="Voir les sous-catégories"
                       >
-                        <ArrowRight size={16} className="text-slate-300 group-hover:text-blue-500 transition-colors mt-1" />
+                        <ArrowRight size={16} className="text-gray-300 group-hover:text-teal-500 transition-colors mt-1" />
                       </button>
                     </div>
                     <button onClick={() => goToSousCategories(cat.id)} className="text-left">
-                      <h3 className="text-sm font-bold text-slate-950 mb-1">{cat.nom}</h3>
+                      <h3 className="text-sm font-bold text-gray-900 mb-1">{cat.nom}</h3>
                     </button>
                     {cat.description && (
-                      <p className="text-[11px] text-slate-400 mb-3 line-clamp-2">{cat.description}</p>
+                      <p className="text-[11px] text-gray-400 mb-3 line-clamp-2">{cat.description}</p>
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[11px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium">
+                      <span className="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium">
                         {cat.sousCategories?.length ?? 0} sous-cat.
                       </span>
-                      <span className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-medium">
+                      <span className="text-[11px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md font-medium">
                         {prestCount} prestations
                       </span>
                       {questCount > 0 && (
@@ -532,28 +563,28 @@ export default function TechnicoCatalogueExplorer() {
       {viewLevel === 'sousCategories' && currentCat && (
         <div className="space-y-4">
           {/* Category header */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-100 rounded-xl flex items-center justify-center">
-                <Layers size={20} className="text-blue-600" />
+              <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-xl flex items-center justify-center">
+                <Layers size={20} className="text-teal-600" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-950">{currentCat.nom}</h3>
+                <h3 className="text-base font-bold text-gray-900">{currentCat.nom}</h3>
                 {currentCat.description && (
-                  <p className="text-xs text-slate-400">{currentCat.description}</p>
+                  <p className="text-xs text-gray-400">{currentCat.description}</p>
                 )}
               </div>
               <div className="ml-auto flex items-center gap-1">
                 <button
                   onClick={() => handleEditCategorie(currentCat)}
-                  className="p-2 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                  className="p-2 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
                   title="Modifier cette catégorie"
                 >
                   <Edit size={16} />
                 </button>
                 <button
                   onClick={() => handleDeleteCategorie(currentCat)}
-                  className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+                  className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
                   title="Supprimer cette catégorie"
                 >
                   <Trash2 size={16} />
@@ -572,9 +603,9 @@ export default function TechnicoCatalogueExplorer() {
 
           {/* Sous-catégories list  */}
           {(currentCat.sousCategories?.length ?? 0) === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center">
-              <FolderOpen size={28} className="mx-auto mb-2 text-slate-300" />
-              <p className="text-sm text-slate-500">Aucune sous-catégorie</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <FolderOpen size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-sm text-gray-500">Aucune sous-catégorie</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -584,19 +615,19 @@ export default function TechnicoCatalogueExplorer() {
                 return (
                   <div
                     key={sc.id}
-                    className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-left hover:border-blue-300 hover:shadow-md transition-all group"
+                    className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-left hover:border-emerald-300 hover:shadow-md transition-all group"
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <div className="w-9 h-9 bg-gradient-to-br from-blue-50 to-green-100 rounded-xl flex items-center justify-center group-hover:from-blue-100 group-hover:to-green-200 transition-colors">
-                          <FolderOpen size={18} className="text-blue-600" />
+                        <div className="w-9 h-9 bg-gradient-to-br from-emerald-50 to-green-100 rounded-xl flex items-center justify-center group-hover:from-emerald-100 group-hover:to-green-200 transition-colors">
+                          <FolderOpen size={18} className="text-emerald-600" />
                         </div>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleEditSousCategorie(sc);
                           }}
-                          className="p-2 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
                           title="Modifier cette sous-catégorie"
                         >
                           <Edit size={15} />
@@ -606,7 +637,7 @@ export default function TechnicoCatalogueExplorer() {
                             e.stopPropagation();
                             handleDeleteSousCategorie(sc);
                           }}
-                          className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+                          className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
                           title="Supprimer cette sous-catégorie"
                         >
                           <Trash2 size={15} />
@@ -614,20 +645,20 @@ export default function TechnicoCatalogueExplorer() {
                       </div>
                       <button
                         onClick={() => goToPrestations(sc.id)}
-                        className="p-1 rounded-md hover:bg-blue-50"
+                        className="p-1 rounded-md hover:bg-emerald-50"
                         title="Voir les prestations"
                       >
-                        <ArrowRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors mt-1" />
+                        <ArrowRight size={14} className="text-gray-300 group-hover:text-emerald-500 transition-colors mt-1" />
                       </button>
                     </div>
                     <button onClick={() => goToPrestations(sc.id)} className="text-left">
-                      <h4 className="text-sm font-bold text-slate-950 mb-1">{sc.nom}</h4>
+                      <h4 className="text-sm font-bold text-gray-900 mb-1">{sc.nom}</h4>
                     </button>
                     {sc.description && (
-                      <p className="text-[11px] text-slate-400 mb-2 line-clamp-2">{sc.description}</p>
+                      <p className="text-[11px] text-gray-400 mb-2 line-clamp-2">{sc.description}</p>
                     )}
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-medium">
+                      <span className="text-[11px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md font-medium">
                         {prestCount} prestations
                       </span>
                       {questCount > 0 && (
@@ -645,7 +676,7 @@ export default function TechnicoCatalogueExplorer() {
           {/* Direct prestations (sans sous-catégorie) */}
           {(currentCat.prestations?.length ?? 0) > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 ml-1">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 ml-1">
                 Prestations directes
               </h4>
               <div className="space-y-2">
@@ -668,31 +699,31 @@ export default function TechnicoCatalogueExplorer() {
       {viewLevel === 'prestations' && currentSc && (
         <div className="space-y-4">
           {/* Sous-catégorie header */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-green-100 rounded-xl flex items-center justify-center">
-                <FolderOpen size={20} className="text-blue-600" />
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-50 to-green-100 rounded-xl flex items-center justify-center">
+                <FolderOpen size={20} className="text-emerald-600" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-slate-950">{currentSc.nom}</h3>
+                <h3 className="text-base font-bold text-gray-900">{currentSc.nom}</h3>
                 {currentSc.description && (
-                  <p className="text-xs text-slate-400">{currentSc.description}</p>
+                  <p className="text-xs text-gray-400">{currentSc.description}</p>
                 )}
               </div>
-              <span className="ml-auto text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-lg font-medium">
+              <span className="ml-auto text-xs bg-teal-50 text-teal-700 px-2.5 py-1 rounded-lg font-medium">
                 {currentSc.prestations?.length ?? 0} prestations
               </span>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => handleEditSousCategorie(currentSc)}
-                  className="p-2 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                  className="p-2 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
                   title="Modifier cette sous-catégorie"
                 >
                   <Edit size={16} />
                 </button>
                 <button
                   onClick={() => handleDeleteSousCategorie(currentSc)}
-                  className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+                  className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
                   title="Supprimer cette sous-catégorie"
                 >
                   <Trash2 size={16} />
@@ -711,9 +742,9 @@ export default function TechnicoCatalogueExplorer() {
 
           {/* Prestations list */}
           {(currentSc.prestations?.length ?? 0) === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-100 p-8 text-center">
-              <BookOpen size={28} className="mx-auto mb-2 text-slate-300" />
-              <p className="text-sm text-slate-500">Aucune prestation dans cette sous-catégorie</p>
+            <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+              <BookOpen size={28} className="mx-auto mb-2 text-gray-300" />
+              <p className="text-sm text-gray-500">Aucune prestation dans cette sous-catégorie</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -817,7 +848,7 @@ function PrestationCard({
   const composCount = p.compositions?.length ?? 0;
 
   return (
-    <div className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm p-4 text-left hover:border-blue-300 hover:shadow-md transition-all group flex items-start gap-3">
+    <div className="w-full bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-left hover:border-blue-300 hover:shadow-md transition-all group flex items-start gap-3">
       <button
         onClick={onClick}
         className="flex-1 flex items-start gap-3"
@@ -827,13 +858,13 @@ function PrestationCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-sm font-semibold text-slate-950">{p.nom}</span>
-            <span className="px-1.5 py-0.5 bg-slate-100 text-[10px] font-medium text-slate-500 rounded">
+            <span className="text-sm font-semibold text-gray-900">{p.nom}</span>
+            <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-500 rounded">
               {p.unite}
             </span>
           </div>
           {p.description && (
-            <p className="text-[12px] text-slate-400 line-clamp-2 mb-2">{p.description}</p>
+            <p className="text-[12px] text-gray-400 line-clamp-2 mb-2">{p.description}</p>
           )}
           <div className="flex items-center gap-2 flex-wrap">
             {optCount > 0 && (
@@ -843,7 +874,7 @@ function PrestationCard({
               </span>
             )}
             {infoCount > 0 && (
-              <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-100 font-medium">
+              <span className="text-[10px] bg-violet-50 text-violet-700 px-1.5 py-0.5 rounded border border-violet-100 font-medium">
                 <ClipboardList size={10} className="inline mr-0.5" />
                 {infoCount} infos requises
               </span>
@@ -856,13 +887,13 @@ function PrestationCard({
           </div>
         </div>
         <div className="text-right shrink-0">
-          <div className="text-sm font-bold text-blue-700">
+          <div className="text-sm font-bold text-teal-700">
             {formatCurrency(p.prixVenteMin)}
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px] text-gray-400">
             à {formatCurrency(p.prixVenteMax)}
           </div>
-          <ArrowRight size={14} className="text-slate-300 group-hover:text-blue-500 transition-colors ml-auto mt-1" />
+          <ArrowRight size={14} className="text-gray-300 group-hover:text-blue-500 transition-colors ml-auto mt-1" />
         </div>
       </button>
 
@@ -873,7 +904,7 @@ function PrestationCard({
             e.stopPropagation();
             onEdit(p);
           }}
-          className="p-2 rounded-lg text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+          className="p-2 rounded-lg text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
           title="Modifier cette prestation"
         >
           <Edit size={16} />
@@ -883,7 +914,7 @@ function PrestationCard({
             e.stopPropagation();
             onDelete(p);
           }}
-          className="p-2 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+          className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
           title="Supprimer cette prestation"
         >
           <Trash2 size={16} />
@@ -913,28 +944,28 @@ function PrestationDetail({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center shrink-0">
             <BookOpen size={22} className="text-blue-600" />
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-lg font-bold text-slate-950">{p.nom}</h3>
-              <span className="px-2 py-0.5 bg-slate-100 text-xs font-medium text-slate-500 rounded-md">
+              <h3 className="text-lg font-bold text-gray-900">{p.nom}</h3>
+              <span className="px-2 py-0.5 bg-gray-100 text-xs font-medium text-gray-500 rounded-md">
                 {p.unite}
               </span>
             </div>
-            {p.description && <p className="text-sm text-slate-500 mb-3">{p.description}</p>}
+            {p.description && <p className="text-sm text-gray-500 mb-3">{p.description}</p>}
             <div className="flex items-center gap-4">
-              <div className="bg-blue-50 rounded-xl px-4 py-2.5">
-                <div className="text-[10px] text-blue-600 font-medium uppercase tracking-wide">Prix min</div>
-                <div className="text-lg font-bold text-blue-700">{formatCurrency(p.prixVenteMin)}</div>
+              <div className="bg-teal-50 rounded-xl px-4 py-2.5">
+                <div className="text-[10px] text-teal-600 font-medium uppercase tracking-wide">Prix min</div>
+                <div className="text-lg font-bold text-teal-700">{formatCurrency(p.prixVenteMin)}</div>
               </div>
-              <div className="text-slate-300">—</div>
-              <div className="bg-blue-50 rounded-xl px-4 py-2.5">
-                <div className="text-[10px] text-blue-600 font-medium uppercase tracking-wide">Prix max</div>
-                <div className="text-lg font-bold text-blue-700">{formatCurrency(p.prixVenteMax)}</div>
+              <div className="text-gray-300">—</div>
+              <div className="bg-teal-50 rounded-xl px-4 py-2.5">
+                <div className="text-[10px] text-teal-600 font-medium uppercase tracking-wide">Prix max</div>
+                <div className="text-lg font-bold text-teal-700">{formatCurrency(p.prixVenteMax)}</div>
               </div>
             </div>
           </div>
@@ -943,10 +974,10 @@ function PrestationDetail({
 
       {/* Options & Choix */}
       {(p.options?.length ?? 0) > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
             <Settings2 size={18} className="text-amber-500" />
-            <h4 className="text-sm font-bold text-slate-950">Options de configuration</h4>
+            <h4 className="text-sm font-bold text-gray-900">Options de configuration</h4>
             <span className="text-xs bg-amber-50 text-amber-600 px-2 py-0.5 rounded-md font-medium">
               {p.options!.length} options
             </span>
@@ -968,11 +999,11 @@ function PrestationDetail({
 
       {/* Informations requises */}
       {(p.infosRequises?.length ?? 0) > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
-            <ClipboardList size={18} className="text-blue-500" />
-            <h4 className="text-sm font-bold text-slate-950">Informations à recueillir</h4>
-            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-medium">
+            <ClipboardList size={18} className="text-violet-500" />
+            <h4 className="text-sm font-bold text-gray-900">Informations à recueillir</h4>
+            <span className="text-xs bg-violet-50 text-violet-600 px-2 py-0.5 rounded-md font-medium">
               {p.infosRequises!.length} détails
             </span>
           </div>
@@ -986,10 +1017,10 @@ function PrestationDetail({
 
       {/* Compositions (matériaux + main d'œuvre) */}
       {(p.compositions?.length ?? 0) > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center gap-2 mb-4">
             <Tag size={18} className="text-cyan-500" />
-            <h4 className="text-sm font-bold text-slate-950">Composition & Chiffrage</h4>
+            <h4 className="text-sm font-bold text-gray-900">Composition & Chiffrage</h4>
             <span className="text-xs bg-cyan-50 text-cyan-600 px-2 py-0.5 rounded-md font-medium">
               {p.compositions!.length} composants
             </span>
@@ -997,20 +1028,20 @@ function PrestationDetail({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left py-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-2 px-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Type
                   </th>
-                  <th className="text-left py-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="text-left py-2 px-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Désignation
                   </th>
-                  <th className="text-center py-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="text-center py-2 px-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Unité
                   </th>
-                  <th className="text-right py-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="text-right py-2 px-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Qté/unité
                   </th>
-                  <th className="text-right py-2 px-3 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  <th className="text-right py-2 px-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                     Prix unit.
                   </th>
                 </tr>
@@ -1021,7 +1052,7 @@ function PrestationDetail({
                   const item = comp.materiau ?? comp.serviceMainOeuvre;
                   if (!item) return null;
                   return (
-                    <tr key={comp.id} className="border-b border-gray-50 hover:bg-slate-50/50">
+                    <tr key={comp.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                       <td className="py-2 px-3">
                         <span
                           className={cn(
@@ -1035,11 +1066,11 @@ function PrestationDetail({
                         </span>
                       </td>
                       <td className="py-2 px-3 font-medium text-gray-800 text-[13px]">{item.nom}</td>
-                      <td className="py-2 px-3 text-center text-slate-500 text-xs">{item.unite}</td>
-                      <td className="py-2 px-3 text-right font-mono text-xs text-slate-600">
+                      <td className="py-2 px-3 text-center text-gray-500 text-xs">{item.unite}</td>
+                      <td className="py-2 px-3 text-right font-mono text-xs text-gray-600">
                         {comp.quantiteParUnite}
                       </td>
-                      <td className="py-2 px-3 text-right font-semibold text-slate-700 text-xs">
+                      <td className="py-2 px-3 text-right font-semibold text-gray-700 text-xs">
                         {formatCurrency(
                           isMat
                             ? (comp.materiau?.prixAchatFixe ?? 0)
@@ -1107,7 +1138,7 @@ function QuestionsBlock({
                     )}
                   </div>
                   {q.aide && (
-                    <p className="text-[11px] text-slate-400 flex items-center gap-1 mb-2">
+                    <p className="text-[11px] text-gray-400 flex items-center gap-1 mb-2">
                       <Info size={10} className="shrink-0" />
                       {q.aide}
                     </p>
@@ -1120,7 +1151,7 @@ function QuestionsBlock({
                         {q.choixPossibles.map((ch, ci) => (
                           <span
                             key={ci}
-                            className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-medium"
+                            className="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-medium"
                           >
                             {ch}
                           </span>
@@ -1199,14 +1230,14 @@ function PrestationEditModal({
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex justify-between items-center">
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <Edit size={20} className="text-blue-600" />
             </div>
-            <h2 className="text-xl font-bold text-slate-950">Modifier la prestation</h2>
+            <h2 className="text-xl font-bold text-gray-900">Modifier la prestation</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -1215,7 +1246,7 @@ function PrestationEditModal({
         <div className="p-6 space-y-5">
           {/* Nom */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Nom de la prestation</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Nom de la prestation</label>
             <input
               type="text"
               value={nom}
@@ -1227,7 +1258,7 @@ function PrestationEditModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -1240,7 +1271,7 @@ function PrestationEditModal({
           {/* Prix et Unité */}
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Unité</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Unité</label>
               <select
                 value={unite}
                 onChange={(e) => setUnite(e.target.value)}
@@ -1255,7 +1286,7 @@ function PrestationEditModal({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Prix min.</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Prix min.</label>
               <input
                 type="number"
                 value={prixMin}
@@ -1265,7 +1296,7 @@ function PrestationEditModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">Prix max.</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Prix max.</label>
               <input
                 type="number"
                 value={prixMax}
@@ -1283,11 +1314,11 @@ function PrestationEditModal({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               onClick={onClose}
               disabled={isSaving}
-              className="px-4 py-2.5 rounded-lg border border-gray-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+              className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
             >
               Annuler
             </button>
@@ -1312,14 +1343,14 @@ function PrestationEditModal({
 
 function TypeReponseBadge({ type }: { type: string }) {
   const map: Record<string, { label: string; color: string }> = {
-    TEXTE: { label: 'Texte libre', color: 'bg-slate-50 text-slate-600 border-slate-200' },
+    TEXTE: { label: 'Texte libre', color: 'bg-gray-50 text-gray-600 border-gray-200' },
     CHOIX_UNIQUE: { label: 'Choix unique', color: 'bg-blue-50 text-blue-600 border-blue-200' },
     CHOIX_MULTIPLE: { label: 'Choix multiple', color: 'bg-indigo-50 text-indigo-600 border-indigo-200' },
-    NOMBRE: { label: 'Nombre', color: 'bg-blue-50 text-blue-600 border-blue-200' },
-    BOOLEEN: { label: 'Oui / Non', color: 'bg-blue-50 text-blue-600 border-blue-200' },
+    NOMBRE: { label: 'Nombre', color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+    BOOLEEN: { label: 'Oui / Non', color: 'bg-violet-50 text-violet-600 border-violet-200' },
     PHOTO: { label: 'Photo', color: 'bg-pink-50 text-pink-600 border-pink-200' },
   };
-  const cfg = map[type] ?? { label: type, color: 'bg-slate-50 text-slate-600 border-slate-200' };
+  const cfg = map[type] ?? { label: type, color: 'bg-gray-50 text-gray-600 border-gray-200' };
   return (
     <span className={cn('text-[10px] px-1.5 py-0.5 rounded border font-semibold', cfg.color)}>
       {cfg.label}
@@ -1345,10 +1376,10 @@ function OptionBlock({
   onDeleteChoix: (choix: ChoixOption) => void;
 }) {
   return (
-    <div className="bg-slate-50/80 rounded-xl border border-slate-100 p-3.5">
+    <div className="bg-gray-50/80 rounded-xl border border-gray-100 p-3.5">
       <div className="flex items-center gap-2 mb-2.5">
         <Settings2 size={14} className="text-amber-500" />
-        <span className="text-xs font-bold text-slate-700">{option.nom}</span>
+        <span className="text-xs font-bold text-gray-700">{option.nom}</span>
         {option.obligatoire && (
           <span className="px-1.5 py-0.5 bg-red-50 text-[9px] font-bold text-red-500 rounded border border-red-100 uppercase">
             Obligatoire
@@ -1357,14 +1388,14 @@ function OptionBlock({
         <div className="ml-auto flex items-center gap-1">
           <button
             onClick={() => onEditOption(option)}
-            className="p-1.5 rounded-md text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
             title="Modifier cette option"
           >
             <Edit size={14} />
           </button>
           <button
             onClick={() => onDeleteOption(option)}
-            className="p-1.5 rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-red-50 hover:text-red-600 transition-all"
             title="Supprimer cette option"
           >
             <Trash2 size={14} />
@@ -1375,15 +1406,15 @@ function OptionBlock({
         {option.choix.map((ch) => (
           <div
             key={ch.id}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-slate-200 text-xs hover:border-blue-300 transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded-lg border border-gray-200 text-xs hover:border-teal-300 transition-colors"
           >
-            <CheckCircle2 size={12} className="text-blue-400" />
-            <span className="font-medium text-slate-700">{ch.nom}</span>
+            <CheckCircle2 size={12} className="text-emerald-400" />
+            <span className="font-medium text-gray-700">{ch.nom}</span>
             {ch.impactPrix !== 0 && (
               <span
                 className={cn(
                   'font-semibold',
-                  ch.impactPrix > 0 ? 'text-blue-600' : 'text-red-500',
+                  ch.impactPrix > 0 ? 'text-emerald-600' : 'text-red-500',
                 )}
               >
                 {ch.impactPrix > 0 ? '+' : ''}
@@ -1393,14 +1424,14 @@ function OptionBlock({
 
             <button
               onClick={() => onEditChoix(ch)}
-              className="ml-1 p-1 rounded-md text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
+              className="ml-1 p-1 rounded-md text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-all"
               title="Modifier ce choix"
             >
               <Edit size={13} />
             </button>
             <button
               onClick={() => onDeleteChoix(ch)}
-              className="p-1 rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all"
+              className="p-1 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 transition-all"
               title="Supprimer ce choix"
             >
               <Trash2 size={13} />
@@ -1418,26 +1449,26 @@ function OptionBlock({
 
 function InfoRequiseRow({ info }: { info: InfoRequise }) {
   const iconMap: Record<string, React.ReactNode> = {
-    MESURE: <Ruler size={14} className="text-blue-500" />,
+    MESURE: <Ruler size={14} className="text-violet-500" />,
     PHOTO: <Camera size={14} className="text-pink-500" />,
     OBSERVATION: <Eye size={14} className="text-sky-500" />,
     CHOIX: <ListChecks size={14} className="text-amber-500" />,
   };
   const colorMap: Record<string, string> = {
-    MESURE: 'bg-blue-50 border-blue-100',
+    MESURE: 'bg-violet-50 border-violet-100',
     PHOTO: 'bg-pink-50 border-pink-100',
     OBSERVATION: 'bg-sky-50 border-sky-100',
     CHOIX: 'bg-amber-50 border-amber-100',
   };
 
   return (
-    <div className={cn('rounded-lg border p-3 flex items-start gap-3', colorMap[info.typeInfo] ?? 'bg-slate-50 border-slate-100')}>
-      <div className="shrink-0 mt-0.5">{iconMap[info.typeInfo] ?? <Info size={14} className="text-slate-400" />}</div>
+    <div className={cn('rounded-lg border p-3 flex items-start gap-3', colorMap[info.typeInfo] ?? 'bg-gray-50 border-gray-100')}>
+      <div className="shrink-0 mt-0.5">{iconMap[info.typeInfo] ?? <Info size={14} className="text-gray-400" />}</div>
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-[13px] font-semibold text-gray-800">{info.nom}</span>
           {info.unite && (
-            <span className="text-[10px] bg-white text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 font-medium">
+            <span className="text-[10px] bg-white text-gray-500 px-1.5 py-0.5 rounded border border-gray-200 font-medium">
               {info.unite}
             </span>
           )}
@@ -1448,7 +1479,7 @@ function InfoRequiseRow({ info }: { info: InfoRequise }) {
           )}
         </div>
         {info.aide && (
-          <p className="text-[11px] text-slate-400 flex items-center gap-1">
+          <p className="text-[11px] text-gray-400 flex items-center gap-1">
             <Info size={10} className="shrink-0" />
             {info.aide}
           </p>
@@ -1461,12 +1492,12 @@ function InfoRequiseRow({ info }: { info: InfoRequise }) {
 
 function TypeInfoBadge({ type }: { type: string }) {
   const map: Record<string, { label: string; color: string }> = {
-    MESURE: { label: 'Mesure', color: 'bg-blue-100 text-blue-700' },
+    MESURE: { label: 'Mesure', color: 'bg-violet-100 text-violet-700' },
     PHOTO: { label: 'Photo', color: 'bg-pink-100 text-pink-700' },
     OBSERVATION: { label: 'Observation', color: 'bg-sky-100 text-sky-700' },
     CHOIX: { label: 'Choix', color: 'bg-amber-100 text-amber-700' },
   };
-  const cfg = map[type] ?? { label: type, color: 'bg-slate-100 text-slate-600' };
+  const cfg = map[type] ?? { label: type, color: 'bg-gray-100 text-gray-600' };
   return (
     <span className={cn('text-[10px] px-2 py-0.5 rounded-md font-bold', cfg.color)}>
       {cfg.label}
@@ -1494,9 +1525,9 @@ function EntityEditModal({
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const titleByType: Record<EditableEntity['type'], string> = {
-    categorie: 'Modifier la categorie',
-    sousCategorie: 'Modifier la sous-categorie',
-    option: 'Modifier l option',
+    categorie: 'Modifier la catégorie',
+    sousCategorie: 'Modifier la sous-catégorie',
+    option: 'Modifier l’option',
     choixOption: 'Modifier le choix',
   };
 
@@ -1549,16 +1580,16 @@ function EntityEditModal({
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl max-w-xl w-full">
-        <div className="border-b border-slate-200 p-5 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-950">{titleByType[entity.type]}</h2>
-          <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg" disabled={isSaving}>
+        <div className="border-b border-gray-200 p-5 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-900">{titleByType[entity.type]}</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg" disabled={isSaving}>
             <X size={18} />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Nom</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Nom</label>
             <input
               type="text"
               value={nom}
@@ -1568,7 +1599,7 @@ function EntityEditModal({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1.5">Description</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -1578,7 +1609,7 @@ function EntityEditModal({
           </div>
 
           {entity.type === 'option' && (
-            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+            <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
               <input
                 type="checkbox"
                 checked={obligatoire}
@@ -1591,7 +1622,7 @@ function EntityEditModal({
 
           {entity.type === 'choixOption' && (
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Impact prix (€/unité)</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">Impact prix (€/unité)</label>
               <input
                 type="number"
                 value={impactPrix}
@@ -1611,7 +1642,7 @@ function EntityEditModal({
             <button
               onClick={onClose}
               disabled={isSaving}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-slate-700 hover:bg-slate-50"
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               Annuler
             </button>
@@ -1658,11 +1689,11 @@ function EntityDeleteModal({
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto">
             <Trash2 size={24} className="text-red-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-950 text-center">Supprimer cette {labelByType[entity.type]} ?</h2>
-          <p className="text-center text-slate-600">
+          <h2 className="text-xl font-bold text-gray-900 text-center">Supprimer cette {labelByType[entity.type]} ?</h2>
+          <p className="text-center text-gray-600">
             Vous allez supprimer <strong>{entity.nom}</strong>.
           </p>
-          <p className="text-center text-sm text-slate-400">Cette action ne peut pas etre annulee.</p>
+          <p className="text-center text-sm text-gray-400">Cette action ne peut pas être annulée.</p>
 
           {error && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>}
 
@@ -1670,7 +1701,7 @@ function EntityDeleteModal({
             <button
               onClick={onClose}
               disabled={isDeleting}
-              className="px-4 py-2 rounded-lg border border-gray-300 text-slate-700 hover:bg-slate-50 font-medium transition-colors"
+              className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
             >
               Annuler
             </button>
