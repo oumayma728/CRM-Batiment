@@ -282,47 +282,47 @@ export default function TypesProjetPage() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">ID</th>
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Nom</th>
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Description</th>
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Categories</th>
-              <th className="text-center px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Clients</th>
-              <th className="text-right px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Actions</th>
+            <tr className="bg-gray-50/80 border-b border-gray-100">
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">ID</th>
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Nom</th>
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Description</th>
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Categories</th>
+              <th className="text-center px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Clients</th>
+              <th className="text-right px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-gray-50">
             {items.map((item) => (
-              <tr key={item.id} className="hover:bg-blue-50/30 transition-colors group">
+              <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
                 <td className="px-6 py-4">
-                  <span className="text-xs font-mono text-slate-500">#{item.id}</span>
+                  <span className="text-xs font-mono text-gray-400">#{item.id}</span>
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                    <div className="w-9 h-9 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
                       <FolderKanban size={16} />
                     </div>
-                    <span className="font-semibold text-slate-900 text-[14px]">{item.nom}</span>
+                    <span className="font-semibold text-gray-900 text-[14px]">{item.nom}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-[13px] text-slate-500 max-w-xs truncate">
-                  {item.description || <span className="text-slate-500">-</span>}
+                <td className="px-6 py-4 text-[13px] text-gray-500 max-w-xs truncate">
+                  {item.description || <span className="text-gray-300">-</span>}
                 </td>
                 <td className="px-6 py-4">
                   {(item.categories?.length ?? 0) === 0 ? (
-                    <span className="text-[13px] text-slate-500">Aucune</span>
+                    <span className="text-[13px] text-gray-300">Aucune</span>
                   ) : (
                     <div className="flex max-w-sm flex-wrap gap-1.5">
                       {(item.categories ?? []).slice(0, 3).map((link) => (
                         <span
                           key={`${item.id}-${link.categorieId}`}
-                          className="inline-flex items-center rounded-lg bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700"
+                          className="inline-flex items-center rounded-lg bg-indigo-50 px-2.5 py-1 text-[11px] font-semibold text-indigo-700"
                         >
                           {link.categorie?.nom ?? `#${link.categorieId}`}
                         </span>
                       ))}
                       {(item.categories?.length ?? 0) > 3 && (
-                        <span className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                        <span className="inline-flex items-center rounded-lg bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600">
                           +{(item.categories?.length ?? 0) - 3}
                         </span>
                       )}
@@ -333,7 +333,7 @@ export default function TypesProjetPage() {
                   <span
                     className={cn(
                       'inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold',
-                      (item._count?.clients ?? 0) > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500',
+                      (item._count?.clients ?? 0) > 0 ? 'bg-blue-50 text-blue-700' : 'bg-gray-50 text-gray-500',
                     )}
                   >
                     {item._count?.clients ?? 0}
@@ -344,7 +344,7 @@ export default function TypesProjetPage() {
                     <button
                       type="button"
                       onClick={() => openEdit(item)}
-                      className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
                       title="Modifier"
                     >
                       <Edit size={15} />
@@ -352,7 +352,7 @@ export default function TypesProjetPage() {
                     <button
                       type="button"
                       onClick={() => setDeleteId(item.id)}
-                      className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 size={15} />
@@ -372,41 +372,41 @@ export default function TypesProjetPage() {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">ID</th>
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Tache simple</th>
-              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Description</th>
-              <th className="text-center px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Clients</th>
-              <th className="text-right px-6 py-3.5 text-[11px] font-bold text-slate-500 uppercase tracking-wide">Actions</th>
+            <tr className="bg-gray-50/80 border-b border-gray-100">
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">ID</th>
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Tache simple</th>
+              <th className="text-left px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Description</th>
+              <th className="text-center px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Clients</th>
+              <th className="text-right px-6 py-3.5 text-[11px] font-bold text-gray-500 uppercase tracking-wide">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-gray-50">
             {items.map((item) => {
               const linkedEntry = simpleTypesByCategory.get(item.id);
               const clientsCount = linkedEntry?.clients ?? 0;
               const linkedTypeIds = linkedEntry?.linkedTypeIds ?? [];
 
               return (
-                <tr key={item.id} className="hover:bg-blue-50/30 transition-colors group">
+                <tr key={item.id} className="hover:bg-primary-50/30 transition-colors group">
                   <td className="px-6 py-4">
-                    <span className="text-xs font-mono text-slate-500">#{item.id}</span>
+                    <span className="text-xs font-mono text-gray-400">#{item.id}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                      <div className="w-9 h-9 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
                         <FolderKanban size={16} />
                       </div>
-                      <span className="font-semibold text-slate-900 text-[14px]">{item.nom}</span>
+                      <span className="font-semibold text-gray-900 text-[14px]">{item.nom}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-[13px] text-slate-500 max-w-xs truncate">
-                    {item.description || <span className="text-slate-500">-</span>}
+                  <td className="px-6 py-4 text-[13px] text-gray-500 max-w-xs truncate">
+                    {item.description || <span className="text-gray-300">-</span>}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <span
                       className={cn(
                         'inline-flex items-center px-2.5 py-1 rounded-lg text-[11px] font-semibold',
-                        clientsCount > 0 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-500',
+                        clientsCount > 0 ? 'bg-blue-50 text-blue-700' : 'bg-gray-50 text-gray-500',
                       )}
                     >
                       {clientsCount}
@@ -417,7 +417,7 @@ export default function TypesProjetPage() {
                       <button
                         type="button"
                         onClick={() => openSimpleTaskEdit(item, linkedTypeIds)}
-                        className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
                         title="Modifier"
                       >
                         <Edit size={15} />
@@ -425,7 +425,7 @@ export default function TypesProjetPage() {
                       <button
                         type="button"
                         onClick={() => setDeleteSimpleTask({ category: item, linkedTypeIds })}
-                        className="p-2 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                         title="Supprimer"
                       >
                         <Trash2 size={15} />
@@ -447,75 +447,65 @@ export default function TypesProjetPage() {
   const invalidComplexSelection = isComplexMode && form.categorieIds.length < 2;
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_10px_25px_rgba(15,23,42,0.04)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-              <FolderKanban size={22} />
-            </div>
-
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-                Types de projet
-              </h1>
-              <p className="mt-1 text-sm text-slate-500">
-                {complexTypes.length} tâche(s) complexe(s) / {simpleTasks.length} tâche(s) simple(s)
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={openCreate}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
-          >
-            <Plus size={17} /> Nouveau type
-          </button>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <FolderKanban size={24} className="text-indigo-600" />
+            Types de Projet
+          </h1>
+          <p className="text-gray-500 text-sm mt-0.5">
+            {complexTypes.length} tâche(s) complexe(s) / {simpleTasks.length} tâche(s) simple(s)
+          </p>
         </div>
+        <button
+          onClick={openCreate}
+          className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm"
+        >
+          <Plus size={17} /> Nouveau type
+        </button>
+      </div>
 
-        <div className="mt-5 max-w-md">
-          <div className="relative">
-            <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Rechercher un type de projet..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
-            />
-          </div>
-        </div>
+      <div className="relative max-w-md">
+        <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Rechercher un type de projet..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
+        />
       </div>
 
       {isLoading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-blue-600" size={32} />
+            <Loader2 className="animate-spin text-primary-600" size={32} />
           </div>
         </div>
       ) : typesError ? (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
           <div className="px-6 py-16 text-center text-red-600">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50">
               <AlertCircle size={32} />
             </div>
             <p className="text-lg font-semibold text-red-700">Impossible de charger les types de projet</p>
             <p className="mt-1 text-sm text-red-500">
-              L&apos;API a retourne une erreur. Verifiez le backend ou rechargez la page.
+              L&apos;API a retourné une erreur. Vérifiez le backend ou rechargez la page.
             </p>
           </div>
         </div>
       ) : complexTypes.length === 0 && simpleTasks.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
-          <div className="text-center py-20 text-slate-500">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <FolderKanban size={32} className="text-slate-500" />
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+          <div className="text-center py-20 text-gray-500">
+            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FolderKanban size={32} className="text-gray-300" />
             </div>
-            <p className="text-lg font-semibold text-slate-700">Aucune tache</p>
-            <p className="text-sm text-slate-500 mt-1">Ajustez la recherche ou ajoutez un nouveau type de projet.</p>
+            <p className="text-lg font-semibold text-gray-700">Aucune tâche</p>
+            <p className="text-sm text-gray-400 mt-1">Ajustez la recherche ou ajoutez un nouveau type de projet.</p>
             <button
               onClick={openCreate}
-              className="mt-4 inline-flex items-center gap-2 text-blue-600 font-medium text-sm hover:text-blue-700"
+              className="mt-4 inline-flex items-center gap-2 text-primary-600 font-medium text-sm hover:text-primary-700"
             >
               <Plus size={16} /> Ajouter un type
             </button>
@@ -523,37 +513,37 @@ export default function TypesProjetPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-indigo-50/40">
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Taches complexes</h2>
-                <p className="text-xs text-slate-500">Un grand projet avec plusieurs categories</p>
+                <h2 className="text-sm font-bold text-gray-900">Tâches complexes</h2>
+                <p className="text-xs text-gray-500">Un grand projet avec plusieurs catégories</p>
               </div>
-              <span className="inline-flex items-center rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+              <span className="inline-flex items-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
                 {complexTypes.length}
               </span>
             </div>
             {complexTypes.length === 0 ? (
-              <div className="px-6 py-10 text-sm text-slate-500">Aucune tache complexe pour ce filtre.</div>
+              <div className="px-6 py-10 text-sm text-gray-500">Aucune tâche complexe pour ce filtre.</div>
             ) : (
               renderTypesTable(complexTypes)
             )}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_10px_25px_rgba(15,23,42,0.04)] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-emerald-50/40">
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Taches simples</h2>
-                <p className="text-xs text-slate-500">Meme liste que les categories (1 categorie = 1 tache simple)</p>
+                <h2 className="text-sm font-bold text-gray-900">Tâches simples</h2>
+                <p className="text-xs text-gray-500">Même liste que les catégories (1 catégorie = 1 tâche simple)</p>
               </div>
-              <span className="inline-flex items-center rounded-lg bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700">
+              <span className="inline-flex items-center rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 {simpleTasks.length}
               </span>
             </div>
             {categoriesError ? (
               <div className="px-6 py-10 text-sm text-red-600">Impossible de charger les categories.</div>
             ) : simpleTasks.length === 0 ? (
-              <div className="px-6 py-10 text-sm text-slate-500">Aucune tache simple pour ce filtre.</div>
+              <div className="px-6 py-10 text-sm text-gray-500">Aucune tâche simple pour ce filtre.</div>
             ) : (
               renderSimpleTasksTable(simpleTasks)
             )}
@@ -562,54 +552,54 @@ export default function TypesProjetPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-              <h2 className="text-lg font-bold text-slate-900">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+              <h2 className="text-lg font-bold text-gray-900">
                 {editingItem ? 'Modifier le type complexe' : 'Nouveau type de projet'}
               </h2>
               <button
                 onClick={closeModal}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
             <form id="type-projet-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
               <div>
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Nom du type *</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Nom du type *</label>
                 <input
                   type="text"
                   required
                   value={form.nom}
                   onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                  placeholder="Ex: Renovation salle de bain"
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-sm transition-all"
+                  placeholder="Ex: Rénovation salle de bain"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Description</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Description</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   rows={3}
                   placeholder="Description optionnelle du type de travaux..."
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-sm transition-all resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all resize-none"
                 />
               </div>
 
               {!editingItem && (
                 <div>
-                  <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Type de projet *</label>
-                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2">
+                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Type de projet *</label>
+                  <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                     <button
                       type="button"
                       onClick={() => setCreateMode('COMPLEXE')}
                       className={cn(
                         'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
                         createMode === 'COMPLEXE'
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'bg-white text-slate-600 hover:bg-blue-50',
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'bg-white text-gray-600 hover:bg-indigo-50',
                       )}
                     >
                       Complexe
@@ -623,14 +613,14 @@ export default function TypesProjetPage() {
                       className={cn(
                         'rounded-xl px-3 py-2 text-sm font-semibold transition-colors',
                         createMode === 'SIMPLE'
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'bg-white text-slate-600 hover:bg-blue-50',
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'bg-white text-gray-600 hover:bg-emerald-50',
                       )}
                     >
                       Simple
                     </button>
                   </div>
-                  <p className="mt-2 text-xs text-slate-500">
+                  <p className="mt-2 text-xs text-gray-400">
                     Complexe = plusieurs categories. Simple = nom + description seulement.
                   </p>
                 </div>
@@ -639,25 +629,25 @@ export default function TypesProjetPage() {
               {isComplexMode ? (
                 <div>
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <label className="block text-[13px] font-semibold text-slate-700">Categories compatibles</label>
-                  <span className="text-[11px] font-semibold text-blue-600">
+                  <label className="block text-[13px] font-semibold text-gray-700">Catégories compatibles</label>
+                  <span className="text-[11px] font-semibold text-indigo-600">
                     {form.categorieIds.length} selectionnee{form.categorieIds.length > 1 ? 's' : ''}
                   </span>
                 </div>
                 {loadingCategories ? (
-                  <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 py-6">
-                    <Loader2 size={18} className="animate-spin text-blue-600" />
+                  <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 py-6">
+                    <Loader2 size={18} className="animate-spin text-indigo-600" />
                   </div>
                 ) : categoriesError ? (
                   <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-5 text-sm text-red-600">
                     Impossible de charger les categories pour le moment.
                   </div>
                 ) : categoriesList.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-5 text-sm text-slate-500">
+                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500">
                     Aucune categorie active disponible.
                   </div>
                 ) : (
-                  <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 md:grid-cols-2">
+                  <div className="grid gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-3 md:grid-cols-2">
                     {categoriesList.map((categorie) => {
                       const selected = form.categorieIds.includes(categorie.id);
 
@@ -669,17 +659,17 @@ export default function TypesProjetPage() {
                           className={cn(
                             'flex items-start gap-2 rounded-xl border px-3 py-3 text-left transition-all',
                             selected
-                              ? 'border-blue-300 bg-blue-50 text-blue-900'
-                              : 'border-slate-200 bg-white text-slate-700 hover:border-blue-200',
+                              ? 'border-indigo-300 bg-indigo-50 text-indigo-900'
+                              : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-200',
                           )}
                         >
-                          <span className="mt-0.5 text-blue-600">
+                          <span className="mt-0.5 text-indigo-600">
                             {selected ? <CheckSquare size={16} /> : <Square size={16} />}
                           </span>
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold">{categorie.nom}</span>
-                            <span className="mt-0.5 block text-xs text-slate-500">
-                              {categorie.description || 'Categorie metier existante'}
+                            <span className="mt-0.5 block text-xs text-gray-500">
+                              {categorie.description || 'Catégorie métier existante'}
                             </span>
                           </span>
                         </button>
@@ -687,32 +677,32 @@ export default function TypesProjetPage() {
                     })}
                   </div>
                 )}
-                <p className="mt-2 text-xs text-slate-500">
-                  Selectionnez au moins 2 categories pour un type complexe.
+                <p className="mt-2 text-xs text-gray-400">
+                  Sélectionnez au moins 2 catégories pour un type complexe.
                 </p>
                 {invalidComplexSelection && (
                   <p className="mt-2 text-xs text-red-600">
-                    Un type complexe doit avoir au minimum 2 categories.
+                    Un type complexe doit avoir au minimum 2 catégories.
                   </p>
                 )}
               </div>
               ) : (
-                <div className="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-                  En mode simple, la tache sera creee avec nom + description.
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
+                  En mode simple, la tâche sera créée avec nom + description.
                 </div>
               )}
 
               {(createMutation.error || createSimpleTaskMutation.error || updateMutation.error) && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Une erreur est survenue. Veuillez reessayer.
+                  Une erreur est survenue. Veuillez réessayer.
                 </p>
               )}
             </form>
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-100 shrink-0">
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 shrink-0">
               <button
                 type="button"
                 onClick={closeModal}
-                className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Annuler
               </button>
@@ -720,10 +710,10 @@ export default function TypesProjetPage() {
                 type="submit"
                 form="type-projet-form"
                 disabled={saving || invalidComplexSelection}
-                className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all"
+                className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
               >
                 {saving && <Loader2 size={16} className="animate-spin" />}
-                {editingItem ? 'Enregistrer' : 'Creer'}
+                {editingItem ? 'Enregistrer' : 'Créer'}
               </button>
             </div>
           </div>
@@ -731,49 +721,49 @@ export default function TypesProjetPage() {
       )}
 
       {showSimpleTaskModal && editingSimpleTask && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-lg font-bold text-slate-900">Modifier la tache simple</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Modifier la tâche simple</h2>
               <button
                 onClick={closeSimpleTaskModal}
-                className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
               >
                 <X size={18} />
               </button>
             </div>
             <form id="simple-task-form" onSubmit={handleSimpleTaskSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Nom *</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Nom *</label>
                 <input
                   type="text"
                   required
                   value={simpleTaskForm.nom}
                   onChange={(e) => setSimpleTaskForm((current) => ({ ...current, nom: e.target.value }))}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-sm transition-all"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-semibold text-slate-700 mb-1.5">Description</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Description</label>
                 <textarea
                   value={simpleTaskForm.description}
                   onChange={(e) =>
                     setSimpleTaskForm((current) => ({ ...current, description: e.target.value }))
                   }
                   rows={3}
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 text-sm transition-all resize-none"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all resize-none"
                 />
               </div>
               {updateSimpleTaskMutation.error && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Echec de modification de la tache simple.
+                  Échec de modification de la tâche simple.
                 </p>
               )}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={closeSimpleTaskModal}
-                  className="px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Annuler
                 </button>
@@ -781,7 +771,7 @@ export default function TypesProjetPage() {
                   type="submit"
                   form="simple-task-form"
                   disabled={simpleTaskSaving}
-                  className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all"
+                  className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
                 >
                   {simpleTaskSaving && <Loader2 size={16} className="animate-spin" />}
                   Enregistrer
@@ -793,24 +783,24 @@ export default function TypesProjetPage() {
       )}
 
       {deleteSimpleTask && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Trash2 className="text-red-600" size={24} />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Supprimer cette tache simple ?</h3>
-            <p className="text-sm text-slate-500 mb-6">
-              La categorie "{deleteSimpleTask.category.nom}" et ses elements associes seront desactives.
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer cette tâche simple ?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              La catégorie "{deleteSimpleTask.category.nom}" et ses éléments associés seront désactivés.
             </p>
             {deleteSimpleTaskMutation.error && (
               <p className="mb-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Echec de suppression. Verifiez les dependances puis reessayez.
+                Échec de suppression. Vérifiez les dépendances puis réessayez.
               </p>
             )}
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteSimpleTask(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Annuler
               </button>
@@ -832,19 +822,19 @@ export default function TypesProjetPage() {
       )}
 
       {deleteId && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-2xl">
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Trash2 className="text-red-600" size={24} />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Supprimer ce type ?</h3>
-            <p className="text-sm text-slate-500 mb-6">
-              Ce type de projet sera supprime definitivement de la base de donnees.
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer ce type ?</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Ce type de projet sera supprimé définitivement de la base de données.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteId(null)}
-                className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 Annuler
               </button>
