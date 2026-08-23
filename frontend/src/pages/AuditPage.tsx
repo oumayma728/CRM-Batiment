@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 import {
@@ -12,10 +12,12 @@ import {
   FileClock,
   Filter,
   History,
+  Moon,
   RefreshCw,
   Search,
   ShieldCheck,
   SlidersHorizontal,
+  Sun,
   UserRound,
   WalletCards,
 } from 'lucide-react';
@@ -91,6 +93,15 @@ export default function AuditPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : document.documentElement.classList.contains('dark');
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const { data, isLoading, isFetching, isError, error, refetch } = useQuery<AuditResponse>({
     queryKey: ['audit-logs', page, search, entite, action, startDate, endDate],
@@ -128,42 +139,44 @@ export default function AuditPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
-        <div className="relative px-5 py-5 lg:px-6">
-          <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-blue-100/50 blur-3xl" />
-          <div className="absolute bottom-0 left-20 h-32 w-32 rounded-full bg-violet-100/60 blur-3xl" />
-
-          <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-[11px] font-medium text-blue-700">
-                <ShieldCheck size={13} />
-                Audit & stabilisation P0
-              </div>
-
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 lg:text-3xl">
-                Historique des modifications
-              </h1>
-
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Suivez les signatures, changements de prix, suppressions et actions sensibles pour sécuriser le pilotage de BÂTIFLOW.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
-            >
-              <RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />
-              Actualiser
-            </button>
+    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={22} className="text-[#185FA5] dark:text-blue-400" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Audit & historique
+            </h1>
           </div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Suivez les signatures, modifications de prix, suppressions et autres actions sensibles.
+          </p>
         </div>
-      </section>
+
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setDarkMode((current: boolean) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+          >
+            {darkMode ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-gray-600" />}
+            <span className="hidden sm:inline">{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          >
+            <RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />
+            Actualiser
+          </button>
+        </div>
+      </div>
 
       {isError ? (
-        <section className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <section className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
           Impossible de charger l’historique d’audit : {getApiErrorMessage(error)}
         </section>
       ) : null}
@@ -206,15 +219,15 @@ export default function AuditPage() {
         />
       </section>
 
-      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+      <section className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-gray-700 dark:text-gray-200">
               <SlidersHorizontal size={17} />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-slate-950">Filtres d’audit</h2>
-              <p className="text-xs text-slate-500">Rechercher une action, une entité ou un utilisateur.</p>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Filtres d’audit</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Rechercher une action, une entité ou un utilisateur.</p>
             </div>
           </div>
 
@@ -222,7 +235,7 @@ export default function AuditPage() {
             <button
               type="button"
               onClick={resetFilters}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               Réinitialiser
             </button>
@@ -238,7 +251,7 @@ export default function AuditPage() {
                 setSearch(event.target.value);
               }}
               placeholder="Rechercher action, utilisateur, entité..."
-              className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
+              className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500"
             />
           </FieldShell>
 
@@ -249,7 +262,7 @@ export default function AuditPage() {
                 setPage(1);
                 setAction(event.target.value);
               }}
-              className="w-full bg-transparent text-sm text-slate-800 outline-none"
+              className="w-full bg-transparent text-sm text-gray-800 outline-none dark:text-gray-100"
             >
               {actionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -266,7 +279,7 @@ export default function AuditPage() {
                 setPage(1);
                 setEntite(event.target.value);
               }}
-              className="w-full bg-transparent text-sm text-slate-800 outline-none"
+              className="w-full bg-transparent text-sm text-gray-800 outline-none dark:text-gray-100"
             >
               {entityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -284,7 +297,7 @@ export default function AuditPage() {
                 setPage(1);
                 setStartDate(event.target.value);
               }}
-              className="w-full bg-transparent text-sm text-slate-800 outline-none"
+              className="w-full bg-transparent text-sm text-gray-800 outline-none dark:text-gray-100"
             />
           </FieldShell>
 
@@ -296,20 +309,20 @@ export default function AuditPage() {
                 setPage(1);
                 setEndDate(event.target.value);
               }}
-              className="w-full bg-transparent text-sm text-slate-800 outline-none"
+              className="w-full bg-transparent text-sm text-gray-800 outline-none dark:text-gray-100"
             />
           </FieldShell>
         </div>
       </section>
 
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-[0.72fr_1.28fr]">
-        <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-slate-950">Timeline récente</h2>
-              <p className="text-xs text-slate-500">Dernières actions sensibles.</p>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Timeline récente</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Dernières actions sensibles.</p>
             </div>
-            <History size={18} className="text-slate-400" />
+            <History size={18} className="text-gray-400 dark:text-gray-500" />
           </div>
 
           <div className="space-y-3">
@@ -327,23 +340,23 @@ export default function AuditPage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-          <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="flex flex-col gap-3 border-b border-gray-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700">
             <div>
-              <h2 className="text-sm font-semibold text-slate-950">Journal détaillé</h2>
-              <p className="text-xs text-slate-500">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Journal détaillé</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {data?.meta.total ?? 0} action(s) trouvée(s)
               </p>
             </div>
 
-            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-gray-600 dark:text-gray-300">
               Page {data?.meta.page ?? page} / {data?.meta.totalPages ?? 1}
             </div>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] text-left text-sm">
-              <thead className="bg-slate-50 text-[11px] uppercase tracking-wide text-slate-500">
+              <thead className="bg-slate-100 text-[11px] uppercase tracking-wide text-gray-700 dark:bg-gray-900 dark:text-gray-300">
                 <tr>
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Utilisateur</th>
@@ -354,7 +367,7 @@ export default function AuditPage() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {isLoading ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-10 text-center text-sm text-slate-500">
@@ -363,10 +376,10 @@ export default function AuditPage() {
                   </tr>
                 ) : logs.length > 0 ? (
                   logs.map((log) => (
-                    <tr key={log.id} className="transition hover:bg-slate-50/80">
-                      <td className="px-4 py-3 text-slate-600">
-                        <div className="font-medium text-slate-800">{formatShortDate(log.createdAt)}</div>
-                        <div className="text-xs text-slate-400">{formatTime(log.createdAt)}</div>
+                    <tr key={log.id} className="transition hover:bg-blue-50/70 dark:hover:bg-gray-700/70">
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                        <div className="font-medium text-gray-800 dark:text-gray-200">{formatShortDate(log.createdAt)}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">{formatTime(log.createdAt)}</div>
                       </td>
 
                       <td className="px-4 py-3">
@@ -378,8 +391,8 @@ export default function AuditPage() {
                       </td>
 
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-800">{log.entite}</div>
-                        <div className="text-xs text-slate-400">#{log.entiteId}</div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">{log.entite}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">#{log.entiteId}</div>
                       </td>
 
                       <td className="px-4 py-3">
@@ -390,7 +403,7 @@ export default function AuditPage() {
                         <button
                           type="button"
                           onClick={() => setSelectedLog(log)}
-                          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <Eye size={14} />
                           Voir
@@ -409,12 +422,12 @@ export default function AuditPage() {
             </table>
           </div>
 
-          <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
+          <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((current) => Math.max(current - 1, 1))}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-gray-50 dark:hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronLeft size={16} />
               Précédent
@@ -428,7 +441,7 @@ export default function AuditPage() {
               type="button"
               disabled={!data || page >= data.meta.totalPages}
               onClick={() => setPage((current) => current + 1)}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-gray-50 dark:hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Suivant
               <ChevronRight size={16} />
@@ -484,15 +497,15 @@ function SummaryCard({
   }[tone];
 
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_26px_rgba(15,23,42,0.045)]">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-start gap-3">
         <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${toneClass}`}>
           {icon}
         </div>
         <div>
-          <p className="text-xs font-medium text-slate-500">{label}</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-950">{value}</p>
-          <p className="mt-0.5 text-[11px] text-slate-500">{helper}</p>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+          <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">{helper}</p>
         </div>
       </div>
     </div>
@@ -501,7 +514,7 @@ function SummaryCard({
 
 function FieldShell({ children, icon }: { children: React.ReactNode; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-400 transition-within:border-blue-300">
+    <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-gray-400 transition focus-within:ring-2 focus-within:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-500">
       {icon}
       {children}
     </div>
@@ -510,19 +523,19 @@ function FieldShell({ children, icon }: { children: React.ReactNode; icon: React
 
 function TimelineItem({ log }: { log: AuditLog }) {
   return (
-    <div className="relative flex gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+    <div className="relative flex gap-3 rounded-lg border border-gray-200 bg-slate-50/70 p-3 dark:border-gray-700 dark:bg-gray-900/40">
       <div className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${actionDotClass(log.action)}`} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
-          <p className="truncate text-sm font-medium text-slate-900">
+          <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
             {humanizeAction(log.action)}
           </p>
-          <span className="shrink-0 text-[11px] text-slate-400">
+          <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">
             {formatTime(log.createdAt)}
           </span>
         </div>
         <p className="mt-0.5 text-xs text-slate-500">
-          {log.entite} #{log.entiteId} · {actorName(log)}
+          {log.entite} #{log.entiteId} • {actorName(log)}
         </p>
       </div>
     </div>
@@ -532,7 +545,7 @@ function TimelineItem({ log }: { log: AuditLog }) {
 function UserCell({ log }: { log: AuditLog }) {
   if (!log.user) {
     return (
-      <div className="flex items-center gap-2 text-slate-400">
+      <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100">
           <ShieldCheck size={14} />
         </div>
@@ -547,10 +560,10 @@ function UserCell({ log }: { log: AuditLog }) {
         {`${log.user.prenom?.[0] ?? ''}${log.user.nom?.[0] ?? ''}`.toUpperCase() || 'U'}
       </div>
       <div className="min-w-0">
-        <p className="truncate font-medium text-slate-900">
+        <p className="truncate font-medium text-gray-900 dark:text-white">
           {log.user.prenom} {log.user.nom}
         </p>
-        <p className="truncate text-xs text-slate-400">{log.user.role}</p>
+        <p className="truncate text-xs text-gray-400 dark:text-gray-500">{log.user.role}</p>
       </div>
     </div>
   );
@@ -569,16 +582,16 @@ function ChangePreview({ log }: { log: AuditLog }) {
   const newText = compactJson(log.nouvelleValeur);
 
   if (!oldText && !newText) {
-    return <span className="text-xs text-slate-400">Aucun détail</span>;
+    return <span className="text-xs text-gray-400 dark:text-gray-500">Aucun détail</span>;
   }
 
   if (!oldText) {
-    return <p className="line-clamp-2 max-w-[260px] text-xs text-slate-600">{newText}</p>;
+    return <p className="line-clamp-2 max-w-[260px] text-xs text-gray-600 dark:text-gray-300">{newText}</p>;
   }
 
   return (
     <div className="max-w-[280px] text-xs">
-      <p className="line-clamp-1 text-slate-400">Avant : {oldText}</p>
+      <p className="line-clamp-1 text-gray-400 dark:text-gray-500">Avant : {oldText}</p>
       <p className="line-clamp-1 text-slate-700">Après : {newText}</p>
     </div>
   );
@@ -587,18 +600,18 @@ function ChangePreview({ log }: { log: AuditLog }) {
 function AuditDetailsModal({ log, onClose }: { log: AuditLog; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-3xl overflow-hidden rounded-[28px] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.25)]">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+      <div className="w-full max-w-3xl overflow-hidden rounded-xl bg-white shadow-xl dark:bg-gray-800">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-4 dark:border-gray-700">
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">Détails de l’action</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Détails de l’action</h3>
             <p className="mt-1 text-sm text-slate-500">
-              {humanizeAction(log.action)} · {log.entite} #{log.entiteId}
+              {humanizeAction(log.action)} • {log.entite} #{log.entiteId}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             Fermer
           </button>
@@ -616,8 +629,8 @@ function AuditDetailsModal({ log, onClose }: { log: AuditLog; onClose: () => voi
 function JsonPanel({ title, value }: { title: string; value?: JsonValue }) {
   return (
     <div>
-      <p className="mb-2 text-sm font-semibold text-slate-800">{title}</p>
-      <pre className="max-h-[360px] overflow-auto rounded-2xl bg-slate-950 p-4 text-xs leading-5 text-slate-100">
+      <p className="mb-2 text-sm font-semibold text-gray-800 dark:text-gray-200">{title}</p>
+      <pre className="max-h-[360px] overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-5 text-slate-100">
         {value ? JSON.stringify(value, null, 2) : 'Aucune donnée'}
       </pre>
     </div>
@@ -626,14 +639,14 @@ function JsonPanel({ title, value }: { title: string; value?: JsonValue }) {
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+    <div className="rounded-lg border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
       {text}
     </div>
   );
 }
 
 function SkeletonLine() {
-  return <div className="h-16 animate-pulse rounded-2xl bg-slate-100" />;
+  return <div className="h-16 animate-pulse rounded-lg bg-slate-100 dark:bg-gray-700" />;
 }
 
 function humanizeAction(action: string) {
@@ -706,7 +719,7 @@ function compactJson(value?: JsonValue) {
 
   return entries
     .map(([key, item]) => `${key}: ${typeof item === 'object' ? JSON.stringify(item) : String(item)}`)
-    .join(' · ');
+    .join(' • ');
 }
 
 function getApiErrorMessage(error: unknown) {
