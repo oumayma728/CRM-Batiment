@@ -13,7 +13,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import type { FactureDetail } from '@/types';
 
 interface FactureEditorPageProps {
-  scope: 'admin' | 'technico';
+  scope: 'admin' | 'assistante' | 'technico';
 }
 
 interface FactureDraft {
@@ -21,7 +21,7 @@ interface FactureDraft {
   reference: string;
   statut: 'BROUILLON' | 'ENVOYEE' | 'PAYEE' | 'ANNULEE';
   date: string;
-  dateÉchéance: string;
+  dateEcheance: string;
   typeFacture: 'ACOMPTE' | 'FINALE';
   acomptePercent: number;
   tauxTVA: number;
@@ -101,7 +101,7 @@ function buildDraft(detail: FactureDetail): FactureDraft {
     reference: detail.reference,
     statut: detail.statut,
     date: toInputDate(detail.date),
-    dateÉchéance: toInputDate(detail.dateEcheance),
+    dateEcheance: toInputDate(detail.dateEcheance),
     typeFacture: detail.typeFacture ?? 'FINALE',
     acomptePercent: detail.acomptePercent ?? 30,
     tauxTVA: detail.tauxTVA ?? 20,
@@ -152,7 +152,12 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
 
   const factureId = Number(id);
-  const basePath = scope === 'admin' ? '/admin/factures' : '/technico/factures';
+  const basePath =
+    scope === 'technico'
+      ? '/technico/factures'
+      : scope === 'assistante'
+        ? '/assistante/factures'
+        : '/admin/factures';
 
   const factureQuery = useQuery({
     queryKey: ['facture-detail', factureId],
@@ -196,7 +201,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
     );
   }, [draft]);
 
-  const locked = !draft || !draft.editable || draft.statut === 'PAYEE';
+  const locked = scope === 'assistante' || !draft || !draft.editable || draft.statut === 'PAYEE';
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -207,7 +212,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
       const payload = {
         reference: draft.reference,
         date: draft.date,
-        dateÉchéance: draft.dateÉchéance || null,
+        dateEcheance: draft.dateEcheance || null,
         typeFacture: draft.typeFacture,
         acomptePercent: draft.typeFacture === 'ACOMPTE' ? draft.acomptePercent : null,
         tauxTVA: draft.tauxTVA,
@@ -343,6 +348,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={draft.statut}
+            disabled={locked}
             onChange={(event) =>
               setDraft((current) =>
                 current
@@ -363,7 +369,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
           <button
             onClick={() => statutMutation.mutate(draft.statut)}
-            disabled={statutMutation.isPending}
+            disabled={statutMutation.isPending || locked}
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
           >
             {statutMutation.isPending ? 'Maj...' : 'Appliquer statut'}
@@ -379,7 +385,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
 
           <button
             onClick={() => sendMutation.mutate()}
-            disabled={sendMutation.isPending}
+            disabled={sendMutation.isPending || locked}
             className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-60"
           >
             <Mail size={15} />
@@ -557,10 +563,10 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
           />
           <input
             type="date"
-            value={draft.dateÉchéance}
+            value={draft.dateEcheance}
             onChange={(event) =>
               setDraft((current) =>
-                current ? { ...current, dateÉchéance: event.target.value } : current
+                current ? { ...current, dateEcheance: event.target.value } : current
               )
             }
             disabled={locked}
@@ -901,7 +907,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
                 <p className="mt-2 text-xl font-bold text-slate-900">{draft.reference}</p>
                 <div className="mt-3 space-y-1 text-slate-600">
                   <p>Date: <span className="font-medium text-slate-900">{formatLongDate(draft.date)}</span></p>
-                  <p>Échéance: <span className="font-medium text-slate-900">{formatLongDate(draft.dateÉchéance)}</span></p>
+                  <p>Échéance: <span className="font-medium text-slate-900">{formatLongDate(draft.dateEcheance)}</span></p>
                   <p>Devis source: <span className="font-medium text-slate-900">{draft.referenceDevis}</span></p>
                   <p>Type: <span className="font-medium text-slate-900">{draft.typeFacture === 'ACOMPTE' ? `Acompte ${draft.acomptePercent}%` : 'Finale'}</span></p>
                 </div>
