@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircle,
@@ -8,9 +8,11 @@ import {
   Clock3,
   Loader2,
   Mail,
+  Moon,
   Phone,
   RefreshCw,
   Search,
+  Sun,
   UserCheck,
   XCircle,
 } from 'lucide-react';
@@ -46,11 +48,11 @@ const statusStyles: Record<DemoRequestStatut, string> = {
   CONTACTED: 'border-sky-200 bg-sky-50 text-sky-700',
   SCHEDULED: 'border-blue-200 bg-blue-50 text-blue-700',
   DONE: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  CANCELED: 'border-slate-200 bg-slate-50 text-slate-600',
+  CANCELED: 'border-slate-200 bg-slate-50 text-gray-600 dark:text-gray-300',
 };
 
 const inputClass =
-  'rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100';
+  'rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-white';
 
 type Assignee = Pick<User, 'id' | 'nom' | 'prenom' | 'email' | 'role'>;
 type DemoUpdatePayload = {
@@ -83,6 +85,15 @@ export default function DemoRequestsPage() {
   const [statut, setStatut] = useState<DemoRequestStatut | 'ALL'>('ALL');
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : document.documentElement.classList.contains('dark');
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const queryParams = useMemo(
     () => ({
@@ -148,36 +159,55 @@ export default function DemoRequestsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-blue-100 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.07)]">
-        <div className="grid gap-6 bg-gradient-to-br from-blue-50 via-white to-slate-50 p-6 lg:grid-cols-[1.2fr_0.8fr] lg:p-8">
-          <div>
-            <span className="inline-flex items-center rounded-full border border-blue-100 bg-white px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm">
-              Mode Démo complet
-            </span>
-            <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">
-              Demandes de démo
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Réception publique, affectation commerciale, planification et suivi jusqu’à la clôture.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
-            <MetricCard label="Total" value={summary?.total ?? 0} icon={<Mail size={18} />} />
-            <MetricCard label="En attente" value={summary?.pending ?? 0} icon={<Clock3 size={18} />} tone="warning" />
-            <MetricCard label="Planifiées" value={summary?.scheduled ?? 0} icon={<CalendarClock size={18} />} tone="info" />
-            <MetricCard label="Terminées" value={summary?.done ?? 0} icon={<CheckCircle2 size={18} />} tone="success" />
-          </div>
+    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+            Demandes de démo
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Réception publique, affectation commerciale, planification et suivi des démonstrations.
+          </p>
         </div>
+
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setDarkMode((current: boolean) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+          >
+            {darkMode ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-gray-600" />}
+            <span className="hidden sm:inline">{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              requestsQuery.refetch();
+              summaryQuery.refetch();
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          >
+            <RefreshCw size={16} className={cn(requestsQuery.isFetching && 'animate-spin')} />
+            Actualiser
+          </button>
+        </div>
+      </div>
+
+      <section className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard label="Total" value={summary?.total ?? 0} icon={<Mail size={18} />} />
+        <MetricCard label="En attente" value={summary?.pending ?? 0} icon={<Clock3 size={18} />} tone="warning" />
+        <MetricCard label="Planifiées" value={summary?.scheduled ?? 0} icon={<CalendarClock size={18} />} tone="info" />
+        <MetricCard label="Terminées" value={summary?.done ?? 0} icon={<CheckCircle2 size={18} />} tone="success" />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1fr_420px]">
-        <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-950">Back-office commercial</h2>
-              <p className="mt-1 text-sm text-slate-500">Recherche, filtres et suivi des statuts.</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Back-office commercial</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Recherche, filtres et suivi des statuts.</p>
             </div>
 
             <button
@@ -186,7 +216,7 @@ export default function DemoRequestsPage() {
                 requestsQuery.refetch();
                 summaryQuery.refetch();
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               <RefreshCw size={16} className={cn(requestsQuery.isFetching && 'animate-spin')} />
               Actualiser
@@ -195,12 +225,12 @@ export default function DemoRequestsPage() {
 
           <div className="mt-5 grid gap-3 md:grid-cols-[1fr_220px]">
             <label className="relative block">
-              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+              <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={17} />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Rechercher par nom, email, entreprise..."
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-100"
+                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-11 pr-4 text-sm text-gray-900 outline-none transition focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
               />
             </label>
 
@@ -215,18 +245,18 @@ export default function DemoRequestsPage() {
             </select>
           </div>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200">
-            <div className="hidden grid-cols-[1.2fr_1fr_150px_130px] gap-4 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid">
+          <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+            <div className="hidden grid-cols-[1.2fr_1fr_150px_130px] gap-4 bg-slate-100 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-700 md:grid dark:bg-gray-900 dark:text-gray-300">
               <span>Prospect</span><span>Contact</span><span>Statut</span><span>Date</span>
             </div>
 
-            <div className="divide-y divide-slate-100 bg-white">
+            <div className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
               {requestsQuery.isLoading ? (
-                <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-slate-500">
+                <div className="flex items-center justify-center gap-2 px-4 py-12 text-sm text-gray-500 dark:text-gray-400">
                   <Loader2 size={17} className="animate-spin" /> Chargement des demandes...
                 </div>
               ) : requests.length === 0 ? (
-                <div className="px-4 py-12 text-center text-sm text-slate-500">Aucune demande de démo trouvée.</div>
+                <div className="px-4 py-12 text-center text-sm text-gray-500 dark:text-gray-400">Aucune demande de démo trouvée.</div>
               ) : (
                 requests.map((request) => (
                   <button
@@ -234,20 +264,20 @@ export default function DemoRequestsPage() {
                     type="button"
                     onClick={() => { setSelectedId(request.id); setFeedback(null); }}
                     className={cn(
-                      'grid w-full gap-3 px-4 py-4 text-left text-sm transition hover:bg-blue-50/50 md:grid-cols-[1.2fr_1fr_150px_130px] md:gap-4',
-                      selected?.id === request.id && 'bg-blue-50',
+                      'grid w-full gap-3 px-4 py-4 text-left text-sm transition hover:bg-blue-50/70 dark:hover:bg-gray-700/70 md:grid-cols-[1.2fr_1fr_150px_130px] md:gap-4',
+                      selected?.id === request.id && 'bg-blue-50 dark:bg-blue-950/30',
                     )}
                   >
                     <div>
-                      <p className="font-semibold text-slate-950">{request.prenom ? `${request.prenom} ` : ''}{request.nom}</p>
-                      <p className="mt-1 text-xs text-slate-500">{request.entreprise || 'Entreprise non précisée'}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{request.prenom ? `${request.prenom} ` : ''}{request.nom}</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{request.entreprise || 'Entreprise non précisée'}</p>
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-slate-700">{request.email}</p>
-                      <p className="mt-1 text-xs text-slate-500">{request.telephone || 'Téléphone non précisé'}</p>
+                      <p className="truncate text-gray-700 dark:text-gray-300">{request.email}</p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{request.telephone || 'Téléphone non précisé'}</p>
                     </div>
                     <div><StatusBadge statut={request.statut} /></div>
-                    <div className="text-xs text-slate-500">{formatDate(request.createdAt)}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{formatDate(request.createdAt)}</div>
                   </button>
                 ))
               )}
@@ -255,14 +285,14 @@ export default function DemoRequestsPage() {
           </div>
         </div>
 
-        <aside className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <aside className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
           {selected ? (
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Détail demande</p>
-                  <h2 className="mt-1 text-xl font-bold text-slate-950">{selected.prenom ? `${selected.prenom} ` : ''}{selected.nom}</h2>
-                  <p className="mt-1 text-sm text-slate-500">{selected.entreprise || 'Sans entreprise'}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Détail demande</p>
+                  <h2 className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{selected.prenom ? `${selected.prenom} ` : ''}{selected.nom}</h2>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{selected.entreprise || 'Sans entreprise'}</p>
                 </div>
                 <StatusBadge statut={selected.statut} />
               </div>
@@ -274,7 +304,7 @@ export default function DemoRequestsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">Assignée à</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Assignée à</label>
                 <select
                   value={selected.assignedToId ?? ''}
                   onChange={(event) => updateSelected({ assignedToId: event.target.value ? Number(event.target.value) : null })}
@@ -288,8 +318,8 @@ export default function DemoRequestsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">Date de démo</label>
-                <div className="mt-2 flex w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-100">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Date de démo</label>
+                <div className="mt-2 flex w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-2.5 focus-within:ring-2 focus-within:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800">
                   <input
                     type="datetime-local"
                     key={`${selected.id}-${selected.dateDemo ?? 'none'}`}
@@ -301,7 +331,7 @@ export default function DemoRequestsPage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">Statut</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Statut</label>
                 <select
                   value={selected.statut}
                   onChange={(event) => updateSelected({ statut: event.target.value as DemoRequestStatut })}
@@ -311,13 +341,13 @@ export default function DemoRequestsPage() {
                     <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
                 </select>
-                <p className="mt-2 text-xs leading-5 text-slate-400">
+                <p className="mt-2 text-xs leading-5 text-gray-400 dark:text-gray-500">
                   Pour planifier : affectez un commercial, renseignez la date, puis choisissez « Planifiée ».
                 </p>
               </div>
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wide text-slate-400">Notes internes</label>
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Notes internes</label>
                 <textarea
                   key={`${selected.id}-${selected.updatedAt}`}
                   defaultValue={selected.notes ?? ''}
@@ -327,14 +357,14 @@ export default function DemoRequestsPage() {
                 />
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Message prospect</p>
-                <p className="mt-2 text-sm leading-6 text-slate-700">{selected.message || 'Aucun message renseigné.'}</p>
+              <div className="rounded-lg border border-gray-200 bg-slate-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Message prospect</p>
+                <p className="mt-2 text-sm leading-6 text-gray-700 dark:text-gray-300">{selected.message || 'Aucun message renseigné.'}</p>
               </div>
 
               {feedback ? (
                 <div className={cn(
-                  'flex items-start gap-2 rounded-2xl px-4 py-3 text-sm font-medium',
+                  'flex items-start gap-2 rounded-lg px-4 py-3 text-sm font-medium',
                   updateMutation.isError ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700',
                 )}>
                   {updateMutation.isError ? <AlertCircle size={16} className="mt-0.5 shrink-0" /> : <CheckCircle2 size={16} className="mt-0.5 shrink-0" />}
@@ -343,13 +373,13 @@ export default function DemoRequestsPage() {
               ) : null}
 
               {updateMutation.isPending ? (
-                <div className="flex items-center gap-2 rounded-2xl bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+                <div className="flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
                   <Loader2 size={16} className="animate-spin" /> Mise à jour en cours...
                 </div>
               ) : null}
             </div>
           ) : (
-            <div className="flex h-full min-h-[360px] flex-col items-center justify-center text-center text-sm text-slate-500">
+            <div className="flex h-full min-h-[360px] flex-col items-center justify-center text-center text-sm text-gray-500 dark:text-gray-400">
               <XCircle size={28} className="text-slate-300" />
               <p className="mt-3">Sélectionnez une demande pour voir le détail.</p>
             </div>
@@ -362,17 +392,21 @@ export default function DemoRequestsPage() {
 
 function MetricCard({ label, value, icon, tone = 'default' }: { label: string; value: number; icon: ReactNode; tone?: 'default' | 'warning' | 'info' | 'success' }) {
   const toneClass = {
-    default: 'bg-white text-blue-600',
-    warning: 'bg-amber-50 text-amber-600',
-    info: 'bg-blue-50 text-blue-600',
-    success: 'bg-emerald-50 text-emerald-600',
+    default: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300',
+    warning: 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300',
+    info: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300',
+    success: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300',
   }[tone];
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white/80 p-4 shadow-sm">
-      <div className={cn('flex h-10 w-10 items-center justify-center rounded-2xl', toneClass)}>{icon}</div>
-      <p className="mt-3 text-2xl font-bold text-slate-950">{value}</p>
-      <p className="text-xs font-medium text-slate-500">{label}</p>
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        </div>
+        <div className={cn('flex h-10 w-10 items-center justify-center rounded-lg', toneClass)}>{icon}</div>
+      </div>
     </div>
   );
 }
@@ -383,10 +417,10 @@ function StatusBadge({ statut }: { statut: DemoRequestStatut }) {
 
 function InfoLine({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+    <div className="flex items-start gap-3 rounded-lg border border-gray-200 bg-slate-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-900/40">
       <span className="mt-0.5 text-blue-600">{icon}</span>
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">{label}</p>
         <p className="mt-0.5 truncate text-sm font-medium text-slate-800">{value}</p>
       </div>
     </div>
