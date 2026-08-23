@@ -1,15 +1,13 @@
-import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Building2,
+  HardHat,
   CheckSquare,
   ClipboardCheck,
-  HardHat,
   LayoutDashboard,
   LogOut,
-  Menu,
   X,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
@@ -19,56 +17,58 @@ import { cn } from '@/lib/utils';
 interface ChefNavItem {
   to: string;
   label: string;
+  description: string;
+  group: string;
   icon: ReactNode;
-  section?: string;
 }
 
-const navItems: ChefNavItem[] = [
+const chefNavItems: ChefNavItem[] = [
   {
     to: '/chef-chantier',
     label: 'Tableau de bord',
-    icon: <LayoutDashboard size={17} />,
+    description: "Vue d'ensemble",
+    group: 'Accueil',
+    icon: <LayoutDashboard size={18} />,
   },
   {
     to: '/chef-chantier/chantiers',
     label: 'Mes chantiers',
-    icon: <HardHat size={17} />,
-    section: 'Gestion terrain',
+    description: 'Suivi des sites',
+    group: 'Opérations',
+    icon: <HardHat size={18} />,
   },
   {
     to: '/chef-chantier/taches-chantier',
     label: 'Tâches chantier',
-    icon: <CheckSquare size={17} />,
+    description: 'Planning et tâches',
+    group: 'Opérations',
+    icon: <CheckSquare size={18} />,
   },
   {
     to: '/chef-chantier/receptions',
     label: 'Réceptions',
-    icon: <ClipboardCheck size={17} />,
+    description: 'Matériaux et livraisons',
+    group: 'Opérations',
+    icon: <ClipboardCheck size={18} />,
   },
 ];
 
+const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
+  (acc, item) => {
+    if (!acc[item.group]) {
+      acc[item.group] = [];
+    }
+    acc[item.group].push(item);
+    return acc;
+  },
+  {}
+);
+
 export default function ChefChantierLayout() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const initials = user
-    ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}`.toUpperCase()
-    : 'CC';
-
-  const displayName = user ? `${user.prenom ?? ''} ${user.nom ?? ''}`.trim() : 'Chef de chantier';
-
-  const currentPage =
-    [...navItems]
-      .sort((a, b) => b.to.length - a.to.length)
-      .find((item) =>
-        item.to === '/chef-chantier'
-          ? location.pathname === '/chef-chantier'
-          : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`),
-      ) ?? navItems[0];
-  const currentPageLabel =
-    location.pathname === '/chef-chantier/parametres' ? 'Paramètres' : currentPage.label;
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -76,138 +76,141 @@ export default function ChefChantierLayout() {
   };
 
   return (
-    <div className="flex min-h-screen overflow-x-hidden bg-[#f6f9ff] text-slate-900">
-      {mobileOpen && (
-        <button
-          type="button"
-          aria-label="Fermer le menu"
-          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm lg:hidden"
-          onClick={() => setMobileOpen(false)}
+    <div className="min-h-screen bg-[#f6f9ff] text-slate-900">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
+      {/* Sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-[244px] flex-col border-r border-slate-200 bg-white text-slate-600 shadow-[8px_0_30px_rgba(15,23,42,0.04)] transition-transform duration-300',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-700 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="px-5 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-600/20">
-              <Building2 className="h-5 w-5 text-white" />
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <HardHat size={24} />
+              </div>
+              <div>
+                <h1 className="font-bold text-lg">Chef de Chantier</h1>
+                <p className="text-xs text-orange-100">Espace terrain</p>
+              </div>
             </div>
-
-            <div>
-              <h2 className="text-[18px] font-semibold leading-tight tracking-tight text-slate-950">
-                BÂTIFLOW
-              </h2>
-              <p className="mt-0.5 text-[11px] text-slate-500">Espace chef de chantier</p>
-            </div>
-
             <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="ml-auto rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 lg:hidden"
-              aria-label="Fermer la navigation"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
-        </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          {navItems.map((item, index) => {
-            const previousSection = navItems
-              .slice(0, index)
-              .reverse()
-              .find((previous) => previous.section)?.section;
-            const showSection = item.section && item.section !== previousSection;
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+            {Object.entries(groupedNavItems).map(([group, items]) => (
+              <div key={group}>
+                <h3 className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-blue-100">
+                  {group}
+                </h3>
+                <div className="space-y-1">
+                  {items.map((item) => {
+                    const isActive = location.pathname === item.to || 
+                                   (item.to !== '/chef-chantier' && location.pathname.startsWith(item.to));
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => {
+                          if (window.innerWidth < 1024) {
+                            setSidebarOpen(false);
+                          }
+                        }}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200',
+                          isActive
+                            ? 'bg-white/20 text-white shadow-lg'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        {item.icon}
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.label}</p>
+                          <p className="text-xs text-blue-100/70">{item.description}</p>
+                        </div>
+                        {isActive && <ChevronRight size={16} />}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
 
-            return (
-              <div key={item.to}>
-                {showSection && (
-                  <div className="px-3 pb-2 pt-5">
-                    <p className="text-[11px] font-medium text-slate-500">{item.section}</p>
-                  </div>
-                )}
-
-                <NavLink
-                  to={item.to}
-                  end={item.to === '/chef-chantier'}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) =>
-                    cn(
-                      'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-950',
-                    )
-                  }
+          {/* User info */}
+          <div className="p-4 border-t border-white/10">
+            <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  {`${user?.prenom?.charAt(0) ?? ''}${user?.nom?.charAt(0) ?? ''}`.toUpperCase() || 'CC'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">
+                    {user?.prenom} {user?.nom}
+                  </p>
+                  <p className="truncate text-xs text-blue-100">Chef de chantier</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white/75 transition hover:bg-red-500/25 hover:text-red-100"
+                  title="Se déconnecter"
+                  aria-label="Se déconnecter"
                 >
-                  <span className="transition group-hover:scale-105">{item.icon}</span>
-                  <span className="truncate">{item.label}</span>
-                </NavLink>
-              </div>
-            );
-          })}
-        </nav>
-
-        <div className="border-t border-slate-100 p-4">
-          <div className="flex items-center gap-2">
-            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-2">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
-                {initials || 'CC'}
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold text-slate-950">
-                  {displayName || 'Chef de chantier'}
-                </p>
-                <p className="truncate text-[11px] text-slate-500">Chef de chantier</p>
+                  <LogOut size={16} />
+                </button>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={handleLogout}
-              title="Se déconnecter"
-              aria-label="Se déconnecter"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-            >
-              <LogOut size={16} />
-            </button>
           </div>
         </div>
       </aside>
 
-      <main className="min-w-0 flex-1 lg:ml-[244px]">
+      {/* Main content */}
+      <div className="min-h-screen flex-1 lg:ml-72">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex min-h-[68px] items-center justify-between gap-4 px-4 lg:px-7">
             <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
-                onClick={() => setMobileOpen((value) => !value)}
+                onClick={() => setSidebarOpen((value) => !value)}
                 className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
                 aria-label="Ouvrir la navigation"
               >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {sidebarOpen ? <X size={20} /> : <HardHat size={20} />}
               </button>
-
               <div className="min-w-0">
-                <p className="truncate text-[11px] text-slate-400">Bâtiflow / Chef de chantier</p>
+                <p className="truncate text-[11px] text-slate-400">BÂTIFLOW / Chef de chantier</p>
                 <h1 className="truncate text-[17px] font-semibold text-slate-950">
-                  {currentPageLabel}
+                  {chefNavItems.find((item) =>
+                    item.to === '/chef-chantier'
+                      ? location.pathname === '/chef-chantier'
+                      : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+                  )?.label ?? (location.pathname === '/chef-chantier/parametres' ? 'Paramètres' : 'Chef de chantier')}
                 </h1>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <InternalNotificationsBell />
-
               <AccountUserMenu
-                displayName={displayName || 'Chef de chantier'}
-                initials={initials || 'CC'}
+                displayName={`${user?.prenom ?? ''} ${user?.nom ?? ''}`.trim() || 'Chef de chantier'}
+                initials={`${user?.prenom?.charAt(0) ?? ''}${user?.nom?.charAt(0) ?? ''}`.toUpperCase() || 'CC'}
                 roleLabel="Chef de chantier"
                 settingsPath="/chef-chantier/parametres"
               />
@@ -215,10 +218,10 @@ export default function ChefChantierLayout() {
           </div>
         </header>
 
-        <div className="px-4 py-6 lg:px-7 lg:py-7">
+        <main className="p-3 sm:p-4 lg:p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
