@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { cn, formatDate } from '@/lib/utils';
@@ -13,6 +13,7 @@ import {
   FileText,
   LifeBuoy,
   Loader2,
+  Moon,
   MessageSquarePlus,
   Plus,
   RefreshCw,
@@ -20,6 +21,7 @@ import {
   Send,
   ShieldCheck,
   Sparkles,
+  Sun,
   X,
 } from 'lucide-react';
 
@@ -254,14 +256,14 @@ function SummaryCard({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">{value}</p>
-          <p className="mt-1 text-xs text-slate-400">{hint}</p>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
+          <p className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{value}</p>
+          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{hint}</p>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#185FA5] dark:bg-blue-950/50 dark:text-blue-300">
           {icon}
         </div>
       </div>
@@ -285,7 +287,7 @@ function SelectField({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
-        'rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-50',
+        'rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200',
         className,
       )}
     >
@@ -306,7 +308,16 @@ export default function SavPage() {
   const [form, setForm] = useState<TicketFormState>(emptyForm);
   const [noteContent, setNoteContent] = useState('');
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : document.documentElement.classList.contains('dark');
+  });
   const limit = 8;
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
 
   const ticketsQuery = useQuery({
     queryKey: ['sav-tickets', page, search, statut, priorite, categorie],
@@ -465,9 +476,9 @@ export default function SavPage() {
   };
 
   const getRelatedLabel = (option: DevisOption | FactureOption | ChantierOption) => {
-    if ('montantTTC' in option) return `${option.reference} · ${option.statut ?? 'Facture'}`;
-    if ('adresse' in option) return `${option.reference} · ${option.adresse ?? option.statut ?? 'Chantier'}`;
-    return `${option.reference} · ${option.statut ?? 'Devis'}`;
+    if ('montantTTC' in option) return `${option.reference} • ${option.statut ?? 'Facture'}`;
+    if ('adresse' in option) return `${option.reference} • ${option.adresse ?? option.statut ?? 'Chantier'}`;
+    return `${option.reference} • ${option.statut ?? 'Devis'}`;
   };
 
   const openCreateModal = () => {
@@ -477,45 +488,48 @@ export default function SavPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <section className="overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-sm">
-        <div className="relative p-6 sm:p-8">
-          <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-[5rem] bg-blue-50" />
-          <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
-                <LifeBuoy size={14} />
-                Service après-vente
-              </div>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">
-                Suivi des réclamations clients et interventions SAV
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-slate-500">
-                Créez, assignez et suivez les tickets liés aux devis, factures ou chantiers avec notes internes et historique de traitement.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => ticketsQuery.refetch()}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-              >
-                <RefreshCw size={16} className={ticketsQuery.isFetching ? 'animate-spin' : ''} />
-                Actualiser
-              </button>
-              <button
-                type="button"
-                onClick={openCreateModal}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700"
-              >
-                <Plus size={16} />
-                Nouveau ticket
-              </button>
-            </div>
+    <div className="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
+      <div className="mb-4 sm:mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <LifeBuoy size={22} className="text-[#185FA5] dark:text-blue-400" />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Service après-vente</h1>
           </div>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Suivez les réclamations clients, les priorités et l’avancement des interventions SAV.
+          </p>
         </div>
-      </section>
+
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setDarkMode((current: boolean) => !current)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+          >
+            {darkMode ? <Sun size={18} className="text-yellow-500" /> : <Moon size={18} className="text-gray-600" />}
+            <span className="hidden sm:inline">{darkMode ? 'Mode clair' : 'Mode sombre'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => ticketsQuery.refetch()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 sm:px-4 text-sm text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+          >
+            <RefreshCw size={16} className={ticketsQuery.isFetching ? 'animate-spin' : ''} />
+            Actualiser
+          </button>
+
+          <button
+            type="button"
+            onClick={openCreateModal}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#185FA5] px-3 py-2 sm:px-4 text-sm text-white transition hover:bg-[#0F4780]"
+          >
+            <Plus size={18} />
+            Nouveau ticket
+          </button>
+        </div>
+      </div>
 
       {feedback && (
         <div
@@ -540,8 +554,8 @@ export default function SavPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
-        <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-100 p-4 sm:p-5">
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div className="border-b border-gray-200 p-4 sm:p-5 dark:border-gray-700">
             <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
               <div className="relative flex-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
@@ -552,7 +566,7 @@ export default function SavPage() {
                     setPage(1);
                   }}
                   placeholder="Rechercher par référence, titre, client, devis..."
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm text-gray-900 outline-none transition focus:ring-2 focus:ring-[#185FA5] dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                 />
               </div>
 
@@ -586,7 +600,7 @@ export default function SavPage() {
 
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-100 text-sm">
-              <thead className="bg-slate-50/70 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+              <thead className="bg-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-gray-700 dark:bg-gray-900 dark:text-gray-300">
                 <tr>
                   <th className="px-5 py-3">Ticket</th>
                   <th className="px-5 py-3">Client</th>
@@ -596,10 +610,10 @@ export default function SavPage() {
                   <th className="px-5 py-3">Échéance</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {ticketsQuery.isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
+                    <td colSpan={6} className="px-5 py-12 text-center text-gray-500 dark:text-gray-400">
                       <Loader2 className="mx-auto mb-3 animate-spin text-blue-600" size={24} />
                       Chargement des tickets SAV...
                     </td>
@@ -611,7 +625,7 @@ export default function SavPage() {
                         <Sparkles size={24} />
                       </div>
                       <p className="mt-3 font-semibold text-slate-800">Aucun ticket SAV trouvé</p>
-                      <p className="mt-1 text-sm text-slate-500">Créez un premier ticket pour suivre une réclamation client.</p>
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Créez un premier ticket pour suivre une réclamation client.</p>
                     </td>
                   </tr>
                 ) : (
@@ -623,17 +637,17 @@ export default function SavPage() {
                         key={ticket.id}
                         onClick={() => setSelectedTicketId(ticket.id)}
                         className={cn(
-                          'cursor-pointer transition hover:bg-blue-50/40',
-                          isSelected && 'bg-blue-50/70',
+                          'cursor-pointer transition hover:bg-blue-50/70 dark:hover:bg-gray-700/70',
+                          isSelected && 'bg-blue-50 dark:bg-blue-950/30',
                         )}
                       >
                         <td className="px-5 py-4">
-                          <p className="font-semibold text-slate-950">{ticket.reference}</p>
-                          <p className="mt-1 max-w-[260px] truncate text-xs text-slate-500">{ticket.titre}</p>
+                          <p className="font-semibold text-gray-900 dark:text-white">{ticket.reference}</p>
+                          <p className="mt-1 max-w-[260px] truncate text-xs text-gray-500 dark:text-gray-400">{ticket.titre}</p>
                         </td>
                         <td className="px-5 py-4">
-                          <p className="font-medium text-slate-700">{getClientName(ticket.client)}</p>
-                          <p className="mt-1 text-xs text-slate-400">{categoryLabels[ticket.categorie]}</p>
+                          <p className="font-medium text-gray-700 dark:text-gray-300">{getClientName(ticket.client)}</p>
+                          <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{categoryLabels[ticket.categorie]}</p>
                         </td>
                         <td className="px-5 py-4">
                           <Badge className={statusConfig[ticket.statut].className}>{statusConfig[ticket.statut].label}</Badge>
@@ -641,8 +655,8 @@ export default function SavPage() {
                         <td className="px-5 py-4">
                           <Badge className={priorityConfig[ticket.priorite].className}>{priorityConfig[ticket.priorite].label}</Badge>
                         </td>
-                        <td className="px-5 py-4 text-slate-600">{getPersonName(ticket.assignedTo)}</td>
-                        <td className="px-5 py-4 text-slate-500">{formatRelativeDate(ticket.dateEcheance)}</td>
+                        <td className="px-5 py-4 text-gray-600 dark:text-gray-300">{getPersonName(ticket.assignedTo)}</td>
+                        <td className="px-5 py-4 text-gray-500 dark:text-gray-400">{formatRelativeDate(ticket.dateEcheance)}</td>
                       </tr>
                     );
                   })
@@ -652,8 +666,8 @@ export default function SavPage() {
           </div>
 
           <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-              Page {meta?.page ?? page} / {meta?.totalPages ?? 1} · {meta?.total ?? tickets.length} ticket(s)
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Page {meta?.page ?? page} / {meta?.totalPages ?? 1} • {meta?.total ?? tickets.length} ticket(s)
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -678,19 +692,19 @@ export default function SavPage() {
           </div>
         </div>
 
-        <aside className="rounded-[2rem] border border-slate-200 bg-white shadow-sm">
+        <aside className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
           {!selectedTicketId ? (
             <div className="flex min-h-[520px] flex-col items-center justify-center p-8 text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-[1.7rem] bg-blue-50 text-blue-600">
                 <MessageSquarePlus size={28} />
               </div>
-              <h2 className="mt-4 text-lg font-semibold text-slate-950">Détail du ticket</h2>
-              <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
+              <h2 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">Détail du ticket</h2>
+              <p className="mt-2 max-w-xs text-sm leading-6 text-gray-500 dark:text-gray-400">
                 Sélectionnez un ticket dans la liste pour modifier son statut, sa priorité ou ajouter une note interne.
               </p>
             </div>
           ) : selectedTicketQuery.isLoading ? (
-            <div className="flex min-h-[520px] items-center justify-center text-slate-500">
+            <div className="flex min-h-[520px] items-center justify-center text-gray-500 dark:text-gray-400">
               <Loader2 className="mr-2 animate-spin text-blue-600" size={20} />
               Chargement du détail...
             </div>
@@ -699,8 +713,8 @@ export default function SavPage() {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">{selectedTicket.reference}</p>
-                  <h2 className="mt-1 text-xl font-semibold text-slate-950">{selectedTicket.titre}</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">{selectedTicket.description}</p>
+                  <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{selectedTicket.titre}</h2>
+                  <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">{selectedTicket.description}</p>
                 </div>
                 <button
                   type="button"
@@ -713,26 +727,26 @@ export default function SavPage() {
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Client</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Client</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">{getClientName(selectedTicket.client)}</p>
                 </div>
                 <div className="rounded-3xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Assigné à</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Assigné à</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">{getPersonName(selectedTicket.assignedTo)}</p>
                 </div>
                 <div className="rounded-3xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Catégorie</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Catégorie</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">{categoryLabels[selectedTicket.categorie]}</p>
                 </div>
                 <div className="rounded-3xl bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Échéance</p>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">Échéance</p>
                   <p className="mt-1 text-sm font-semibold text-slate-800">{formatRelativeDate(selectedTicket.dateEcheance)}</p>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 <label className="space-y-1.5">
-                  <span className="text-xs font-semibold text-slate-500">Statut</span>
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Statut</span>
                   <SelectField
                     value={selectedTicket.statut}
                     onChange={(value) => updateMutation.mutate({ id: selectedTicket.id, data: { statut: value as SavTicketStatut } })}
@@ -743,7 +757,7 @@ export default function SavPage() {
                 </label>
 
                 <label className="space-y-1.5">
-                  <span className="text-xs font-semibold text-slate-500">Priorité</span>
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Priorité</span>
                   <SelectField
                     value={selectedTicket.priorite}
                     onChange={(value) => updateMutation.mutate({ id: selectedTicket.id, data: { priorite: value as SavTicketPriorite } })}
@@ -759,7 +773,7 @@ export default function SavPage() {
                   <FileText size={17} className="text-blue-600" />
                   Élément lié
                 </div>
-                <div className="mt-3 space-y-2 text-sm text-slate-600">
+                <div className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   {selectedTicket.devis && <p>Devis : <span className="font-semibold">{selectedTicket.devis.reference}</span></p>}
                   {selectedTicket.facture && <p>Facture : <span className="font-semibold">{selectedTicket.facture.reference}</span></p>}
                   {selectedTicket.chantier && <p>Chantier : <span className="font-semibold">{selectedTicket.chantier.reference}</span></p>}
@@ -768,8 +782,8 @@ export default function SavPage() {
 
               <div className="mt-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-950">Notes internes</h3>
-                  <span className="text-xs font-semibold text-slate-400">{selectedTicket.notes?.length ?? 0} note(s)</span>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Notes internes</h3>
+                  <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">{selectedTicket.notes?.length ?? 0} note(s)</span>
                 </div>
 
                 <div className="mt-3 flex gap-2">
@@ -777,13 +791,13 @@ export default function SavPage() {
                     value={noteContent}
                     onChange={(event) => setNoteContent(event.target.value)}
                     placeholder="Ajouter une note interne..."
-                    className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                    className="min-w-0 flex-1 rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800 px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#185FA5]"
                   />
                   <button
                     type="button"
                     disabled={!noteContent.trim() || noteMutation.isPending}
                     onClick={() => noteMutation.mutate({ id: selectedTicket.id, contenu: noteContent.trim() })}
-                    className="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-3 text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center justify-center rounded-lg bg-[#185FA5] px-3 text-white transition hover:bg-[#0F4780] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {noteMutation.isPending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
                   </button>
@@ -791,15 +805,15 @@ export default function SavPage() {
 
                 <div className="mt-4 space-y-3">
                   {(selectedTicket.notes ?? []).length === 0 ? (
-                    <p className="rounded-3xl bg-slate-50 p-4 text-sm text-slate-500">Aucune note interne pour ce ticket.</p>
+                    <p className="rounded-3xl bg-slate-50 p-4 text-sm text-gray-500 dark:text-gray-400">Aucune note interne pour ce ticket.</p>
                   ) : (
                     selectedTicket.notes?.map((note) => (
                       <div key={note.id} className="rounded-3xl border border-slate-100 bg-slate-50 p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs font-semibold text-slate-700">{getPersonName(note.user)}</p>
-                          <p className="text-xs text-slate-400">{formatDate(note.createdAt)}</p>
+                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{getPersonName(note.user)}</p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500">{formatDate(note.createdAt)}</p>
                         </div>
-                        <p className="mt-2 text-sm leading-6 text-slate-600">{note.contenu}</p>
+                        <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{note.contenu}</p>
                       </div>
                     ))
                   )}
@@ -814,11 +828,11 @@ export default function SavPage() {
 
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-[2rem] bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 p-5">
+          <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-gray-800">
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-5 dark:border-gray-700">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">Nouveau ticket SAV</p>
-                <h2 className="mt-1 text-xl font-semibold text-slate-950">Créer une réclamation client</h2>
+                <h2 className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">Créer une réclamation client</h2>
               </div>
               <button
                 type="button"
@@ -831,7 +845,7 @@ export default function SavPage() {
 
             <div className="grid gap-4 p-5 md:grid-cols-2">
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Client *</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Client *</span>
                 <SelectField value={form.clientId} onChange={(value) => setForm((current) => ({ ...current, clientId: value }))} className="w-full">
                   <option value="">Choisir un client</option>
                   {(clientsQuery.data ?? []).map((client) => (
@@ -841,17 +855,17 @@ export default function SavPage() {
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Assigné à</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Assigné à</span>
                 <SelectField value={form.assignedToId} onChange={(value) => setForm((current) => ({ ...current, assignedToId: value }))} className="w-full">
                   <option value="">Non assigné</option>
                   {(usersQuery.data ?? []).map((user) => (
-                    <option key={user.id} value={user.id}>{getPersonName(user)} · {user.role}</option>
+                    <option key={user.id} value={user.id}>{getPersonName(user)} • {user.role}</option>
                   ))}
                 </SelectField>
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Élément lié *</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Élément lié *</span>
                 <SelectField
                   value={form.relatedType}
                   onChange={(value) => setForm((current) => ({ ...current, relatedType: value as RelatedType, relatedId: '' }))}
@@ -864,7 +878,7 @@ export default function SavPage() {
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Référence liée *</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Référence liée *</span>
                 <SelectField value={form.relatedId} onChange={(value) => setForm((current) => ({ ...current, relatedId: value }))} className="w-full">
                   <option value="">Choisir une référence</option>
                   {relatedOptions.map((option) => (
@@ -874,59 +888,59 @@ export default function SavPage() {
               </label>
 
               <label className="space-y-1.5 md:col-span-2">
-                <span className="text-xs font-semibold text-slate-500">Titre *</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Titre *</span>
                 <input
                   value={form.titre}
                   onChange={(event) => setForm((current) => ({ ...current, titre: event.target.value }))}
                   placeholder="Ex. Retouche peinture après réception"
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800 px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#185FA5]"
                 />
               </label>
 
               <label className="space-y-1.5 md:col-span-2">
-                <span className="text-xs font-semibold text-slate-500">Description *</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Description *</span>
                 <textarea
                   value={form.description}
                   onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                   placeholder="Décrivez la réclamation, le contexte client et l’action attendue."
                   rows={4}
-                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                  className="w-full resize-none rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800 px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#185FA5]"
                 />
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Statut</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Statut</span>
                 <SelectField value={form.statut} onChange={(value) => setForm((current) => ({ ...current, statut: value as SavTicketStatut }))} className="w-full">
                   {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </SelectField>
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Priorité</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Priorité</span>
                 <SelectField value={form.priorite} onChange={(value) => setForm((current) => ({ ...current, priorite: value as SavTicketPriorite }))} className="w-full">
                   {priorityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </SelectField>
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Catégorie</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Catégorie</span>
                 <SelectField value={form.categorie} onChange={(value) => setForm((current) => ({ ...current, categorie: value as SavTicketCategorie }))} className="w-full">
                   {categoryOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </SelectField>
               </label>
 
               <label className="space-y-1.5">
-                <span className="text-xs font-semibold text-slate-500">Date d’échéance</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Date d’échéance</span>
                 <input
                   type="date"
                   value={form.dateEcheance}
                   onChange={(event) => setForm((current) => ({ ...current, dateEcheance: event.target.value }))}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none transition focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-50"
+                  className="w-full rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-800 px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#185FA5]"
                 />
               </label>
             </div>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-slate-100 p-5 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-3 border-t border-gray-200 p-5 sm:flex-row sm:justify-end dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
@@ -938,7 +952,7 @@ export default function SavPage() {
                 type="button"
                 disabled={!form.clientId || !form.relatedId || !form.titre.trim() || !form.description.trim() || createMutation.isPending}
                 onClick={() => createMutation.mutate(form)}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#185FA5] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0F4780] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {createMutation.isPending ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
                 Créer le ticket
