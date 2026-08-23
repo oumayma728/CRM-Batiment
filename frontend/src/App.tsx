@@ -147,6 +147,7 @@ export default function App() {
               <Route path="materiaux" element={<MateriauxPage />} />
               <Route path="stock" element={<StockPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
             </Route>
           </Route>
 

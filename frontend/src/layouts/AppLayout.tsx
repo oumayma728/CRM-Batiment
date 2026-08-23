@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import AccountUserMenu from '@/components/AccountUserMenu';
 import {
   NavLink,
   Outlet,
@@ -26,6 +27,7 @@ import {
   PackageCheck,
   Receipt,
   Shield,
+  Settings,
   Sun,
   Truck,
   Users,
@@ -220,6 +222,14 @@ const navItems: NavItem[] = [
     group: 'Administration',
     icon: <History size={18} />,
     roles: ['ADMIN'],
+  },
+  {
+    to: '/admin/parametres',
+    label: 'Paramètres',
+    description: 'Compte et préférences',
+    group: 'Compte',
+    icon: <Settings size={18} />,
+    roles: ['ASSISTANTE'],
   },
 ];
 
@@ -505,21 +515,18 @@ export default function AppLayout() {
 
               <div className="hidden h-8 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
 
-              <div className="hidden items-center gap-2 sm:flex">
-                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#185FA5] text-xs font-bold text-white">
-                  {initials || 'A'}
-                </div>
-
-                <div className="hidden text-sm md:block">
-                  <p className="max-w-[160px] truncate font-semibold text-slate-800 dark:text-slate-100">
-                    {displayName}
-                  </p>
-
-                  <p className="text-xs text-slate-400 dark:text-slate-500">
-                    {roleLabels[user?.role ?? 'ADMIN']}
-                  </p>
-                </div>
-              </div>
+              <AccountUserMenu
+                displayName={displayName}
+                initials={initials || 'A'}
+                roleLabel={roleLabels[user?.role ?? 'ADMIN']}
+                settingsPath={
+                  user?.role === 'ADMIN'
+                    ? '/admin/parametres-chiffrage'
+                    : user?.role === 'ASSISTANTE'
+                      ? '/assistante/parametres'
+                      : undefined
+                }
+              />
             </div>
           </div>
         </header>

@@ -24,6 +24,7 @@ import {
   PackageSearch,
 } from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
+import AccountUserMenu from '@/components/AccountUserMenu';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { useDarkMode } from '@/hooks/useDarkMode';
@@ -237,17 +238,12 @@ export default function TechnicoLayout() {
             </button>
             <InternalNotificationsBell />
             <div className="w-px h-8 bg-gray-200 dark:bg-slate-700 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                {initials}
-              </div>
-              <span className="text-sm font-medium text-gray-700 dark:text-slate-200 hidden sm:block">
-                {user?.prenom}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
-                Technico
-              </span>
-            </div>
+            <AccountUserMenu
+              displayName={`${user?.prenom ?? ''} ${user?.nom ?? ''}`.trim() || 'Technico'}
+              initials={initials || 'TC'}
+              roleLabel="Technico-commercial"
+              settingsPath="/technico/profil"
+            />
           </div>
         </header>
 

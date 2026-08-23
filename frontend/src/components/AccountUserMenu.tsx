@@ -8,7 +8,7 @@ interface AccountUserMenuProps {
   displayName: string;
   initials: string;
   roleLabel: string;
-  settingsPath: string;
+  settingsPath?: string;
 }
 
 export default function AccountUserMenu({
@@ -61,15 +61,22 @@ export default function AccountUserMenu({
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-xs font-semibold text-white">
           {initials}
         </div>
+
         <div className="hidden min-w-0 text-left sm:block">
           <p className="max-w-[150px] truncate text-[13px] font-semibold leading-none text-slate-950">
             {displayName}
           </p>
-          <p className="mt-1 text-[11px] text-slate-500">{roleLabel}</p>
+          <p className="mt-1 text-[11px] text-slate-500">
+            {roleLabel}
+          </p>
         </div>
+
         <ChevronDown
           size={15}
-          className={cn('hidden text-slate-400 transition sm:block', open && 'rotate-180')}
+          className={cn(
+            'hidden text-slate-400 transition sm:block',
+            open && 'rotate-180',
+          )}
         />
       </button>
 
@@ -83,28 +90,37 @@ export default function AccountUserMenu({
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-semibold text-white">
                 {initials}
               </div>
+
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-950">{displayName}</p>
-                <p className="mt-0.5 text-xs text-slate-500">{roleLabel}</p>
+                <p className="truncate text-sm font-semibold text-slate-950">
+                  {displayName}
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {roleLabel}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="p-2">
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOpen(false);
-                navigate(settingsPath);
-              }}
-              className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
-            >
-              <Settings size={17} />
-              Paramètres
-            </button>
+            {settingsPath && (
+              <>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setOpen(false);
+                    navigate(settingsPath);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Settings size={17} />
+                  Paramètres
+                </button>
 
-            <div className="my-2 h-px bg-slate-100" />
+                <div className="my-2 h-px bg-slate-100" />
+              </>
+            )}
 
             <button
               type="button"
