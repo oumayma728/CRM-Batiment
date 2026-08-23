@@ -148,7 +148,7 @@ export default function RagDocumentsPage() {
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
         >
           <Plus size={17} />
           Ajouter
@@ -162,13 +162,13 @@ export default function RagDocumentsPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Rechercher"
-            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm outline-none transition focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-500/15"
+            className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/15"
           />
         </div>
         <select
           value={categoryFilter}
           onChange={(event) => setCategoryFilter(event.target.value)}
-          className="h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-500/15"
+          className="h-10 rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-500/15"
         >
           <option value="">Toutes categories</option>
           {availableCategories.map((category) => (
@@ -265,7 +265,7 @@ export default function RagDocumentsPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 p-4">
           <form
             onSubmit={handleSubmit}
             className="w-full max-w-2xl rounded-lg bg-white shadow-xl"
@@ -291,7 +291,7 @@ export default function RagDocumentsPage() {
                   onChange={(event) => setForm((prev) => ({ ...prev, titre: event.target.value }))}
                   required
                   maxLength={160}
-                  className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
+                  className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
                 />
               </label>
 
@@ -304,7 +304,7 @@ export default function RagDocumentsPage() {
                     required
                     maxLength={80}
                     list="rag-categories"
-                    className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
+                    className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
                   />
                   <datalist id="rag-categories">
                     {availableCategories.map((category) => (
@@ -323,7 +323,7 @@ export default function RagDocumentsPage() {
                     onChange={(event) =>
                       setForm((prev) => ({ ...prev, priorite: Number(event.target.value) }))
                     }
-                    className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
+                    className="h-10 rounded-lg border border-gray-200 px-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
                   />
                 </label>
 
@@ -353,7 +353,7 @@ export default function RagDocumentsPage() {
                   required
                   maxLength={10000}
                   rows={9}
-                  className="resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/15"
+                  className="resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm leading-6 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
                 />
               </label>
 
@@ -375,7 +375,7 @@ export default function RagDocumentsPage() {
               <button
                 type="submit"
                 disabled={saveMutation.isPending}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saveMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                 Enregistrer
@@ -386,7 +386,7 @@ export default function RagDocumentsPage() {
       )}
 
       {deleteId !== null && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-xl">
             <h2 className="text-lg font-bold text-gray-900">Supprimer document</h2>
             <p className="mt-2 text-sm text-gray-600">
