@@ -8,3 +8,8 @@ devis_generes/
 devis_genere_test.docx
 devis_telecharge.docx
 DEV-2026-95064.docx
+
+# Jeu de donnees de test et sorties de benchmarks (lourds, regenerables --
+# ressources/ = photos/audios de test, json/ = resultats bruts de benchmarks)
+ressources/
+json/
