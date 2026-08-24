@@ -13,6 +13,7 @@ import {
 
 export default function TechnicoMateriaux() {
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
 
   const { data: materiauxData, isLoading } = useQuery({
     queryKey: ['technico-materiaux'],
@@ -23,14 +24,20 @@ export default function TechnicoMateriaux() {
   });
 
   const allMateriaux = materiauxData ?? [];
-  const filtered = search
+  const filtered = (search
     ? allMateriaux.filter(
         (m) =>
           m.nom.toLowerCase().includes(search.toLowerCase()) ||
           m.couleur?.toLowerCase().includes(search.toLowerCase()) ||
           m.finition?.toLowerCase().includes(search.toLowerCase()),
       )
-    : allMateriaux;
+    : allMateriaux
+  ).sort((a, b) => {
+    if (sortBy === 'priceDesc') return (b.prixAchatFixe ?? 0) - (a.prixAchatFixe ?? 0);
+    if (sortBy === 'priceAsc') return (a.prixAchatFixe ?? 0) - (b.prixAchatFixe ?? 0);
+    if (sortBy === 'supplier') return (a.fournisseur?.nom ?? '').localeCompare(b.fournisseur?.nom ?? '');
+    return a.nom.localeCompare(b.nom);
+  });
 
   return (
     <div className="space-y-6">
@@ -43,20 +50,33 @@ export default function TechnicoMateriaux() {
       </div>
 
       {/* Search */}
-      <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all max-w-md">
-        <Search size={18} className="text-gray-400" />
-        <input
-          type="text"
-          placeholder="Rechercher par nom, couleur, finition..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-        />
-        {search && (
-          <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
-            <X size={16} />
-          </button>
-        )}
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex max-w-md flex-1 items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
+          <Search size={18} className="text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher par nom, couleur, finition..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
+              <X size={16} />
+            </button>
+          )}
+        </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 shadow-sm outline-none"
+          aria-label="Trier les matériaux"
+        >
+          <option value="name">Tri : nom A-Z</option>
+          <option value="priceAsc">Tri : prix croissant</option>
+          <option value="priceDesc">Tri : prix décroissant</option>
+          <option value="supplier">Tri : fournisseur</option>
+        </select>
       </div>
 
       {/* Grid */}
@@ -112,7 +132,7 @@ export default function TechnicoMateriaux() {
               </div>
               {m.fournisseur && (
                 <div className="mt-2 text-[11px] text-gray-400">
-                  Fournisseur: {m.fournisseur.nom}
+                  Fournisseur : {m.fournisseur.nom}
                 </div>
               )}
             </div>

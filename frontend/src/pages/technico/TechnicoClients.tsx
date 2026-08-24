@@ -7,21 +7,23 @@ import { ProjectTypeCheckboxGroup } from '@/components/ProjectTypeCheckboxGroup'
 import { formatDate } from '@/lib/utils';
 import type { Client, TypeProjet } from '@/types';
 import {
-  Search,
   Phone,
   Mail,
   MapPin,
-  X,
   UserPlus,
   Filter,
   Edit3,
   ChevronLeft,
   ChevronRight,
   FileText,
-  Loader2,
   Upload,
+  X,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SearchBar from '@/components/ui/SearchBar';
+import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import EmptyState from '@/components/ui/EmptyState';
 
 const sourceLabels: Record<string, { label: string; color: string }> = {
   CHATBOT: { label: 'Chatbot', color: 'bg-cyan-100 text-cyan-700' },
@@ -58,7 +60,7 @@ function getClientProjectTypes(client: Client) {
   return client.typeProjet ? [client.typeProjet] : [];
 }
 
-function getClientProjectLabel(client: Client, fallback = 'Projet a etudier') {
+function getClientProjectLabel(client: Client, fallback = 'Projet à étudier') {
   const labels = getClientProjectTypes(client).map((project) => project.nom).filter(Boolean);
   return labels.length > 0 ? labels.join(', ') : fallback;
 }
@@ -70,8 +72,8 @@ function buildDefaultDemandeDescription(client: Client) {
 
   if (project && location) return `${project} - ${location}`;
   if (project) return `${project} - ${clientName}`;
-  if (location) return `Projet a etudier - ${location}`;
-  return `Projet a etudier pour ${clientName}`;
+  if (location) return `Projet à étudier - ${location}`;
+  return `Projet à étudier pour ${clientName}`;
 }
 
 export default function TechnicoClients() {
@@ -80,6 +82,7 @@ export default function TechnicoClients() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
   const [showModal, setShowModal] = useState(false);
   const [editClient, setEditClient] = useState<Client | null>(null);
   const [selectedTypeProjetIds, setSelectedTypeProjetIds] = useState<number[]>([]);
@@ -105,6 +108,11 @@ export default function TechnicoClients() {
   });
 
   const clients: Client[] = data?.data ?? [];
+  const sortedClients = [...clients].sort((a, b) => {
+    if (sortBy === 'name') return `${a.nom} ${a.prenom ?? ''}`.localeCompare(`${b.nom} ${b.prenom ?? ''}`);
+    if (sortBy === 'source') return (a.source ?? '').localeCompare(b.source ?? '');
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
 
   // Fetch types de projet for dropdown
@@ -233,7 +241,7 @@ export default function TechnicoClients() {
         } catch (error) {
           apiErrors.push({
             rowNumber: row.rowNumber,
-            reason: getApiErrorMessage(error, 'Creation impossible.'),
+            reason: getApiErrorMessage(error, 'Création impossible.'),
           });
         }
       }
@@ -256,7 +264,7 @@ export default function TechnicoClients() {
 
       setImportFeedback({
         type: status,
-        message: `Import termine: ${createdCount} cree(s), ${failedCount} echec(s), ${parsed.skippedRows} ligne(s) vide(s) ignoree(s).${details}`,
+        message: `Import terminé : ${createdCount} créé(s), ${failedCount} échec(s), ${parsed.skippedRows} ligne(s) vide(s) ignorée(s).${details}`,
       });
     } catch (error) {
       setImportFeedback({
@@ -322,20 +330,13 @@ export default function TechnicoClients() {
 
       {/* Filters bar */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all">
-          <Search size={18} className="text-gray-400" />
-          <input
-            type="text"
-            placeholder="Rechercher par nom, email, téléphone..."
+        <div className="flex-1">
+          <SearchBar
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+            onChange={(value) => { setSearch(value); setPage(1); }}
+            placeholder="Rechercher par nom, email, téléphone..."
+            onClear={() => setSearch('')}
           />
-          {search && (
-            <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
-              <X size={16} />
-            </button>
-          )}
         </div>
         <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
           <Filter size={16} className="text-gray-400" />
@@ -353,34 +354,32 @@ export default function TechnicoClients() {
             <option value="AUTRE">Autre</option>
           </select>
         </div>
+        <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-transparent text-sm outline-none text-gray-600"
+            aria-label="Trier les clients"
+          >
+            <option value="recent">Tri : plus récent</option>
+            <option value="name">Tri : nom A-Z</option>
+            <option value="source">Tri : source</option>
+          </select>
+        </div>
       </div>
 
       {/* Client cards grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-6 animate-pulse">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-3 bg-gray-100 rounded w-1/3" />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingSkeleton type="card" count={4} />
       ) : clients.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-          <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <UserPlus size={28} className="text-gray-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900">Aucun client trouvé</h3>
-          <p className="text-sm text-gray-400 mt-1">Commencez par ajouter votre premier client.</p>
-        </div>
+        <EmptyState
+          icon={UserPlus}
+          title="Aucun client trouvé"
+          description="Commencez par ajouter votre premier client."
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {clients.map((client) => (
+          {sortedClients.map((client) => (
             <div
               key={client.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 group"

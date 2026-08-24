@@ -66,7 +66,67 @@ async function main() {
   console.log(`✅ Technico créé : ${technico.email} (ID: ${technico.id})`);
   console.log(`   Mot de passe : Technico@2026!`);
 
-  // 2c. Créer les types de projet (gérés par Admin)
+  // 2c. Créer le compte Assistante administrative
+  const assistantePassword = await bcrypt.hash('Assistante@2026!', 12);
+  const assistante = await prisma.user.upsert({
+    where: { email: 'assistante@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Martin',
+      prenom: 'Sophie',
+      email: 'assistante@batiment-pro.fr',
+      password: assistantePassword,
+      role: 'ASSISTANTE',
+      telephone: '0611223344',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Assistante créée : ${assistante.email} (ID: ${assistante.id})`);
+  console.log(`   Mot de passe : Assistante@2026!`);
+
+  // 2d. Créer le compte Chef de chantier
+  const chefChantierPassword = await bcrypt.hash('ChefChantier@2026!', 12);
+  const chefChantier = await prisma.user.upsert({
+    where: { email: 'chef.chantier@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Bernard',
+      prenom: 'Julien',
+      email: 'chef.chantier@batiment-pro.fr',
+      password: chefChantierPassword,
+      role: 'CHEF_CHANTIER',
+      telephone: '0622334455',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Chef de chantier créé : ${chefChantier.email} (ID: ${chefChantier.id})`);
+  console.log(`   Mot de passe : ChefChantier@2026!`);
+
+  // 2e. Créer le compte Sous-traitant
+  const sousTraitantPassword = await bcrypt.hash('SousTraitant@2026!', 12);
+  const sousTraitant = await prisma.user.upsert({
+    where: { email: 'sous.traitant@batiment-pro.fr' },
+    update: {},
+    create: {
+      companyId: company.id,
+      nom: 'Moreau',
+      prenom: 'Lucas',
+      email: 'sous.traitant@batiment-pro.fr',
+      password: sousTraitantPassword,
+      role: 'SOUS_TRAITANT',
+      telephone: '0633445566',
+      actif: true,
+      mustChangePassword: false,
+    },
+  });
+  console.log(`✅ Sous-traitant créé : ${sousTraitant.email} (ID: ${sousTraitant.id})`);
+  console.log(`   Mot de passe : SousTraitant@2026!`);
+
+  // 2f. Créer les types de projet (gérés par Admin)
   const typesProjetData = [
     { nom: 'Rénovation salle de bain', description: 'Travaux de rénovation complète ou partielle de salle de bain' },
     { nom: 'Rénovation cuisine', description: 'Travaux de rénovation de cuisine' },

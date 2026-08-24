@@ -72,7 +72,7 @@ export class DevisController {
     @Body() dto: UpdateDevisDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.service.update(id, dto, user.companyId);
+    return this.service.update(id, dto, user.companyId, user.userId);
   }
 
   @Patch(':id/statut')
@@ -84,7 +84,7 @@ export class DevisController {
     @Body() dto: UpdateDevisStatutDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.service.updateStatut(id, dto, user.companyId);
+    return this.service.updateStatut(id, dto, user.companyId, user.userId);
   }
 
   @Post(':id/send-client')
@@ -215,7 +215,7 @@ export class DevisController {
     @Body() dto: UpdateLigneDevisDto,
     @CurrentUser() user: CurrentUserPayload,
   ) {
-    return this.service.updateLigne(id, ligneId, dto, user.companyId);
+    return this.service.updateLigne(id, ligneId, dto, user.companyId, user.userId);
   }
 
   @Delete(':id')

@@ -9,10 +9,13 @@ import {
   Loader2,
   Mail,
   Phone,
+  Pencil,
+  Search,
   Sparkles,
   Trash2,
   UserRound,
   X,
+  Save,
 } from 'lucide-react';
 const statutBadges: Record<string, { label: string; className: string }> = {
   NOUVEAU: { label: 'Nouveau', className: 'bg-blue-100 text-blue-700' },
@@ -97,6 +100,8 @@ export default function TechnicoAssistantIA() {
   const queryClient = useQueryClient();
   const [statutFilter, setStatutFilter] = useState<string>('TOUS');
   const [sortOrder, setSortOrder] = useState<'recent' | 'ancien'>('recent');
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'name' | 'project'>('recent');
   const [editingNotesId, setEditingNotesId] = useState<number | null>(null);
   const [notesDraft, setNotesDraft] = useState('');
   const [duplicatesResult, setDuplicatesResult] = useState<{
@@ -181,21 +186,51 @@ export default function TechnicoAssistantIA() {
     },
     onSuccess: (data) => setDuplicatesResult(data),
   });
-  const allProspects = prospectsQuery.data?.items ?? [];
+  const allProspects = useMemo(
+    () => prospectsQuery.data?.items ?? [],
+    [prospectsQuery.data?.items],
+  );
+
   const prospects = useMemo(() => {
     let list = [...allProspects];
+
     if (statutFilter !== 'TOUS') {
       list = list.filter(
         (p) => p.latestDemandeDevis?.statut === statutFilter,
       );
     }
+
+    const cleanSearch = search.trim().toLowerCase();
+    if (cleanSearch) {
+      list = list.filter((item) =>
+        [
+          item.nom,
+          item.prenom,
+          item.email,
+          item.telephone,
+          item.besoin,
+          item.notes,
+          item.typeProjet?.nom,
+        ].some((value) => value?.toLowerCase().includes(cleanSearch)),
+      );
+    }
+
     list.sort((a, b) => {
+      if (sortBy === 'name') {
+        return `${a.nom} ${a.prenom ?? ''}`.localeCompare(`${b.nom} ${b.prenom ?? ''}`);
+      }
+      if (sortBy === 'project') {
+        return (a.typeProjet?.nom ?? '').localeCompare(b.typeProjet?.nom ?? '');
+      }
+
       const da = new Date(a.createdAt).getTime();
       const db = new Date(b.createdAt).getTime();
       return sortOrder === 'recent' ? db - da : da - db;
     });
+
     return list;
-  }, [allProspects, statutFilter, sortOrder]);
+  }, [allProspects, statutFilter, search, sortBy, sortOrder]);
+
   const futureProjects = futureProjectsQuery.data?.items ?? [];
 
   const pendingCount = useMemo(
@@ -205,7 +240,7 @@ export default function TechnicoAssistantIA() {
 
   const queryError = prospectsQuery.error ?? futureProjectsQuery.error;
   const queryErrorMessage = queryError
-    ? getApiErrorMessage(queryError, 'Impossible de charger les donnees Assistant IA.')
+    ? getApiErrorMessage(queryError, 'Impossible de charger les données Assistant IA.')
     : null;
 
   return (
@@ -218,7 +253,7 @@ export default function TechnicoAssistantIA() {
           <div>
             <h2 className="text-xl font-bold text-gray-900">Assistant IA - Pilotage Technico</h2>
             <p className="mt-1 text-sm text-gray-600">
-              Qualifie les prospects chatbot, cree des demandes/devis et surveille les projets non classes.
+              Qualifie les prospects chatbot, crée des demandes/devis et surveille les projets non classés.
             </p>
           </div>
         </div>
@@ -227,7 +262,40 @@ export default function TechnicoAssistantIA() {
       <div className="grid gap-4 sm:grid-cols-3">
         <MetricCard label="Prospects chatbot" value={prospects.length} />
         <MetricCard label="A qualifier" value={pendingCount} />
-        <MetricCard label="Projets non classes" value={futureProjects.length} />
+        <MetricCard label="Projets non classés" value={futureProjects.length} />
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:flex-row">
+        <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
+          <Search size={17} className="text-gray-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher prospect, besoin ou projet..."
+            className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="text-gray-300 hover:text-gray-500"
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value as 'recent' | 'name' | 'project')}
+          className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 outline-none"
+          aria-label="Trier l’assistant IA"
+        >
+          <option value="recent">Tri : date</option>
+          <option value="name">Tri : nom A-Z</option>
+          <option value="project">Tri : type projet</option>
+        </select>
       </div>
 
       {queryErrorMessage && (
@@ -239,7 +307,7 @@ export default function TechnicoAssistantIA() {
       {(prospectsQuery.isLoading || futureProjectsQuery.isLoading) && (
         <div className="flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm text-gray-500 shadow-sm">
           <Loader2 size={16} className="animate-spin" />
-          Chargement des donnees Assistant IA...
+          Chargement des données Assistant IA...
         </div>
       )}
 
@@ -247,26 +315,26 @@ export default function TechnicoAssistantIA() {
         <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
           {getApiErrorMessage(
             qualifyMutation.error ?? removeMutation.error,
-            'Operation impossible.',
+            'Opération impossible.',
           )}
         </div>
       )}
 
       {qualifyMutation.isSuccess && (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Prospect qualifie avec succes.
+          Prospect qualifié avec succès.
         </div>
       )}
 
       {removeMutation.isSuccess && (
         <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-          Prospect supprime avec succes.
+          Prospect supprimé avec succès.
         </div>
       )}
 
       <section className="space-y-3">
         <h3 className="text-base font-bold text-gray-900">Prospects chatbot</h3>
-        <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
           <select
             value={statutFilter}
             onChange={(e) => setStatutFilter(e.target.value)}
@@ -284,8 +352,8 @@ export default function TechnicoAssistantIA() {
             onChange={(e) => setSortOrder(e.target.value as 'recent' | 'ancien')}
             className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700"
           >
-            <option value="recent">Plus récents d'abord</option>
-            <option value="ancien">Plus anciens d'abord</option>
+            <option value="recent">Plus récents d&apos;abord</option>
+            <option value="ancien">Plus anciens d&apos;abord</option>
           </select>
           <span className="text-xs text-gray-400">
             {prospects.length} prospect{prospects.length > 1 ? 's' : ''}
@@ -293,7 +361,7 @@ export default function TechnicoAssistantIA() {
         </div>
         {prospects.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
-            Aucun prospect chatbot a gerer pour le moment.
+            Aucun prospect chatbot à gérer pour le moment.
           </div>
         ) : (
           <div className="space-y-3">
@@ -316,7 +384,7 @@ export default function TechnicoAssistantIA() {
                           {`${prospect.prenom ?? ''} ${prospect.nom}`.trim() || `Prospect #${prospect.id}`}
                         </span>
                         {prospect.typeProjet ? (
-                          <span className="rounded-lg bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                          <span className="rounded-lg bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
                             {prospect.typeProjet.nom}
                           </span>
                         ) : (
@@ -340,7 +408,7 @@ export default function TechnicoAssistantIA() {
                             {prospect.email}
                           </span>
                         )}
-                        <span>Detecte le {formatDate(prospect.createdAt)}</span>
+                        <span>Détecté le {formatDate(prospect.createdAt)}</span>
                       </div>
 
                       {editingNotesId === prospect.id ? (
@@ -364,7 +432,8 @@ export default function TechnicoAssistantIA() {
                               disabled={notesMutation.isPending}
                               className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
                             >
-                              💾 Enregistrer
+                              <Save size={12} />­
+                              Enregistrer
                             </button>
                             <button
                               onClick={() => setEditingNotesId(null)}
@@ -388,7 +457,8 @@ export default function TechnicoAssistantIA() {
                             }}
                             className="shrink-0 rounded-lg border border-gray-200 px-2 py-1 text-[11px] font-medium text-gray-500 hover:bg-gray-50"
                           >
-                            ✏️ Notes
+                           <Pencil size={12} />
+                            Notes
                           </button>
                         </div>
                       )}
@@ -405,18 +475,21 @@ export default function TechnicoAssistantIA() {
                           disabled={checkDuplicatesMutation.isPending}
                           className="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-60"
                         >
-                          🔍 Vérifier les doublons
+                          <Search className="h-3 w-3" />
+                           Vérifier les doublons
                         </button>
                         {duplicatesResult &&
                           duplicatesResult.prospectId === prospect.id &&
                           (duplicatesResult.duplicates.length === 0 ? (
                             <p className="text-xs text-emerald-600">
-                              ✅ Aucun doublon détecté pour ce prospect.
+                              <CheckCircle2 size={12} className="inline mr-1" />
+                                Aucun doublon détecté pour ce prospect.
                             </p>
                           ) : (
                             <div className="space-y-2 rounded-xl border border-amber-200 bg-amber-50 p-3">
                               <p className="text-xs font-semibold text-amber-800">
-                                ⚠️ {duplicatesResult.duplicates.length} doublon(s)
+                                <AlertCircle size={12} className="inline mr-1" />
+                                {duplicatesResult.duplicates.length} doublon(s)
                                 potentiel(s) détecté(s) :
                               </p>
                               {duplicatesResult.duplicates.map((dup) => (
@@ -429,8 +502,6 @@ export default function TechnicoAssistantIA() {
                                     {`${dup.prenom ?? ''} ${dup.nom ?? ''}`.trim() ||
                                       'Sans nom'}
                                   </span>
-                                  {dup.email && <span>📧 {dup.email}</span>}
-                                  {dup.telephone && <span>📱 {dup.telephone}</span>}
                                   {dup.matchedOn.map((m) => (
                                     <span
                                       key={m}
@@ -448,18 +519,25 @@ export default function TechnicoAssistantIA() {
                       <div className="flex flex-wrap gap-2 text-xs">
                         {prospect.latestDemandeDevis ? (
                           <span className="rounded-full bg-violet-50 px-2 py-1 font-semibold text-violet-700">
-                            Demande #{prospect.latestDemandeDevis.id} <span className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statutBadges[prospect.latestDemandeDevis.statut]?.className ?? 'bg-gray-100 text-gray-600'}`}>
-                              {statutBadges[prospect.latestDemandeDevis.statut]?.label ?? prospect.latestDemandeDevis.statut}
+                            Demande #{prospect.latestDemandeDevis.id}{' '}
+                            <span
+                              className={`ml-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                                statutBadges[prospect.latestDemandeDevis.statut]?.className ??
+                                'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {statutBadges[prospect.latestDemandeDevis.statut]?.label ??
+                                prospect.latestDemandeDevis.statut}
                             </span>
                           </span>
                         ) : (
                           <span className="rounded-full bg-gray-100 px-2 py-1 font-semibold text-gray-600">
-                            Pas de demande liee
+                            Pas de demande liée
                           </span>
                         )}
 
                         {prospect.latestDevis ? (
-                          <span className="rounded-full bg-teal-50 px-2 py-1 font-semibold text-teal-700">
+                          <span className="rounded-full bg-blue-50 px-2 py-1 font-semibold text-blue-700">
                             Devis {prospect.latestDevis.reference} ({prospect.latestDevis.statut})
                           </span>
                         ) : null}
@@ -479,7 +557,7 @@ export default function TechnicoAssistantIA() {
                             });
                         }}
                         disabled={disableActions}
-                        className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {qualifyMutation.isPending ? (
                           <Loader2 size={13} className="animate-spin" />
@@ -528,12 +606,12 @@ export default function TechnicoAssistantIA() {
       <section className="space-y-3">
         <h3 className="inline-flex items-center gap-2 text-base font-bold text-gray-900">
           <Sparkles size={16} className="text-amber-500" />
-          Projets futurs detectes
+          Projets futurs détectés
         </h3>
 
         {futureProjects.length === 0 ? (
           <div className="rounded-2xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-400">
-            Aucun projet non classe detecte.
+            Aucun projet non classé détecté.
           </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
@@ -550,14 +628,14 @@ export default function TechnicoAssistantIA() {
                 </div>
                 {item.suggestedType && (
                   <p className="mt-1 text-xs text-gray-600">
-                    Type suggere: <span className="font-semibold">{item.suggestedType}</span>
+                    Type suggéré : <span className="font-semibold">{item.suggestedType}</span>
                   </p>
                 )}
                 {item.latestDescription && (
                   <p className="mt-2 text-sm text-gray-700">{item.latestDescription}</p>
                 )}
                 <p className="mt-2 text-xs text-gray-500">
-                  Derniere detection: {formatDate(item.lastDetectedAt)}
+                  Dernière détection : {formatDate(item.lastDetectedAt)}
                 </p>
               </div>
             ))}

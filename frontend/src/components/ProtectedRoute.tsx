@@ -9,9 +9,9 @@ interface ProtectedRouteProps {
 const defaultRouteByRole: Record<Role, string> = {
   ADMIN: '/admin',
   TECHNICO: '/technico',
-  ASSISTANTE: '/admin',
-  CHEF_CHANTIER: '/admin',
-  SOUS_TRAITANT: '/fournisseur',
+  ASSISTANTE: '/assistante',
+  CHEF_CHANTIER: '/chef-chantier',
+  SOUS_TRAITANT: '/sous-traitant',
 };
 
 export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {

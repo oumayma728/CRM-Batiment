@@ -39,19 +39,19 @@ function getStatusLabel(statut: string) {
     case 'BROUILLON':
       return 'Brouillon';
     case 'ENVOYE':
-      return 'Envoye';
+      return 'Envoyé';
     case 'ACCEPTE':
-      return 'Accepte';
+      return 'Accepté';
     case 'SIGNE':
-      return 'Signe';
+      return 'Signé';
     case 'REFUSE':
-      return 'Refuse';
+      return 'Refusé';
     case 'ANNULE':
-      return 'Annule';
+      return 'Annulé';
     case 'REVISE':
-      return 'Revise';
+      return 'Révisé';
     case 'RENVOYE':
-      return 'Renvoye';
+      return 'Renvoyé';
     default:
       return statut;
   }
@@ -78,6 +78,8 @@ export default function ClientDevisValidationPage() {
   );
 
   useEffect(() => {
+    // Synchronisation avec le param├¿tre de d├®cision de l'URL.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDecision(initialDecision);
   }, [initialDecision]);
 
@@ -126,9 +128,9 @@ export default function ClientDevisValidationPage() {
         <div className="flex flex-col gap-4 rounded-[28px] bg-slate-900 px-6 py-6 text-white shadow-xl md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Validation client</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">Votre devis est pret</h1>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight">Votre devis est prêt</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-300">
-              Consultez le detail du devis puis choisissez de l'accepter ou de le refuser.
+              Consultez le détail du devis puis choisissez de l’accepter ou de le refuser.
             </p>
           </div>
           <button
@@ -144,7 +146,7 @@ export default function ClientDevisValidationPage() {
           <div className="rounded-[28px] border border-rose-200 bg-white p-8 shadow-sm">
             <p className="text-lg font-semibold text-rose-700">Lien incomplet</p>
             <p className="mt-2 text-sm text-slate-500">
-              Le jeton de validation est absent. Utilisez le lien complet recu par email.
+              Le jeton de validation est absent. Utilisez le lien complet reçu par email.
             </p>
           </div>
         )}
@@ -159,7 +161,7 @@ export default function ClientDevisValidationPage() {
           <div className="rounded-[28px] border border-rose-200 bg-white p-8 shadow-sm">
             <p className="text-lg font-semibold text-rose-700">Lien invalide</p>
             <p className="mt-2 text-sm text-slate-500">
-              Ce lien de validation est invalide ou a expire.
+              Ce lien de validation est invalide ou a expiré.
             </p>
           </div>
         )}
@@ -184,7 +186,7 @@ export default function ClientDevisValidationPage() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Devis</p>
                     <h2 className="mt-2 text-3xl font-bold text-slate-900">{devis.reference}</h2>
-                    <p className="mt-2 text-sm text-slate-500">Statut actuel: {getStatusLabel(finalDecision ?? devis.statut)}</p>
+                    <p className="mt-2 text-sm text-slate-500">Statut actuel : {getStatusLabel(finalDecision ?? devis.statut)}</p>
                   </div>
                   <div className="rounded-3xl bg-slate-50 px-5 py-4">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Montant TTC</p>
@@ -211,9 +213,9 @@ export default function ClientDevisValidationPage() {
                   <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Informations</p>
                     <div className="mt-2 space-y-2 text-sm text-slate-500">
-                      <p>Date: {formatDate(devis.createdAt)}</p>
-                      <p>TVA: {devis.tauxTVA ?? 20}%</p>
-                      <p>Mode de validation: {devis.modeValidation ?? 'EMAIL'}</p>
+                      <p>Date : {formatDate(devis.createdAt)}</p>
+                      <p>TVA : {devis.tauxTVA ?? 20}%</p>
+                      <p>Mode de validation : {devis.modeValidation ?? 'EMAIL'}</p>
                     </div>
                   </div>
                 </div>
@@ -224,7 +226,7 @@ export default function ClientDevisValidationPage() {
                       <tr className="bg-slate-900 text-left text-sm text-white">
                         <th className="px-4 py-3 font-semibold">N°</th>
                         <th className="px-4 py-3 font-semibold">Description</th>
-                        <th className="px-4 py-3 text-right font-semibold">Quantite</th>
+                        <th className="px-4 py-3 text-right font-semibold">Quantité</th>
                         <th className="px-4 py-3 text-right font-semibold">Prix U.</th>
                         <th className="px-4 py-3 text-right font-semibold">Total HT</th>
                       </tr>
@@ -266,7 +268,7 @@ export default function ClientDevisValidationPage() {
 
               <div className="space-y-6">
                 <div className="rounded-[28px] bg-white p-6 shadow-sm">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Recapitulatif</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Récapitulatif</p>
                   <div className="mt-4 space-y-3 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">Total HT</span>
@@ -286,7 +288,7 @@ export default function ClientDevisValidationPage() {
                 <div className="rounded-[28px] bg-white p-6 shadow-sm">
                   <div className="flex items-center gap-2">
                     <MailOpen size={18} className="text-slate-700" />
-                    <p className="text-sm font-semibold text-slate-900">Decision client</p>
+                    <p className="text-sm font-semibold text-slate-900">Décision client</p>
                   </div>
 
                   {preview?.decisionTaken && !preview.canRespond ? (
@@ -298,8 +300,8 @@ export default function ClientDevisValidationPage() {
                       }
                     >
                       {preview.decisionTaken === 'ACCEPTE'
-                        ? 'Ce devis a deja ete accepte.'
-                        : 'Ce devis a deja ete refuse.'}
+                        ? 'Ce devis a déjà été accepté.'
+                        : 'Ce devis a déjà été refusé.'}
                     </div>
                   ) : !preview?.canRespond ? (
                     <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-slate-600">
@@ -308,7 +310,7 @@ export default function ClientDevisValidationPage() {
                   ) : (
                     <>
                       <p className="mt-4 text-sm text-slate-500">
-                        Choisissez une decision, puis confirmez votre validation.
+                        Choisissez une décision, puis confirmez votre validation.
                       </p>
 
                       <div className="mt-4 grid gap-3">
@@ -322,8 +324,8 @@ export default function ClientDevisValidationPage() {
                         >
                           <CheckCircle2 size={20} />
                           <div>
-                            <p className="font-semibold">Accepter le devis</p>
-                            <p className="text-xs opacity-80">Le devis passe a l'etape suivante.</p>
+                            <p className="font-semibold">Acceptér le devis</p>
+                            <p className="text-xs opacity-80">Le devis passe à l’étape suivante.</p>
                           </div>
                         </button>
 
@@ -337,7 +339,7 @@ export default function ClientDevisValidationPage() {
                         >
                           <XCircle size={20} />
                           <div>
-                            <p className="font-semibold">Refuser le devis</p>
+                            <p className="font-semibold">Refusér le devis</p>
                             <p className="text-xs opacity-80">Le devis reste consultable pour suivi.</p>
                           </div>
                         </button>
@@ -352,10 +354,10 @@ export default function ClientDevisValidationPage() {
                       >
                         {respondMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                         {selectedDecision === 'ACCEPTE'
-                          ? 'Confirmer l acceptation'
+                          ? 'Confirmer l’acceptation'
                           : selectedDecision === 'REFUSE'
                             ? 'Confirmer le refus'
-                            : 'Choisir une decision'}
+                            : 'Choisir une décision'}
                       </button>
                     </>
                   )}

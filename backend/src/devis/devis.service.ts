@@ -14,6 +14,7 @@ import {
   timingSafeEqual,
 } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { AuditService } from '../audit/audit.service.js';
 import { MailService } from '../mail/mail.service.js';
 import { CreateDevisDto } from './dto/create-devis.dto.js';
 import { UpdateDevisDto } from './dto/update-devis.dto.js';
@@ -124,6 +125,7 @@ export class DevisService {
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   private normalizePhone(phone: string) {
@@ -321,6 +323,7 @@ export class DevisService {
   private async ensureChantierLinkedToDevis(
     devisId: number,
     companyId: number,
+    userId?: number,
   ) {
     const devis = await this.prisma.devis.findFirst({
       where: { id: devisId, companyId },
@@ -1130,7 +1133,7 @@ export class DevisService {
     return devis;
   }
 
-  async update(id: number, dto: UpdateDevisDto, companyId: number) {
+  async update(id: number, dto: UpdateDevisDto, companyId: number, userId?: number) {
     const devis = await this.findOne(id, companyId);
 
     if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
@@ -1139,7 +1142,7 @@ export class DevisService {
       );
     }
 
-    return this.prisma.devis.update({
+    const updated = await this.prisma.devis.update({
       where: { id },
       data: {
         tauxTVA: dto.tauxTVA,
@@ -1150,9 +1153,25 @@ export class DevisService {
         client: { select: { id: true, nom: true, prenom: true } },
       },
     });
+
+    if (dto.tauxTVA !== undefined && devis.tauxTVA !== updated.tauxTVA) {
+      await this.auditService.logPriceChange({
+        companyId,
+        userId,
+        entite: 'Devis',
+        entiteId: updated.id,
+        field: 'tauxTVA',
+        label: updated.reference,
+        oldValue: devis.tauxTVA,
+        newValue: updated.tauxTVA,
+        metadata: { reference: updated.reference },
+      });
+    }
+
+    return updated;
   }
 
-  async updateStatut(id: number, dto: UpdateDevisStatutDto, companyId: number) {
+  async updateStatut(id: number, dto: UpdateDevisStatutDto, companyId: number, userId?: number) {
     const devis = await this.findOne(id, companyId);
     const current = devis.statut as string;
     const next = dto.statut as string;
@@ -1207,6 +1226,21 @@ export class DevisService {
         versions: { orderBy: { numeroVersion: 'desc' }, take: 1 },
       },
     });
+
+    if (['ACCEPTE', 'SIGNE', 'REFUSE'].includes(next)) {
+      await this.auditService.logSignature({
+        companyId,
+        userId,
+        devisId: updatedDevis.id,
+        reference: updatedDevis.reference,
+        ancienneValeur: { statut: current },
+        nouvelleValeur: {
+          statut: updatedDevis.statut,
+          dateValidation: updatedDevis.dateValidation?.toISOString?.() ?? null,
+          mode: 'STATUT_MANUEL',
+        },
+      });
+    }
 
     const generated =
       next === 'ACCEPTE' || next === 'SIGNE'
@@ -1780,6 +1814,21 @@ export class DevisService {
       });
     });
 
+    await this.auditService.logSignature({
+      companyId: request.devis.companyId,
+      devisId: request.devisId,
+      reference: request.devis.reference,
+      ancienneValeur: {
+        statut: request.devis.statut,
+        requestStatut: request.statut,
+      },
+      nouvelleValeur: {
+        requestStatut: 'SIGNE_CLIENT',
+        signatureClientDate: signedAt.toISOString(),
+        mode: 'SIGNATURE_CLIENT_PUBLIQUE',
+      },
+    });
+
     return {
       message:
         'Signature client enregistree. Votre conseiller sera notifie pour finaliser le dossier.',
@@ -1849,6 +1898,22 @@ export class DevisService {
         ...(isValidationVerbale && !devis.signatureClientDate
           ? { signatureClientDate: signedAt }
           : {}),
+      },
+    });
+
+    await this.auditService.logSignature({
+      companyId,
+      userId: conseillerId,
+      devisId: updated.id,
+      reference: devis.reference,
+      ancienneValeur: {
+        statut: devis.statut,
+        signatureConseillerDate: devis.signatureConseillerDate,
+      },
+      nouvelleValeur: {
+        statut: updated.statut,
+        signatureConseillerDate: signedAt.toISOString(),
+        mode: 'SIGNATURE_CONSEILLER',
       },
     });
 
@@ -2136,6 +2201,7 @@ export class DevisService {
     ligneId: number,
     dto: UpdateLigneDevisDto,
     companyId: number,
+    userId?: number,
   ) {
     const devis = await this.findOne(devisId, companyId);
 
@@ -2252,6 +2318,28 @@ export class DevisService {
         ordre: dto.ordre !== undefined ? dto.ordre : existingLine.ordre,
       },
     });
+
+    const priceFields = [
+      { field: 'prixUnitaireVente', oldValue: existingLine.prixUnitaireVente, newValue: updatedLine.prixUnitaireVente },
+      { field: 'prixAchat', oldValue: existingLine.prixAchat, newValue: updatedLine.prixAchat },
+      { field: 'mainOeuvre', oldValue: existingLine.mainOeuvre, newValue: updatedLine.mainOeuvre },
+    ];
+
+    for (const item of priceFields) {
+      if (item.oldValue !== item.newValue) {
+        await this.auditService.logPriceChange({
+          companyId,
+          userId,
+          entite: 'LigneDevis',
+          entiteId: updatedLine.id,
+          field: item.field,
+          label: updatedLine.description,
+          oldValue: item.oldValue,
+          newValue: item.newValue,
+          metadata: { devisId, ligneId: updatedLine.id },
+        });
+      }
+    }
 
     await this.recalculerTotaux(devisId);
     return updatedLine;

@@ -1,16 +1,22 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import ChatbotWidget from '@/components/ChatbotWidget';
+import RealtimeEventsBridge from '@/components/RealtimeEventsBridge';
 import AppLayout from '@/layouts/AppLayout';
 import ChefChantierLayout from '@/layouts/ChefChantierLayout';
-import FournisseurLayout from '@/layouts/FournisseurLayout';
+import SousTraitantLayout from '@/layouts/SousTraitantLayout';
 import TechnicoLayout from '@/layouts/TechnicoLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
+
+// Public pages
 import LoginPage from '@/pages/LoginPage';
 import HomeLandingPage from '@/pages/loginPage2';
 import { LoginTest } from '@/pages/LoginTest';
 import ClientDevisValidationPage from '@/pages/ClientDevisValidationPage';
 import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
+import PublicDemoRequestPage from '@/pages/PublicDemoRequestPage';
+
+// Admin and shared pages
 import DashboardPage from '@/pages/DashboardPage';
 import ChantiersPage from '@/pages/ChantiersPage';
 import ClientsPage from '@/pages/ClientsPage';
@@ -30,6 +36,12 @@ import TypesProjetPage from '@/pages/TypesProjetPage';
 import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import TasksChantierPage from '@/pages/TasksChantierPage';
+import AuditPage from '@/pages/AuditPage';
+import SavPage from '@/pages/SavPage';
+import DemoRequestsPage from '@/pages/DemoRequestsPage';
+import StockPage from '@/pages/StockPage';
+import AccountSettingsPage from '@/pages/AccountSettingsPage';
+
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
@@ -44,28 +56,24 @@ import TechnicoCatalogueExplorer from '@/pages/technico/TechnicoCatalogueExplore
 import TechnicoDevisSignature from '@/pages/technico/TechnicoDevisSignature';
 import TechnicoProfile from '@/pages/technico/TechnicoProfile';
 import TechnicoAssistantIA from '@/pages/technico/TechnicoAssistantIA';
-import FournisseurDashboard from '@/pages/fournisseur/FournisseurDashboard';
+
+// Sous-traitant pages
+import SousTraitantDashboardPage from '@/pages/sous-traitant/SousTraitantDashboardPage';
+import SousTraitantChantiersPage from '@/pages/sous-traitant/SousTraitantChantiersPage';
+import SousTraitantTachesPage from '@/pages/sous-traitant/SousTraitantTachesPage';
+import SousTraitantDocumentsPage from '@/pages/sous-traitant/SousTraitantDocumentsPage';
+import SousTraitantRapportsPhotosPage from '@/pages/sous-traitant/SousTraitantRapportsPhotosPage';
 
 function RoleRouter() {
   const { user } = useAuth();
+
+  if (user?.role === 'ADMIN') return <Navigate to="/admin" replace />;
+  if (user?.role === 'ASSISTANTE') return <Navigate to="/assistante" replace />;
   if (user?.role === 'TECHNICO') return <Navigate to="/technico" replace />;
-  if (user?.role === 'SOUS_TRAITANT') return <Navigate to="/fournisseur" replace />;
-  return <Navigate to="/admin" replace />;
-}
+  if (user?.role === 'CHEF_CHANTIER') return <Navigate to="/chef-chantier" replace />;
+  if (user?.role === 'SOUS_TRAITANT') return <Navigate to="/sous-traitant" replace />;
 
-function AdminLayoutRouter() {
-  const { user } = useAuth();
-  return user?.role === 'CHEF_CHANTIER' ? <ChefChantierLayout /> : <AppLayout />;
-}
-
-function AdminDashboardRouter() {
-  const { user } = useAuth();
-
-  if (user?.role === 'CHEF_CHANTIER') {
-    return <ChefDashboardPage />;
-  }
-
-  return <DashboardPage />;
+  return <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -75,35 +83,32 @@ export default function App() {
 
   return (
     <>
-    {showChatbotOnHome && <ChatbotWidget />}
-    <Routes>
-      <Route
-        path="/"
-        element={isAuthenticated ? <RoleRouter /> : <HomeLandingPage />}
-      />
+      {showChatbotOnHome && <ChatbotWidget />}
+      {isAuthenticated && <RealtimeEventsBridge />}
 
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-      />
+      <Routes>
+        <Route path="/" element={isAuthenticated ? <RoleRouter /> : <HomeLandingPage />} />
 
-      <Route path="/test-connection" element={<LoginTest />} />
-      <Route path="/validation-devis" element={<ClientDevisValidationPage />} />
-      <Route path="/sign/:token" element={<ClientDevisSignaturePage />} />
+        <Route
+          path="/login"
+          element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+        />
 
-      <Route element={<ProtectedRoute />}>
-        <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER']} />}>
-          <Route path="admin" element={<AdminLayoutRouter />}>
-            <Route index element={<AdminDashboardRouter />} />
-            <Route path="chantiers" element={<ChantiersPage />} />
-            <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'CHEF_CHANTIER']} />}>
-              <Route path="taches-chantier" element={<TasksChantierPage />} />
-            </Route>
+        <Route path="/test-connection" element={<LoginTest />} />
+        <Route path="/demo" element={<PublicDemoRequestPage />} />
+        <Route path="/validation-devis" element={<ClientDevisValidationPage />} />
+        <Route path="/sign/:token" element={<ClientDevisSignaturePage />} />
 
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'ASSISTANTE']} />}>
+        <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+            <Route path="admin" element={<AppLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="chantiers" element={<ChantiersPage />} />
+              <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="sav" element={<SavPage />} />
               <Route path="clients" element={<ClientsPage />} />
               <Route path="demandes-devis" element={<DemandesDevisPage />} />
+              <Route path="demo-requests" element={<DemoRequestsPage />} />
               <Route path="devis" element={<DevisPage />} />
               <Route path="factures" element={<FacturesPage />} />
               <Route path="factures/:id" element={<FactureDetailPage />} />
@@ -111,48 +116,95 @@ export default function App() {
               <Route path="prestations" element={<PrestationsPage />} />
               <Route path="prestations-compositions" element={<PrestationCompositionsPage />} />
               <Route path="materiaux" element={<MateriauxPage />} />
+              <Route path="stock" element={<StockPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
               <Route path="fournisseurs" element={<FournisseursPage />} />
-            </Route>
-
-            <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
+              <Route path="taches-chantier" element={<TasksChantierPage />} />
               <Route path="utilisateurs" element={<UsersPage />} />
               <Route path="types-projet" element={<TypesProjetPage />} />
               <Route path="base-ia" element={<RagDocumentsPage />} />
               <Route path="parametres-chiffrage" element={<ParametresChiffragePage />} />
+              <Route path="audit" element={<AuditPage />} />
             </Route>
           </Route>
-        </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['TECHNICO']} />}>
-          {/* Technico-Commercial layout */}
-          <Route path="technico" element={<TechnicoLayout />}>
-            <Route index element={<TechnicoDashboard />} />
-            <Route path="clients" element={<TechnicoClients />} />
-            <Route path="demandes" element={<TechnicoDemandes />} />
-            <Route path="devis" element={<TechnicoDevis />} />
-            <Route path="factures" element={<TechnicoFactures />} />
-            <Route path="factures/:id" element={<TechnicoFactureDetail />} />
-            <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
-            <Route path="devis/:id/signature" element={<TechnicoDevisSignature />} />
-            <Route path="checklist" element={<TechnicoChecklist />} />
-            <Route path="assistant-ia" element={<TechnicoAssistantIA />} />
-            <Route path="profil" element={<TechnicoProfile />} />
-            <Route path="prestations" element={<TechnicoPrestations />} />
-            <Route path="materiaux" element={<TechnicoMateriaux />} />
-            <Route path="catalogue" element={<TechnicoCatalogueExplorer />} />
+          <Route element={<ProtectedRoute allowedRoles={['ASSISTANTE']} />}>
+            <Route path="assistante" element={<AppLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="clients" element={<ClientsPage />} />
+              <Route path="demandes-devis" element={<DemandesDevisPage />} />
+              <Route path="demo-requests" element={<DemoRequestsPage />} />
+              <Route path="devis" element={<DevisPage />} />
+              <Route path="factures" element={<FacturesPage />} />
+              <Route path="factures/:id" element={<FactureDetailPage />} />
+              <Route path="sav" element={<SavPage />} />
+              <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="fournisseurs" element={<FournisseursPage />} />
+              <Route path="chantiers" element={<ChantiersPage />} />
+              <Route path="checklist" element={<TechnicoChecklist />} />
+              <Route path="prestations" element={<PrestationsPage />} />
+              <Route path="prestations-compositions" element={<PrestationCompositionsPage />} />
+              <Route path="materiaux" element={<MateriauxPage />} />
+              <Route path="stock" element={<StockPage />} />
+              <Route path="services-mo" element={<ServicesMoPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['CHEF_CHANTIER']} />}>
+            <Route path="chef-chantier" element={<ChefChantierLayout />}>
+              <Route index element={<ChefDashboardPage />} />
+              <Route path="chantiers" element={<ChantiersPage />} />
+              <Route path="taches-chantier" element={<TasksChantierPage />} />
+              <Route path="receptions" element={<CommandesFournisseurPage />} />
+              <Route path="sav" element={<SavPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
+              <Route
+                path="commandes-fournisseur"
+                element={<Navigate to="/chef-chantier/receptions" replace />}
+              />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['TECHNICO']} />}>
+            <Route path="technico" element={<TechnicoLayout />}>
+              <Route index element={<TechnicoDashboard />} />
+              <Route path="clients" element={<TechnicoClients />} />
+              <Route path="demandes" element={<TechnicoDemandes />} />
+              <Route path="devis" element={<TechnicoDevis />} />
+              <Route path="factures" element={<TechnicoFactures />} />
+              <Route path="factures/:id" element={<TechnicoFactureDetail />} />
+              <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
+              <Route path="sav" element={<SavPage />} />
+              <Route path="demo-requests" element={<DemoRequestsPage />} />
+              <Route path="devis/:id/signature" element={<TechnicoDevisSignature />} />
+              <Route path="checklist" element={<TechnicoChecklist />} />
+              <Route path="assistant-ia" element={<TechnicoAssistantIA />} />
+              <Route path="profil" element={<TechnicoProfile />} />
+              <Route path="prestations" element={<TechnicoPrestations />} />
+              <Route path="materiaux" element={<TechnicoMateriaux />} />
+              <Route path="catalogue" element={<TechnicoCatalogueExplorer />} />
+            </Route>
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['SOUS_TRAITANT']} />}>
+            <Route path="sous-traitant" element={<SousTraitantLayout />}>
+              <Route index element={<SousTraitantDashboardPage />} />
+              <Route path="chantiers" element={<SousTraitantChantiersPage />} />
+              <Route path="taches" element={<SousTraitantTachesPage />} />
+              <Route path="documents" element={<SousTraitantDocumentsPage />} />
+              <Route path="rapports-photos" element={<SousTraitantRapportsPhotosPage />} />
+              <Route path="parametres" element={<AccountSettingsPage />} />
+            </Route>
+            <Route
+              path="fournisseur"
+              element={<Navigate to="/sous-traitant" replace />}
+            />
           </Route>
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={['SOUS_TRAITANT']} />}>
-          <Route path="fournisseur" element={<FournisseurLayout />}>
-            <Route index element={<FournisseurDashboard />} />
-          </Route>
-        </Route>
-      </Route>
-
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 }

@@ -59,7 +59,7 @@ export class FournisseursController {
   // ──────────────────────────────────────────────
 
   @Get()
-  @Roles(Role.ADMIN, Role.TECHNICO)
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: 'Liste des fournisseurs',
     description:
@@ -78,7 +78,7 @@ export class FournisseursController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.TECHNICO)
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
     summary: "Détail d'un fournisseur",
     description:

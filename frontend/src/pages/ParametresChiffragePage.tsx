@@ -23,7 +23,7 @@ interface CatalogueValidationResponse {
   isValid: boolean;
   validatedAt: string;
   stats: {
-    activeCategories: number;
+    activeCatégories: number;
     activePrestations: number;
     errors: number;
     warnings: number;
@@ -49,7 +49,7 @@ interface PublicationHistoryItem {
     email: string;
   } | null;
   validationStats: {
-    activeCategories: number | null;
+    activeCatégories: number | null;
     activePrestations: number | null;
     errors: number | null;
     warnings: number | null;
@@ -206,10 +206,10 @@ export default function ParametresChiffragePage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <Settings size={24} className="text-blue-600" />
-            Parametres de chiffrage
+            Paramètres de chiffrage
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            Configurer les regles globales de calcul et piloter la publication catalogue.
+            Configurer les règles globales de calcul et piloter la publication du catalogue.
           </p>
         </div>
       </div>
@@ -217,18 +217,18 @@ export default function ParametresChiffragePage() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
           <form onSubmit={handleSave} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Regles de calcul globales</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Règles de calcul globales</h2>
 
             {loadingSettings ? (
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <Loader2 size={16} className="animate-spin" />
-                Chargement des parametres...
+                Chargement des paramètres...
               </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field
-                    label="TVA par defaut (%)"
+                    label="TVA par défaut (%)"
                     value={form.tvaDefaut}
                     onChange={(value) => setForm((current) => ({ ...current, tvaDefaut: value }))}
                     type="number"
@@ -249,7 +249,7 @@ export default function ParametresChiffragePage() {
                     step="0.01"
                   />
                   <Field
-                    label="Frais fixes de deplacement"
+                    label="Frais fixes de déplacement"
                     value={form.fraisFixeDeplacement}
                     onChange={(value) =>
                       setForm((current) => ({ ...current, fraisFixeDeplacement: value }))
@@ -291,7 +291,7 @@ export default function ParametresChiffragePage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm mt-6 space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">Validation et publication du catalogue</h2>
             <p className="text-sm text-gray-500">
-              La publication est bloquee tant que la validation detecte des erreurs.
+              La publication est bloquée tant que la validation détecte des erreurs.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -342,11 +342,11 @@ export default function ParametresChiffragePage() {
                 </div>
 
                 <p className="text-xs text-gray-500">
-                  Verifie le {formatDateTime(effectiveValidation.validatedAt)}
+                  Vérifié le {formatDateTime(effectiveValidation.validatedAt)}
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                  <StatChip label="Categories" value={effectiveValidation.stats.activeCategories} />
+                  <StatChip label="Catégories" value={effectiveValidation.stats.activeCatégories} />
                   <StatChip label="Prestations" value={effectiveValidation.stats.activePrestations} />
                   <StatChip label="Erreurs" value={effectiveValidation.stats.errors} danger />
                   <StatChip label="Alertes" value={effectiveValidation.stats.warnings} />
@@ -368,21 +368,21 @@ export default function ParametresChiffragePage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm h-fit">
-          <h3 className="text-sm font-semibold text-gray-900">Etat de publication</h3>
+          <h3 className="text-sm font-semibold text-gray-900">État de publication</h3>
           <p className="text-xs text-gray-500 mt-1">
-            Derniere publication du catalogue pour cette entreprise.
+            Dernière publication du catalogue pour cette entreprise.
           </p>
 
           <div className="mt-4 space-y-3 text-sm">
             <div>
-              <p className="text-gray-500">Derniere publication</p>
+              <p className="text-gray-500">Dernière publication</p>
               <p className="text-gray-900 font-semibold">
                 {formatDateTime(publicationStatus?.lastPublication?.publishedAt ?? null)}
               </p>
             </div>
 
             <div>
-              <p className="text-gray-500">Derniere maj parametres</p>
+              <p className="text-gray-500">Dernière mise à jour des paramètres</p>
               <p className="text-gray-900 font-semibold">
                 {formatDateTime(publicationStatus?.chiffrageSettings?.updatedAt ?? settings?.updatedAt ?? null)}
               </p>
@@ -391,7 +391,7 @@ export default function ParametresChiffragePage() {
 
           <div className="mt-5 pt-4 border-t border-gray-100">
             <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
-              Historique recent
+              Historique récent
             </p>
 
             {loadingPublicationHistory ? (
@@ -411,7 +411,7 @@ export default function ParametresChiffragePage() {
                     </p>
                     {item.validationStats && (
                       <p className="text-[11px] text-gray-600 mt-1">
-                        {item.validationStats.activeCategories ?? '-'} cat. |{' '}
+                        {item.validationStats.activeCatégories ?? '-'} cat. |{' '}
                         {item.validationStats.activePrestations ?? '-'} prest. |{' '}
                         {item.validationStats.errors ?? '-'} err. |{' '}
                         {item.validationStats.warnings ?? '-'} alertes
@@ -421,7 +421,7 @@ export default function ParametresChiffragePage() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-500 mt-3">Aucune publication enregistree.</p>
+              <p className="text-xs text-gray-500 mt-3">Aucune publication enregistrée.</p>
             )}
           </div>
         </div>

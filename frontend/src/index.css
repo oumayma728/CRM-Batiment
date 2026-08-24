@@ -1,8 +1,10 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   BÂTIFLOW — Design tokens
-   Toutes les couleurs sont centralisées ici.
+   B├éTIFLOW ÔÇö Design tokens
+   Toutes les couleurs sont centralis├®es ici.
    Utilise var(--color-*) dans tout le CSS custom.
    ============================================================ */
 @theme {
@@ -19,7 +21,7 @@
   --color-surface-alt:  #d1dfeb;
   --color-gris-clair:   #c6c9cc;
 
-  /* Couleur glass (ajoutée ici pour cohérence) */
+  /* Couleur glass (ajout├®e ici pour coh├®rence) */
   --color-glass-bg:     rgba(105, 140, 227, 0.85);
   --color-glass-border: rgba(148, 163, 184, 0.2);
 
@@ -34,9 +36,10 @@
 @layer base {
   body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    /* Dégradé bleu un peu plus foncé pour un meilleur contraste */
-    background: linear-gradient(120deg, #75aef5 0%, #6891cc 100%);
-    color: #303e53; /* bleu foncé pour le texte, reste lisible */
+    background:
+      radial-gradient(circle at 14% -10%, rgba(24, 95, 165, 0.16), transparent 30rem),
+      linear-gradient(135deg, var(--app-bg-soft) 0%, var(--app-bg) 100%);
+    color: var(--app-text);
     overflow-x: hidden;
     @apply antialiased;
   }
@@ -54,8 +57,7 @@
    GRADIENTS
    ============================================================ */
 
-
-/* Palette pastel — usage général */
+/* Palette pastel ÔÇö usage g├®n├®ral */
 .pastel-gradient {
   background: linear-gradient(133deg,
     var(--color-lavande) 0%,
@@ -64,7 +66,7 @@
   );
 }
 
-/* Batiflow dashboard banner — violet clair personnalisé */
+/* Batiflow dashboard banner ÔÇö violet clair personnalis├® */
 .batiflow-gradient {
   background: linear-gradient(120deg, #c0b4fa 0%, #b4e0fa 100%);
 }
@@ -78,27 +80,25 @@
   );
 }
 
-/* Technico — Iris → Lavande → Pervenche */
-
+/* Technico ÔÇö Iris ÔåÆ Lavande ÔåÆ Pervenche */
 .technico-gradient {
-  /* Dégradé violet (iris) vers bleu (ajouté) pour plus de contraste */
   background: linear-gradient(133deg,
-    var(--color-iris)      0%,      /* violet foncé */
-    #3d6abe                60%,     /* bleu moyen (ajouté) */
-    var(--color-pervenche) 100%     /* bleu-violet pâle */
+    var(--color-iris)      0%,
+    #3d6abe                60%,
+    var(--color-pervenche) 100%
   );
 }
 
-/* Technico soft — variante inversée */
+/* Technico soft ÔÇö variante invers├®e */
 .technico-gradient-soft {
   background: linear-gradient(133deg,
-    #6161dc              0%,   /* teinte intermédiaire iris/lavande */
+    #6161dc              0%,
     var(--color-lavande) 50%,
     var(--color-iris)    100%
   );
 }
 
-/* Sidebar — dark */
+/* Sidebar ÔÇö dark */
 .sidebar-gradient {
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
 }
@@ -107,7 +107,7 @@
    GLASS CARD & FORMULAIRE
    ============================================================ */
 .glass-card, .form-card {
-  background: #b6c9f1; /* gris-bleuté très clair pour remplacer le blanc pur */
+  background: #b6c9f1;
   backdrop-filter: blur(12px);
   border: 1px solid var(--color-glass-border);
 }
@@ -116,7 +116,6 @@
    CARD INTERACTIONS
    ============================================================ */
 
-/* Légère élévation au survol */
 .card-hover {
   transition: all 0.2s ease;
 }
@@ -127,7 +126,6 @@
     0  4px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
-/* Élévation plus prononcée pour les module cards */
 .module-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -140,7 +138,6 @@
    ANIMATIONS
    ============================================================ */
 
-/* Pulsation douce — appliquer via : animation: stat-pulse 2s ease-in-out infinite */
 @keyframes stat-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.7; }
@@ -157,7 +154,6 @@
   box-shadow: 0 0 8px rgba(99, 102, 241, 0.3);
 }
 
-/* Masque les fleches des champs numeriques (usage cible: prix unitaire) */
 .input-no-spin {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -169,3 +165,145 @@
   margin: 0;
 }
 
+/* ============================================================
+   BATIFLOW APP SHELL
+   Harmonisation visuelle des pages applicatives.
+   ============================================================ */
+:root {
+  --app-bg: #eef4fb;
+  --app-bg-soft: #f8fbff;
+  --app-surface: rgba(255, 255, 255, 0.94);
+  --app-surface-strong: #ffffff;
+  --app-surface-muted: #f3f7fb;
+  --app-border: rgba(148, 163, 184, 0.28);
+  --app-border-strong: rgba(100, 116, 139, 0.32);
+  --app-text: #172033;
+  --app-text-muted: #64748b;
+  --app-primary: #185fa5;
+  --app-primary-soft: rgba(24, 95, 165, 0.10);
+  --app-shadow: 0 16px 40px -26px rgba(15, 23, 42, 0.48);
+  --app-card-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 255, 0.94));
+}
+
+.dark {
+  --app-bg: #07111f;
+  --app-bg-soft: #0b1626;
+  --app-surface: rgba(15, 23, 42, 0.92);
+  --app-surface-strong: #111827;
+  --app-surface-muted: #162235;
+  --app-border: rgba(148, 163, 184, 0.18);
+  --app-border-strong: rgba(148, 163, 184, 0.28);
+  --app-text: #e5edf7;
+  --app-text-muted: #94a3b8;
+  --app-primary: #60a5fa;
+  --app-primary-soft: rgba(96, 165, 250, 0.14);
+  --app-shadow: 0 18px 48px -30px rgba(0, 0, 0, 0.85);
+  --app-card-gradient: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.9));
+}
+
+.app-shell {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(24, 95, 165, 0.12), transparent 28rem),
+    linear-gradient(135deg, var(--app-bg-soft) 0%, var(--app-bg) 100%);
+  color: var(--app-text);
+}
+
+.app-main-header {
+  min-height: 68px;
+  background: color-mix(in srgb, var(--app-surface-strong) 86%, transparent);
+  border-bottom: 1px solid var(--app-border);
+  box-shadow: 0 10px 28px -28px rgba(15, 23, 42, 0.5);
+}
+
+.app-content {
+  color: var(--app-text);
+}
+
+.app-content > * {
+  max-width: 1440px;
+  margin-inline: auto;
+}
+
+.app-content :where(section, article, .bg-white, .bg-gray-50, .bg-stone-50, .bg-slate-50) {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
+}
+
+.app-content :where(.bg-white) {
+  background-color: var(--app-surface) !important;
+  background-image: var(--app-card-gradient);
+}
+
+.app-content :where(.bg-gray-50, .bg-stone-50, .bg-slate-50, .bg-gray-50\/50, .bg-gray-50\/60, .bg-gray-50\/80, .bg-stone-50\/60, .bg-stone-50\/70, .bg-slate-50\/60, .bg-slate-50\/70, .bg-slate-50\/80) {
+  background-color: var(--app-surface-muted) !important;
+}
+
+.app-content :where(.border-gray-100, .border-gray-200, .border-slate-100, .border-slate-200, .border-stone-200, .ring-gray-100, .ring-stone-200) {
+  border-color: var(--app-border) !important;
+  --tw-ring-color: var(--app-border) !important;
+}
+
+.app-content :where(.shadow-sm, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  box-shadow: var(--app-shadow) !important;
+}
+
+.app-content :where(.text-gray-900, .text-slate-900, .text-stone-900) {
+  color: var(--app-text) !important;
+}
+
+.app-content :where(.text-gray-700, .text-slate-700, .text-stone-700, .text-gray-600, .text-slate-600, .text-stone-600, .text-gray-500, .text-slate-500, .text-stone-500) {
+  color: var(--app-text-muted) !important;
+}
+
+.app-content :where(input, select, textarea) {
+  background-color: var(--app-surface-strong);
+  border-color: var(--app-border);
+  color: var(--app-text);
+}
+
+.app-content :where(button, a, input, select, textarea) {
+  outline-color: var(--app-primary);
+}
+
+.app-content :where(input, select, textarea)::placeholder {
+  color: color-mix(in srgb, var(--app-text-muted) 76%, transparent);
+}
+
+.app-content :where(table) {
+  font-size: 0.875rem;
+}
+
+.app-content :where(thead, .bg-slate-100, .bg-gray-100) {
+  background-color: color-mix(in srgb, var(--app-primary-soft) 58%, var(--app-surface-muted)) !important;
+}
+
+.app-content :where(.text-teal-600, .text-emerald-600) {
+  color: var(--app-primary) !important;
+}
+
+.app-content :where(.bg-teal-50, .bg-emerald-50) {
+  background-color: var(--app-primary-soft) !important;
+}
+
+.app-content :where(.border-teal-100, .border-emerald-100, .border-teal-200, .border-emerald-200) {
+  border-color: color-mix(in srgb, var(--app-primary) 25%, transparent) !important;
+}
+
+.app-content :where(.rounded-\[28px\], .rounded-3xl) {
+  border-radius: 1.25rem !important;
+}
+
+.app-content :where(.rounded-2xl) {
+  border-radius: 1rem !important;
+}
+
+.app-focus-ring {
+  outline: none;
+}
+
+.app-focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px var(--app-primary-soft);
+}

@@ -1,57 +1,74 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  HardHat,
   CheckSquare,
   ClipboardCheck,
-  HardHat,
   LayoutDashboard,
   LogOut,
-  Menu,
-  Search,
   X,
+  ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
+import AccountUserMenu from '@/components/AccountUserMenu';
 import { cn } from '@/lib/utils';
 
-const navItems = [
+interface ChefNavItem {
+  to: string;
+  label: string;
+  description: string;
+  group: string;
+  icon: ReactNode;
+}
+
+const chefNavItems: ChefNavItem[] = [
   {
-    to: '/admin',
+    to: '/chef-chantier',
     label: 'Tableau de bord',
+    description: "Vue d'ensemble",
+    group: 'Accueil',
     icon: <LayoutDashboard size={18} />,
   },
   {
-    to: '/admin/chantiers',
-    label: 'Chantiers',
+    to: '/chef-chantier/chantiers',
+    label: 'Mes chantiers',
+    description: 'Suivi des sites',
+    group: 'Opérations',
     icon: <HardHat size={18} />,
   },
   {
-    to: '/admin/taches-chantier',
-    label: 'Taches chantier',
+    to: '/chef-chantier/taches-chantier',
+    label: 'Tâches chantier',
+    description: 'Planning et tâches',
+    group: 'Opérations',
     icon: <CheckSquare size={18} />,
   },
   {
-    to: '/admin/commandes-fournisseur',
-    label: 'Receptions',
+    to: '/chef-chantier/receptions',
+    label: 'Réceptions',
+    description: 'Matériaux et livraisons',
+    group: 'Opérations',
     icon: <ClipboardCheck size={18} />,
   },
 ];
 
+const groupedNavItems = chefNavItems.reduce<Record<string, ChefNavItem[]>>(
+  (acc, item) => {
+    if (!acc[item.group]) {
+      acc[item.group] = [];
+    }
+    acc[item.group].push(item);
+    return acc;
+  },
+  {}
+);
+
 export default function ChefChantierLayout() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  const initials = user
-    ? `${user.prenom?.charAt(0) ?? ''}${user.nom?.charAt(0) ?? ''}` || 'C'
-    : 'C';
-
-  const currentItem = navItems.find((item) =>
-    item.to === '/admin'
-      ? location.pathname === '/admin'
-      : location.pathname.startsWith(item.to),
-  );
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -59,121 +76,152 @@ export default function ChefChantierLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-amber-50/40">
-      {mobileOpen && (
+    <div className="min-h-screen bg-[#f6f9ff] text-slate-900">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
+      {/* Sidebar */}
       <aside
         className={cn(
-          'fixed z-50 flex h-full w-[280px] flex-col text-amber-100 transition-transform duration-300 lg:translate-x-0',
-          'bg-[linear-gradient(180deg,#7c2d12_0%,#9a3412_55%,#b45309_100%)]',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed left-0 top-0 z-50 h-screen w-72 bg-gradient-to-b from-blue-600 to-blue-700 text-white transition-transform duration-300 ease-in-out lg:translate-x-0',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="border-b border-white/15 px-5 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-white shadow-lg">
-              <HardHat size={22} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200/90">
-                Espace terrain
-              </p>
-              <h1 className="text-lg font-bold text-white">Chef de chantier</h1>
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+                <HardHat size={24} />
+              </div>
+              <div>
+                <h1 className="font-bold text-lg">Chef de Chantier</h1>
+                <p className="text-xs text-orange-100">Espace terrain</p>
+              </div>
             </div>
             <button
-              onClick={() => setMobileOpen(false)}
-              className="ml-auto rounded-lg p-1 text-amber-100/70 hover:bg-white/10 hover:text-white lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
-        </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/admin'}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all',
-                  isActive
-                    ? 'bg-white/18 text-white shadow-sm'
-                    : 'text-amber-100/80 hover:bg-white/10 hover:text-white',
-                )
-              }
-            >
-              {item.icon}
-              <span>{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto p-4 space-y-6">
+            {Object.entries(groupedNavItems).map(([group, items]) => (
+              <div key={group}>
+                <h3 className="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-blue-100">
+                  {group}
+                </h3>
+                <div className="space-y-1">
+                  {items.map((item) => {
+                    const isActive = location.pathname === item.to || 
+                                   (item.to !== '/chef-chantier' && location.pathname.startsWith(item.to));
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => {
+                          if (window.innerWidth < 1024) {
+                            setSidebarOpen(false);
+                          }
+                        }}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200',
+                          isActive
+                            ? 'bg-white/20 text-white shadow-lg'
+                            : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        {item.icon}
+                        <div className="flex-1">
+                          <p className="font-medium text-sm">{item.label}</p>
+                          <p className="text-xs text-blue-100/70">{item.description}</p>
+                        </div>
+                        {isActive && <ChevronRight size={16} />}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
 
-        <div className="border-t border-white/15 px-4 py-4">
-          <div className="rounded-2xl bg-white/10 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20 font-bold text-white">
-                {initials}
+          {/* User info */}
+          <div className="p-4 border-t border-white/10">
+            <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                  {`${user?.prenom?.charAt(0) ?? ''}${user?.nom?.charAt(0) ?? ''}`.toUpperCase() || 'CC'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">
+                    {user?.prenom} {user?.nom}
+                  </p>
+                  <p className="truncate text-xs text-blue-100">Chef de chantier</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white/75 transition hover:bg-red-500/25 hover:text-red-100"
+                  title="Se déconnecter"
+                  aria-label="Se déconnecter"
+                >
+                  <LogOut size={16} />
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">
-                  {user?.prenom} {user?.nom}
-                </p>
-                <p className="truncate text-xs text-amber-100/80">{user?.email}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white transition-colors hover:bg-red-500/25"
-                title="Se deconnecter"
-              >
-                <LogOut size={16} />
-              </button>
             </div>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 lg:ml-[280px]">
-        <header className="sticky top-0 z-30 border-b border-amber-200/70 bg-white/90 backdrop-blur">
-          <div className="flex items-center justify-between gap-4 px-4 py-3 lg:px-8">
-            <div className="flex items-center gap-4">
+      {/* Main content */}
+      <div className="min-h-screen flex-1 lg:ml-72">
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+          <div className="flex min-h-[68px] items-center justify-between gap-4 px-4 lg:px-7">
+            <div className="flex min-w-0 items-center gap-3">
               <button
-                onClick={() => setMobileOpen((value) => !value)}
-                className="rounded-xl p-2 text-slate-600 hover:bg-amber-100 lg:hidden"
+                type="button"
+                onClick={() => setSidebarOpen((value) => !value)}
+                className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 lg:hidden"
+                aria-label="Ouvrir la navigation"
               >
-                {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+                {sidebarOpen ? <X size={20} /> : <HardHat size={20} />}
               </button>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-700">
-                  Interface dediee
-                </p>
-                <p className="text-sm font-medium text-slate-700">
-                  {currentItem?.label ?? 'Espace chef de chantier'}
-                </p>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] text-slate-400">BÂTIFLOW / Chef de chantier</p>
+                <h1 className="truncate text-[17px] font-semibold text-slate-950">
+                  {chefNavItems.find((item) =>
+                    item.to === '/chef-chantier'
+                      ? location.pathname === '/chef-chantier'
+                      : location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)
+                  )?.label ?? (location.pathname === '/chef-chantier/parametres' ? 'Paramètres' : 'Chef de chantier')}
+                </h1>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 sm:flex">
-                <Search size={15} className="text-amber-700" />
-                <span className="text-sm text-amber-800">Navigation chantier</span>
-              </div>
               <InternalNotificationsBell />
+              <AccountUserMenu
+                displayName={`${user?.prenom ?? ''} ${user?.nom ?? ''}`.trim() || 'Chef de chantier'}
+                initials={`${user?.prenom?.charAt(0) ?? ''}${user?.nom?.charAt(0) ?? ''}`.toUpperCase() || 'CC'}
+                roleLabel="Chef de chantier"
+                settingsPath="/chef-chantier/parametres"
+              />
             </div>
           </div>
         </header>
 
-        <div className="px-4 py-5 lg:px-8 lg:py-8">
+        <main className="p-3 sm:p-4 lg:p-6">
           <Outlet />
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

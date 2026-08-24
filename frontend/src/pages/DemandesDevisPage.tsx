@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import type { DemandeDevis } from '@/types';
 import { formatDate, cn } from '@/lib/utils';
@@ -38,6 +39,8 @@ const emptyForm: DemandeForm = {
 
 export default function DemandesDevisPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const workspaceBasePath = user?.role === 'ASSISTANTE' ? '/assistante' : '/admin';
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -112,9 +115,11 @@ export default function DemandesDevisPage() {
         await queryClient.invalidateQueries({ queryKey: ['demandes-devis'] });
       }
 
-      navigate(`/admin/checklist?demandeId=${demande.id}`);
+      navigate(`${workspaceBasePath}/checklist?demandeId=${demande.id}`);
     } catch (err: unknown) {
-      setStudyError(err instanceof Error ? err.message : 'Impossible d ouvrir la checklist.');
+      setStudyError(
+        err instanceof Error ? err.message : "Impossible d'ouvrir la checklist.",
+      );    
     } finally {
       setStudyDemandeId(null);
     }
@@ -125,7 +130,7 @@ export default function DemandesDevisPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <FileText size={24} className="text-orange-600" />
+            <FileText size={24} className="text-blue-600" />
             Demandes de Devis
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">{meta.total} demande(s) au total</p>
@@ -140,8 +145,8 @@ export default function DemandesDevisPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all" />
+          <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-sm transition-all outline-none" />
         </div>
       </div>
 
@@ -209,7 +214,7 @@ export default function DemandesDevisPage() {
                           className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                           title={
                             canOpenStudy(normalizedStatut)
-                              ? 'Etude checklist / generation de devis'
+                              ? 'Étude checklist / génération de devis'
                               : 'Disponible pour NOUVEAU ou EN_COURS'
                           }
                         >
@@ -219,7 +224,7 @@ export default function DemandesDevisPage() {
                             <ListChecks size={15} />
                           )}
                         </button>
-                        <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Eye size={15} /></button>
+                        <button onClick={() => setDetailDemande(d)} className="p-2 rounded-lg text-gray-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"><Eye size={15} /></button>
                         <button onClick={() => deleteMutation.mutate(d.id)} className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Trash2 size={15} /></button>
                       </div>
                     </td>
@@ -262,7 +267,7 @@ export default function DemandesDevisPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Description *</label>
-                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Ex: Renovation salle de bain 8m2, fuite sous douche, intervention souhaitee sous 7 jours." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
+                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Ex : rénovation salle de bain 8 m², fuite sous douche, intervention souhaitée sous 7 jours." className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Source</label>
@@ -277,11 +282,11 @@ export default function DemandesDevisPage() {
               </div>
               {createMutation.error && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Erreur lors de la creation. Verifiez le client selectionne et la description.
+                  Erreur lors de la création. Vérifiez le client sélectionné et la description.
                 </p>
               )}
               <div className="flex justify-end gap-3 pt-2">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">Annuler</button>
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">Annuler</button>
                 <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                   Créer
@@ -323,7 +328,7 @@ export default function DemandesDevisPage() {
                   ) : (
                     <ListChecks size={15} />
                   )}
-                  Etude checklist / generer devis
+                  Étude checklist / générer devis
                 </button>
               </div>
             </div>

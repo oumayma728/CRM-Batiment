@@ -11,16 +11,23 @@ import {
   Briefcase,
   Search,
   Menu,
+  Moon,
   X,
+  Sun,
   CheckSquare,
   Signature,
   Receipt,
   Bot,
   PackageCheck,
+  LifeBuoy,
+  CalendarDays,
+  PackageSearch,
 } from 'lucide-react';
 import InternalNotificationsBell from '@/components/InternalNotificationsBell';
+import AccountUserMenu from '@/components/AccountUserMenu';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useDarkMode } from '@/hooks/useDarkMode';
 
 interface TechNavItem {
   to: string;
@@ -32,15 +39,18 @@ interface TechNavItem {
 
 const techNavItems: TechNavItem[] = [
   { to: '/technico', label: 'Tableau de bord', icon: <LayoutDashboard size={20} />, description: 'Vue d\'ensemble' },
-  { to: '/technico/clients', label: 'Mes Clients', icon: <Users size={20} />, description: 'Gerer vos clients', group: 'Commercial' },
-  { to: '/technico/demandes', label: 'Demandes Devis', icon: <FileText size={20} />, description: 'Demandes recues', group: 'Commercial' },
-  { to: '/technico/devis', label: 'Mes Devis', icon: <FileSpreadsheet size={20} />, description: 'Creer & suivre', group: 'Commercial' },
+  { to: '/technico/clients', label: 'Mes Clients', icon: <Users size={20} />, description: 'Gérer vos clients', group: 'Commercial' },
+  { to: '/technico/demandes', label: 'Demandes Devis', icon: <FileText size={20} />, description: 'Demandes reçues', group: 'Commercial' },
+  { to: '/technico/devis', label: 'Mes Devis', icon: <FileSpreadsheet size={20} />, description: 'Créer & suivre', group: 'Commercial' },
   { to: '/technico/factures', label: 'Mes factures', icon: <Receipt size={20} />, description: 'Facturer & envoyer', group: 'Commercial' },
-  { to: '/technico/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={20} />, description: 'Achats & receptions', group: 'Commercial' },
-  { to: '/technico/checklist', label: 'Checklist Devis', icon: <CheckSquare size={20} />, description: 'Generer un devis', group: 'Commercial' },
-  { to: '/technico/assistant-ia', label: 'Assistant IA', icon: <Bot size={20} />, description: 'Gerer prospects chatbot', group: 'Commercial' },
-  { to: '/technico/prestations', label: 'Prestations', icon: <BookOpen size={20} />, description: 'Catalogue', group: 'Referentiel' },
-  { to: '/technico/catalogue', label: 'Catalogue Expert', icon: <Search size={20} />, description: 'Explorer le catalogue', group: 'Referentiel' },
+  { to: '/technico/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={20} />, description: 'Achats & réceptions', group: 'Commercial' },
+  { to: '/technico/sav', label: 'SAV', icon: <LifeBuoy size={20} />, description: 'Tickets et interventions', group: 'Commercial' },
+  { to: '/technico/demo-requests', label: 'Demandes de démo', icon: <CalendarDays size={20} />, description: 'Demandes reçues', group: 'Commercial' },
+  { to: '/technico/checklist', label: 'Checklist Devis', icon: <CheckSquare size={20} />, description: 'Générer un devis', group: 'Commercial' },
+  { to: '/technico/assistant-ia', label: 'Assistant IA', icon: <Bot size={20} />, description: 'Gérer prospects chatbot', group: 'Commercial' },
+  { to: '/technico/prestations', label: 'Prestations', icon: <BookOpen size={20} />, description: 'Catalogue', group: 'Référentiel' },
+  { to: '/technico/materiaux', label: 'Matériaux', icon: <PackageSearch size={20} />, description: 'Catalogue matériaux', group: 'Référentiel' },
+  { to: '/technico/catalogue', label: 'Catalogue Expert', icon: <Search size={20} />, description: 'Explorer le catalogue', group: 'Référentiel' },
   { to: '/technico/profil', label: 'Mon Profil', icon: <Signature size={20} />, description: 'Ma signature', group: 'Compte' },
 ];
 
@@ -48,6 +58,7 @@ export default function TechnicoLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { darkMode, toggleDarkMode } = useDarkMode();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {
@@ -68,7 +79,7 @@ export default function TechnicoLayout() {
   const pageTitle = currentItem?.label ?? 'Technico-Commercial';
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="app-shell flex min-h-screen transition-colors duration-300">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -195,7 +206,7 @@ export default function TechnicoLayout() {
       {/* MAIN CONTENT */}
       <main className="flex-1 lg:ml-72 min-h-screen">
         {/* Top bar */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/60 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
+        <header className="app-main-header backdrop-blur-md px-3 sm:px-4 lg:px-8 py-3 sm:py-4 flex items-center justify-between sticky top-0 z-20 transition-colors duration-300">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -204,8 +215,8 @@ export default function TechnicoLayout() {
               <Menu size={20} />
             </button>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">{pageTitle}</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">
+              <h1 className="text-lg font-bold text-gray-900 dark:text-slate-100">{pageTitle}</h1>
+              <p className="text-xs text-gray-400 dark:text-slate-500 hidden sm:block">
                 {new Date().toLocaleDateString('fr-FR', {
                   weekday: 'long',
                   year: 'numeric',
@@ -216,38 +227,32 @@ export default function TechnicoLayout() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Search */}
-            <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
-              <Search size={16} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="bg-transparent text-sm text-gray-600 outline-none w-40 placeholder:text-gray-400"
-              />
-            </div>
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 transition-colors hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              title={darkMode ? 'Mode clair' : 'Mode sombre'}
+              aria-label={darkMode ? 'Activer le mode clair' : 'Activer le mode sombre'}
+            >
+              {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
             <InternalNotificationsBell />
-            <div className="w-px h-8 bg-gray-200 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                {initials}
-              </div>
-              <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                {user?.prenom}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-teal-100 text-teal-700">
-                Technico
-              </span>
-            </div>
+            <div className="w-px h-8 bg-gray-200 dark:bg-slate-700 hidden sm:block" />
+            <AccountUserMenu
+              displayName={`${user?.prenom ?? ''} ${user?.nom ?? ''}`.trim() || 'Technico'}
+              initials={initials || 'TC'}
+              roleLabel="Technico-commercial"
+              settingsPath="/technico/profil"
+            />
           </div>
         </header>
 
+
         {/* Page content */}
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="app-content p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>
     </div>
   );
 }
-
-

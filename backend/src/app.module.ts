@@ -24,7 +24,12 @@ import { AssistantModule } from './assistant/assistant.module.js';
 import { RagModule } from './rag/rag.module.js';
 // TODO: Fix imports in CatalogueModule
 // import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
-
+import { DashboardModule } from './dashboard/dashboard.module.js';
+import { AuditModule } from './audit/audit.module.js';
+import { SavModule } from './sav/sav.module.js';
+import { DemoRequestsModule } from './demo-requests/demo-requests.module.js';
+import { SousTraitantModule } from './sous-traitant/sous-traitant.module.js';
+import { StockModule } from './stock/stock.module.js';
 @Module({
   imports: [
     // Configuration globale (.env)
@@ -57,6 +62,12 @@ import { RagModule } from './rag/rag.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
+    DashboardModule,
+    AuditModule,
+    SavModule,
+    DemoRequestsModule,
+    SousTraitantModule,
+    StockModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

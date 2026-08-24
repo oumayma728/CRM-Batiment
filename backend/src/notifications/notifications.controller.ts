@@ -17,25 +17,25 @@ import { NotificationsService } from './notifications.service.js';
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER, Role.TECHNICO)
+@Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER, Role.TECHNICO, Role.SOUS_TRAITANT)
 @Controller('notifications')
 export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get('internal')
   @ApiOperation({
-    summary: 'Notifications internes recentes',
+    summary: 'Notifications internes P0',
     description:
-      'Retourne les notifications internes generees apres mise a jour fournisseur et reception chantier.',
+      'Retourne les alertes P0, signatures de devis, modifications de prix et notifications internes recentes.',
   })
   @ApiResponse({ status: 200, description: 'Notifications retournees.' })
   listInternal(
     @Query() query: QueryInternalNotificationsDto,
     @CurrentUser() user: CurrentUserPayload,
-  ) {
+  ): Promise<unknown> {
     return this.notificationsService.listInternalNotifications(
       user,
-      query.limit ?? 8,
+      query.limit ?? 10,
     );
   }
 }

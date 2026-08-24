@@ -1,47 +1,96 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import RevenueChart from '@/components/charts/RevenueChart';
 import {
-  Users,
-  FileText,
-  FileSpreadsheet,
-  TrendingUp,
-  ArrowUpRight,
-  Clock,
-  CheckCircle2,
   AlertTriangle,
-  Send,
-  Plus,
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
   Eye,
+  FileSpreadsheet,
+  FileText,
+  LifeBuoy,
+  Percent,
+  Phone,
+  Plus,
+  Receipt,
+  Send,
+  Target,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
-import type { Client, DemandeDevis, Devis } from '@/types';
+import type { Client, DemandeDevis, Devis, DevisStatut } from '@/types';
+
+const wonStatuses: DevisStatut[] = ['ACCEPTE', 'SIGNE'];
+const activeStatuses: DevisStatut[] = ['BROUILLON', 'ENVOYE', 'REVISE', 'RENVOYE'];
+
+const statusColors: Record<string, string> = {
+  BROUILLON: 'bg-gray-100 text-gray-600',
+  ENVOYE: 'bg-blue-100 text-blue-700',
+  RENVOYE: 'bg-cyan-100 text-cyan-700',
+  REVISE: 'bg-indigo-100 text-indigo-700',
+  ACCEPTE: 'bg-emerald-100 text-emerald-700',
+  SIGNE: 'bg-teal-100 text-teal-700',
+  REFUSE: 'bg-red-100 text-red-700',
+  ANNULE: 'bg-orange-100 text-orange-700',
+  NOUVEAU: 'bg-sky-100 text-sky-700',
+  EN_COURS: 'bg-blue-100 text-blue-700',
+  CONVERTI: 'bg-emerald-100 text-emerald-700',
+  PERDU: 'bg-rose-100 text-rose-700',
+};
+
+const statusLabels: Record<string, string> = {
+  BROUILLON: 'Brouillon',
+  ENVOYE: 'Envoyé',
+  RENVOYE: 'Renvoyé',
+  REVISE: 'Révisé',
+  ACCEPTE: 'Accepté',
+  SIGNE: 'Signé',
+  REFUSE: 'Refusé',
+  ANNULE: 'Annulé',
+  NOUVEAU: 'Nouveau',
+  EN_COURS: 'En cours',
+  CONVERTI: 'Converti',
+  PERDU: 'Perdu',
+};
 
 export default function TechnicoDashboard() {
   const { user } = useAuth();
 
-  // Fetch data
   const { data: clientsData } = useQuery({
-    queryKey: ['technico-clients'],
+    queryKey: ['technico-clients-dashboard'],
     queryFn: async () => {
-      const res = await api.get('/clients', { params: { page: 1, limit: 5 } });
+      const res = await api.get('/clients', { params: { page: 1, limit: 8 } });
       return res.data;
     },
   });
 
   const { data: demandesData } = useQuery({
-    queryKey: ['technico-demandes'],
+    queryKey: ['technico-demandes-dashboard'],
     queryFn: async () => {
-      const res = await api.get('/demandes-devis', { params: { page: 1, limit: 5 } });
+      const res = await api.get('/demandes-devis', { params: { page: 1, limit: 8 } });
       return res.data;
     },
   });
 
   const { data: devisData } = useQuery({
-    queryKey: ['technico-devis'],
+    queryKey: ['technico-devis-dashboard'],
     queryFn: async () => {
       const res = await api.get('/devis', { params: { page: 1, limit: 100 } });
+      return res.data;
+    },
+  });
+
+  const { data: savData } = useQuery({
+    queryKey: ['technico-sav-dashboard'],
+    queryFn: async () => {
+      const res = await api.get('/sav/tickets', { params: { page: 1, limit: 5 } });
       return res.data;
     },
   });
@@ -49,311 +98,422 @@ export default function TechnicoDashboard() {
   const totalClients = clientsData?.meta?.total ?? 0;
   const totalDemandes = demandesData?.meta?.total ?? 0;
   const allDevis: Devis[] = devisData?.data ?? [];
-  const totalDevis = devisData?.meta?.total ?? 0;
-  const devisAcceptes = allDevis.filter((d) => d.statut === 'ACCEPTE').length;
-  const devisBrouillon = allDevis.filter((d) => d.statut === 'BROUILLON').length;
-  const devisEnvoyes = allDevis.filter((d) => d.statut === 'ENVOYE').length;
-  const chiffreAffaires = allDevis
-    .filter((d) => d.statut === 'ACCEPTE')
-    .reduce((sum, d) => sum + (d.totalTTC ?? 0), 0);
-
+  const totalDevis = devisData?.meta?.total ?? allDevis.length;
+  const totalSav = savData?.meta?.total ?? savData?.data?.length ?? 0;
   const recentClients: Client[] = (clientsData?.data ?? []).slice(0, 4);
-  const recentDemandes: DemandeDevis[] = (demandesData?.data ?? []).slice(0, 4);
-  const recentDevis: Devis[] = allDevis.slice(0, 5);
+  const recentDemandes: DemandeDevis[] = (demandesData?.data ?? []).slice(0, 5);
+  const recentDevis = [...allDevis]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 6);
 
-  const statusColors: Record<string, string> = {
-    BROUILLON: 'bg-gray-100 text-gray-600',
-    ENVOYE: 'bg-blue-100 text-blue-700',
-    ACCEPTE: 'bg-emerald-100 text-emerald-700',
-    REFUSE: 'bg-red-100 text-red-700',
-    ANNULE: 'bg-orange-100 text-orange-700',
-    NOUVEAU: 'bg-sky-100 text-sky-700',
-    EN_COURS: 'bg-blue-100 text-blue-700',
-    CONVERTI: 'bg-emerald-100 text-emerald-700',
-    PERDU: 'bg-rose-100 text-rose-700',
-  };
+  const metrics = useMemo(() => {
+    const devisAcceptes = allDevis.filter((d) => wonStatuses.includes(d.statut)).length;
+    const devisActifs = allDevis.filter((d) => activeStatuses.includes(d.statut)).length;
+    const devisRefuses = allDevis.filter((d) => d.statut === 'REFUSE').length;
+    const chiffreAffaires = allDevis
+      .filter((d) => wonStatuses.includes(d.statut))
+      .reduce((sum, d) => sum + (d.totalTTC ?? 0), 0);
+    const valeurPipeline = allDevis
+      .filter((d) => activeStatuses.includes(d.statut))
+      .reduce((sum, d) => sum + (d.totalTTC ?? 0), 0);
+    const tauxConversion = totalDevis > 0 ? Math.round((devisAcceptes / totalDevis) * 100) : 0;
+    const panierMoyen = devisAcceptes > 0 ? chiffreAffaires / devisAcceptes : 0;
 
-  function getDisplayDemandeStatut(statut: string) {
-    return statut === 'QUALIFIE' ? 'EN_COURS' : statut;
-  }
+    return {
+      chiffreAffaires,
+      devisAcceptes,
+      devisActifs,
+      devisRefuses,
+      panierMoyen,
+      tauxConversion,
+      valeurPipeline,
+    };
+  }, [allDevis, totalDevis]);
+
+  const pipeline = useMemo(() => {
+    const steps = [
+      { key: 'NOUVEAU', label: 'Prospects', count: totalDemandes, amount: 0, color: 'bg-sky-500', icon: <Users size={18} /> },
+      { key: 'BROUILLON', label: 'Préparation', count: 0, amount: 0, color: 'bg-slate-500', icon: <Clock size={18} /> },
+      { key: 'ENVOYE', label: 'Envoyés', count: 0, amount: 0, color: 'bg-blue-500', icon: <Send size={18} /> },
+      { key: 'ACCEPTE', label: 'Gagnés', count: 0, amount: 0, color: 'bg-emerald-500', icon: <CheckCircle2 size={18} /> },
+      { key: 'REFUSE', label: 'Perdus', count: 0, amount: 0, color: 'bg-rose-500', icon: <AlertTriangle size={18} /> },
+    ];
+
+    allDevis.forEach((devis) => {
+      const targetKey = wonStatuses.includes(devis.statut)
+        ? 'ACCEPTE'
+        : devis.statut === 'REFUSE'
+          ? 'REFUSE'
+          : devis.statut === 'BROUILLON' || devis.statut === 'REVISE'
+            ? 'BROUILLON'
+            : devis.statut === 'ENVOYE' || devis.statut === 'RENVOYE'
+              ? 'ENVOYE'
+              : null;
+      const step = steps.find((item) => item.key === targetKey);
+      if (step) {
+        step.count += 1;
+        step.amount += devis.totalTTC ?? 0;
+      }
+    });
+
+    const maxCount = Math.max(...steps.map((step) => step.count), 1);
+    return steps.map((step) => ({ ...step, percent: Math.max(8, Math.round((step.count / maxCount) * 100)) }));
+  }, [allDevis, totalDemandes]);
+
+  const monthlyRevenue = useMemo(() => {
+    const labels = getLastSixMonthLabels();
+    const values = labels.map((month) => {
+      const total = allDevis
+        .filter((devis) => wonStatuses.includes(devis.statut))
+        .filter((devis) => getMonthKey(devis.dateValidation ?? devis.createdAt) === month.key)
+        .reduce((sum, devis) => sum + (devis.totalTTC ?? 0), 0);
+      return { ...month, total };
+    });
+    const max = Math.max(...values.map((item) => item.total), 1);
+    return values.map((item) => ({ ...item, percent: Math.max(4, Math.round((item.total / max) * 100)) }));
+  }, [allDevis]);
+
+  // Donn├®es pour RevenueChart
+  const revenueChartData = useMemo(() => {
+    return monthlyRevenue.map(item => ({
+      month: item.label,
+      revenue: item.total
+    }));
+  }, [monthlyRevenue]);
 
   return (
     <div className="space-y-6">
-      {/* Welcome banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-[#c0b4fa] via-[#d6c8fa] to-[#b4e0fa] rounded-2xl p-6 sm:p-8 text-blue-900">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4" />
-        <div className="absolute bottom-0 left-1/2 w-40 h-40 bg-white/5 rounded-full translate-y-1/2" />
-        <div className="relative">
-          <p className="text-violet-800 text-sm font-medium">Bonjour,</p>
-          <h1 className="text-2xl sm:text-3xl font-bold mt-1">
-            {user?.prenom} {user?.nom} 👋
-          </h1>
-          <p className="text-violet-700/80 mt-2 text-sm max-w-lg">
-            Voici le résumé de votre activité commerciale. Gérez vos clients, suivez vos devis et
-            consultez le catalogue.
-          </p>
-          <div className="flex flex-wrap gap-3 mt-5">
-            <Link
-              to="/technico/clients"
-              className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              <Plus size={16} />
-              Nouveau client
-            </Link>
-            <Link
-              to="/technico/devis"
-              className="inline-flex items-center gap-2 bg-white text-teal-700 hover:bg-white/90 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-teal-900/20"
-            >
-              <FileSpreadsheet size={16} />
-              Créer un devis
-            </Link>
+      <div className="relative overflow-hidden rounded-2xl border border-white/40 bg-gradient-to-r from-[#d9eefc] via-[#eee8ff] to-[#d7f8ed] p-6 text-slate-900 shadow-sm sm:p-8">
+        <div className="relative grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="text-sm font-semibold text-blue-700">Bonjour,</p>
+            <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+              {user?.prenom} {user?.nom}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+              Votre activité commerciale en un coup d’œil : prospects, devis, chiffre
+              d’affaires et actions prioritaires.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <QuickButton to="/technico/clients" icon={<Plus size={16} />} label="Nouveau client" />
+            <QuickButton to="/technico/checklist" icon={<ClipboardList size={16} />} label="Checklist devis" primary />
           </div>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          icon={<Users size={22} />}
-          label="Mes Clients"
-          value={totalClients}
-          accent="from-blue-500 to-blue-600"
-          bgAccent="bg-blue-50"
-          link="/technico/clients"
-        />
-        <KPICard
-          icon={<FileText size={22} />}
-          label="Demandes"
-          value={totalDemandes}
-          accent="from-amber-500 to-orange-500"
-          bgAccent="bg-amber-50"
-          link="/technico/demandes"
-        />
-        <KPICard
-          icon={<FileSpreadsheet size={22} />}
-          label="Devis"
-          value={totalDevis}
-          accent="from-emerald-500 to-teal-500"
-          bgAccent="bg-emerald-50"
-          link="/technico/devis"
-        />
-        <KPICard
-          icon={<TrendingUp size={22} />}
-          label="CA Accepté"
-          value={formatCurrency(chiffreAffaires)}
-          accent="from-purple-500 to-violet-600"
-          bgAccent="bg-purple-50"
-        />
-      </div>
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard icon={<Users size={22} />} label="Clients" value={totalClients} detail={`${totalDemandes} demandes reçues`} tone="blue" to="/technico/clients" />
+        <StatCard icon={<FileSpreadsheet size={22} />} label="Devis actifs" value={metrics.devisActifs} detail={formatCurrency(metrics.valeurPipeline)} tone="amber" to="/technico/devis" />
+        <StatCard icon={<TrendingUp size={22} />} label="CA gagné" value={formatCurrency(metrics.chiffreAffaires)} detail={`${metrics.devisAcceptes} devis acceptés/signés`} tone="emerald" />
+        <StatCard icon={<Percent size={22} />} label="Conversion" value={`${metrics.tauxConversion}%`} detail={`Panier moyen ${formatCurrency(metrics.panierMoyen)}`} tone="violet" />
+      </section>
 
-      {/* Devis Pipeline */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-bold text-gray-900 mb-4">Pipeline Devis</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <PipelineStep
-            icon={<Clock size={18} />}
-            label="Brouillon"
-            count={devisBrouillon}
-            color="bg-gray-100 text-gray-600"
-            bar="bg-gray-400"
-          />
-          <PipelineStep
-            icon={<Send size={18} />}
-            label="Envoyé"
-            count={devisEnvoyes}
-            color="bg-blue-50 text-blue-600"
-            bar="bg-blue-500"
-          />
-          <PipelineStep
-            icon={<CheckCircle2 size={18} />}
-            label="Accepté"
-            count={devisAcceptes}
-            color="bg-emerald-50 text-emerald-600"
-            bar="bg-emerald-500"
-          />
-          <PipelineStep
-            icon={<AlertTriangle size={18} />}
-            label="Refusé"
-            count={allDevis.filter((d) => d.statut === 'REFUSE').length}
-            color="bg-red-50 text-red-600"
-            bar="bg-red-400"
-          />
-        </div>
-      </div>
-
-      {/* Bottom grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Derniers devis - 3 cols */}
-        <div className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">Derniers devis</h2>
-            <Link
-              to="/technico/devis"
-              className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1"
-            >
-              Voir tout <ArrowUpRight size={14} />
-            </Link>
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Pipeline commercial</h2>
+              <p className="text-xs text-gray-500">Progression des opportunités jusqu’à la signature</p>
+            </div>
+            <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+              {formatCurrency(metrics.valeurPipeline)} en cours
+            </span>
           </div>
-          <div className="divide-y divide-gray-50">
-            {recentDevis.length === 0 ? (
-              <p className="px-6 py-8 text-center text-gray-400 text-sm">Aucun devis</p>
-            ) : (
-              recentDevis.map((devis) => (
-                <div key={devis.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                  <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-emerald-100 rounded-lg flex items-center justify-center text-teal-600 font-bold text-xs">
-                    {devis.reference?.slice(-3) ?? '#'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{devis.reference}</p>
-                    <p className="text-xs text-gray-400">{devis.client?.nom ?? 'Client'} • {formatDate(devis.createdAt)}</p>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusColors[devis.statut] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {devis.statut}
-                  </span>
-                  <span className="text-sm font-bold text-gray-900 tabular-nums">
-                    {formatCurrency(devis.totalTTC)}
-                  </span>
-                </div>
-              ))
-            )}
+          <div className="grid gap-3 md:grid-cols-5">
+            {pipeline.map(({ key, ...step }) => (
+              <PipelineStep key={key} {...step} />
+            ))}
           </div>
         </div>
 
-        {/* Derniers clients - 2 cols */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">Clients récents</h2>
-            <Link
-              to="/technico/clients"
-              className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1"
-            >
-              Voir tout <ArrowUpRight size={14} />
-            </Link>
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <BarChart3 size={20} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Performance</h2>
+              <p className="text-xs text-gray-500">Lecture rapide du portefeuille</p>
+            </div>
           </div>
-          <div className="divide-y divide-gray-50">
-            {recentClients.length === 0 ? (
-              <p className="px-6 py-8 text-center text-gray-400 text-sm">Aucun client</p>
-            ) : (
-              recentClients.map((client) => (
-                <div key={client.id} className="px-6 py-3.5 flex items-center gap-3 hover:bg-gray-50/50 transition-colors">
-                  <div className="w-9 h-9 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs">
-                    {(client.prenom?.charAt(0) ?? '') + (client.nom?.charAt(0) ?? '')}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">
-                      {client.prenom} {client.nom}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">{client.email ?? client.telephone ?? '—'}</p>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="space-y-4">
+            <PerformanceRow label="Devis gagnés" value={metrics.devisAcceptes} max={Math.max(totalDevis, 1)} color="bg-emerald-500" />
+            <PerformanceRow label="Devis actifs" value={metrics.devisActifs} max={Math.max(totalDevis, 1)} color="bg-blue-500" />
+            <PerformanceRow label="Devis refusés" value={metrics.devisRefuses} max={Math.max(totalDevis, 1)} color="bg-rose-500" />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Demandes récentes */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_1fr]">
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Évolution du chiffre d’affaires</h2>
+              <p className="text-xs text-gray-500">Montants acceptés ou signés sur les 6 derniers mois</p>
+            </div>
+            <TrendingUp size={18} className="text-emerald-600" />
+          </div>
+          <RevenueChart data={revenueChartData} title="" />
+        </div>
+
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-gray-900">Actions rapides</h2>
+              <p className="text-xs text-gray-500">Accès directs aux tâches commerciales</p>
+            </div>
+            <Target size={18} className="text-blue-600" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ActionCard to="/technico/clients" icon={<Users size={18} />} label="Ajouter un client" detail="Créer une fiche prospect" />
+            <ActionCard to="/technico/demandes" icon={<Phone size={18} />} label="Traiter les demandes" detail={`${totalDemandes} demandes au total`} />
+            <ActionCard to="/technico/checklist" icon={<ClipboardList size={18} />} label="Générer un devis" detail="Depuis la checklist" />
+            <ActionCard to="/technico/factures" icon={<Receipt size={18} />} label="Suivre les factures" detail="Vérifier les paiements" />
+            <ActionCard to="/technico/sav" icon={<LifeBuoy size={18} />} label="Suivre le SAV" detail={`${totalSav} ticket(s) SAV`} />
+          </div>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <RecentDevis devis={recentDevis} />
+        <RecentClients clients={recentClients} />
+      </section>
+
+      <section className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <h2 className="text-base font-bold text-gray-900">Dernières demandes de devis</h2>
-          <Link
-            to="/technico/demandes"
-            className="text-xs font-semibold text-teal-600 hover:text-teal-700 flex items-center gap-1"
-          >
+          <Link to="/technico/demandes" className="flex items-center gap-1 text-xs font-semibold text-teal-600 hover:text-teal-700">
             Voir tout <ArrowUpRight size={14} />
           </Link>
         </div>
         <div className="divide-y divide-gray-50">
           {recentDemandes.length === 0 ? (
-            <p className="px-6 py-8 text-center text-gray-400 text-sm">Aucune demande</p>
+            <p className="px-6 py-8 text-center text-sm text-gray-400">Aucune demande</p>
           ) : (
-            recentDemandes.map((d) => (
-              <div key={d.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-gray-50/50 transition-colors">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-100 to-orange-100 rounded-lg flex items-center justify-center text-amber-600">
+            recentDemandes.map((demande) => (
+              <div key={demande.id} className="flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-gray-50/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                   <FileText size={18} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{d.description}</p>
-                  <p className="text-xs text-gray-400">
-                    {d.client?.nom ?? 'Client'} • {formatDate(d.createdAt)}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-gray-900">{demande.description}</p>
+                  <p className="text-xs text-gray-400">{demande.client?.nom ?? 'Client'} - {formatDate(demande.createdAt)}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${statusColors[getDisplayDemandeStatut(d.statut)] ?? 'bg-gray-100 text-gray-600'}`}>
-                  {getDisplayDemandeStatut(d.statut)}
-                </span>
-                <Link
-                  to="/technico/demandes"
-                  className="text-gray-400 hover:text-teal-600 transition-colors"
-                >
+                <StatusBadge statut={normalizeDemandeStatut(demande.statut as string)} />
+                <Link to="/technico/demandes" className="text-gray-400 transition-colors hover:text-teal-600" aria-label="Voir la demande">
                   <Eye size={16} />
                 </Link>
               </div>
             ))
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-/* ------------- Sub-components ------------- */
-
-function KPICard({
+function StatCard({
   icon,
   label,
   value,
-  accent,
-  bgAccent,
-  link,
+  detail,
+  tone,
+  to,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
-  accent: string;
-  bgAccent: string;
-  link?: string;
+  detail: string;
+  tone: 'blue' | 'amber' | 'emerald' | 'violet';
+  to?: string;
 }) {
-  const inner = (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow group cursor-pointer">
-      <div className="flex items-center justify-between mb-3">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${bgAccent}`}>
-          <div className={`bg-gradient-to-br ${accent} bg-clip-text`}>{icon}</div>
-        </div>
-        {link && (
-          <ArrowUpRight size={16} className="text-gray-300 group-hover:text-teal-500 transition-colors" />
-        )}
+  const tones = {
+    blue: 'bg-blue-50 text-blue-600',
+    amber: 'bg-amber-50 text-amber-600',
+    emerald: 'bg-emerald-50 text-emerald-600',
+    violet: 'bg-violet-50 text-violet-600',
+  };
+  const content = (
+    <div className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-4 flex items-center justify-between">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${tones[tone]}`}>{icon}</div>
+        {to && <ArrowUpRight size={16} className="text-gray-300 transition-colors group-hover:text-teal-500" />}
       </div>
-      <p className="text-2xl font-extrabold text-gray-900 tabular-nums">{value}</p>
-      <p className="text-xs text-gray-400 mt-0.5 font-medium">{label}</p>
+      <p className="text-2xl font-extrabold tabular-nums text-gray-900">{value}</p>
+      <p className="mt-1 text-xs font-medium text-gray-400">{label}</p>
+      <p className="mt-3 text-xs font-semibold text-gray-500">{detail}</p>
     </div>
   );
-
-  return link ? <Link to={link}>{inner}</Link> : inner;
+  return to ? <Link to={to}>{content}</Link> : content;
 }
 
 function PipelineStep({
   icon,
   label,
   count,
+  amount,
   color,
-  bar,
+  percent,
 }: {
   icon: React.ReactNode;
   label: string;
   count: number;
+  amount: number;
   color: string;
-  bar: string;
+  percent: number;
 }) {
   return (
-    <div className={`rounded-xl p-4 ${color}`}>
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-gray-600">
+          {icon}
+          <span className="text-xs font-bold">{label}</span>
+        </div>
+        <span className="text-lg font-extrabold text-gray-900">{count}</span>
       </div>
-      <p className="text-2xl font-extrabold">{count}</p>
-      <div className="mt-2 h-1 bg-black/5 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${bar}`} style={{ width: count > 0 ? '100%' : '0%' }} />
+      <div className="h-2 overflow-hidden rounded-full bg-white">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%` }} />
+      </div>
+      <p className="mt-3 text-xs font-semibold text-gray-500">{amount > 0 ? formatCurrency(amount) : 'À qualifier'}</p>
+    </div>
+  );
+}
+
+function PerformanceRow({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+  const percent = Math.round((value / max) * 100);
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
+        <span className="text-gray-500">{label}</span>
+        <span className="text-gray-900">{value}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
+}
+
+function RecentDevis({ devis }: { devis: Devis[] }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <h2 className="text-base font-bold text-gray-900">Derniers devis</h2>
+        <Link to="/technico/devis" className="flex items-center gap-1 text-xs font-semibold text-teal-600 hover:text-teal-700">
+          Voir tout <ArrowUpRight size={14} />
+        </Link>
+      </div>
+      <div className="divide-y divide-gray-50">
+        {devis.length === 0 ? (
+          <p className="px-6 py-8 text-center text-sm text-gray-400">Aucun devis</p>
+        ) : (
+          devis.map((item) => (
+            <div key={item.id} className="grid grid-cols-[auto_1fr_auto] items-center gap-4 px-6 py-3.5 transition-colors hover:bg-gray-50/50 sm:grid-cols-[auto_1fr_auto_auto]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-teal-100 to-emerald-100 text-xs font-bold text-teal-600">
+                {item.reference?.slice(-3) ?? '#'}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-gray-900">{item.reference}</p>
+                <p className="truncate text-xs text-gray-400">{getClientName(item.client)} - {formatDate(item.createdAt)}</p>
+              </div>
+              <StatusBadge statut={item.statut} />
+              <span className="hidden text-sm font-bold tabular-nums text-gray-900 sm:block">{formatCurrency(item.totalTTC ?? 0)}</span>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function RecentClients({ clients }: { clients: Client[] }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <h2 className="text-base font-bold text-gray-900">Clients récents</h2>
+        <Link to="/technico/clients" className="flex items-center gap-1 text-xs font-semibold text-teal-600 hover:text-teal-700">
+          Voir tout <ArrowUpRight size={14} />
+        </Link>
+      </div>
+      <div className="divide-y divide-gray-50">
+        {clients.length === 0 ? (
+          <p className="px-6 py-8 text-center text-sm text-gray-400">Aucun client</p>
+        ) : (
+          clients.map((client) => (
+            <div key={client.id} className="flex items-center gap-3 px-6 py-3.5 transition-colors hover:bg-gray-50/50">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-xs font-bold text-blue-600">
+                {(client.prenom?.charAt(0) ?? '') + (client.nom?.charAt(0) ?? '')}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-gray-900">{client.prenom} {client.nom}</p>
+                <p className="truncate text-xs text-gray-400">{client.email ?? client.telephone ?? 'Contact à compléter'}</p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ActionCard({ to, icon, label, detail }: { to: string; icon: React.ReactNode; label: string; detail: string }) {
+  return (
+    <Link to={to} className="rounded-xl border border-gray-100 bg-gray-50/70 p-4 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/70">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white text-blue-600 shadow-sm">{icon}</div>
+      <p className="text-sm font-bold text-gray-900">{label}</p>
+      <p className="mt-1 text-xs text-gray-500">{detail}</p>
+    </Link>
+  );
+}
+
+function QuickButton({ to, icon, label, primary = false }: { to: string; icon: React.ReactNode; label: string; primary?: boolean }) {
+  return (
+    <Link
+      to={to}
+      className={
+        primary
+          ? 'inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-900/15 transition-colors hover:bg-blue-800'
+          : 'inline-flex items-center gap-2 rounded-lg border border-white/60 bg-white/70 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-white'
+      }
+    >
+      {icon}
+      {label}
+    </Link>
+  );
+}
+
+function StatusBadge({ statut }: { statut: string }) {
+  return (
+    <span className={`whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ${statusColors[statut] ?? 'bg-gray-100 text-gray-600'}`}>
+      {statusLabels[statut] ?? statut}
+    </span>
+  );
+}
+
+function normalizeDemandeStatut(statut: string) {
+  return statut === 'QUALIFIE' ? 'EN_COURS' : statut;
+}
+
+function getClientName(client?: Client) {
+  if (!client) return 'Client';
+  return [client.prenom, client.nom].filter(Boolean).join(' ') || 'Client';
+}
+
+function getMonthKey(date: string) {
+  const target = new Date(date);
+  return `${target.getFullYear()}-${String(target.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function getLastSixMonthLabels() {
+  const formatter = new Intl.DateTimeFormat('fr-FR', { month: 'short' });
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date();
+    date.setDate(1);
+    date.setMonth(date.getMonth() - (5 - index));
+    return {
+      key: getMonthKey(date.toISOString()),
+      label: formatter.format(date).replace('.', ''),
+    };
+  });
 }

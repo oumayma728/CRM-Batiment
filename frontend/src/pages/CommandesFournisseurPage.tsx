@@ -68,12 +68,12 @@ const buildOrderEditForm = (order: FournisseurCommandeDetail): OrderEditFormStat
 });
 
 const statusMeta: Record<SupplierOrderStatus, { label: string; badge: string }> = {
-  CREEE: { label: 'A confirmer', badge: 'bg-stone-200 text-stone-700' },
-  ENVOYEE: { label: 'Confirmee', badge: 'bg-sky-100 text-sky-700' },
+  CREEE: { label: 'À confirmer', badge: 'bg-stone-200 text-stone-700' },
+  ENVOYEE: { label: 'Confirmée', badge: 'bg-sky-100 text-sky-700' },
   EXPEDIEE: { label: 'En livraison', badge: 'bg-amber-100 text-amber-700' },
   PARTIELLE: { label: 'Partielle', badge: 'bg-orange-100 text-orange-700' },
-  RECUE: { label: 'Recue', badge: 'bg-emerald-100 text-emerald-700' },
-  CLOTUREE: { label: 'Cloturee', badge: 'bg-teal-100 text-teal-700' },
+  RECUE: { label: 'Reçue', badge: 'bg-emerald-100 text-emerald-700' },
+  CLOTUREE: { label: 'Clôturée', badge: 'bg-teal-100 text-teal-700' },
 };
 
 function getApiErrorMessage(error: unknown, fallback: string) {
@@ -135,7 +135,7 @@ export default function CommandesFournisseurPage() {
     const groups = new Map<string, { key: string; chantierRef: string; chantierAdresse: string; orders: FournisseurCommandeDetail[] }>();
     for (const order of orders) {
       const chantierRef = order.devis.chantier?.reference ?? 'Sans chantier';
-      const chantierAdresse = order.devis.chantier?.adresse ?? 'Adresse non renseignee';
+      const chantierAdresse = order.devis.chantier?.adresse ?? 'Adresse non renseignée';
       const key = `${chantierRef}-${chantierAdresse}`;
       if (!groups.has(key)) {
         groups.set(key, { key, chantierRef, chantierAdresse, orders: [] });
@@ -244,10 +244,10 @@ export default function CommandesFournisseurPage() {
 
   const createReceptionMutation = useMutation({
     mutationFn: async (payload: ReceptionFormState) => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const quantiteRecue = Number(payload.quantiteRecue);
       if (!Number.isFinite(quantiteRecue) || quantiteRecue <= 0) {
-        throw new Error('La quantite recue doit etre superieure a zero.');
+        throw new Error('La quantité reçue doit être supérieure à zéro.');
       }
 
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/receptions`, {
@@ -269,18 +269,18 @@ export default function CommandesFournisseurPage() {
 
   const updateOrderMutation = useMutation({
     mutationFn: async (payload: OrderEditFormState) => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
 
       const lignes = payload.lignes.map((line) => {
         const quantite = Number(line.quantite);
         const prixUnitaire = Number(line.prixUnitaire);
 
         if (!line.materiauNom.trim()) {
-          throw new Error('Chaque ligne doit avoir un nom de materiau.');
+          throw new Error('Chaque ligne doit avoir un nom de matériau.');
         }
 
         if (!Number.isFinite(quantite) || quantite <= 0) {
-          throw new Error('Chaque ligne doit avoir une quantite superieure a zero.');
+          throw new Error('Chaque ligne doit avoir une quantité supérieure à zéro.');
         }
 
         if (!Number.isFinite(prixUnitaire) || prixUnitaire < 0) {
@@ -315,7 +315,7 @@ export default function CommandesFournisseurPage() {
 
   const sendOrderMutation = useMutation({
     mutationFn: async () => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/send`);
       return response.data as { message: string; order: FournisseurCommandeDetail };
     },
@@ -331,7 +331,7 @@ export default function CommandesFournisseurPage() {
 
   const validateOrderBeforeSendMutation = useMutation({
     mutationFn: async () => {
-      if (!activeOrderId) throw new Error('Aucune commande selectionnee.');
+      if (!activeOrderId) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(`/commandes-fournisseur/${activeOrderId}/validate`);
       return response.data as { message: string; order: FournisseurCommandeDetail };
     },
@@ -346,7 +346,7 @@ export default function CommandesFournisseurPage() {
 
   const validateDevisAndSendMutation = useMutation({
     mutationFn: async () => {
-      if (!selectedOrder) throw new Error('Aucune commande selectionnee.');
+      if (!selectedOrder) throw new Error('Aucune commande sélectionnée.');
       const response = await api.post(
         `/devis/${selectedOrder.devisId}/bon-commande/validate-send`,
       );
@@ -363,7 +363,7 @@ export default function CommandesFournisseurPage() {
       { label: 'Commandes', value: ordersQuery.data?.meta.total ?? 0, icon: <ClipboardList size={18} /> },
       { label: 'En attente', value: orders.filter((order) => order.tracking.reception.state === 'EN_ATTENTE').length, icon: <Warehouse size={18} /> },
       { label: 'Partielles', value: orders.filter((order) => order.tracking.reception.state === 'PARTIELLE').length, icon: <Truck size={18} /> },
-      { label: 'Completes', value: orders.filter((order) => order.tracking.reception.state === 'COMPLETE').length, icon: <PackageCheck size={18} /> },
+      { label: 'Complètes', value: orders.filter((order) => order.tracking.reception.state === 'COMPLETE').length, icon: <PackageCheck size={18} /> },
     ],
     [orders, ordersQuery.data?.meta.total],
   );
@@ -372,30 +372,34 @@ export default function CommandesFournisseurPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[30px] bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_26%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_48%,#eff6ff_100%)] p-6 shadow-sm ring-1 ring-stone-200">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Reception chantier</p>
-        <div className="mt-2 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Bons d achat fournisseur et receptions materiaux</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-              Toutes les commandes fournisseur generees automatiquement depuis les devis valides apparaissent ici. L admin ou le chef de chantier peut ajuster, valider, puis envoyer automatiquement aux fournisseurs.
+      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="grid gap-0 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="bg-[radial-gradient(circle_at_0%_0%,rgba(16,185,129,0.18),transparent_30%),linear-gradient(135deg,#ffffff_0%,#f0fdf4_52%,#eff6ff_100%)] p-5 lg:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Réception chantier</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">
+              Bons d’achat fournisseur et réceptions matériaux
+            </h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
+              Contrôlez les commandes issues des devis validés, confirmez les envois et saisissez
+              les quantités reçues sur chantier avec un suivi par fournisseur.
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-3 lg:w-[420px]">
+
+          <div className="grid grid-cols-2 gap-3 border-t border-slate-200 bg-slate-950 p-5 text-white lg:border-l lg:border-t-0 lg:p-6">
             {kpis.map((kpi) => (
-              <div key={kpi.label} className="rounded-3xl bg-white/85 p-4 ring-1 ring-stone-200">
-                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-700 text-white">
+              <div key={kpi.label} className="rounded-lg border border-white/10 bg-white/10 p-4">
+                <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-400 text-slate-950">
                   {kpi.icon}
                 </div>
-                <p className="text-2xl font-bold text-slate-900">{kpi.value}</p>
-                <p className="text-sm text-slate-500">{kpi.label}</p>
+                <p className="text-2xl font-bold text-white">{kpi.value}</p>
+                <p className="text-sm text-slate-300">{kpi.label}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="rounded-[28px] bg-white p-4 shadow-sm ring-1 ring-stone-200">
+      <section className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative max-w-xl flex-1">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -404,7 +408,7 @@ export default function CommandesFournisseurPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Rechercher par chantier, devis, fournisseur ou client"
-              className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 px-12 py-3 text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/10"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -413,8 +417,8 @@ export default function CommandesFournisseurPage() {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition-all',
-                  statusFilter === status ? 'bg-emerald-700 text-white' : 'bg-stone-100 text-slate-600 hover:bg-stone-200',
+                  'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                  statusFilter === status ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
                 )}
               >
                 {status === 'ALL' ? 'Tous' : statusMeta[status].label}
@@ -425,17 +429,17 @@ export default function CommandesFournisseurPage() {
       </section>
 
       {queryError ? (
-        <section className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700">
+        <section className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
           {getApiErrorMessage(queryError, 'Impossible de charger les commandes fournisseur.')}
         </section>
       ) : null}
 
       <section className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
+        <div className="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Par chantier</h2>
-              <p className="text-sm text-slate-500">{ordersQuery.data?.meta.total ?? 0} bon(s) d achat</p>
+              <h2 className="text-lg font-bold text-slate-950">Par chantier</h2>
+              <p className="text-sm text-slate-500">{ordersQuery.data?.meta.total ?? 0} bon(s) d’achat</p>
             </div>
             {ordersQuery.isLoading ? <Loader2 size={18} className="animate-spin text-emerald-700" /> : null}
           </div>
@@ -443,15 +447,15 @@ export default function CommandesFournisseurPage() {
           <div className="space-y-4">
             {ordersQuery.isLoading ? (
               Array.from({ length: 4 }).map((_, index) => (
-                <div key={index} className="h-32 animate-pulse rounded-3xl bg-stone-100" />
+                <div key={index} className="h-32 animate-pulse rounded-lg bg-slate-100" />
               ))
             ) : groupedOrders.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-stone-300 bg-stone-50 px-5 py-12 text-center text-sm text-slate-500">
-                Aucune commande fournisseur a afficher.
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-12 text-center text-sm text-slate-500">
+                Aucune commande fournisseur à afficher.
               </div>
             ) : (
               groupedOrders.map((group) => (
-                <div key={group.key} className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
+                <div key={group.key} className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
                   <div className="mb-3">
                     <p className="text-sm font-semibold text-slate-900">{group.chantierRef}</p>
                     <p className="text-sm text-slate-500">{group.chantierAdresse}</p>
@@ -493,7 +497,7 @@ export default function CommandesFournisseurPage() {
         <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-stone-200">
           {!selectedOrder ? (
             <div className="flex min-h-[420px] items-center justify-center rounded-[24px] border border-dashed border-stone-300 bg-stone-50 text-center text-sm text-slate-500">
-              Selectionnez un bon d achat pour saisir une reception.
+              Sélectionnez un bon d’achat pour saisir une réception.
             </div>
           ) : (
             <div className="space-y-6">
@@ -522,13 +526,14 @@ export default function CommandesFournisseurPage() {
                     className="inline-flex items-center justify-center gap-2 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-stone-50"
                   >
                     <FileText size={16} />
-                    Apercu bon d achat / PDF
+                    Aperçu bon d’achat / PDF
                   </button>
                   <div className="rounded-3xl bg-stone-50 p-4 ring-1 ring-stone-200">
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reste a receptionner</p>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Reste à réceptionner</p>
                     <p className="mt-2 text-3xl font-bold text-slate-900">{remainingQuantity}</p>
-                    <p className="mt-1 text-sm text-slate-500">{selectedOrder.metrics.totalQuantiteRecue} / {selectedOrder.metrics.totalQuantiteCommandee} deja recus</p>
-                  </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedOrder.metrics.totalQuantiteRecue} / {selectedOrder.metrics.totalQuantiteCommandee} déjà reçus
+                    </p>                  </div>
                   <div className="flex flex-col gap-2">
                     {canShowManualEditButton ? (
                       <button
@@ -565,7 +570,7 @@ export default function CommandesFournisseurPage() {
                               <CheckCircle2 size={16} />
                             )}
                             {isSelectedOrderValidated
-                              ? 'Commande deja validee'
+                              ? 'Commande déjà validée'
                               : 'Valider avant envoi'}
                           </button>
                         ) : null}
@@ -605,22 +610,22 @@ export default function CommandesFournisseurPage() {
                       </>
                     ) : (
                       <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                        Commande envoyee {selectedOrder.dateEnvoi ? `le ${formatDate(selectedOrder.dateEnvoi)}` : 'au fournisseur'}.
+                        Commande envoyée {selectedOrder.dateEnvoi ? `le ${formatDate(selectedOrder.dateEnvoi)}` : 'au fournisseur'}.
                       </div>
                     )}
                     {selectedOrder.statutLivraison === 'CREEE' && !selectedOrder.fournisseur.email ? (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        Ajoutez un email au fournisseur avant l envoi.
+                        Ajoutez un email au fournisseur avant l’envoi.
                       </div>
                     ) : null}
                     {selectedOrder.statutLivraison === 'CREEE' && !isSelectedOrderValidated ? (
                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-                        Validez d abord le bon de commande avant d envoyer au fournisseur.
+                        Validez d’abord le bon de commande avant de l’envoyer au fournisseur.
                       </div>
                     ) : null}
                     {sendOrderMutation.error && editingOrderId !== selectedOrder.id ? (
                       <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {getApiErrorMessage(sendOrderMutation.error, 'Impossible d envoyer la commande fournisseur.')}
+                        {getApiErrorMessage(sendOrderMutation.error, 'Impossible d’envoyer la commande fournisseur.')}
                       </div>
                     ) : null}
                     {validateOrderBeforeSendMutation.error ? (
@@ -630,7 +635,7 @@ export default function CommandesFournisseurPage() {
                     ) : null}
                     {validateDevisAndSendMutation.error ? (
                       <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {getApiErrorMessage(validateDevisAndSendMutation.error, 'Impossible de valider le devis et envoyer automatiquement les fournisseurs.')}
+                        {getApiErrorMessage(validateDevisAndSendMutation.error, 'Impossible de valider le devis et d’envoyer automatiquement aux fournisseurs.')}
                       </div>
                     ) : null}
                   </div>
@@ -641,7 +646,7 @@ export default function CommandesFournisseurPage() {
                 <div className="space-y-4">
                   <div className="rounded-3xl border border-stone-200 bg-stone-50/70 p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-bold text-slate-900">Lignes materiaux</h3>
+                      <h3 className="font-bold text-slate-900">Lignes matériaux</h3>
                       {editingOrderId === selectedOrder.id ? (
                         <button
                           type="button"
@@ -665,7 +670,7 @@ export default function CommandesFournisseurPage() {
                                   type="text"
                                   value={line.materiauNom}
                                   onChange={(event) => updateEditLine(index, { materiauNom: event.target.value })}
-                                  placeholder="Nom du materiau"
+                                  placeholder="Nom du matériau"
                                   className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 />
                                 <input
@@ -674,7 +679,7 @@ export default function CommandesFournisseurPage() {
                                   step="0.01"
                                   value={line.quantite}
                                   onChange={(event) => updateEditLine(index, { quantite: event.target.value })}
-                                  placeholder="Quantite"
+                                  placeholder="Quantité"
                                   className="rounded-2xl border border-stone-200 px-4 py-3 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                 />
                                 <select
@@ -720,7 +725,7 @@ export default function CommandesFournisseurPage() {
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="font-semibold text-slate-900">{line.materiauNom}</p>
-                                <p className="mt-1 text-sm text-slate-500">Quantite: {line.quantite} {line.unite}</p>
+                                <p className="mt-1 text-sm text-slate-500">Quantité: {line.quantite} {line.unite}</p>
                               </div>
                               <p className="font-semibold text-slate-900">{formatCurrency(line.totalHT)}</p>
                             </div>
@@ -732,7 +737,7 @@ export default function CommandesFournisseurPage() {
                       <div className="mt-4 space-y-3">
                         <div className="grid gap-4 lg:grid-cols-2">
                           <label className="space-y-1.5 text-sm text-slate-600">
-                            <span className="font-medium text-slate-700">Date livraison prevue</span>
+                            <span className="font-medium text-slate-700">Date livraison prévue</span>
                             <input
                               type="date"
                               value={editForm.dateLivraisonPrevue}
@@ -767,12 +772,12 @@ export default function CommandesFournisseurPage() {
                         </label>
                         {updateOrderMutation.error ? (
                           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {getApiErrorMessage(updateOrderMutation.error, 'Impossible de mettre a jour la commande fournisseur.')}
+                            {getApiErrorMessage(updateOrderMutation.error, 'Impossible de mettre à jour la commande fournisseur.')}
                           </div>
                         ) : null}
                         {sendOrderMutation.error ? (
                           <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {getApiErrorMessage(sendOrderMutation.error, 'Impossible d envoyer la commande fournisseur.')}
+                            {getApiErrorMessage(sendOrderMutation.error, 'Impossible d’envoyer la commande fournisseur.')}
                           </div>
                         ) : null}
                         <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -804,20 +809,20 @@ export default function CommandesFournisseurPage() {
                   </div>
 
                   <div className="rounded-3xl border border-stone-200 bg-white p-4">
-                    <h3 className="font-bold text-slate-900">Historique reception</h3>
+                    <h3 className="font-bold text-slate-900">Historique réception</h3>
                     <div className="mt-4 space-y-3">
                       {selectedOrder.receptions.length === 0 ? (
-                        <div className="rounded-2xl bg-stone-50 px-4 py-6 text-sm text-slate-500">Aucune reception saisie.</div>
+                        <div className="rounded-2xl bg-stone-50 px-4 py-6 text-sm text-slate-500">Aucune réception saisie.</div>
                       ) : (
                         selectedOrder.receptions.map((reception) => (
                           <div key={reception.id} className="rounded-2xl bg-stone-50 px-4 py-3">
                             <div className="flex items-center justify-between gap-3">
                               <p className="font-semibold text-slate-800">{formatDate(reception.dateReception)}</p>
                               <span className={cn('rounded-full px-2.5 py-1 text-[11px] font-semibold', reception.partielle ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700')}>
-                                {reception.partielle ? 'Reception partielle' : 'Reception complete'}
+                                {reception.partielle ? 'Réception partielle' : 'Réception complète'}
                               </span>
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">Recu: {reception.quantiteRecue} / Attendu: {reception.quantiteAttendue}</p>
+                            <p className="mt-2 text-sm text-slate-600">Reçu : {reception.quantiteRecue} / Attendu: {reception.quantiteAttendue}</p>
                             {reception.notes ? <p className="mt-2 text-sm text-slate-500">{reception.notes}</p> : null}
                           </div>
                         ))
@@ -828,16 +833,16 @@ export default function CommandesFournisseurPage() {
 
                 <div className="space-y-4">
                   <div className="rounded-3xl border border-stone-200 bg-white p-4">
-                    <h3 className="font-bold text-slate-900">Coordonnees chantier</h3>
+                    <h3 className="font-bold text-slate-900">Coordonnées chantier</h3>
                     <div className="mt-4 space-y-3 text-sm text-slate-600">
                       <div className="rounded-2xl bg-stone-50 px-3 py-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Chantier</p>
                         <p className="mt-1 font-medium text-slate-800">{selectedOrder.devis.chantier?.reference ?? 'Sans chantier'}</p>
-                        <p className="mt-1">{selectedOrder.devis.chantier?.adresse ?? 'Adresse non renseignee'}</p>
+                        <p className="mt-1">{selectedOrder.devis.chantier?.adresse ?? 'Adresse non renseignée'}</p>
                       </div>
                       <div className="rounded-2xl bg-stone-50 px-3 py-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Date livraison prevue</p>
-                        <p className="mt-1 font-medium text-slate-800">{selectedOrder.dateLivraisonPrevue ? formatDate(selectedOrder.dateLivraisonPrevue) : 'A communiquer'}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">Date livraison prévue</p>
+                        <p className="mt-1 font-medium text-slate-800">{selectedOrder.dateLivraisonPrevue ? formatDate(selectedOrder.dateLivraisonPrevue) : 'À communiquer'}</p>
                       </div>
                     </div>
                   </div>
@@ -851,16 +856,16 @@ export default function CommandesFournisseurPage() {
                   >
                     <div className="flex items-center gap-2 text-sm font-semibold text-emerald-700">
                       <CheckCircle2 size={16} />
-                      Saisie reception chantier
+                      Saisie réception chantier
                     </div>
 
                     <div className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                      Quantite restante conseillee: <strong>{remainingQuantity}</strong>
+                      Quantité restante conseillee: <strong>{remainingQuantity}</strong>
                     </div>
 
                     <div className="mt-4 grid gap-4">
                       <label className="space-y-1.5 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">Quantite recue</span>
+                        <span className="font-medium text-slate-700">Quantité recue</span>
                         <input
                           type="number"
                           step="0.01"
@@ -872,7 +877,7 @@ export default function CommandesFournisseurPage() {
                       </label>
 
                       <label className="space-y-1.5 text-sm text-slate-600">
-                        <span className="font-medium text-slate-700">Date de reception</span>
+                        <span className="font-medium text-slate-700">Date de réception</span>
                         <div className="relative">
                           <CalendarClock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                           <input
@@ -890,7 +895,7 @@ export default function CommandesFournisseurPage() {
                           value={receptionForm.notes}
                           onChange={(event) => updateReceptionForm({ notes: event.target.value })}
                           rows={4}
-                          placeholder="Reserve, colis manque, materiau abime..."
+                          placeholder="Réserve, colis manquant, matériau abîmé..."
                           className="w-full resize-none rounded-2xl border border-stone-200 bg-white px-4 py-3 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                         />
                       </label>
@@ -898,7 +903,7 @@ export default function CommandesFournisseurPage() {
 
                     {createReceptionMutation.error ? (
                       <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {getApiErrorMessage(createReceptionMutation.error, 'Impossible d enregistrer la reception.')}
+                        {getApiErrorMessage(createReceptionMutation.error, 'Impossible d’enregistrer la réception.')}
                       </div>
                     ) : null}
 
@@ -918,7 +923,7 @@ export default function CommandesFournisseurPage() {
                         className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {createReceptionMutation.isPending ? <Loader2 size={17} className="animate-spin" /> : <Send size={16} />}
-                        {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Reception complete' : 'Enregistrer reception'}
+                        {Number(receptionForm.quantiteRecue || 0) >= remainingQuantity && remainingQuantity > 0 ? 'Réception complète' : 'Enregistrer réception'}
                       </button>
                     </div>
                   </form>

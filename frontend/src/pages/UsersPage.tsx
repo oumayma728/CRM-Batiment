@@ -99,14 +99,14 @@ export default function UsersPage() {
       setCreateFeedback({
         type: 'success',
         message: temporaryPassword
-          ? `Utilisateur cree. Mot de passe temporaire: ${temporaryPassword}`
-          : 'Utilisateur cree. Verifiez la boite mail ou les logs backend pour le mot de passe temporaire.',
+          ? `Utilisateur créé. Mot de passe temporaire: ${temporaryPassword}`
+          : 'Utilisateur créé. Vérifiez la boîte mail ou les logs backend pour le mot de passe temporaire.',
       });
     },
     onError: (error) => {
       setCreateFeedback({
         type: 'error',
-        message: getApiErrorMessage(error, 'Erreur lors de la creation.'),
+        message: getApiErrorMessage(error, 'Erreur lors de la création.'),
       });
     },
   });
@@ -153,7 +153,7 @@ export default function UsersPage() {
         type: 'success',
         message: temporaryPassword
           ? `Mot de passe temporaire: ${temporaryPassword}`
-          : 'Mot de passe temporaire regenere. Verifiez les logs backend (console dev) ou la boite mail.',
+          : 'Mot de passe temporaire régénéré. Vérifiez les logs backend (console dev) ou la boîte mail.',
       });
       await queryClient.invalidateQueries({ queryKey: ['users'] });
     },
@@ -161,7 +161,7 @@ export default function UsersPage() {
       setResetFeedback({
         userId: payload.userId,
         type: 'error',
-        message: getApiErrorMessage(error, 'Echec de reinitialisation du mot de passe.'),
+        message: getApiErrorMessage(error, 'Échec de réinitialisation du mot de passe.'),
       });
     },
   });
@@ -205,12 +205,12 @@ export default function UsersPage() {
 
   function handleDeactivate(user: User) {
     if (currentUser?.id === user.id) {
-      window.alert('Vous ne pouvez pas desactiver votre propre compte.');
+      window.alert('Vous ne pouvez pas désactiver votre propre compte.');
       return;
     }
 
     const shouldDeactivate = window.confirm(
-      `Desactiver le compte de ${user.prenom} ${user.nom} ?`,
+      `Désactiver le compte de ${user.prenom} ${user.nom} ?`,
     );
     if (!shouldDeactivate) return;
 
@@ -313,14 +313,14 @@ export default function UsersPage() {
                         <button
                           onClick={() => openEditModal(u)}
                           className="p-2 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"
-                          title="Modifier l utilisateur"
+                          title="Modifier l’utilisateur"
                         >
                           <Edit size={16} />
                         </button>
                         <button
                           onClick={() => {
                             const shouldReset = window.confirm(
-                              `Reinitialiser le mot de passe temporaire pour ${u.email} ?`,
+                              `Réinitialiser le mot de passe temporaire pour ${u.email} ?`,
                             );
                             if (!shouldReset) return;
                             setResetFeedback(null);
@@ -331,7 +331,7 @@ export default function UsersPage() {
                           }}
                           disabled={resetTempPasswordMutation.isPending || deleteMutation.isPending}
                           className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
-                          title="Reinitialiser le mot de passe temporaire"
+                          title="Réinitialiser le mot de passe temporaire"
                         >
                           {resetTempPasswordMutation.isPending &&
                           resetTempPasswordMutation.variables?.userId === u.id ? (
@@ -350,10 +350,10 @@ export default function UsersPage() {
                           }
                           title={
                             currentUser?.id === u.id
-                              ? 'Impossible de desactiver votre propre compte'
+                              ? 'Impossible de désactiver votre propre compte'
                               : !u.actif
-                                ? 'Compte deja inactif'
-                                : 'Desactiver le compte'
+                                ? 'Compte déjà inactif'
+                                : 'Désactiver le compte'
                           }
                           className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:hover:text-gray-400 disabled:hover:bg-transparent"
                         >
@@ -383,7 +383,7 @@ export default function UsersPage() {
 
         {deleteMutation.error && (
           <p className="px-6 pb-4 text-sm text-red-600">
-            {getApiErrorMessage(deleteMutation.error, 'Erreur lors de la desactivation.')}
+            {getApiErrorMessage(deleteMutation.error, 'Erreur lors de la désactivation.')}
           </p>
         )}
       </div>
@@ -421,8 +421,8 @@ export default function UsersPage() {
               </div>
               <div>
                 <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                  Le mot de passe temporaire est genere automatiquement par le backend puis envoye par email
-                  (ou affiche dans les logs backend en mode dev).
+                  Le mot de passe temporaire est généré automatiquement par le backend puis envoyé par email
+                  (ou affiché dans les logs backend en mode dev).
                 </p>
               </div>
               <div>
@@ -437,7 +437,7 @@ export default function UsersPage() {
               </div>
               {createMutation.error && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  {getApiErrorMessage(createMutation.error, 'Erreur lors de la creation.')}
+                  {getApiErrorMessage(createMutation.error, 'Erreur lors de la création.')}
                 </p>
               )}
               {createFeedback && (
@@ -562,7 +562,7 @@ export default function UsersPage() {
 
               {updateMutation.error && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise a jour.')}
+                  {getApiErrorMessage(updateMutation.error, 'Erreur lors de la mise à jour.')}
                 </p>
               )}
 

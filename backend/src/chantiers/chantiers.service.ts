@@ -11,10 +11,15 @@ import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { CreateTacheDto, TaskAssignmentType } from './dto/create-tache.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
+import { CreateDocumentChantierDto } from './dto/create-document-chantier.dto.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 
 @Injectable()
 export class ChantiersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private isTaskDone(task: { statut: TacheStatut; avancement: number }) {
     return task.statut === 'TERMINEE' || task.avancement >= 100;
@@ -693,6 +698,63 @@ export class ChantiersService {
       statutAuto: this.computeChantierAutoStatus(chantier.taches),
       resumeTaches: this.buildTaskSummary(chantier.taches),
     };
+  }
+
+  async createDocument(
+    chantierId: number,
+    dto: CreateDocumentChantierDto,
+    currentUser: CurrentUserPayload,
+  ) {
+    const chantier = await this.ensureChantierInCompany(
+      chantierId,
+      currentUser.companyId,
+    );
+
+    const document = await this.prisma.documentChantier.create({
+      data: {
+        chantierId,
+        nom: dto.nom.trim(),
+        type: dto.type.trim().toUpperCase(),
+        url: dto.url.trim(),
+      },
+    });
+
+    await this.notificationsService.createInternalNotification({
+      companyId: currentUser.companyId,
+      userId: currentUser.userId,
+      action: 'NOTIFICATION_CHANTIER_DOCUMENT_ADDED',
+      entite: 'DocumentChantier',
+      entiteId: document.id,
+      category: 'CHANTIER_DOCUMENT',
+      level: 'info',
+      title: 'Nouveau document chantier',
+      message: `${document.nom} a été ajouté au chantier ${chantier.reference}.`,
+      metadata: {
+        chantierId,
+        chantierReference: chantier.reference,
+        documentType: document.type,
+      },
+    });
+
+    return document;
+  }
+
+  async removeDocument(
+    chantierId: number,
+    documentId: number,
+    currentUser: CurrentUserPayload,
+  ) {
+    await this.ensureChantierInCompany(chantierId, currentUser.companyId);
+    const document = await this.prisma.documentChantier.findFirst({
+      where: { id: documentId, chantierId },
+    });
+
+    if (!document) {
+      throw new NotFoundException(`Document #${documentId} introuvable.`);
+    }
+
+    await this.prisma.documentChantier.delete({ where: { id: documentId } });
+    return { success: true, id: documentId };
   }
 
   async create(dto: CreateChantierDto, currentUser: CurrentUserPayload) {

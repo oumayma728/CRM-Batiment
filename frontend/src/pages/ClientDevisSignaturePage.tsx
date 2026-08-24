@@ -87,7 +87,7 @@ export default function ClientDevisSignaturePage() {
     onError: (error: unknown) => {
       setFeedback({
         type: 'error',
-        text: getApiErrorMessage(error, 'Impossible d envoyer le code OTP.'),
+        text: getApiErrorMessage(error, 'Impossible d’envoyer le code OTP.'),
       });
     },
   });
@@ -117,7 +117,7 @@ export default function ClientDevisSignaturePage() {
         throw new Error('Veuillez dessiner votre signature.');
       }
       if (!sessionToken) {
-        throw new Error('Session OTP absente. Veuillez verifier le code OTP.');
+        throw new Error('Session OTP absente. Veuillez vérifier le code OTP.');
       }
       const response = await api.post(`/devis/public/signature/${token}/submit`, {
         sessionToken,
@@ -132,7 +132,7 @@ export default function ClientDevisSignaturePage() {
     onError: (error: unknown) => {
       setFeedback({
         type: 'error',
-        text: getApiErrorMessage(error, 'Impossible d enregistrer la signature.'),
+        text: getApiErrorMessage(error, 'Impossible d’enregistrer la signature.'),
       });
     },
   });
@@ -148,7 +148,7 @@ export default function ClientDevisSignaturePage() {
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="rounded-[28px] bg-slate-900 px-6 py-6 text-white shadow-xl">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">Signature client</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight">Validation securisee du devis</h1>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight">Validation sécurisée du devis</h1>
           <p className="mt-2 text-sm text-slate-300">
             Identifiez-vous par OTP puis dessinez votre signature.
           </p>
@@ -168,7 +168,7 @@ export default function ClientDevisSignaturePage() {
 
         {previewQuery.isError && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            Lien expire ou invalide.
+            Lien expiré ou invalide.
           </div>
         )}
 
@@ -187,12 +187,12 @@ export default function ClientDevisSignaturePage() {
             )}
 
             <div className="rounded-3xl bg-white p-6 shadow-sm">
-              <p className="text-sm text-slate-500">Client: {preview.clientName}</p>
+              <p className="text-sm text-slate-500">Client : {preview.clientName}</p>
               <p className="mt-1 text-lg font-bold text-slate-900">{preview.devis.reference}</p>
               <p className="mt-1 text-sm text-slate-600">
-                Montant TTC: {formatCurrency(preview.devis.totalTTC ?? 0)}
+                Montant TTC : {formatCurrency(preview.devis.totalTTC ?? 0)}
               </p>
-              <p className="mt-1 text-xs text-slate-500">Lien valide jusqu au {formatDate(preview.expiresAt)}</p>
+              <p className="mt-1 text-xs text-slate-500">Lien valide jusqu’au {formatDate(preview.expiresAt)}</p>
               <p className="mt-1 text-xs text-slate-500">SMS vers {preview.telephoneMasked}</p>
             </div>
 
@@ -200,7 +200,7 @@ export default function ClientDevisSignaturePage() {
               <div className="rounded-3xl bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-2">
                   <MessageSquare size={18} className="text-blue-600" />
-                  <h2 className="text-lg font-bold text-slate-900">Etape OTP</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Étape OTP</h2>
                 </div>
                 <p className="mt-3 text-sm text-slate-600">
                   Cliquez pour recevoir un code, puis saisissez les 6 chiffres.
@@ -227,7 +227,7 @@ export default function ClientDevisSignaturePage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                   >
                     {verifyOtpMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                    Verifier le code
+                    Vérifier le code
                   </button>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export default function ClientDevisSignaturePage() {
               <div className="rounded-3xl bg-white p-6 shadow-sm">
                 <div className="flex items-center gap-2">
                   <Signature size={18} className="text-violet-600" />
-                  <h2 className="text-lg font-bold text-slate-900">Etape signature</h2>
+                  <h2 className="text-lg font-bold text-slate-900">Étape signature</h2>
                 </div>
                 <p className="mt-3 text-sm text-slate-600">
                   Signez dans la zone ci-dessous puis confirmez.
@@ -275,11 +275,11 @@ export default function ClientDevisSignaturePage() {
               <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-800 shadow-sm">
                 <p className="inline-flex items-center gap-2 text-lg font-semibold">
                   <CheckCircle2 size={20} />
-                  Signature client enregistree
+                  Signature client enregistrée
                 </p>
                 {preview.devis.signatureClientDate && (
                   <p className="mt-1 text-sm">
-                    Date: {formatDate(preview.devis.signatureClientDate)}
+                    Date : {formatDate(preview.devis.signatureClientDate)}
                   </p>
                 )}
                 <p className="mt-2 text-sm">

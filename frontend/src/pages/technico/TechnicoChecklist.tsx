@@ -20,7 +20,7 @@ import {
   ToggleLeft, CircleDot, CheckCircle, Search, X, FileText,
 } from 'lucide-react';
 
-// ── Types locaux ──
+// ÔöÇÔöÇ Types locaux ÔöÇÔöÇ
 interface ChecklistItem {
   prestationId: number;
   quantite: number;
@@ -71,7 +71,7 @@ const PROJECT_STOP_WORDS = new Set([
   'renovation',
 ]);
 
-// ── Helpers pour affichage ──
+// ÔöÇÔöÇ Helpers pour affichage ÔöÇÔöÇ
 function allPrestationsInCat(cat: CatalogueCategorieWithCompositions): Prestation[] {
   const fromSousCat = (cat.sousCategories ?? []).flatMap((sc) => sc.prestations ?? []);
   return [...(cat.prestations ?? []), ...fromSousCat];
@@ -245,7 +245,7 @@ export default function TechnicoChecklist() {
       : null;
   const devisListPath = location.pathname.startsWith('/admin/') ? '/admin/devis' : '/technico/devis';
 
-  // ── State principal ──
+  // ÔöÇÔöÇ State principal ÔöÇÔöÇ
   const [step, setStep] = useState<Step>('categories');
   const [selectedDevisId, setSelectedDevisId] = useState<number | null>(devisIdFromQuery);
   const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
@@ -259,7 +259,7 @@ export default function TechnicoChecklist() {
   const [questionResponses, setQuestionResponses] = useState<Map<number, string | string[] | boolean>>(new Map());
   const showFullCatalogue = demandeId !== null && fullCatalogueDemandeId === demandeId;
 
-  // ── Queries ──
+  // ÔöÇÔöÇ Queries ÔöÇÔöÇ
   const { data: devisData } = useQuery({
     queryKey: ['technico-devis-brouillon'],
     queryFn: async () => {
@@ -351,7 +351,7 @@ export default function TechnicoChecklist() {
     const res = await api.post('/devis', {
       clientId: context.clientId,
       demandeDevisId: context.id,
-      notes: `Cree depuis la demande #${context.id} - ${context.description}`,
+      notes: `Créé depuis la demande #${context.id} - ${context.description}`,
     });
 
     await refreshDevisQueries();
@@ -393,7 +393,7 @@ export default function TechnicoChecklist() {
     ? targetedDevisFromDemande?.id ?? null
     : selectedDevisId ?? devisIdFromQuery;
 
-  // ── Mutation submit ──
+  // ÔöÇÔöÇ Mutation submit ÔöÇÔöÇ
   const submitMutation = useMutation({
     mutationFn: async () => {
       let devisId = effectiveSelectedDevisId;
@@ -527,7 +527,7 @@ export default function TechnicoChecklist() {
     [projectCategorySource],
   );
 
-  // ── Catégorie courante ──
+  // ÔöÇÔöÇ Catégorie courante ÔöÇÔöÇ
   const currentCat = useMemo(
     () => catalogue?.find((c) => c.id === selectedCatId) ?? null,
     [catalogue, selectedCatId],
@@ -568,7 +568,7 @@ export default function TechnicoChecklist() {
     return missing;
   }, [checkedItems, catalogue]);
 
-  // ── Actions : items ──
+  // ÔöÇÔöÇ Actions : items ÔöÇÔöÇ
   const toggleItem = useCallback((prestationId: number) => {
     setCheckedItems((prev) => {
       const next = new Map(prev);
@@ -626,7 +626,7 @@ export default function TechnicoChecklist() {
     });
   }, []);
 
-  // ── Réponses aux questions diagnostiques ──
+  // ÔöÇÔöÇ Réponses aux questions diagnostiques ÔöÇÔöÇ
   const setQuestionResponse = useCallback((qId: number, value: string | string[] | boolean) => {
     setQuestionResponses(prev => {
       const next = new Map(prev);
@@ -648,7 +648,7 @@ export default function TechnicoChecklist() {
     });
   }, []);
 
-  // ── Calcul impact des réponses aux questions ──
+  // ÔöÇÔöÇ Calcul impact des réponses aux questions ÔöÇÔöÇ
   const calcImpactQuestions = useCallback(() => {
     let impactTotal = 0;
     for (const q of clarificationQuestions) {
@@ -682,7 +682,7 @@ export default function TechnicoChecklist() {
     return impactTotal;
   }, [clarificationQuestions, questionResponses]);
 
-  // ── Obtenir compositions basées sur les choix sélectionnés ──
+  // ÔöÇÔöÇ Obtenir compositions basées sur les choix sélectionnés ÔöÇÔöÇ
   const getCompositionsForItem = useCallback((presta: Prestation, item: ChecklistItem) => {
     // Collecter toutes les compositions des choix sélectionnés
     const choixCompositions: NonNullable<Prestation['compositions']> = [];
@@ -706,7 +706,7 @@ export default function TechnicoChecklist() {
     return presta.compositions ?? [];
   }, []);
 
-  // ── Calcul prix avec impact options ──
+  // ÔöÇÔöÇ Calcul prix avec impact options ÔöÇÔöÇ
   const calcPrixPresta = useCallback((presta: Prestation, item: ChecklistItem): PricingResult => {
     let optionImpactParUnite = 0;
     let minImpactPossible = 0;
@@ -755,7 +755,7 @@ export default function TechnicoChecklist() {
     return { prixVente, coutParUnite, optionImpactParUnite, minUnitPrice, maxUnitPrice };
   }, [getCompositionsForItem]);
 
-  // ── Totaux live ──
+  // ÔöÇÔöÇ Totaux live ÔöÇÔöÇ
   const selectedDevisTauxTVA =
     availableDraftDevis.find((devis) => devis.id === effectiveSelectedDevisId)?.tauxTVA ?? 20;
 
@@ -883,7 +883,7 @@ export default function TechnicoChecklist() {
     selectedDevisTauxTVA,
   ]);
 
-  // ── Filtrage catégories ──
+  // ÔöÇÔöÇ Filtrage catégories ÔöÇÔöÇ
   const baseCatalogue = useMemo(
     () => (activeProjectMatches ? projectCategorySource.categories : catalogue ?? []),
     [activeProjectMatches, catalogue, projectCategorySource],
@@ -920,7 +920,7 @@ export default function TechnicoChecklist() {
     />
   );
 
-  // ── RENDER : STEP CATEGORIES ──
+  // ÔöÇÔöÇ RENDER : STEP CATEGORIES ÔöÇÔöÇ
   if (step === 'categories') {
     return (
       <div className="space-y-6">
@@ -1039,7 +1039,7 @@ export default function TechnicoChecklist() {
     );
   }
 
-  // ── RENDER : STEP SOUS-CATEGORIES ──
+  // ÔöÇÔöÇ RENDER : STEP SOUS-CATEGORIES ÔöÇÔöÇ
   if (step === 'sous-categories' && currentCat) {
     const sousCategories = currentCat.sousCategories ?? [];
     const directPrestas = currentCat.prestations ?? [];
@@ -1117,14 +1117,14 @@ export default function TechnicoChecklist() {
     );
   }
 
-  // ── RENDER : STEP PRESTATIONS ──
+  // ÔöÇÔöÇ RENDER : STEP PRESTATIONS ÔöÇÔöÇ
   if (step === 'prestations' && currentCat) {
     const titleSuffix = selectedSousCatId === 'direct' ? 'Prestations générales' : (currentSousCat?.nom ?? currentCat.nom);
 
     return (
       <div className="space-y-6">
         <StepHeader
-          title={`${currentCat.nom} · ${titleSuffix}`}
+          title={`${currentCat.nom} • ${titleSuffix}`}
           subtitle="Choix de prestation, détails techniques et options de prix"
           onBack={() => setStep('sous-categories')}
         />
@@ -1179,12 +1179,12 @@ export default function TechnicoChecklist() {
     );
   }
 
-  // ── RENDER : STEP CLARIFICATION ──
+  // ÔöÇÔöÇ RENDER : STEP CLARIFICATION ÔöÇÔöÇ
   if (step === 'clarification' && currentCat) {
     return (
       <div className="space-y-6">
         <StepHeader
-          title={`${currentCat.nom} · Clarification`}
+          title={`${currentCat.nom} • Clarification`}
           subtitle="Questions guidées pour lever les choix flous avant le devis"
           onBack={() => setStep('prestations')}
         />
@@ -1244,7 +1244,7 @@ export default function TechnicoChecklist() {
               <button
                 onClick={() => setStep('recap')}
                 className="flex-1 py-3 technico-gradient text-white rounded-2xl text-sm font-semibold hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
-              >je 
+              >
                 <FileText size={16} />
                 Afficher le devis
               </button>
@@ -1267,7 +1267,7 @@ export default function TechnicoChecklist() {
     );
   }
 
-  // ── RENDER : STEP RECAP ──
+  // ÔöÇÔöÇ RENDER : STEP RECAP ÔöÇÔöÇ
   return (
     <div className="space-y-6">
       <StepHeader
@@ -1301,7 +1301,7 @@ export default function TechnicoChecklist() {
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {/* ── CONTENU PRINCIPAL : LIGNES DEVIS ── */}
+          {/* ÔöÇÔöÇ CONTENU PRINCIPAL : LIGNES DEVIS ÔöÇÔöÇ */}
           <div className="xl:col-span-2 space-y-4">
             {/* Entête tableau */}
             <div className="technico-gradient rounded-2xl p-4 text-white hidden md:block">
@@ -1373,7 +1373,7 @@ export default function TechnicoChecklist() {
                               const choix = option?.choix?.find(c => c.id === cId);
                               return choix ? (
                                 <span key={cId} className="text-xs bg-white text-[#9683EC] px-2.5 py-1 rounded-lg border border-[#5A4FCF] font-medium">
-                                  <span className="text-[#5A4FCF] mr-1">●</span>
+                                  <span className="text-[#5A4FCF] mr-1">•</span>
                                   {option?.nom}: <strong>{choix.nom}</strong>
                                   {choix.impactPrix !== 0 && ` → ${choix.impactPrix > 0 ? '+' : ''}${formatCurrency(choix.impactPrix)}`}
                                 </span>
@@ -1437,7 +1437,7 @@ export default function TechnicoChecklist() {
             })}
           </div>
 
-          {/* ── SIDEBAR : TOTAUX + ACTIONS ── */}
+          {/* ÔöÇÔöÇ SIDEBAR : TOTAUX + ACTIONS ÔöÇÔöÇ */}
           <div>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden sticky top-6">
               {/* En-tête */}
@@ -1450,7 +1450,7 @@ export default function TechnicoChecklist() {
 
               {/* Contenu */}
               <div className="p-5 space-y-4">
-                {/* Détail coûts */}
+                {/* Détail co├╗ts */}
                 <div className="space-y-2 pb-4 border-b border-gray-100">
                   <Row label="Nombre de lignes" value={`${checkedCount}`} size="xs" />
                   <Row label="Total quantités" value={Array.from(checkedItems.values()).reduce((s, i) => s + i.quantite, 0).toFixed(2)} size="xs" />
@@ -1481,7 +1481,7 @@ export default function TechnicoChecklist() {
                 {/* Marges (info interne) */}
                 <div className="space-y-1 text-xs pt-3 border-t border-gray-100 bg-gray-50 -mx-3 px-3 py-3 rounded-lg">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Coût total</span>
+                    <span className="text-gray-600">Co├╗t total</span>
                     <span className="font-medium text-gray-800">{formatCurrency(totaux.totalCout)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -1537,7 +1537,7 @@ export default function TechnicoChecklist() {
                         )}
                       >
                         <Eye size={14} />
-                        Aperçu Devis
+                        Aper├ºu Devis
                       </button>
 
                       <button
@@ -1570,8 +1570,8 @@ export default function TechnicoChecklist() {
                     <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2 flex items-center gap-1">
                       <AlertCircle size={14} />
                       {demandeContext
-                        ? 'Le devis brouillon sera cree lors de la validation.'
-                        : 'Selectionnez un devis BROUILLON'}
+                        ? 'Le devis brouillon sera créé lors de la validation.'
+                        : 'Sélectionnez un devis BROUILLON'}
                     </p>
                   )}
                 </div>
@@ -1581,7 +1581,7 @@ export default function TechnicoChecklist() {
         </div>
       )}
 
-      {/* Modal Aperçu Devis */}
+      {/* Modal Aper├ºu Devis */}
       {showDevisPreview && previewDevis && (
         <DevisInvoice
           devis={previewDevis}
@@ -1603,7 +1603,7 @@ export default function TechnicoChecklist() {
   );
 }
 
-// ════════════════════ SUB-COMPONENTS ════════════════════
+// ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ SUB-COMPONENTS ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
 
 function Header() {
   return (
@@ -1665,7 +1665,7 @@ function StudyContextBanner({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <p className="font-semibold">
-            Demande #{demande.id} · {clientLabel}
+            Demande #{demande.id} • {clientLabel}
           </p>
           <p className="text-sky-700">
             {projectTypeLabel
@@ -1741,7 +1741,7 @@ function LinkedDevisCard({
             {isLoading && !selectedDevis
               ? 'Chargement...'
               : selectedDevis
-                ? `${selectedDevis.statut} · ${formatCurrency(selectedDevis.totalHT ?? 0)} HT`
+                ? `${selectedDevis.statut} • ${formatCurrency(selectedDevis.totalHT ?? 0)} HT`
                 : 'Brouillon non cree'}
           </p>
         </div>
@@ -1774,7 +1774,7 @@ function DevisSelector({ devisData, selectedDevisId, setSelectedDevisId }: {
   );
 }
 
-// ── Question Card ──
+// ÔöÇÔöÇ Question Card ÔöÇÔöÇ
 function QuestionCard({ question, value, onChange, onToggleChoice }: {
   question: QuestionDiagnostic;
   value: string | string[] | boolean | undefined;
@@ -1911,7 +1911,7 @@ function QuestionCard({ question, value, onChange, onToggleChoice }: {
   );
 }
 
-// ── Prestation Row ──
+// ÔöÇÔöÇ Prestation Row ÔöÇÔöÇ
 function PrestationRow({
   presta, checkedItems, expandedDetail, setExpandedDetail,
   toggleItem, updateQuantite, toggleChoix, setInfoValue, calcPrixPresta, getCompositionsForItem,
@@ -1970,7 +1970,7 @@ function PrestationRow({
                 options: {prix.optionImpactParUnite > 0 ? '+' : ''}{formatCurrency(prix.optionImpactParUnite)}/{presta.unite}
               </span>
             )}
-            {prix.coutParUnite > 0 && <span className="text-orange-500">coût: {prix.coutParUnite.toFixed(2)} €/{presta.unite}</span>}
+            {prix.coutParUnite > 0 && <span className="text-orange-500">co├╗t: {prix.coutParUnite.toFixed(2)} €/{presta.unite}</span>}
             {(presta.options?.length ?? 0) > 0 && <span className="text-purple-500">{presta.options!.length} options</span>}
             {(presta.infosRequises?.length ?? 0) > 0 && <span className="text-violet-500">{presta.infosRequises!.length} infos</span>}
           </div>
@@ -1999,7 +1999,7 @@ function PrestationRow({
         )}
       </div>
 
-      {/* ── Détail étendu : compositions + options + infos requises ── */}
+      {/* ÔöÇÔöÇ Détail étendu : compositions + options + infos requises ÔöÇÔöÇ */}
       {isDetailOpen && item && (
         <div className="px-12 pb-4 space-y-4">
           {/* Compositions (matériaux + MO) */}
@@ -2092,7 +2092,7 @@ function PrestationRow({
   );
 }
 
-// ── Option Block (choix cliquables) ──
+// ÔöÇÔöÇ Option Block (choix cliquables) ÔöÇÔöÇ
 function OptionBlock({ presta, option, selectedChoixIds, onToggle }: {
   presta: Prestation;
   option: OptionPrestation;
@@ -2132,7 +2132,7 @@ function OptionBlock({ presta, option, selectedChoixIds, onToggle }: {
   );
 }
 
-// ── Recap Sidebar ──
+// ÔöÇÔöÇ Recap Sidebar ÔöÇÔöÇ
 function RecapSidebar({
   checkedItems, catalogue, totaux, checkedCount, calcPrixPresta, onViewRecap,
 }: {
@@ -2190,7 +2190,7 @@ function RecapSidebar({
                 size="xs"
               />
               {(totaux.questionImpact ?? 0) !== 0 && (
-                <Row label="Surcoût" value={formatCurrency(totaux.questionImpact ?? 0)} color={(totaux.questionImpact ?? 0) > 0 ? 'text-orange-600' : 'text-emerald-600'} size="xs" />
+                <Row label="Surco├╗t" value={formatCurrency(totaux.questionImpact ?? 0)} color={(totaux.questionImpact ?? 0) > 0 ? 'text-orange-600' : 'text-emerald-600'} size="xs" />
               )}
               <Row label="TVA" value={formatCurrency(totaux.totalTVA)} />
               <div className="flex justify-between text-sm bg-[#CCCCFF]/40 -mx-2 px-2 py-1.5 rounded-lg">
@@ -2200,7 +2200,7 @@ function RecapSidebar({
             </div>
 
             <div className="border-t border-gray-100 pt-3 mt-3 space-y-1.5">
-              <Row label="Coût" value={formatCurrency(totaux.totalCout)} color="text-orange-600" size="xs" />
+              <Row label="Co├╗t" value={formatCurrency(totaux.totalCout)} color="text-orange-600" size="xs" />
               <Row label="Bénéfice" value={formatCurrency(totaux.profit)} color={totaux.profit >= 0 ? 'text-[#5A4FCF]' : 'text-red-600'} size="xs" bold />
               <Row label="Marge" value={`${totaux.marge}%`} color={totaux.marge >= 20 ? 'text-[#5A4FCF]' : totaux.marge >= 10 ? 'text-orange-500' : 'text-red-600'} size="xs" bold />
             </div>
@@ -2218,7 +2218,7 @@ function RecapSidebar({
   );
 }
 
-// ── Tiny helpers ──
+// ÔöÇÔöÇ Tiny helpers ÔöÇÔöÇ
 function Row({ label, value, bold, color, size = 'sm' }: { label: string; value: string; bold?: boolean; color?: string; size?: 'xs' | 'sm' }) {
   return (
     <div className={cn('flex justify-between', size === 'xs' ? 'text-xs' : 'text-sm')}>
