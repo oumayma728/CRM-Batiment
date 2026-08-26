@@ -220,10 +220,19 @@ export default function TechnicoDevis() {
   const updateStatut = useMutation({
     mutationFn: ({ id, statut }: { id: number; statut: DevisStatut }) =>
       api.patch(`/devis/${id}/statut`, { statut }),
+    onMutate: () => {
+      setFeedback(null);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-devis'] });
       queryClient.invalidateQueries({ queryKey: ['technico-devis-brouillon'] });
       setActionMenuId(null);
+    },
+    onError: (error: unknown) => {
+      setFeedback({
+        type: 'error',
+        text: getApiErrorMessage(error, 'Erreur lors de la mise a jour du statut du devis.'),
+      });
     },
   });
 
@@ -441,14 +450,46 @@ export default function TechnicoDevis() {
       </div>
 
       {feedback && (
-        <div
-          className={
-            feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-              : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
-          }
-        >
-          {feedback.text}
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={() => setFeedback(null)}>
+          <div 
+            className="w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition-all border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className={cn(
+                "mb-4 flex h-14 w-14 items-center justify-center rounded-full",
+                feedback.type === 'success' 
+                  ? "bg-emerald-50 text-emerald-600" 
+                  : "bg-red-50 text-red-600"
+              )}>
+                {feedback.type === 'success' ? (
+                  <CheckCircle2 size={28} />
+                ) : (
+                  <XCircle size={28} />
+                )}
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900">
+                {feedback.type === 'success' ? "Succès" : "Action bloquée"}
+              </h3>
+              
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {feedback.text}
+              </p>
+              
+              <button
+                onClick={() => setFeedback(null)}
+                className={cn(
+                  "mt-6 w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition",
+                  feedback.type === 'success'
+                    ? "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800"
+                    : "bg-red-600 hover:bg-red-700 active:bg-red-800"
+                )}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
