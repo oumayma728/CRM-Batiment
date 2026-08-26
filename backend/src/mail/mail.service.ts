@@ -660,4 +660,13 @@ export class MailService {
     devLogs.forEach((line) => this.logger.log(line));
     this.logger.log('===============================================');
   }
+
+  async sendPasswordResetCode(to: string, code: string): Promise<void> {
+    await this.sendOrLog({
+      to,
+      subject: 'CRM Batiment - Code de reinitialisation',
+      html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;"><h2>Reinitialisation du mot de passe</h2><p>Votre code de verification est :</p><p style="font-size: 28px; font-weight: bold; letter-spacing: 8px;">${code}</p><p>Ce code expire dans 10 minutes.</p></div>`,
+      devLogs: [`Code de reinitialisation pour ${to} : ${code}`],
+    });
+  }
 }

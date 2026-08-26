@@ -244,4 +244,8 @@ export class DemandesDevisService {
     await this.findOne(id, companyId);
     return this.prisma.demandeDevis.delete({ where: { id } });
   }
+
+  async convertToDevis(id: number, userId: number, companyId: number) {
+    return this.convertirEnDevis(id, userId, companyId);
+  }
 }

@@ -17,6 +17,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiParam
 } from '@nestjs/swagger';
 import { DemandesDevisService } from './demandes-devis.service.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -31,15 +32,10 @@ import { QueryDemandeDevisDto } from './dto/query-demande-devis.dto.js';
 import { UpdateStatutDto } from './dto/update-statut.dto.js';
 
 @ApiTags('Demandes de Devis')
-<<<<<<< HEAD
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN', 'TECHNICO', 'ASSISTANTE') // <-- AJOUTE 
-=======
->>>>>>> origin/wassim_pre-integration
+@Roles('ADMIN', 'TECHNICO', 'ASSISTANTE')
 @Controller('demandes-devis')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
 export class DemandesDevisController {
   constructor(private readonly service: DemandesDevisService) {}
 

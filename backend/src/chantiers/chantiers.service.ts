@@ -698,6 +698,9 @@ export class ChantiersService {
         },
         documents: {
           orderBy: { createdAt: 'desc' },
+        sousTraitantsVisibles: {
+          select: { sousTraitant: { select: { id: true, nom: true, prenom: true, email: true } } },
+        },
         },
       },
     });
@@ -800,6 +803,7 @@ export class ChantiersService {
       currentUser.role === Role.TECHNICO;
 
     const response = {
+      sousTraitantsVisibles: (chantier as any).sousTraitantsVisibles?.map((item: any) => item.sousTraitant) ?? [],
       ...chantier,
       taches: mappedTasks,
       statutAuto: this.computeChantierAutoStatus(chantier.taches),
@@ -814,6 +818,79 @@ export class ChantiersService {
     return response;
   }
   // fin modif // 
+
+  async updateVisibility(
+    id: number,
+    sousTraitantIds: number[],
+    currentUser: CurrentUserPayload,
+  ) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: sousTraitantIds }, companyId: currentUser.companyId, role: Role.SOUS_TRAITANT, actif: true },
+      select: { id: true },
+    });
+    if (users.length !== sousTraitantIds.length) {
+      throw new BadRequestException('Un ou plusieurs sous-traitants sont invalides.');
+    }
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.chantierSousTraitant.deleteMany({ where: { chantierId: id } });
+      await transaction.chantierSousTraitant.createMany({
+        data: sousTraitantIds.map((sousTraitantId) => ({ chantierId: id, sousTraitantId })),
+      });
+    });
+    return this.findOne(id, currentUser);
+  }
+
+  async savePlan2d(
+    id: number,
+    plan2d: Record<string, unknown>,
+    currentUser: CurrentUserPayload,
+    imageDataUrl?: string,
+  ) {
+    const chantier = await this.ensureChantierInCompany(id, currentUser.companyId);
+    const documentUrl = imageDataUrl?.startsWith('data:image/')
+      ? imageDataUrl
+      : `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(plan2d))}`;
+    const documentName = imageDataUrl?.startsWith('data:image/')
+      ? `Plan 2D - ${chantier.reference}.png`
+      : `Plan 2D - ${chantier.reference}.json`;
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: plan2d as Prisma.InputJsonValue },
+      });
+      await transaction.documentChantier.create({
+        data: {
+          chantierId: id,
+          nom: documentName,
+          type: 'PLAN_2D',
+          url: documentUrl,
+        },
+      });
+    });
+
+    return this.findOne(id, currentUser);
+  }
+
+  async removePlan2d(id: number, currentUser: CurrentUserPayload) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: Prisma.JsonNull },
+      });
+    });
+
+    return this.findOne(id, currentUser);
+  }
 
   async create(dto: CreateChantierDto, currentUser: CurrentUserPayload) {
     await this.ensureClientInCompany(dto.clientId, currentUser.companyId);

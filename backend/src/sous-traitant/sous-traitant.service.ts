@@ -35,10 +35,9 @@ export class SousTraitantService {
         assurances: {
           select: {
             id: true,
-            type: true,
-            compagnie: true,
-            numeroPolice: true,
-            dateDebut: true,
+            typeAssurance: true,
+            compagnieAssurance: true,
+            numeroAttestation: true,
             dateExpiration: true,
           },
         },

@@ -2395,7 +2395,7 @@ export class DevisService {
     }
   }
 
-  async remove(id: number, companyId: number) {
+  async remove(id: number, companyId: number, force?: boolean) {
     const devis = await this.findOne(id, companyId);
 
     if (devis.statut === 'SIGNE') {
