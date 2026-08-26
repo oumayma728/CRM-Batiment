@@ -52,6 +52,8 @@ model User {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   mustChangePassword Boolean            @default(true)
+  resetCodeHash      String?
+  resetCodeExpiresAt DateTime?
   signatureBase64    String?
   signatureUpdatedAt DateTime?
   affectationsTaches AffectationTache[]
@@ -62,6 +64,8 @@ model User {
   messagesChat       MessageChat[]
   company            Company            @relation(fields: [companyId], references: [id])
   versionsDevis      VersionDevis[]     @relation("VersionAuteur")
+  chantiersVisibles  ChantierSousTraitant[]
+  profilSousTraitant SousTraitant?      @relation("CompteSousTraitant")
 
   @@index([companyId])
   @@index([email])
@@ -619,6 +623,7 @@ model Chantier {
   dateDebut      DateTime?
   dateFin        DateTime?
   notes          String?
+  plan2d         Json?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   chefChantier   User?              @relation("ChefChantier", fields: [chefChantierId], references: [id])
@@ -627,11 +632,23 @@ model Chantier {
   devis          Devis[]
   documents      DocumentChantier[]
   taches         Tache[]
+  sousTraitantsVisibles ChantierSousTraitant[]
 
   @@index([companyId])
   @@index([clientId])
   @@index([statut])
   @@map("chantiers")
+}
+
+model ChantierSousTraitant {
+  chantierId     Int
+  sousTraitantId Int
+  chantier       Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  sousTraitant   User     @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@id([chantierId, sousTraitantId])
+  @@index([sousTraitantId])
+  @@map("chantiers_sous_traitants")
 }
 
 model Equipe {
@@ -891,6 +908,7 @@ enum ModeValidation {
 model SousTraitant {
   id            Int                       @id @default(autoincrement())
   companyId     Int
+  userId        Int?                      @unique
   nom           String
   siret         String?
   contact       String?
@@ -902,6 +920,7 @@ model SousTraitant {
   createdAt     DateTime                  @default(now())
   updatedAt     DateTime                  @updatedAt
   company       Company                   @relation(fields: [companyId], references: [id])
+  utilisateur   User?                     @relation("CompteSousTraitant", fields: [userId], references: [id], onDelete: SetNull)
   contrats      ContratSousTraitant[]
   assurances    AssuranceSousTraitant[]
   paiements     PaiementSousTraitant[]

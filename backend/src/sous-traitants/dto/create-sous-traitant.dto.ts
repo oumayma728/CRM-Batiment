@@ -1,7 +1,22 @@
-import { IsString, IsOptional, IsEmail, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsEmail,
+  IsBoolean,
+  IsInt,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateSousTraitantDto {
+  @ApiPropertyOptional({
+    description: 'Compte utilisateur du portail sous-traitant',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  userId?: number;
+
   @ApiProperty({ example: 'Plomberie Martin' })
   @IsString()
   nom: string;

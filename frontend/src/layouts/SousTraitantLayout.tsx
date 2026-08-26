@@ -7,6 +7,7 @@ import {
   ClipboardList,
   LogOut,
   Menu,
+  UserCircle,
   Wrench,
   X,
 } from 'lucide-react';
@@ -94,6 +95,17 @@ export default function SousTraitantLayout() {
               <span>{item.label}</span>
             </NavLink>
           ))}
+          <NavLink
+            to="/sous-traitant/profil"
+            onClick={() => setMobileOpen(false)}
+            className={({ isActive }) => cn(
+              'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
+              isActive ? 'bg-emerald-500/20 text-emerald-100' : 'text-emerald-50 hover:bg-emerald-500/10',
+            )}
+          >
+            <UserCircle size={18} />
+            <span>Mon profil</span>
+          </NavLink>
         </nav>
 
         <div className="border-t border-emerald-700 p-4">

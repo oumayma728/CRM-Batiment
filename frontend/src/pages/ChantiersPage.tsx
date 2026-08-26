@@ -7,9 +7,10 @@ import {
   RefreshCcw,
   Search,
   Trash2,
-  ChevronRight,
+  Ruler,
 } from 'lucide-react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn, formatDate } from '@/lib/utils';
@@ -230,16 +231,9 @@ export default function ChantiersPage() {
 
   const rows = useMemo(() => listQuery.data?.data ?? [], [listQuery.data?.data]);
   const meta = listQuery.data?.meta ?? { page: 1, totalPages: 1, total: 0, limit: 15 };
-  const canManageChantiers = user?.role !== 'CHEF_CHANTIER';
+  const canManageChantiers = user?.role === 'ADMIN';
 
   const submitMutation = editing ? updateMutation : createMutation;
-
-  function openCreate() {
-    if (!canManageChantiers) return;
-    setEditing(null);
-    setForm(emptyForm);
-    setShowModal(true);
-  }
 
   function openEdit(chantier: Chantier) {
     setEditing(chantier);
@@ -270,7 +264,7 @@ export default function ChantiersPage() {
             <h1 className="mt-2 text-3xl font-bold text-slate-900">Liste des chantiers</h1>
             <p className="mt-2 text-sm text-slate-600">
               Les chantiers sont synchronises automatiquement a partir des devis acceptes/signes.
-              Vous pouvez aussi ajouter, modifier et supprimer des elements manuellement.
+              Vous pouvez modifier et supprimer les chantiers manuellement si nécessaire.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -282,14 +276,6 @@ export default function ChantiersPage() {
               {syncMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
               Synchroniser depuis devis
             </button>
-            {canManageChantiers ? (
-              <button
-                onClick={openCreate}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow"
-              >
-                <ChevronRight size={16} /> Nouveau chantier
-              </button>
-            ) : null}
           </div>
         </div>
 
@@ -368,7 +354,9 @@ export default function ChantiersPage() {
                       <p className="text-xs text-slate-500">{chantier.client?.email ?? 'Email non renseigne'}</p>
                     </td>
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-900">{chantier.reference}</p>
+                      <Link to={`/admin/chantiers/${chantier.id}`} className="font-semibold text-slate-900 hover:text-orange-600">
+                        {chantier.reference || `Chantier #${chantier.id}`}
+                      </Link>
                       <p className="mt-1 text-slate-600">{chantier.adresse}</p>
                       {chantier.chefChantier && (
                         <p className="mt-1 text-xs text-orange-600">
@@ -389,6 +377,19 @@ export default function ChantiersPage() {
                     <td className="px-5 py-4 text-slate-500">{formatDate(chantier.updatedAt)}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
+                        <Link
+                          to={`/admin/chantiers/${chantier.id}`}
+                          className="inline-flex items-center rounded-xl border border-orange-200 px-3 py-2 text-xs font-semibold text-orange-700 transition hover:bg-orange-50"
+                        >
+                          View details
+                        </Link>
+                        <Link
+                          to={`/admin/chantiers/${chantier.id}/plan-2d`}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 text-blue-600 transition hover:bg-blue-50"
+                          title="Open 2D house plan"
+                        >
+                          <Ruler size={15} />
+                        </Link>
                         {canManageChantiers ? (
                           <>
                             <button

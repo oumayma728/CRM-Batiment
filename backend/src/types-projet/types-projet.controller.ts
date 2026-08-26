@@ -44,6 +44,7 @@ export class TypesProjetController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: 'Liste des types de projet' })
   @ApiResponse({ status: 200, description: 'Liste des types de projet actifs' })
   findAll(@CurrentUser() user: CurrentUserPayload) {
@@ -51,6 +52,7 @@ export class TypesProjetController {
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: "Détail d'un type de projet" })
   findOne(
     @Param('id', ParseIntPipe) id: number,

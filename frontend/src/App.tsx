@@ -16,6 +16,7 @@ import ClientDevisValidationPage from '@/pages/ClientDevisValidationPage';
 import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
 import DashboardPage from '@/pages/DashboardPage';
 import ChantiersPage from '@/pages/ChantiersPage';
+import ChantierDetailPage from '@/pages/ChantierDetailPage';
 import ClientsPage from '@/pages/ClientsPage';
 import CommandesFournisseurPage from '@/pages/CommandesFournisseurPage';
 import ChefDashboardPage from '@/pages/chef/ChefDashboardPage';
@@ -36,6 +37,7 @@ import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
 import AdminProfile from '@/pages/AdminProfile';
 import TasksChantierPage from '@/pages/TasksChantierPage';
+import HousePlanPage from '@/pages/HousePlanPage';
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
@@ -57,6 +59,7 @@ import SousTraitantChantiersPage from '@/pages/sous-traitant/SousTraitantChantie
 import SousTraitantChantierDetailPage from '@/pages/sous-traitant/SousTraitantChantierDetailPage';
 import SousTraitantTachesPage from '@/pages/sous-traitant/SousTraitantTachesPage';
 import SousTraitantTacheDetailPage from '@/pages/sous-traitant/SousTraitantTacheDetailPage';
+import SousTraitantProfile from '@/pages/sous-traitant/SousTraitantProfile';
 
 function RoleRouter() {
   const { user } = useAuth();
@@ -120,6 +123,8 @@ export default function App() {
           <Route path="admin" element={<AdminLayoutRouter />}>
             <Route index element={<AdminDashboardRouter />} />
             <Route path="chantiers" element={<ChantiersPage />} />
+            <Route path="chantiers/:id" element={<ChantierDetailPage />} />
+            <Route path="chantiers/:id/plan-2d" element={<HousePlanPage />} />
             <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
             <Route path="profil-chef" element={<ChefChantierProfile />} />
             <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'CHEF_CHANTIER']} />}>
@@ -177,8 +182,10 @@ export default function App() {
             <Route index element={<SousTraitantDashboard />} />
             <Route path="chantiers" element={<SousTraitantChantiersPage />} />
             <Route path="chantiers/:id" element={<SousTraitantChantierDetailPage />} />
+            <Route path="chantiers/:id/plan-2d" element={<HousePlanPage />} />
             <Route path="taches" element={<SousTraitantTachesPage />} />
             <Route path="taches/:id" element={<SousTraitantTacheDetailPage />} />
+            <Route path="profil" element={<SousTraitantProfile />} />
           </Route>
           <Route path="fournisseur" element={<FournisseurLayout />}>
             <Route index element={<FournisseurDashboard />} />

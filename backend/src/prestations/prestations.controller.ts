@@ -79,6 +79,7 @@ export class PrestationsController {
   // ──────────────────────────────────────────────
 
   @Get('categories')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary: 'Liste des catégories de prestation',
     description:
@@ -146,6 +147,7 @@ export class PrestationsController {
   }
 
   @Get('categories/:categorieId/sous-categories')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: "Lister les sous-catégories d'une catégorie" })
   @ApiParam({ name: 'categorieId', type: Number })
   async findAllSousCategories(
@@ -207,6 +209,7 @@ export class PrestationsController {
   // ──────────────────────────────────────────────
 
   @Get('catalogue')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary: 'Catalogue complet avec compositions',
     description:
@@ -222,6 +225,7 @@ export class PrestationsController {
   // ──────────────────────────────────────────────
 
   @Get('catalogue-complet')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary: 'Catalogue complet enrichi pour technicien/chatbot',
     description:

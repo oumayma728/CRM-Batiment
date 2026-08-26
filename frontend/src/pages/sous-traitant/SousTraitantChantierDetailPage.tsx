@@ -8,7 +8,6 @@ import {
   File,
   Loader2,
   MapPin,
-  AlertCircle,
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/api';
@@ -83,6 +82,7 @@ export default function SousTraitantChantierDetailPage() {
             100,
         )
       : 0;
+
 
   if (isLoading) {
     return (

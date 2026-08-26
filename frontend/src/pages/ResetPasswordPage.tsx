@@ -2,16 +2,25 @@ import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from '@/lib/api';
 
+function getErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: unknown } } }).response;
+    if (typeof response?.data?.message === 'string') return response.data.message;
+  }
+  return error instanceof Error ? error.message : fallback;
+}
+
 export default function ResetPasswordPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const email = location.state?.email;
+  const code = location.state?.code;
   
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (!email) {
+  if (!email || !code) {
     return <div className="p-8 text-center text-red-500">Accès non autorisé.</div>;
   }
 
@@ -20,11 +29,11 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError("");
     try {
-      await api.post('/auth/reset-password', { email, newPassword });
+      await api.post('/auth/reset-password', { email, code, newPassword });
       alert("Mot de passe modifié avec succès !");
       navigate("/login");
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Erreur lors de la réinitialisation");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Erreur lors de la réinitialisation"));
     } finally {
       setLoading(false);
     }

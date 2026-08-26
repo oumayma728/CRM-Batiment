@@ -9,26 +9,6 @@ import {
   type StructuredDevisNotes,
 } from '@/lib/devisStructuredNotes';
 
-function extractApiErrorMessage(err: unknown, fallback: string): string {
-  if (
-    typeof err === 'object' &&
-    err !== null &&
-    'response' in err &&
-    typeof (err as { response?: unknown }).response === 'object' &&
-    (err as { response?: { data?: unknown } }).response !== null
-  ) {
-    const data = (err as { response: { data?: unknown } }).response.data;
-    if (typeof data === 'object' && data !== null && 'message' in data) {
-      const msg = (data as { message: unknown }).message;
-      if (typeof msg === 'string') return msg;
-      if (Array.isArray(msg))
-        return msg.filter((m): m is string => typeof m === 'string').join(' | ');
-    }
-  }
-  if (err instanceof Error) return err.message;
-  return fallback;
-}
-
 interface DevisManualEditorModalProps {
   devis: Devis;
   open: boolean;
@@ -45,6 +25,29 @@ interface LineFormState {
   prixAchat: string;
   mainOeuvre: string;
   materiauId: string;
+}
+
+function getApiErrorMessage(error: unknown, fallback: string) {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'message' in error.response.data
+  ) {
+    const message = error.response.data.message;
+    if (typeof message === 'string') return message;
+    if (Array.isArray(message)) {
+      return message.filter((item): item is string => typeof item === 'string').join(' | ');
+    }
+  }
+
+  if (error instanceof Error) return error.message;
+  return fallback;
 }
 
 const emptyLineForm: LineFormState = {
@@ -90,6 +93,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
   });
 
   const currentDevis = liveDevis ?? devis;
+  const isReadOnly = currentDevis.statut === 'SIGNE' || currentDevis.statut === 'ANNULE';
 
   const lignes = useMemo(
     () => [...(currentDevis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre),
@@ -120,7 +124,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await refetchDevis();
     },
     onError: (err: unknown) => {
-      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la sauvegarde des conditions'));
+      setErrorMessage(getApiErrorMessage(err, 'Erreur lors de la sauvegarde des conditions'));
     },
   });
 
@@ -134,7 +138,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await refetchDevis();
     },
     onError: (err: unknown) => {
-      setErrorMessage(extractApiErrorMessage(err, "Erreur lors de l'ajout de la ligne"));
+      setErrorMessage(getApiErrorMessage(err, "Erreur lors de l'ajout de la ligne"));
     },
   });
 
@@ -148,7 +152,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await refetchDevis();
     },
     onError: (err: unknown) => {
-      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la mise à jour de la ligne'));
+      setErrorMessage(getApiErrorMessage(err, 'Erreur lors de la mise à jour de la ligne'));
     },
   });
 
@@ -165,7 +169,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       await refetchDevis();
     },
     onError: (err: unknown) => {
-      setErrorMessage(extractApiErrorMessage(err, 'Erreur lors de la suppression de la ligne'));
+      setErrorMessage(getApiErrorMessage(err, 'Erreur lors de la suppression de la ligne'));
     },
   });
 
@@ -220,6 +224,12 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
             </div>
           )}
 
+          {isReadOnly && (
+            <div className="col-span-full mx-6 mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Ce devis est {currentDevis.statut === 'SIGNE' ? 'signe' : 'annule'} et ne peut plus etre modifie.
+            </div>
+          )}
+
           <section className="border-r border-slate-100 p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Lignes devis</h3>
@@ -228,6 +238,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   setLineForm(emptyLineForm);
                   setErrorMessage(null);
                 }}
+                disabled={isReadOnly}
                 className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
               >
                 <Plus size={14} /> Nouvelle ligne
@@ -248,6 +259,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setLineForm(toLineForm(line))}
+                      disabled={isReadOnly}
                       className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-blue-600"
                       title="Modifier"
                     >
@@ -255,6 +267,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                     </button>
                     <button
                       onClick={() => deleteLineMutation.mutate(line.id)}
+                      disabled={isReadOnly}
                       className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-rose-600"
                       title="Supprimer"
                     >
@@ -276,6 +289,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
               <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Formulaire ligne</h3>
               <div className="mt-3 grid gap-3">
                 <input
+                  disabled={isReadOnly}
                   value={lineForm.description}
                   onChange={(e) => setLineForm((current) => ({ ...current, description: e.target.value }))}
                   placeholder="Description / tache"
@@ -285,6 +299,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                 <div className="grid grid-cols-2 gap-3">
                   <input
                     type="number"
+                    disabled={isReadOnly}
                     min="0.01"
                     step="0.01"
                     value={lineForm.quantite}
@@ -293,6 +308,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                     className="rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
                   />
                   <input
+                    disabled={isReadOnly}
                     value={lineForm.unite}
                     onChange={(e) => setLineForm((current) => ({ ...current, unite: e.target.value }))}
                     placeholder="Unite"
@@ -303,6 +319,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                 <div className="grid grid-cols-3 gap-3">
                   <input
                     type="number"
+                    disabled={isReadOnly}
                     step="0.01"
                     value={lineForm.prixUnitaireVente}
                     onChange={(e) =>
@@ -313,6 +330,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   />
                   <input
                     type="number"
+                    disabled={isReadOnly}
                     step="0.01"
                     value={lineForm.prixAchat}
                     onChange={(e) =>
@@ -323,6 +341,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                   />
                   <input
                     type="number"
+                    disabled={isReadOnly}
                     step="0.01"
                     value={lineForm.mainOeuvre}
                     onChange={(e) =>
@@ -334,6 +353,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                 </div>
 
                 <select
+                  disabled={isReadOnly}
                   value={lineForm.materiauId}
                   onChange={(e) => setLineForm((current) => ({ ...current, materiauId: e.target.value }))}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 focus:outline-none"
@@ -349,7 +369,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     onClick={submitLine}
-                    disabled={isLineSubmitting}
+                    disabled={isReadOnly || isLineSubmitting}
                     className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
                   >
                     {isLineSubmitting ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
@@ -423,7 +443,7 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
 
               <button
                 onClick={() => saveNotesMutation.mutate()}
-                disabled={saveNotesMutation.isPending}
+                disabled={isReadOnly || saveNotesMutation.isPending}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-60"
               >
                 {saveNotesMutation.isPending ? (

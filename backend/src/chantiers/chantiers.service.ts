@@ -5,6 +5,7 @@
 } from '@nestjs/common';
 import { Prisma, Role, TacheStatut } from '../../generated/prisma/client.js';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { WorkflowStateService } from '../workflow-state.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import { CreateChantierDto } from './dto/create-chantier.dto.js';
 import { QueryChantierDto } from './dto/query-chantier.dto.js';
@@ -14,7 +15,10 @@ import { UpdateTacheDto } from './dto/update-tache.dto.js';
 
 @Injectable()
 export class ChantiersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly workflowStateService: WorkflowStateService,
+  ) {}
 
   private isTaskDone(task: { statut: TacheStatut; avancement: number }) {
     return task.statut === 'TERMINEE' || task.avancement >= 100;
@@ -681,6 +685,9 @@ export class ChantiersService {
         documents: {
           orderBy: { createdAt: 'desc' },
         },
+        sousTraitantsVisibles: {
+          select: { sousTraitant: { select: { id: true, nom: true, prenom: true, email: true } } },
+        },
       },
     });
 
@@ -694,10 +701,84 @@ export class ChantiersService {
 
     return {
       ...chantier,
+      sousTraitantsVisibles: chantier.sousTraitantsVisibles.map((item) => item.sousTraitant),
       taches: mappedTasks,
       statutAuto: this.computeChantierAutoStatus(chantier.taches),
       resumeTaches: this.buildTaskSummary(chantier.taches),
     };
+  }
+
+  async updateVisibility(
+    id: number,
+    sousTraitantIds: number[],
+    currentUser: CurrentUserPayload,
+  ) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: sousTraitantIds }, companyId: currentUser.companyId, role: Role.SOUS_TRAITANT, actif: true },
+      select: { id: true },
+    });
+    if (users.length !== sousTraitantIds.length) {
+      throw new BadRequestException('Un ou plusieurs sous-traitants sont invalides.');
+    }
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.chantierSousTraitant.deleteMany({ where: { chantierId: id } });
+      await transaction.chantierSousTraitant.createMany({
+        data: sousTraitantIds.map((sousTraitantId) => ({ chantierId: id, sousTraitantId })),
+      });
+    });
+    return this.findOne(id, currentUser);
+  }
+
+  async savePlan2d(
+    id: number,
+    plan2d: Record<string, unknown>,
+    currentUser: CurrentUserPayload,
+    imageDataUrl?: string,
+  ) {
+    const chantier = await this.ensureChantierInCompany(id, currentUser.companyId);
+    const documentUrl = imageDataUrl?.startsWith('data:image/')
+      ? imageDataUrl
+      : `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(plan2d))}`;
+    const documentName = imageDataUrl?.startsWith('data:image/')
+      ? `Plan 2D - ${chantier.reference}.png`
+      : `Plan 2D - ${chantier.reference}.json`;
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: plan2d as Prisma.InputJsonValue },
+      });
+      await transaction.documentChantier.create({
+        data: {
+          chantierId: id,
+          nom: documentName,
+          type: 'PLAN_2D',
+          url: documentUrl,
+        },
+      });
+    });
+
+    return this.findOne(id, currentUser);
+  }
+
+  async removePlan2d(id: number, currentUser: CurrentUserPayload) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: Prisma.JsonNull },
+      });
+    });
+
+    return this.findOne(id, currentUser);
   }
 
   async create(dto: CreateChantierDto, currentUser: CurrentUserPayload) {
@@ -744,6 +825,15 @@ export class ChantiersService {
 
     if (dto.chefChantierId) {
       await this.ensureChefInCompany(dto.chefChantierId, currentUser.companyId);
+    }
+
+    // P0.5 : toute transition de statut Chantier passe par le service central
+    if (dto.statut) {
+      await this.workflowStateService.validateChantierTransition(
+        id,
+        dto.statut,
+        currentUser.companyId,
+      );
     }
 
     return this.prisma.chantier.update({

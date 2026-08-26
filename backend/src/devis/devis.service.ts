@@ -35,17 +35,6 @@ import type {
   Unite,
 } from '../../generated/prisma/client.js';
 
-const TRANSITIONS: Record<string, string[]> = {
-  BROUILLON: ['ENVOYE', 'ANNULE'],
-  ENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ACCEPTE: ['SIGNE', 'ANNULE'],
-  SIGNE: [],
-  REFUSE: ['REVISE', 'ANNULE'],
-  REVISE: ['RENVOYE', 'ANNULE'],
-  RENVOYE: ['ACCEPTE', 'REFUSE', 'ANNULE'],
-  ANNULE: [],
-};
-
 const MAX_SIGNATURE_OTP_ATTEMPTS = 3;
 
 interface ValidationTokenPayload {
@@ -125,6 +114,7 @@ export class DevisService {
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly workflowStateService: WorkflowStateService,
   ) {}
 
   private normalizePhone(phone: string) {
@@ -1258,24 +1248,13 @@ export class DevisService {
     const current = devis.statut as string;
     const next = dto.statut as string;
 
-    const allowed = TRANSITIONS[current] ?? [];
-    if (!allowed.includes(next)) {
-      throw new BadRequestException(
-        `Transition ${current} -> ${next} non autorisee. Transitions possibles : ${
-          allowed.length ? allowed.join(', ') : 'aucune (statut final)'
-        }`,
-      );
-    }
-
-    // P0.6 : Impossible de signer ou d'accepter un devis sans lignes
-    if (next === 'ACCEPTE' || next === 'SIGNE') {
-      const lignesCount = await this.prisma.ligneDevis.count({ where: { devisId: id } });
-      if (lignesCount === 0) {
-        throw new BadRequestException(
-          'Impossible de valider un devis ne contenant aucune ligne.',
-        );
-      }
-    }
+    // P0.5 : la validation de transition (et la règle P0.6 "pas de lignes")
+    // passe par le service central unique, partagé avec les Chantiers.
+    await this.workflowStateService.validateDevisTransition(
+      id,
+      next as DevisStatut,
+      companyId,
+    );
 
     const updateData: Record<string, unknown> = { statut: next as DevisStatut };
 
@@ -1410,6 +1389,11 @@ export class DevisService {
           ? 'ENVOYE'
           : (devis.statut as DevisStatut);
 
+    WorkflowStateService.validateDevisStatusTransition(
+      devis.statut,
+      nextStatus,
+    );
+
     const updatedDevis = await this.prisma.devis.update({
       where: { id },
       data: {
@@ -1488,6 +1472,11 @@ export class DevisService {
       dto.decision === ClientValidationDecision.ACCEPTE
         ? { statut: 'ACCEPTE' as DevisStatut, dateValidation: new Date() }
         : { statut: 'REFUSE' as DevisStatut };
+
+    WorkflowStateService.validateDevisStatusTransition(
+      devis.statut,
+      data.statut,
+    );
 
     const updatedDevis = await this.prisma.devis.update({
       where: { id: devis.id },
@@ -1887,6 +1876,13 @@ export class DevisService {
 
     const signedAt = new Date();
 
+    if (request.devis.signatureConseillerBase64) {
+      await this.workflowStateService.ensureDevisHasLines(
+        request.devisId,
+        request.devis.companyId,
+      );
+    }
+
     await this.prisma.$transaction(async (tx) => {
       await tx.devisClientSignatureRequest.update({
         where: { id: request.id },
@@ -1902,6 +1898,10 @@ export class DevisService {
       };
 
       if (request.devis.signatureConseillerBase64) {
+        WorkflowStateService.validateDevisStatusTransition(
+          request.devis.statut,
+          'SIGNE',
+        );
         data.statut = 'SIGNE';
         data.dateValidation = signedAt;
       }
@@ -1980,7 +1980,9 @@ export class DevisService {
       );
     }
 
+    await this.workflowStateService.ensureDevisHasLines(id, companyId);
     const signedAt = new Date();
+    WorkflowStateService.validateDevisStatusTransition(devis.statut, 'SIGNE');
     const updated = await this.prisma.devis.update({
       where: { id: devis.id },
       data: {

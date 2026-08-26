@@ -13,7 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/date-utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Tache {
   id: number;
@@ -57,14 +57,11 @@ export default function SousTraitantTacheDetailPage() {
       return response.data;
     },
     enabled: !!id,
-    onSuccess: (data) => {
-      setFormData({
-        statut: data.statut,
-        avancement: data.avancement,
-        commentaire: data.commentaire || '',
-      });
-    },
   });
+  useEffect(() => {
+    if (!tache) return;
+    setFormData({ statut: tache.statut, avancement: tache.avancement, commentaire: tache.commentaire || '' });
+  }, [tache]);
 
   const updateMutation = useMutation({
     mutationFn: async () => {

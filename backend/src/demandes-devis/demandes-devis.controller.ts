@@ -71,11 +71,13 @@ export class DemandesDevisController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   findAll(@Query() query: QueryDemandeDevisDto, @CurrentUser() user: CurrentUserPayload) {
     return this.service.findAll(query, user.companyId);
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: CurrentUserPayload) {
     return this.service.findOne(id, user.companyId);
   }

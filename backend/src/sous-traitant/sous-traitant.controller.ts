@@ -30,6 +30,12 @@ import { UpdateTacheProgressDto } from './dto/update-tache-progress.dto.js';
 export class SousTraitantController {
   constructor(private readonly sousTraitantService: SousTraitantService) {}
 
+  @Get('profil')
+  @ApiOperation({ summary: 'Consulter mon profil administratif' })
+  async getProfil(@CurrentUser() user: CurrentUserPayload) {
+    return this.sousTraitantService.getProfilLimite(user);
+  }
+
   @Get('dashboard')
   @ApiOperation({
     summary: 'Tableau de bord Sous-traitant',
@@ -86,10 +92,20 @@ export class SousTraitantController {
     return this.sousTraitantService.getTachesAssignees(user);
   }
 
+  @Get('taches/:id')
+  @ApiOperation({ summary: 'Detail d une tache assignee' })
+  async getTacheDetail(
+    @Param('id', ParseIntPipe) tacheId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.sousTraitantService.getTacheDetail(tacheId, user);
+  }
+
   @Patch('taches/:id/progress')
   @ApiOperation({
     summary: 'Mettre a jour la progression d une tache',
-    description: 'Update le statut, l avancement et les commentaires d une tache.',
+    description:
+      'Update le statut, l avancement et les commentaires d une tache.',
   })
   @ApiResponse({ status: 200, description: 'Tache mise a jour.' })
   async updateTacheProgress(

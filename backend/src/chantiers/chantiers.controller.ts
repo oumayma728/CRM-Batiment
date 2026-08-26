@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -29,6 +30,7 @@ import { CreateTacheDto } from './dto/create-tache.dto.js';
 import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
+import { UpdateChantierVisibilityDto } from './dto/update-chantier-visibility.dto.js';
 
 @ApiTags('Chantiers')
 @ApiBearerAuth()
@@ -154,6 +156,41 @@ export class ChantiersController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.service.findOne(id, user);
+  }
+
+  @Patch(':id/sous-traitants')
+  @Roles(Role.ADMIN, Role.CHEF_CHANTIER)
+  updateVisibility(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateChantierVisibilityDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.service.updateVisibility(id, dto.sousTraitantIds, user);
+  }
+
+  @Patch(':id/plan-2d')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)
+  savePlan2d(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { plan2d: Record<string, unknown>; imageDataUrl?: string },
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    const plan2d = body.plan2d;
+    if (!plan2d || typeof plan2d !== 'object') {
+      throw new BadRequestException('Le plan 2D est vide ou invalide.');
+    }
+    return this.service.savePlan2d(id, plan2d, user, body.imageDataUrl);
+  }
+
+  @Delete(':id/plan-2d')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)
+  @ApiOperation({ summary: 'Supprimer le plan 2D du chantier' })
+  @ApiParam({ name: 'id', type: Number })
+  removePlan2d(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.service.removePlan2d(id, user);
   }
 
   @Patch(':id')

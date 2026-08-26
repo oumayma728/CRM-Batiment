@@ -7,7 +7,8 @@ type NotificationLevel = 'info' | 'success' | 'warning';
 type NotificationCategory =
   | 'SUPPLIER_STATUS'
   | 'RECEPTION_PARTIELLE'
-  | 'RECEPTION_COMPLETE';
+  | 'RECEPTION_COMPLETE'
+  | 'INSURANCE_EXPIRY';
 
 interface CreateInternalNotificationPayload {
   companyId: number;
@@ -77,6 +78,7 @@ export class NotificationsService {
             'NOTIFICATION_RECEPTION_PARTIELLE',
             'NOTIFICATION_RECEPTION_COMPLETE',
             'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+            'NOTIFICATION_SUBCONTRACTOR_INSURANCE_EXPIRY',
           ],
         },
       },
@@ -155,6 +157,9 @@ export class NotificationsService {
         ).length,
         urgentesAssistant: items.filter(
           (item) => item.action === 'NOTIFICATION_ASSISTANT_URGENT_DEVIS',
+        ).length,
+        assurancesExpirantes: items.filter(
+          (item) => item.category === 'INSURANCE_EXPIRY',
         ).length,
       },
     };

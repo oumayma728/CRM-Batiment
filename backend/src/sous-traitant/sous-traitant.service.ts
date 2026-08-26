@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
 import type { TacheStatut } from '../../generated/prisma/client.js';
@@ -6,6 +10,55 @@ import type { TacheStatut } from '../../generated/prisma/client.js';
 @Injectable()
 export class SousTraitantService {
   constructor(private prisma: PrismaService) {}
+
+  /** Administrative data visible only to the linked subcontractor account. */
+  async getProfilLimite(user: CurrentUserPayload) {
+    const profil = await this.prisma.sousTraitant.findFirst({
+      where: { companyId: user.companyId, userId: user.userId, actif: true },
+      select: {
+        id: true,
+        nom: true,
+        contact: true,
+        email: true,
+        telephone: true,
+        adresse: true,
+        specialite: true,
+        contrats: {
+          select: {
+            id: true,
+            reference: true,
+            dateDebut: true,
+            dateFin: true,
+            statut: true,
+          },
+        },
+        assurances: {
+          select: {
+            id: true,
+            type: true,
+            compagnie: true,
+            numeroPolice: true,
+            dateDebut: true,
+            dateExpiration: true,
+          },
+        },
+        disponibilites: {
+          select: {
+            id: true,
+            dateDebut: true,
+            dateFin: true,
+            disponible: true,
+            notes: true,
+          },
+        },
+      },
+    });
+    if (!profil)
+      throw new NotFoundException(
+        'Aucun profil sous-traitant lie a ce compte.',
+      );
+    return profil;
+  }
 
   /**
    * Get list of worksites assigned to the current subcontractor
@@ -15,15 +68,14 @@ export class SousTraitantService {
     const chantiers = await this.prisma.chantier.findMany({
       where: {
         companyId: user.companyId,
-        taches: {
-          some: {
-            affectations: {
-              some: {
-                userId: user.userId,
-              },
+        OR: [
+          { sousTraitantsVisibles: { some: { sousTraitantId: user.userId } } },
+          {
+            taches: {
+              some: { affectations: { some: { userId: user.userId } } },
             },
           },
-        },
+        ],
       },
       include: {
         client: true,
@@ -52,18 +104,14 @@ export class SousTraitantService {
       ...chantier,
       metrics: {
         totalTaches: chantier.taches.length,
-        tachesTerminees: chantier.taches.filter(
-          (t) => t.statut === 'TERMINEE',
-        ).length,
-        tachesEnCours: chantier.taches.filter(
-          (t) => t.statut === 'EN_COURS',
-        ).length,
-        tachesAFaire: chantier.taches.filter(
-          (t) => t.statut === 'A_FAIRE',
-        ).length,
-        tachesBloquees: chantier.taches.filter(
-          (t) => t.statut === 'BLOQUEE',
-        ).length,
+        tachesTerminees: chantier.taches.filter((t) => t.statut === 'TERMINEE')
+          .length,
+        tachesEnCours: chantier.taches.filter((t) => t.statut === 'EN_COURS')
+          .length,
+        tachesAFaire: chantier.taches.filter((t) => t.statut === 'A_FAIRE')
+          .length,
+        tachesBloquees: chantier.taches.filter((t) => t.statut === 'BLOQUEE')
+          .length,
       },
     }));
   }
@@ -113,8 +161,33 @@ export class SousTraitantService {
     return taches.map((tache) => ({
       ...tache,
       isOverdue:
-        tache.dateFin && new Date(tache.dateFin) < new Date() && tache.statut !== 'TERMINEE',
+        tache.dateFin &&
+        new Date(tache.dateFin) < new Date() &&
+        tache.statut !== 'TERMINEE',
     }));
+  }
+
+  async getTacheDetail(tacheId: number, user: CurrentUserPayload) {
+    const tache = await this.prisma.tache.findFirst({
+      where: {
+        id: tacheId,
+        affectations: { some: { userId: user.userId } },
+        chantier: { companyId: user.companyId },
+      },
+      include: {
+        chantier: { include: { client: true } },
+        affectations: { include: { user: true, equipe: true } },
+      },
+    });
+    if (!tache) throw new BadRequestException('Tache non assignee.');
+    return {
+      ...tache,
+      isOverdue: Boolean(
+        tache.dateFin &&
+        new Date(tache.dateFin) < new Date() &&
+        tache.statut !== 'TERMINEE',
+      ),
+    };
   }
 
   /**
@@ -125,15 +198,14 @@ export class SousTraitantService {
       where: {
         id: chantierId,
         companyId: user.companyId,
-        taches: {
-          some: {
-            affectations: {
-              some: {
-                userId: user.userId,
-              },
+        OR: [
+          { sousTraitantsVisibles: { some: { sousTraitantId: user.userId } } },
+          {
+            taches: {
+              some: { affectations: { some: { userId: user.userId } } },
             },
           },
-        },
+        ],
       },
       include: {
         client: true,
@@ -168,18 +240,14 @@ export class SousTraitantService {
       ...chantier,
       metrics: {
         totalTaches: chantier.taches.length,
-        tachesTerminees: chantier.taches.filter(
-          (t) => t.statut === 'TERMINEE',
-        ).length,
-        tachesEnCours: chantier.taches.filter(
-          (t) => t.statut === 'EN_COURS',
-        ).length,
-        tachesAFaire: chantier.taches.filter(
-          (t) => t.statut === 'A_FAIRE',
-        ).length,
-        tachesBloquees: chantier.taches.filter(
-          (t) => t.statut === 'BLOQUEE',
-        ).length,
+        tachesTerminees: chantier.taches.filter((t) => t.statut === 'TERMINEE')
+          .length,
+        tachesEnCours: chantier.taches.filter((t) => t.statut === 'EN_COURS')
+          .length,
+        tachesAFaire: chantier.taches.filter((t) => t.statut === 'A_FAIRE')
+          .length,
+        tachesBloquees: chantier.taches.filter((t) => t.statut === 'BLOQUEE')
+          .length,
       },
     };
   }
@@ -189,17 +257,18 @@ export class SousTraitantService {
    */
   async getDocumentsChantier(chantierId: number, user: CurrentUserPayload) {
     // Verify access: user must have tasks assigned on this chantier
-    const hasAccess = await this.prisma.tache.findFirst({
+    const hasAccess = await this.prisma.chantier.findFirst({
       where: {
-        chantierId,
-        chantier: {
-          companyId: user.companyId,
-        },
-        affectations: {
-          some: {
-            userId: user.userId,
+        id: chantierId,
+        companyId: user.companyId,
+        OR: [
+          { sousTraitantsVisibles: { some: { sousTraitantId: user.userId } } },
+          {
+            taches: {
+              some: { affectations: { some: { userId: user.userId } } },
+            },
           },
-        },
+        ],
       },
     });
 
@@ -279,7 +348,13 @@ export class SousTraitantService {
    * Get dashboard summary for the subcontractor
    */
   async getDashboard(user: CurrentUserPayload) {
-    const [chantiersTotal, tachesAFaire, tachesEnCours, tachesTerminees, tachesBloquees] = await Promise.all([
+    const [
+      chantiersTotal,
+      tachesAFaire,
+      tachesEnCours,
+      tachesTerminees,
+      tachesBloquees,
+    ] = await Promise.all([
       this.prisma.chantier.count({
         where: {
           companyId: user.companyId,
