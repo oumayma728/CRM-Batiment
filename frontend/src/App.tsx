@@ -8,12 +8,12 @@ import AppLayout from '@/layouts/AppLayout';
 import ChefChantierLayout from '@/layouts/ChefChantierLayout';
 import SousTraitantLayout from '@/layouts/SousTraitantLayout';
 import FournisseurLayout from '@/layouts/FournisseurLayout';
-import TechnicoLayout from '@/pages/technico/workflow.module';
+import TechnicoLayout from '@/layouts/TechnicoLayout';
 
 // Public & Common pages
-import HomeLandingPage from '@/pages/HomeLandingPage';
+import HomeLandingPage from '@/pages/loginPage2';
 import LoginPage from '@/pages/LoginPage';
-import LoginTest from '@/pages/LoginTest';
+import { LoginTest } from '@/pages/LoginTest';
 import PublicDemoRequestPage from '@/pages/PublicDemoRequestPage';
 import ClientDevisValidationPage from '@/pages/ClientDevisValidationPage';
 import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
@@ -28,8 +28,8 @@ import ClientsPage from '@/pages/ClientsPage';
 import DemandesDevisPage from '@/pages/DemandesDevisPage';
 import DemoRequestsPage from '@/pages/DemoRequestsPage';
 import DevisPage from '@/pages/DevisPage';
-import FacturesPage from '@/pages/factures/FacturesListPage';
-import FactureDetailPage from '@/pages/factures/FactureEditorPage';
+import FacturesPage from '@/pages/FacturesPage';
+import FactureDetailPage from '@/pages/FactureDetailPage';
 import PrestationsPage from '@/pages/PrestationsPage';
 import PrestationCompositionsPage from '@/pages/PrestationCompositionsPage';
 import MateriauxPage from '@/pages/MateriauxPage';

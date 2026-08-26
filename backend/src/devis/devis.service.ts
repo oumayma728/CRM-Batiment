@@ -1145,7 +1145,7 @@ export class DevisService {
     return devis;
   }
 
-  async update(id: number, dto: UpdateDevisDto, companyId: number) {
+  async update(id: number, dto: UpdateDevisDto, companyId: number, userId?: number) {
     const devis = await this.findOne(id, companyId);
 
     if (devis.statut === 'SIGNE' || devis.statut === 'ANNULE') {
@@ -1167,7 +1167,7 @@ export class DevisService {
     });
   }
 
-  async updateStatut(id: number, dto: UpdateDevisStatutDto, companyId: number) {
+  async updateStatut(id: number, dto: UpdateDevisStatutDto, companyId: number, userId?: number) {
     const devis = await this.findOne(id, companyId);
     const current = devis.statut as string;
     const next = dto.statut as string;
@@ -2168,6 +2168,7 @@ export class DevisService {
     ligneId: number,
     dto: UpdateLigneDevisDto,
     companyId: number,
+    userId?: number,
   ) {
     const devis = await this.findOne(devisId, companyId);
 

@@ -149,6 +149,21 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get notationSousTraitant() {
     return this._client.notationSousTraitant;
   }
+  get mouvementStock() {
+    return this._client.mouvementStock;
+  }
+  get savTicket() {
+    return this._client.savTicket;
+  }
+  get savTicketNote() {
+    return this._client.savTicketNote;
+  }
+  get demoRequest() {
+    return this._client.demoRequest;
+  }
+  get assistantFeedback() {
+    return this._client.assistantFeedback;
+  }
 
   // Transaction support
   $transaction(

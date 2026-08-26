@@ -12,7 +12,7 @@ import {
   Search, Edit, Trash2, X, ChevronLeft, ChevronRight,
   Users, Phone, Mail, Building, Loader2,
   MapPin, Home, FileText, Zap, PhoneCall, Upload,
-  Info, HardHat, AlertTriangle, CheckCircle2, Sparkles,
+  Info, HardHat, AlertTriangle, CheckCircle2, Sparkles, UserPlus,
 } from 'lucide-react';
 /* ───── Config labels ───── */
 const sourceLabels: Record<string, { label: string; bg: string; text: string }> = {

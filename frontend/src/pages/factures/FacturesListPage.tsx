@@ -8,7 +8,7 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { Facture, FactureSourceDevis, PaginatedResponse } from '@/types';
 
 interface FacturesListPageProps {
-  scope: 'admin' | 'technico';
+  scope: 'admin' | 'technico' | 'assistante';
 }
 
 const factureStatusLabel: Record<Facture['statut'], string> = {
@@ -43,7 +43,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     null,
   );
 
-  const basePath = scope === 'admin' ? '/admin/factures' : '/technico/factures';
+  const basePath = scope === 'admin' ? '/admin/factures' : scope === 'assistante' ? '/assistante/factures' : '/technico/factures';
 
   const devisSourcesQuery = useQuery({
     queryKey: ['factures-devis-sources', scope, pageDevis, search],

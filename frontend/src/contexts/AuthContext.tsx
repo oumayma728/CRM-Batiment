@@ -10,6 +10,7 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (updatedUser: Partial<User>) => void;
   isAuthenticated: boolean;
+  setSession: (token: string, user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -53,8 +54,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser((currentUser) => (currentUser ? { ...currentUser, ...updatedUser } : currentUser));
   };
 
+  const setSession = (token: string, user: User) => {
+    setToken(token);
+    setUser(user);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token, setSession }}>
       {children}
     </AuthContext.Provider>
   );

@@ -8,69 +8,77 @@ datasource db {
 }
 
 model Company {
-  id                    Int                   @id @default(autoincrement())
-  nom                   String
-  siret                 String?               @unique
-  adresse               String?
-  telephone             String?
-  email                 String?
-  logo                  String?
-  tvaDefaut             Float                 @default(20.0)
-  devise                String                @default("EUR")
-  createdAt             DateTime              @default(now())
-  updatedAt             DateTime              @updatedAt
-  auditLogs             AuditLog[]
-  categoriesPrestations CategoriePrestation[]
-  chantiers             Chantier[]
-  chatSessions          ChatSession[]
-  clients               Client[]
-  demandesDevis         DemandeDevis[]
-  devis                 Devis[]
-  equipes               Equipe[]
-  fournisseurs          Fournisseur[]
-  materiaux             Materiau[]
-  prestations           Prestation[]
-  ragDocuments          RagDocument[]
-  servicesMainOeuvre    ServiceMainOeuvre[]
-  typesProjet           TypeProjet[]
-  utilisateurs          User[]
-  sousTraitants          SousTraitant[]
-  contratsSousTraitant   ContratSousTraitant[]
-  assurancesSousTraitant AssuranceSousTraitant[]
-  paiementsSousTraitant  PaiementSousTraitant[]
+  id                         Int                         @id @default(autoincrement())
+  nom                        String
+  siret                      String?                     @unique
+  adresse                    String?
+  telephone                  String?
+  email                      String?
+  logo                       String?
+  tvaDefaut                  Float                       @default(20.0)
+  devise                     String                      @default("EUR")
+  createdAt                  DateTime                    @default(now())
+  updatedAt                  DateTime                    @updatedAt
+  auditLogs                  AuditLog[]
+  categoriesPrestations      CategoriePrestation[]
+  chantiers                  Chantier[]
+  chatSessions               ChatSession[]
+  clients                    Client[]
+  demandesDevis              DemandeDevis[]
+  devis                      Devis[]
+  equipes                    Equipe[]
+  fournisseurs               Fournisseur[]
+  materiaux                  Materiau[]
+  prestations                Prestation[]
+  ragDocuments               RagDocument[]
+  servicesMainOeuvre         ServiceMainOeuvre[]
+  typesProjet                TypeProjet[]
+  utilisateurs               User[]
+  sousTraitants              SousTraitant[]
+  contratsSousTraitant       ContratSousTraitant[]
+  assurancesSousTraitant     AssuranceSousTraitant[]
+  paiementsSousTraitant      PaiementSousTraitant[]
   disponibilitesSousTraitant DisponibiliteSousTraitant[]
-  notationsSousTraitant  NotationSousTraitant[]
+  notationsSousTraitant      NotationSousTraitant[]
+  savTickets                 SavTicket[]
+  demoRequests               DemoRequest[]
+  mouvementsStock            MouvementStock[]
 
   @@map("companies")
 }
 
 model User {
-  id                 Int                @id @default(autoincrement())
-  companyId          Int
-  nom                String
-  prenom             String
-  email              String             @unique
-  password           String
-  role               Role
-  telephone          String?
-  actif              Boolean            @default(true)
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  mustChangePassword Boolean            @default(true)
-  signatureBase64    String?
-  signatureUpdatedAt DateTime?
-  affectationsTaches AffectationTache[]
-  auditLogs          AuditLog[]
-  chantiersChef      Chantier[]         @relation("ChefChantier")
-  demandesCreees     DemandeDevis[]     @relation("DemandeCreateur")
-  devisCrees         Devis[]            @relation("DevisCreateur")
-  messagesChat       MessageChat[]
-  company            Company            @relation(fields: [companyId], references: [id])
-  versionsDevis      VersionDevis[]     @relation("VersionAuteur")
-  resetCodeHash      String?
-  resetCodeExpiresAt DateTime?
-  chantiersVisibles  ChantierSousTraitant[]
-  profilSousTraitant SousTraitant?      @relation("CompteSousTraitant")
+  id                   Int                    @id @default(autoincrement())
+  companyId            Int
+  nom                  String
+  prenom               String
+  email                String                 @unique
+  password             String
+  role                 Role
+  telephone            String?
+  actif                Boolean                @default(true)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  mustChangePassword   Boolean                @default(true)
+  signatureBase64      String?
+  signatureUpdatedAt   DateTime?
+  affectationsTaches   AffectationTache[]
+  auditLogs            AuditLog[]
+  chantiersChef        Chantier[]             @relation("ChefChantier")
+  demandesCreees       DemandeDevis[]         @relation("DemandeCreateur")
+  devisCrees           Devis[]                @relation("DevisCreateur")
+  messagesChat         MessageChat[]
+  company              Company                @relation(fields: [companyId], references: [id])
+  versionsDevis        VersionDevis[]         @relation("VersionAuteur")
+  resetCodeHash        String?
+  resetCodeExpiresAt   DateTime?
+  chantiersVisibles    ChantierSousTraitant[]
+  savTicketsCreees     SavTicket[]            @relation("SavTicketCreateur")
+  savTicketsAssignes   SavTicket[]            @relation("SavTicketAssigne")
+  demoRequestsAssignes DemoRequest[]          @relation("DemoRequestAssigne")
+  profilSousTraitant   SousTraitant?          @relation("CompteSousTraitant")
+  mouvementStocks      MouvementStock[]
+  savTicketNotes       SavTicketNote[]
 
   @@index([companyId])
   @@index([email])
@@ -112,6 +120,7 @@ model Client {
   besoin          String?
   typeProjetId    Int?
   chantiers       Chantier[]
+  savTickets      SavTicket[]
   company         Company            @relation(fields: [companyId], references: [id])
   typeProjet      TypeProjet?        @relation("PrimaryClientTypeProjet", fields: [typeProjetId], references: [id])
   typeProjetLinks ClientTypeProjet[]
@@ -138,6 +147,7 @@ model ClientTypeProjet {
 }
 
 model DemandeDevis {
+  reference       String        @unique @default("")
   id              Int           @id @default(autoincrement())
   companyId       Int
   clientId        Int
@@ -314,6 +324,9 @@ model Materiau {
   lignesDevis       LigneDevis[]
   company           Company                  @relation(fields: [companyId], references: [id])
   fournisseur       Fournisseur?             @relation(fields: [fournisseurId], references: [id])
+  stockActuel       Float                    @default(0)
+  stockMinimum      Float                    @default(0)
+  mouvementsStock   MouvementStock[]
   compositions      PrestationComposition[]
 
   @@index([companyId])
@@ -342,6 +355,7 @@ model ServiceMainOeuvre {
 }
 
 model Devis {
+  savTickets                SavTicket[]
   id                        Int                           @id @default(autoincrement())
   companyId                 Int
   clientId                  Int
@@ -498,6 +512,7 @@ model Facture {
   datePaiement          DateTime?
   devis                 Devis          @relation(fields: [devisId], references: [id])
   lignes                FactureLigne[]
+  savTickets            SavTicket[]
 
   @@index([devisId])
   @@index([statut])
@@ -617,29 +632,30 @@ model Reception {
 }
 
 model Chantier {
-  plan2d                 Json?
-  id             Int                @id @default(autoincrement())
-  companyId      Int
-  clientId       Int
-  chefChantierId Int?
-  reference      String             @unique
-  adresse        String
-  description    String?
-  statut         ChantierStatut     @default(VISITE_TECHNIQUE)
-  dateDebut      DateTime?
-  dateFin        DateTime?
-  notes          String?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  chefChantier   User?              @relation("ChefChantier", fields: [chefChantierId], references: [id])
-  client         Client             @relation(fields: [clientId], references: [id])
-  company        Company            @relation(fields: [companyId], references: [id])
+  plan2d                Json?
+  id                    Int                    @id @default(autoincrement())
+  companyId             Int
+  clientId              Int
+  chefChantierId        Int?
+  reference             String                 @unique
+  adresse               String
+  description           String?
+  statut                ChantierStatut         @default(VISITE_TECHNIQUE)
+  dateDebut             DateTime?
+  dateFin               DateTime?
+  notes                 String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  chefChantier          User?                  @relation("ChefChantier", fields: [chefChantierId], references: [id])
+  client                Client                 @relation(fields: [clientId], references: [id])
+  company               Company                @relation(fields: [companyId], references: [id])
   sousTraitantsVisibles ChantierSousTraitant[]
-  devis                  Devis[]
-  documents              DocumentChantier[]
-  taches                 Tache[]
-  contratsSousTraitant   ContratSousTraitant[]
-  notationsSousTraitant  NotationSousTraitant[]
+  devis                 Devis[]
+  documents             DocumentChantier[]
+  taches                Tache[]
+  contratsSousTraitant  ContratSousTraitant[]
+  notationsSousTraitant NotationSousTraitant[]
+  savTickets            SavTicket[]
 
   @@index([companyId])
   @@index([clientId])
@@ -900,9 +916,9 @@ enum ModeValidation {
 }
 
 model SousTraitant {
-  id             Int                        @id @default(autoincrement())
+  id             Int                         @id @default(autoincrement())
   companyId      Int
-  userId         Int?                       @unique
+  userId         Int?                        @unique
   nom            String
   contact        String?
   siret          String?
@@ -910,12 +926,12 @@ model SousTraitant {
   telephone      String?
   adresse        String?
   specialite     String?
-  statut         String                     @default("ACTIF")
-  actif          Boolean                    @default(true)
-  createdAt      DateTime                   @default(now())
-  updatedAt      DateTime                   @updatedAt
-  company        Company                    @relation(fields: [companyId], references: [id])
-  utilisateur    User?                      @relation("CompteSousTraitant", fields: [userId], references: [id], onDelete: SetNull)
+  statut         String                      @default("ACTIF")
+  actif          Boolean                     @default(true)
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+  company        Company                     @relation(fields: [companyId], references: [id])
+  utilisateur    User?                       @relation("CompteSousTraitant", fields: [userId], references: [id], onDelete: SetNull)
   contrats       ContratSousTraitant[]
   assurances     AssuranceSousTraitant[]
   paiements      PaiementSousTraitant[]
@@ -1010,27 +1026,26 @@ model DisponibiliteSousTraitant {
 }
 
 model NotationSousTraitant {
-  id               Int          @id @default(autoincrement())
-  companyId        Int
-  sousTraitantId   Int
-  chantierId       Int?
-  noteQualite      Int
-  noteDelai        Int
+  id                Int          @id @default(autoincrement())
+  companyId         Int
+  sousTraitantId    Int
+  chantierId        Int?
+  noteQualite       Int
+  noteDelai         Int
   noteCommunication Int
-  noteGlobale      Float
-  commentaire      String?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  company          Company      @relation(fields: [companyId], references: [id])
-  sousTraitant     SousTraitant @relation(fields: [sousTraitantId], references: [id])
-  chantier         Chantier?    @relation(fields: [chantierId], references: [id])
+  noteGlobale       Float
+  commentaire       String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  company           Company      @relation(fields: [companyId], references: [id])
+  sousTraitant      SousTraitant @relation(fields: [sousTraitantId], references: [id])
+  chantier          Chantier?    @relation(fields: [chantierId], references: [id])
 
   @@index([companyId])
   @@index([sousTraitantId])
   @@index([chantierId])
   @@map("notations_sous_traitant")
 }
-
 
 model ChantierSousTraitant {
   chantierId     Int
@@ -1041,4 +1056,161 @@ model ChantierSousTraitant {
   @@id([chantierId, sousTraitantId])
   @@index([sousTraitantId])
   @@map("chantiers_sous_traitants")
+}
+
+model MouvementStock {
+  id         Int                @id @default(autoincrement())
+  companyId  Int
+  materiauId Int
+  userId     Int?
+  type       TypeMouvementStock
+  quantite   Float
+  stockAvant Float
+  stockApres Float
+  motif      String?
+  reference  String?
+  createdAt  DateTime           @default(now())
+  company    Company            @relation(fields: [companyId], references: [id])
+  materiau   Materiau           @relation(fields: [materiauId], references: [id])
+  user       User?              @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([materiauId])
+  @@index([createdAt])
+  @@map("mouvements_stock")
+}
+
+model SavTicket {
+  id             Int                @id @default(autoincrement())
+  companyId      Int
+  clientId       Int
+  devisId        Int?
+  factureId      Int?
+  chantierId     Int?
+  createurId     Int
+  assignedToId   Int?
+  reference      String             @unique
+  titre          String
+  description    String
+  statut         SavTicketStatut    @default(OUVERT)
+  priorite       SavTicketPriorite  @default(NORMALE)
+  categorie      SavTicketCategorie @default(AUTRE)
+  dateEcheance   DateTime?
+  dateResolution DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  company    Company         @relation(fields: [companyId], references: [id])
+  client     Client          @relation(fields: [clientId], references: [id])
+  devis      Devis?          @relation(fields: [devisId], references: [id])
+  facture    Facture?        @relation(fields: [factureId], references: [id])
+  chantier   Chantier?       @relation(fields: [chantierId], references: [id])
+  createur   User            @relation("SavTicketCreateur", fields: [createurId], references: [id])
+  assignedTo User?           @relation("SavTicketAssigne", fields: [assignedToId], references: [id])
+  notes      SavTicketNote[]
+
+  @@index([companyId])
+  @@index([clientId])
+  @@index([devisId])
+  @@index([factureId])
+  @@index([chantierId])
+  @@index([statut])
+  @@index([priorite])
+  @@index([createdAt])
+  @@map("sav_tickets")
+}
+
+model SavTicketNote {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  userId    Int
+  contenu   String
+  createdAt DateTime @default(now())
+
+  ticket SavTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User      @relation(fields: [userId], references: [id])
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("sav_ticket_notes")
+}
+
+model DemoRequest {
+  id           Int               @id @default(autoincrement())
+  companyId    Int?
+  assignedToId Int?
+  nom          String
+  prenom       String?
+  email        String
+  telephone    String?
+  entreprise   String?
+  message      String?
+  statut       DemoRequestStatut @default(PENDING)
+  source       String            @default("PUBLIC_FORM")
+  dateContact  DateTime?
+  dateDemo     DateTime?
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  company    Company? @relation(fields: [companyId], references: [id])
+  assignedTo User?    @relation("DemoRequestAssigne", fields: [assignedToId], references: [id])
+
+  @@index([companyId])
+  @@index([assignedToId])
+  @@index([statut])
+  @@index([email])
+  @@index([createdAt])
+  @@map("demo_requests")
+}
+
+model AssistantFeedback {
+  id             Int      @id @default(autoincrement())
+  companyId      Int
+  sessionId      Int?
+  messageExcerpt String?
+  rating         String
+  createdAt      DateTime @default(now())
+
+  @@index([companyId])
+  @@index([rating])
+  @@map("assistant_feedbacks")
+}
+
+enum TypeMouvementStock {
+  ENTREE
+  SORTIE
+  AJUSTEMENT
+}
+
+enum SavTicketStatut {
+  OUVERT
+  EN_COURS
+  EN_ATTENTE_CLIENT
+  RESOLU
+  CLOTURE
+}
+
+enum SavTicketPriorite {
+  BASSE
+  NORMALE
+  HAUTE
+  URGENTE
+}
+
+enum SavTicketCategorie {
+  DEFAUT_TRAVAUX
+  RETARD
+  FACTURATION
+  QUALITE
+  SAV_TECHNIQUE
+  AUTRE
+}
+
+enum DemoRequestStatut {
+  PENDING
+  CONTACTED
+  SCHEDULED
+  DONE
+  CANCELED
 }

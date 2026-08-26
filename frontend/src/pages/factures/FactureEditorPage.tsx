@@ -15,7 +15,7 @@ import { cn, formatCurrency } from '@/lib/utils';
 import type { FactureDetail } from '@/types';
 
 interface FactureEditorPageProps {
-  scope: 'admin' | 'technico';
+  scope: 'admin' | 'technico' | 'assistante';
 }
 
 interface FactureDraft {
@@ -158,7 +158,7 @@ export default function FactureEditorPage({ scope }: FactureEditorPageProps) {
   const [showPrintPreview, setShowPrintPreview] = useState(false);
 
   const factureId = Number(id);
-  const basePath = scope === 'admin' ? '/admin/factures' : '/technico/factures';
+  const basePath = scope === 'admin' ? '/admin/factures' : scope === 'assistante' ? '/assistante/factures' : '/technico/factures';
 
   const factureQuery = useQuery({
     queryKey: ['facture-detail', factureId],

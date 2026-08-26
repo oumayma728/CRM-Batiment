@@ -22,6 +22,8 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   user: User;
+  mustChangePassword?: boolean;
+  tempToken?: string;
 }
 
 export interface TypeProjet {

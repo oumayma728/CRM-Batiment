@@ -8,18 +8,13 @@ import {
 } from 'react-router-dom';
 import {
   Box,
+  Briefcase,
+  UserCircle2,
   Building2,
   Calculator,
   CheckSquare,
   ChevronRight,
   Database,
-<<<<<<< HEAD
-<<<<<<< HEAD
-  Briefcase,
-=======
-  UserCircle2,
->>>>>>> origin/wassim_pre-integration
-=======
   FileSpreadsheet,
   FileText,
   FolderKanban,
@@ -41,7 +36,6 @@ import {
   Warehouse,
   Wrench,
   X,
->>>>>>> origin/main
 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,31 +54,6 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-<<<<<<< HEAD
-  { to: '/admin', label: 'Tableau de bord', icon: <LayoutDashboard size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER', 'SOUS_TRAITANT'] },
-  // Module 1: Clients & Devis
-  { to: '/admin/clients', label: 'Clients', icon: <Users size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'], section: 'Clients & Devis' },
-  { to: '/admin/demandes-devis', label: 'Demandes', icon: <FileText size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/devis', label: 'Devis', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE'] },
-  { to: '/admin/factures', label: 'Mes factures', icon: <Receipt size={19} />, roles: ['ADMIN', 'ASSISTANTE'] },
-  { to: '/admin/commandes-fournisseur', label: 'Commandes fournisseur', icon: <PackageCheck size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Clients & Devis' },
-  // Module 2: Bibliothèque de prix
-  { to: '/admin/prestations', label: 'Prestations', icon: <List size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Bibliothèque Prix' },
-  { to: '/admin/prestations-compositions', label: 'Prestations et leurs compositions', icon: <FileSpreadsheet size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/materiaux', label: 'Matériaux', icon: <Box size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/services-mo', label: 'Main d\'œuvre', icon: <Wrench size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  // Module 3: Fournisseurs
-  { to: '/admin/fournisseurs', label: 'Fournisseurs', icon: <Truck size={19} />, roles: ['ADMIN', 'TECHNICO', 'ASSISTANTE', 'CHEF_CHANTIER'], section: 'Fournisseurs' },
-  { to: '/admin/sous-traitants', label: 'Sous-traitance', icon: <Briefcase size={19} />, roles: ['ADMIN', 'ASSISTANTE'], section: 'Chantiers' },
-  { to: '/admin/chantiers', label: 'Chantiers', icon: <HardHat size={19} />, roles: ['ADMIN', 'ASSISTANTE', 'CHEF_CHANTIER'] },
-  { to: '/admin/taches-chantier', label: 'Taches chantier', icon: <CheckSquare size={19} />, roles: ['ADMIN', 'CHEF_CHANTIER'] },
-  // Administration
-  { to: '/admin/utilisateurs', label: 'Utilisateurs', icon: <Shield size={19} />, roles: ['ADMIN'], section: 'Administration' },
-  { to: '/admin/types-projet', label: 'Types de projet', icon: <FolderKanban size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/base-ia', label: 'Base IA / RAG', icon: <Database size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/parametres-chiffrage', label: 'Paramètres chiffrage', icon: <Settings size={19} />, roles: ['ADMIN'] },
-  { to: '/admin/profil', label: 'Mon Profil', icon: <UserCircle2 size={19} />, roles: ['ADMIN'] },
-=======
   {
     to: '/admin',
     label: 'Tableau de bord',
@@ -215,6 +184,14 @@ const navItems: NavItem[] = [
     icon: <Truck size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
+  {
+    to: '/admin/sous-traitants',
+    label: 'Sous-traitants',
+    description: 'Gestion des sous-traitants',
+    group: 'Référentiel',
+    icon: <Briefcase size={18} />,
+    roles: ['ADMIN'],
+  },
 
   {
     to: '/admin/utilisateurs',
@@ -264,7 +241,14 @@ const navItems: NavItem[] = [
     icon: <Settings size={18} />,
     roles: ['ASSISTANTE'],
   },
->>>>>>> origin/main
+  {
+    to: '/admin/profil',
+    label: 'Mon Profil',
+    description: 'Mon profil utilisateur',
+    group: 'Compte',
+    icon: <UserCircle2 size={18} />,
+    roles: ['ADMIN'],
+  },
 ];
 
 const roleLabels: Record<Role, string> = {
