@@ -1,6 +1,28 @@
-# ArchAI - Analyse Intelligente de Documents BTP
+# ArchAI — Analyse Intelligente de Documents BTP
 
-> Microservice d'extraction OCR et d'estimation de plans architecturaux pour le secteur du batiment.
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=flat-square&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-18%2B-61DAFB?style=flat-square&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Status](https://img.shields.io/badge/Statut-Fonctionnel-success?style=flat-square)
+![License](https://img.shields.io/badge/Licence-Usage%20Interne-lightgrey?style=flat-square)
+
+> Microservice d'extraction OCR et d'estimation de plans architecturaux pour le secteur du batiment, propulse par l'IA.
+
+---
+
+## Table des matieres
+
+- [Contexte](#contexte)
+- [Stack Technique](#stack-technique)
+- [Architecture](#architecture)
+- [Moteurs OCR disponibles](#moteurs-ocr-disponibles)
+- [Endpoints API](#endpoints-api)
+- [Prerequis](#prerequis)
+- [Installation](#installation)
+- [Lancer le projet](#lancer-le-projet)
+- [Interface Utilisateur](#interface-utilisateur)
+- [Tests](#tests)
 
 ---
 
@@ -86,7 +108,7 @@ archai/
 
 | Moteur | Type | Cout | Usage |
 |--------|------|------|-------|
-| Gemini Pro Vision | Vision IA | Gratuit (tier) | **Recommande** Factures et Plans |
+| Gemini Pro Vision | Vision IA | Gratuit (tier) | **Recommande** — Factures et Plans |
 | Mistral Vision | Vision IA | Payant | Alternative cloud |
 | EasyOCR | Local | Gratuit | Offline uniquement |
 | Tesseract | Local | Gratuit | Offline uniquement |
@@ -104,7 +126,7 @@ archai/
 | POST | `/api/ia/devis-from-plan` | Analyse plan PDF + generation devis |
 | GET | `/api/documents` | Liste tous les documents extraits |
 | GET | `/api/documents/{id}` | Detail d'un document |
-| PATCH | `/api/documents/{id}` | Modifier les champs |
+| PATCH | `/api/documents/{id}` | Modifier les champs extraits |
 | PATCH | `/api/documents/{id}/statut` | Changer statut (valide/rejete) |
 | DELETE | `/api/documents/{id}` | Supprimer un document |
 | GET | `/api/documents/{id}/fichier` | Telecharger le fichier original |
@@ -113,83 +135,87 @@ archai/
 
 ---
 
-## Installation
+## Prerequis
 
-### Prerequis systeme (a installer une seule fois)
+Avant de lancer le projet, installez ces 3 logiciels sur votre machine :
 
-#### 1. Python 3.10 a 3.12
+### 1. Python 3.10 — 3.12
 Telechargez sur https://python.org/downloads/
-**Important** : Cochez "Add Python to PATH" lors de l'installation.
 
-#### 2. Node.js 18 ou 20+ (LTS)
-Telechargez sur https://nodejs.org/ (version LTS recommandee).
+> **Important** : Cochez **"Add Python to PATH"** lors de l'installation.
 
-#### 3. Tesseract OCR (moteur local)
-Telechargez l'installeur Windows : https://github.com/UB-Mannheim/tesseract/wiki
+### 2. Node.js 18 ou 20+ (LTS)
+Telechargez la version LTS sur https://nodejs.org/
+
+### 3. Tesseract OCR
+Telechargez l'installeur Windows depuis https://github.com/UB-Mannheim/tesseract/wiki
+
 - Laissez le chemin par defaut : `C:\Program Files\Tesseract-OCR`
-- **Crucial** : Pendant l'installation, cochez le pack de langue **French**.
+- **Crucial** : Lors de l'installation, dans les composants optionnels, cochez le pack de langue **French**. Sans cela, la reconnaissance des textes francais echouera.
 
-> Note : EasyOCR telecharge ses modeles (~2 Go) automatiquement lors du premier appel.
+> **Note** : EasyOCR (~2 Go de modeles) se telecharge automatiquement au premier appel. C'est normal, cela peut prendre quelques minutes.
 
 ---
 
-### Configuration des cles API
+## Installation
+
+### 1. Configuration des cles API
 
 Copiez `.env.example` en `.env` et renseignez vos cles :
 
-```
+```env
 GOOGLE_API_KEY=votre_cle_gemini
 MISTRAL_API_KEY=votre_cle_mistral
 GROQ_API_KEY=votre_cle_groq
 ```
 
----
+### 2. Backend (Python)
 
-### Backend (Python)
+Ouvrez un terminal a la **racine du projet** :
 
 ```bash
-# 1. Creer l'environnement virtuel
+# Creer l'environnement virtuel
 python -m venv venv_ocr
 
-# 2. Activer (Windows)
+# Activer l'environnement (Windows)
 .\venv_ocr\Scripts\activate
 
-# 3. Installer les dependances
+# Installer toutes les dependances Python
 pip install -r requirements.txt
-
-# 4. Lancer le serveur
-python -m uvicorn app.main:app --reload --port 8000
 ```
 
-Backend : http://localhost:8000 | Swagger : http://localhost:8000/docs
+### 3. Frontend (React)
 
----
-
-### Frontend (React)
+Ouvrez un **deuxieme terminal** dans le dossier `frontend` :
 
 ```bash
 cd frontend
 npm install
-npm run dev
 ```
-
-Interface : http://localhost:5173
 
 ---
 
-### Relancer apres installation
+## Lancer le projet
 
-**Terminal 1 (Backend) :**
+Une fois l'installation terminee, lancez les deux serveurs en parallele :
+
+**Terminal 1 — Backend :**
 ```bash
 .\venv_ocr\Scripts\activate
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
-**Terminal 2 (Frontend) :**
+**Terminal 2 — Frontend :**
 ```bash
 cd frontend
 npm run dev
 ```
+
+| Service | URL |
+|---------|-----|
+| Interface utilisateur | http://localhost:5173 |
+| API Backend | http://localhost:8000 |
+| Documentation Swagger | http://localhost:8000/docs |
 
 ---
 
@@ -198,16 +224,16 @@ npm run dev
 | Page | Fonctionnalite |
 |------|---------------|
 | **Hub d'Upload** | Toggle Facture/Plan, selecteur moteur IA, dropzone drag-and-drop |
-| **Documents** | Tableau filtrable, lignes cliquables, export Excel/PDF selectionne |
-| **Validation** | PDF inline + edition des champs + Confirmer/Rejeter (selon statut) |
-| **Statistiques** | Dashboard : total docs, temps moyen, taux succes, repartition moteur |
+| **Documents** | Tableau filtrable, lignes cliquables, export Excel/PDF par selection |
+| **Validation** | Apercu PDF inline + edition des champs + Confirmer/Rejeter selon statut |
+| **Statistiques** | Total docs, temps moyen, taux succes, repartition par moteur |
 
-### Logique d'export Excel
-
-- **Format plat** : 1 ligne = 1 piece (plan) ou 1 produit (facture)
-- **Export selectif** : depuis la liste, uniquement les documents Valides
-- **Plans** : bouton Export dans la vue detaillee + depuis la liste
-- **Factures** : export uniquement depuis la liste des documents
+**Logique d'export Excel (format plat) :**
+- Plan valide → 1 ligne par piece/espace
+- Facture validee → 1 ligne par produit/service
+- Seuls les documents a statut **Valide** peuvent etre exportes
+- Factures : export depuis la liste uniquement
+- Plans : export depuis la liste et depuis la vue detaillee
 
 ---
 
@@ -219,8 +245,6 @@ python -m pytest tests/test_ocr.py -v
 
 ---
 
-## Critere de succes
+## Licence
 
-> Le systeme permet a un utilisateur d'uploader une facture ou un plan architectural et d'obtenir une extraction structuree fiable, avec validation humaine integree et export Excel en tableau plat exploitable.
-
-**Statut : ATTEINT** - Fonctionnel pour les deux cas d'usage principaux.
+Usage interne — Projet de stage 3lm Solutions. Tous droits reserves.
