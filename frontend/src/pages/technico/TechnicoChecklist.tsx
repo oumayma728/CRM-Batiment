@@ -1247,7 +1247,7 @@ export default function TechnicoChecklist() {
               <button
                 onClick={() => setStep('recap')}
                 className="flex-1 py-3 technico-gradient text-white rounded-2xl text-sm font-semibold hover:opacity-90 transition-all shadow-lg flex items-center justify-center gap-2"
-              >je 
+              >
                 <FileText size={16} />
                 Afficher le devis
               </button>

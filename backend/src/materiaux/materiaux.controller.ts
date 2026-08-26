@@ -61,8 +61,9 @@ export class MateriauxController {
   // ──────────────────────────────────────────────
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
-    summary: 'Liste des matériaux (Admin)',
+    summary: 'Liste des matériaux',
     description:
       'Retourne la liste paginée des matériaux. Filtrage par recherche, fournisseur et statut actif.',
   })
@@ -79,7 +80,8 @@ export class MateriauxController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
-  @ApiOperation({ summary: "Détail d'un matériau (Admin)" })
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
+  @ApiOperation({ summary: "Détail d'un matériau" })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Matériau trouvé' })
   @ApiResponse({ status: 404, description: 'Matériau non trouvé' })

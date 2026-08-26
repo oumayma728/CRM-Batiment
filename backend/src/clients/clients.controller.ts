@@ -61,6 +61,7 @@ export class ClientsController {
   // ──────────────────────────────────────────────
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary: 'Liste des clients',
     description:
@@ -79,6 +80,7 @@ export class ClientsController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: "Détail d'un client" })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Client trouvé' })

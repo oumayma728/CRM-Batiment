@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   Search,
+  UserCircle2,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +35,11 @@ const navItems = [
     to: '/admin/commandes-fournisseur',
     label: 'Receptions',
     icon: <ClipboardCheck size={18} />,
+  },
+  {
+    to: '/admin/profil-chef',
+    label: 'Mon Profil',
+    icon: <UserCircle2 size={18} />,
   },
 ];
 

@@ -226,7 +226,7 @@ export default function TechnicoDevis() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-devis'] });
       queryClient.invalidateQueries({ queryKey: ['technico-devis-brouillon'] });
-      setActionMenuId(null);
+      closeActionMenu();
     },
     onError: (error: unknown) => {
       setFeedback({
@@ -339,6 +339,14 @@ export default function TechnicoDevis() {
     return ['BROUILLON', 'REVISE', 'ENVOYE', 'RENVOYE'].includes(statut);
   }
 
+  function toggleActionMenu(devisId: number) {
+    setActionMenuId((current) => (current === devisId ? null : devisId));
+  }
+
+  function closeActionMenu() {
+    setActionMenuId(null);
+  }
+
   function handleOpenFacture(factureId: number) {
     if (!previewDevis) return;
     const facture = previewDevis.factures?.find((item) => item.id === factureId);
@@ -381,7 +389,7 @@ export default function TechnicoDevis() {
       queryClient.invalidateQueries({ queryKey: ['technico-devis-detail', devisId] }),
     ]);
 
-    setActionMenuId(null);
+    closeActionMenu();
     setPreviewDevisId(devisId);
     setFeedback({
       type: 'success',
@@ -394,6 +402,8 @@ export default function TechnicoDevis() {
     statut: DevisStatut,
     modeValidation?: Devis['modeValidation'],
   ) {
+    closeActionMenu();
+
     if (statut !== 'SIGNE') {
       updateStatut.mutate({ id: devisId, statut });
       return;
@@ -650,10 +660,11 @@ export default function TechnicoDevis() {
 
                     <div className="relative">
                       <button
-                        onClick={() => setActionMenuId(actionMenuId === devis.id ? null : devis.id)}
+                        type="button"
+                        onClick={() => toggleActionMenu(devis.id)}
                         className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
                       >
-                        <MoreVertical size={16} />
+                        <ChevronRight size={16} />
                       </button>
 
                       {actionMenuId === devis.id && actions.length > 0 && (
@@ -902,6 +913,7 @@ function MenuAction({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn('w-full px-4 py-2 text-left text-sm font-medium transition hover:bg-slate-50', color)}
     >

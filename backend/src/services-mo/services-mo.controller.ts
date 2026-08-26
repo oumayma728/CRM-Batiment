@@ -60,6 +60,7 @@ export class ServicesMoController {
   // ──────────────────────────────────────────────
 
   @Get()
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({
     summary: "Liste des services main d'œuvre (Admin)",
     description:
@@ -78,6 +79,7 @@ export class ServicesMoController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.TECHNICO)
   @ApiOperation({ summary: "Détail d'un service main d'œuvre (Admin)" })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Service MO trouvé' })

@@ -101,6 +101,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get chantier() {
     return this._client.chantier;
   }
+  get chantierSousTraitant() {
+    return this._client.chantierSousTraitant;
+  }
   get equipe() {
     return this._client.equipe;
   }

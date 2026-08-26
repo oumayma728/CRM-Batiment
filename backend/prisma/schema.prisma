@@ -67,6 +67,10 @@ model User {
   messagesChat       MessageChat[]
   company            Company            @relation(fields: [companyId], references: [id])
   versionsDevis      VersionDevis[]     @relation("VersionAuteur")
+  resetCodeHash      String?
+  resetCodeExpiresAt DateTime?
+  chantiersVisibles  ChantierSousTraitant[]
+  profilSousTraitant SousTraitant?      @relation("CompteSousTraitant")
 
   @@index([companyId])
   @@index([email])
@@ -629,6 +633,7 @@ model Chantier {
   chefChantier   User?              @relation("ChefChantier", fields: [chefChantierId], references: [id])
   client         Client             @relation(fields: [clientId], references: [id])
   company        Company            @relation(fields: [companyId], references: [id])
+  sousTraitantsVisibles ChantierSousTraitant[]
   devis                  Devis[]
   documents              DocumentChantier[]
   taches                 Tache[]
@@ -896,16 +901,20 @@ enum ModeValidation {
 model SousTraitant {
   id             Int                        @id @default(autoincrement())
   companyId      Int
+  userId         Int?                       @unique
   nom            String
+  contact        String?
   siret          String?
   email          String?
   telephone      String?
   adresse        String?
   specialite     String?
   statut         String                     @default("ACTIF")
+  actif          Boolean                    @default(true)
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
   company        Company                    @relation(fields: [companyId], references: [id])
+  utilisateur    User?                      @relation("CompteSousTraitant", fields: [userId], references: [id], onDelete: SetNull)
   contrats       ContratSousTraitant[]
   assurances     AssuranceSousTraitant[]
   paiements      PaiementSousTraitant[]
@@ -1019,4 +1028,16 @@ model NotationSousTraitant {
   @@index([sousTraitantId])
   @@index([chantierId])
   @@map("notations_sous_traitant")
+}
+
+
+model ChantierSousTraitant {
+  chantierId     Int
+  sousTraitantId Int
+  chantier       Chantier @relation(fields: [chantierId], references: [id], onDelete: Cascade)
+  sousTraitant   User     @relation(fields: [sousTraitantId], references: [id], onDelete: Cascade)
+
+  @@id([chantierId, sousTraitantId])
+  @@index([sousTraitantId])
+  @@map("chantiers_sous_traitants")
 }

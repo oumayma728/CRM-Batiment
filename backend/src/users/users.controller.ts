@@ -79,14 +79,26 @@ export class UsersController {
   })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Utilisateur désactivé' })
-  @ApiResponse({
-    status: 403,
-    description: 'Impossible de se désactiver soi-même',
-  })
+  @ApiResponse({ status: 403, description: 'Impossible de se désactiver soi-même' })
   async deactivate(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.usersService.deactivate(id, user);
+  }
+
+  @Delete(':id/hard')
+  @ApiOperation({
+    summary: 'Supprimer définitivement un utilisateur',
+    description: 'Hard delete — supprime le compte de la base. Impossible sur soi-même ou un autre admin.',
+  })
+  @ApiParam({ name: 'id', type: Number })
+  @ApiResponse({ status: 200, description: 'Utilisateur supprimé' })
+  @ApiResponse({ status: 403, description: 'Action non autorisée' })
+  async hardDelete(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.usersService.hardDelete(id, user);
   }
 }

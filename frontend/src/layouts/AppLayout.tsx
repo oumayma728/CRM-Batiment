@@ -22,7 +22,11 @@ import {
   CheckSquare,
   Receipt,
   Database,
+<<<<<<< HEAD
   Briefcase,
+=======
+  UserCircle2,
+>>>>>>> origin/wassim_pre-integration
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Role } from '@/types';
@@ -61,6 +65,7 @@ const navItems: NavItem[] = [
   { to: '/admin/types-projet', label: 'Types de projet', icon: <FolderKanban size={19} />, roles: ['ADMIN'] },
   { to: '/admin/base-ia', label: 'Base IA / RAG', icon: <Database size={19} />, roles: ['ADMIN'] },
   { to: '/admin/parametres-chiffrage', label: 'Paramètres chiffrage', icon: <Settings size={19} />, roles: ['ADMIN'] },
+  { to: '/admin/profil', label: 'Mon Profil', icon: <UserCircle2 size={19} />, roles: ['ADMIN'] },
 ];
 
 const roleBadgeStyles: Record<Role, { bg: string; text: string; label: string }> = {

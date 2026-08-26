@@ -22,8 +22,16 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { ChantiersModule } from './chantiers/chantiers.module.js';
 import { FacturesModule } from './factures/factures.module.js';
 import { AssistantModule } from './assistant/assistant.module.js';
+import { WorkflowModule } from './workflow.module.js';
 import { RagModule } from './rag/rag.module.js';
+<<<<<<< HEAD
 import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
+=======
+import { SousTraitantModule } from './sous-traitant/sous-traitant.module.js';
+import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
+// TODO: Fix imports in CatalogueModule
+// import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
+>>>>>>> origin/wassim_pre-integration
 
 @Module({
   imports: [
@@ -38,6 +46,7 @@ import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
 
     // Modules fondation
     PrismaModule,
+    WorkflowModule,
 
     // Modules métier
     AuthModule,
@@ -60,6 +69,10 @@ import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
+<<<<<<< HEAD
+=======
+    SousTraitantModule,
+>>>>>>> origin/wassim_pre-integration
     SousTraitantsModule,
   ],
   controllers: [AppController, DevController],

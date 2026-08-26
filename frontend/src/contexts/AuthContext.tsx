@@ -7,6 +7,7 @@ interface AuthContextType {
   token: string | null;
   login: (email: string, password: string) => Promise<AuthResponse>;
   logout: () => void;
+  updateUser: (updatedUser: Partial<User>) => void;
   isAuthenticated: boolean;
 }
 
@@ -31,6 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<AuthResponse> => {
     const { data } = await api.post<AuthResponse>('/auth/login', { email, password });
+    // If mustChangePassword, the backend returns no accessToken/user — don't store broken state
+    if ((data as unknown as { mustChangePassword?: boolean }).mustChangePassword) {
+      return data;
+    }
     setToken(data.accessToken);
     setUser(data.user);
     return data;
@@ -43,8 +48,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user');
   };
 
+  const updateUser = (updatedUser: Partial<User>) => {
+    setUser((currentUser) => (currentUser ? { ...currentUser, ...updatedUser } : currentUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token }}>
       {children}
     </AuthContext.Provider>
   );

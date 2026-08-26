@@ -460,7 +460,7 @@ export default function PrestationsPage() {
       ) : filteredCatalogue.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">Aucun rÃ©sultat</p>
+          <p className="text-lg font-medium text-gray-500">Aucun resultat</p>
         </div>
       ) : (
         <div className="space-y-3">

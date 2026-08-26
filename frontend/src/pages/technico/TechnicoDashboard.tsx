@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import api from '@/lib/api';
@@ -306,7 +307,7 @@ function KPICard({
   bgAccent,
   link,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   value: string | number;
   accent: string;
@@ -338,7 +339,7 @@ function PipelineStep({
   color,
   bar,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   count: number;
   color: string;
