@@ -17,27 +17,27 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   {
-    to: '/admin',
+    to: '/chef-chantier',
     label: 'Tableau de bord',
     icon: <LayoutDashboard size={18} />,
   },
   {
-    to: '/admin/chantiers',
+    to: '/chef-chantier/chantiers',
     label: 'Chantiers',
     icon: <HardHat size={18} />,
   },
   {
-    to: '/admin/taches-chantier',
+    to: '/chef-chantier/taches-chantier',
     label: 'Taches chantier',
     icon: <CheckSquare size={18} />,
   },
   {
-    to: '/admin/commandes-fournisseur',
+    to: '/chef-chantier/receptions',
     label: 'Receptions',
     icon: <ClipboardCheck size={18} />,
   },
   {
-    to: '/admin/profil-chef',
+    to: '/chef-chantier/parametres',
     label: 'Mon Profil',
     icon: <UserCircle2 size={18} />,
   },
@@ -54,8 +54,8 @@ export default function ChefChantierLayout() {
     : 'C';
 
   const currentItem = navItems.find((item) =>
-    item.to === '/admin'
-      ? location.pathname === '/admin'
+    item.to === '/chef-chantier'
+      ? location.pathname === '/chef-chantier'
       : location.pathname.startsWith(item.to),
   );
 
