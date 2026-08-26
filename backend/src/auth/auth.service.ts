@@ -9,14 +9,18 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { MailService } from '../mail/mail.service.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { VerifyResetCodeDto } from './dto/verify-reset-code.dto.js';
 import {
   JwtPayload,
   CurrentUserPayload,
@@ -48,9 +52,11 @@ export class AuthService {
   // ──────────────────────────────────────────────
 
   async createUser(dto: CreateUserDto, admin: CurrentUserPayload) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
     // Vérifier que l'email n'existe pas déjà
     const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
     if (existing) {
       throw new ConflictException('Un utilisateur avec cet email existe déjà');
@@ -65,7 +71,7 @@ export class AuthService {
     // Créer le compte dans la base
     const user = await this.prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         nom: dto.nom,
         prenom: dto.prenom,
         role: dto.role,
@@ -190,9 +196,11 @@ export class AuthService {
   // ──────────────────────────────────────────────
 
   async login(dto: LoginDto) {
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
     // Rechercher l'utilisateur
     const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
@@ -300,6 +308,37 @@ export class AuthService {
     return user;
   }
 
+  async updateProfile(dto: UpdateProfileDto, currentUser: CurrentUserPayload) {
+    const email = dto.email.trim().toLowerCase();
+    const existingUser = await this.prisma.user.findFirst({
+      where: { email, id: { not: currentUser.userId } },
+      select: { id: true },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Cette adresse email est deja utilisee.');
+    }
+
+    return this.prisma.user.update({
+      where: { id: currentUser.userId },
+      data: {
+        nom: dto.nom.trim(),
+        prenom: dto.prenom?.trim() || null,
+        email,
+      },
+      select: {
+        id: true,
+        email: true,
+        nom: true,
+        prenom: true,
+        role: true,
+        telephone: true,
+        actif: true,
+        companyId: true,
+      },
+    });
+  }
+
   async getSignature(currentUser: CurrentUserPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: currentUser.userId },
@@ -315,6 +354,81 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.trim().toLowerCase() },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Aucun compte associé à cet email');
+    }
+
+    const code = randomBytes(3).toString('hex').toUpperCase();
+    const resetCodeHash = createHash('sha256').update(code).digest('hex');
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetCodeHash,
+        resetCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+    await this.mailService.sendPasswordResetCode(user.email, code);
+
+    return { success: true, email: user.email };
+  }
+
+  async verifyResetCode(dto: VerifyResetCodeDto) {
+    const email = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    const codeHash = createHash('sha256')
+      .update(dto.code.trim().toUpperCase())
+      .digest('hex');
+    if (
+      !user ||
+      !user.resetCodeHash ||
+      !user.resetCodeExpiresAt ||
+      user.resetCodeExpiresAt < new Date() ||
+      user.resetCodeHash !== codeHash
+    ) {
+      throw new UnauthorizedException(
+        'Code de verification invalide ou expire.',
+      );
+    }
+    return { success: true, email };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const email = dto.email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    const codeHash = createHash('sha256')
+      .update(dto.code.trim().toUpperCase())
+      .digest('hex');
+    if (
+      !user ||
+      !user.resetCodeHash ||
+      !user.resetCodeExpiresAt ||
+      user.resetCodeExpiresAt < new Date() ||
+      user.resetCodeHash !== codeHash
+    ) {
+      throw new UnauthorizedException(
+        'Code de verification invalide ou expire.',
+      );
+    }
+    const hashedPassword = await bcrypt.hash(dto.newPassword, BCRYPT_ROUNDS);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        mustChangePassword: false,
+        resetCodeHash: null,
+        resetCodeExpiresAt: null,
+      },
+    });
+
+    return { message: 'Mot de passe réinitialisé avec succès' };
   }
 
   async saveSignature(dto: SaveSignatureDto, currentUser: CurrentUserPayload) {

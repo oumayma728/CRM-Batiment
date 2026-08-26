@@ -17,7 +17,7 @@ type NotificationLevel = 'info' | 'success' | 'warning' | 'danger';
 type NotificationCategory =
   | 'SUPPLIER_STATUS'
   | 'RECEPTION_PARTIELLE'
-  | 'RECEPTION_COMPLETE'
+  | 'RECEPTION_COMPLETE' | 'ASSURANCE_EXPIRATION'
   | 'FACTURES_IMPAYEES'
   | 'CHANTIERS_RETARD'
   | 'COMMANDES_ATTENTE'

@@ -89,6 +89,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       setLineForm(emptyLineForm);
       if (onSaved) await onSaved();
     },
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || err.message || "Erreur lors de l'ajout.";
+      alert(msg);
+    }
   });
 
   const updateLineMutation = useMutation({
@@ -99,6 +103,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       setLineForm(emptyLineForm);
       if (onSaved) await onSaved();
     },
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || err.message || "Erreur lors de la modification.";
+      alert(msg);
+    }
   });
 
   const deleteLineMutation = useMutation({
@@ -112,6 +120,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
       }
       if (onSaved) await onSaved();
     },
+    onError: (err: any) => {
+      const msg = err.response?.data?.message || err.message || "Erreur lors de la suppression de la ligne.";
+      alert(msg);
+    }
   });
 
   function buildPayload() {
@@ -128,7 +140,10 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
 
   function submitLine() {
     const payload = buildPayload();
-    if (!payload.quantite || payload.quantite <= 0) return;
+    if (!payload.quantite || payload.quantite <= 0) {
+      alert("La quantité doit être supérieure à 0.");
+      return;
+    }
 
     if (lineForm.id) {
       updateLineMutation.mutate({ lineId: lineForm.id, payload });
@@ -190,7 +205,11 @@ export function DevisManualEditorModal({ devis, open, onClose, onSaved }: DevisM
                       <Pencil size={15} />
                     </button>
                     <button
-                      onClick={() => deleteLineMutation.mutate(line.id)}
+                      onClick={() => {
+                        if (window.confirm("Êtes-vous sûr de vouloir supprimer cette ligne ?")) {
+                          deleteLineMutation.mutate(line.id);
+                        }
+                      }}
                       className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-rose-600"
                       title="Supprimer"
                     >

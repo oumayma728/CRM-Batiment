@@ -121,4 +121,27 @@ export class UsersService {
       },
     });
   }
+
+  /**
+   * Supprimer définitivement un utilisateur (hard delete)
+   * Réservé aux admins. Impossible de supprimer son propre compte ou un autre admin.
+   */
+  async hardDelete(id: number, currentUser: CurrentUserPayload) {
+    const user = await this.findOne(id, currentUser);
+
+    if (user.id === currentUser.userId) {
+      throw new ForbiddenException(
+        'Vous ne pouvez pas supprimer votre propre compte.',
+      );
+    }
+
+    if (user.role === 'ADMIN') {
+      throw new ForbiddenException(
+        'Impossible de supprimer un compte administrateur.',
+      );
+    }
+
+    await this.prisma.user.delete({ where: { id } });
+    return { message: `Utilisateur #${id} supprimé définitivement.` };
+  }
 }

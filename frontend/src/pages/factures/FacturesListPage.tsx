@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { FileSpreadsheet, Loader2, Receipt, Search } from 'lucide-react';
@@ -7,14 +8,14 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import type { Facture, FactureSourceDevis, PaginatedResponse } from '@/types';
 
 interface FacturesListPageProps {
-  scope: 'admin' | 'assistante' | 'technico';
+  scope: 'admin' | 'technico' | 'assistante';
 }
 
 const factureStatusLabel: Record<Facture['statut'], string> = {
   BROUILLON: 'Brouillon',
-  ENVOYEE: 'Envoyée',
-  PAYEE: 'Payée',
-  ANNULEE: 'Annulée',
+  ENVOYEE: 'Envoyee',
+  PAYEE: 'Payee',
+  ANNULEE: 'Annulee',
 };
 
 const factureStatusClass: Record<Facture['statut'], string> = {
@@ -27,26 +28,22 @@ const factureStatusClass: Record<Facture['statut'], string> = {
 function getClientLabel(item: FactureSourceDevis) {
   const prenom = item.client?.prenom ?? '';
   const nom = item.client?.nom ?? '';
-  return `${prenom} ${nom}`.trim() || 'Client non renseigné';
+  return `${prenom} ${nom}`.trim() || 'Client non renseigne';
 }
 
 export default function FacturesListPage({ scope }: FacturesListPageProps) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
   const [pageDevis, setPageDevis] = useState(1);
   const [pageFactures, setPageFactures] = useState(1);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
     null,
   );
 
-  const basePath =
-    scope === 'technico'
-      ? '/technico/factures'
-      : scope === 'assistante'
-        ? '/assistante/factures'
-        : '/admin/factures';
+  const basePath = scope === 'admin' ? '/admin/factures' : scope === 'assistante' ? '/assistante/factures' : '/technico/factures';
 
   const devisSourcesQuery = useQuery({
     queryKey: ['factures-devis-sources', scope, pageDevis, search],
@@ -84,7 +81,8 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['factures-devis-sources'] });
       queryClient.invalidateQueries({ queryKey: ['factures-list'] });
-      setFeedback({ type: 'success', text: 'Facture créée avec succès depuis le devis.' });
+      queryClient.invalidateQueries({ queryKey: ['facture-detail', response.data.id] });
+      setFeedback({ type: 'success', text: 'Facture creee avec succes depuis le devis.' });
       navigate(`${basePath}/${response.data.id}`);
     },
     onError: (error: unknown) => {
@@ -105,18 +103,10 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
     },
   });
 
-  const devisData = [...(devisSourcesQuery.data?.data ?? [])].sort((a, b) => {
-    if (sortBy === 'amount') return (b.totalTTC ?? 0) - (a.totalTTC ?? 0);
-    if (sortBy === 'client') return getClientLabel(a).localeCompare(getClientLabel(b));
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  const devisData = devisSourcesQuery.data?.data ?? [];
   const devisMeta = devisSourcesQuery.data?.meta;
 
-  const facturesData = [...(facturesQuery.data?.data ?? [])].sort((a, b) => {
-    if (sortBy === 'amount') return (b.montantTTC ?? 0) - (a.montantTTC ?? 0);
-    if (sortBy === 'reference') return a.reference.localeCompare(b.reference);
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+  const facturesData = facturesQuery.data?.data ?? [];
   const facturesMeta = facturesQuery.data?.meta;
 
   return (
@@ -132,31 +122,18 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
           </p>
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-          <div className="relative w-full sm:w-96">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPageDevis(1);
-                setPageFactures(1);
-              }}
-              placeholder="Rechercher devis, facture ou client"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-            />
-          </div>
-          <select
-            value={sortBy}
-            onChange={(event) => setSortBy(event.target.value)}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-sm outline-none"
-            aria-label="Trier les factures"
-          >
-            <option value="recent">Tri : plus récent</option>
-            <option value="amount">Tri : montant décroissant</option>
-            <option value="reference">Tri : référence A-Z</option>
-            <option value="client">Tri : client A-Z</option>
-          </select>
+        <div className="relative w-full sm:w-96">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPageDevis(1);
+              setPageFactures(1);
+            }}
+            placeholder="Rechercher devis, facture ou client"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+          />
         </div>
       </div>
 
@@ -173,9 +150,9 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
         </div>
       )}
 
-      <section className="rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Devis à facturer</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Devis existants</h2>
           <span className="text-xs font-medium text-slate-400">
             {devisMeta?.total ?? 0} devis
           </span>
@@ -186,7 +163,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
             <Loader2 size={24} className="animate-spin text-teal-600" />
           </div>
         ) : devisData.length === 0 ? (
-          <p className="py-10 text-center text-sm text-slate-500">Aucun devis trouvé.</p>
+          <p className="py-10 text-center text-sm text-slate-500">Aucun devis trouve.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -195,7 +172,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Devis</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Client</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Montant TTC</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Facture liée</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Facture liee</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Action</th>
                 </tr>
               </thead>
@@ -223,18 +200,22 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => createFromDevisMutation.mutate(devis.id)}
-                        disabled={createFromDevisMutation.isPending}
-                        className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
-                      >
-                        {createFromDevisMutation.isPending ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : (
-                          <FileSpreadsheet size={12} />
-                        )}
-                        Transformer en facture
-                      </button>
+                      {isAdmin ? (
+                        <button
+                          onClick={() => createFromDevisMutation.mutate(devis.id)}
+                          disabled={createFromDevisMutation.isPending}
+                          className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-60"
+                        >
+                          {createFromDevisMutation.isPending ? (
+                            <Loader2 size={12} className="animate-spin" />
+                          ) : (
+                            <FileSpreadsheet size={12} />
+                          )}
+                          Transformer en facture
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">Non autorise</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -250,7 +231,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
               disabled={pageDevis <= 1}
               className="rounded-lg border border-slate-200 px-2 py-1 disabled:opacity-50"
             >
-              Précédent
+              Prec
             </button>
             <span>
               Page {pageDevis} / {devisMeta.totalPages}
@@ -260,15 +241,15 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
               disabled={pageDevis >= devisMeta.totalPages}
               className="rounded-lg border border-slate-200 px-2 py-1 disabled:opacity-50"
             >
-              Suivant
+              Suiv
             </button>
           </div>
         )}
       </section>
 
-      <section className="rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Factures créées</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Factures creees</h2>
           <span className="text-xs font-medium text-slate-400">
             {facturesMeta?.total ?? 0} factures
           </span>
@@ -279,14 +260,14 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
             <Loader2 size={24} className="animate-spin text-teal-600" />
           </div>
         ) : facturesData.length === 0 ? (
-          <p className="py-10 text-center text-sm text-slate-500">Aucune facture créée.</p>
+          <p className="py-10 text-center text-sm text-slate-500">Aucune facture creee.</p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {facturesData.map((facture) => (
               <button
                 key={facture.id}
                 onClick={() => navigate(`${basePath}/${facture.id}`)}
-                className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-teal-300 hover:bg-teal-50"
+                className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-teal-300 hover:bg-teal-50"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -311,7 +292,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
                     <p className="mt-1 font-medium text-slate-800">{formatDate(facture.date)}</p>
                   </div>
                   <div className="rounded-lg bg-white px-3 py-2">
-                    <p className="text-slate-500">Échéance</p>
+                    <p className="text-slate-500">Echeance</p>
                     <p className="mt-1 font-medium text-slate-800">
                       {facture.dateEcheance ? formatDate(facture.dateEcheance) : '-'}
                     </p>
@@ -336,7 +317,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
               disabled={pageFactures <= 1}
               className="rounded-lg border border-slate-200 px-2 py-1 disabled:opacity-50"
             >
-              Précédent
+              Prec
             </button>
             <span>
               Page {pageFactures} / {facturesMeta.totalPages}
@@ -348,7 +329,7 @@ export default function FacturesListPage({ scope }: FacturesListPageProps) {
               disabled={pageFactures >= facturesMeta.totalPages}
               className="rounded-lg border border-slate-200 px-2 py-1 disabled:opacity-50"
             >
-              Suivant
+              Suiv
             </button>
           </div>
         )}

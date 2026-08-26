@@ -1292,7 +1292,7 @@ export class SeedService {
 
         await this.ensurePrestationComposition({
           prestationId: prestation.id,
-          serviceMainOeuvreId,
+          serviceMainOeuvreId: serviceMainOeuvreId as number,
           quantiteParUnite: 1,
         });
       }

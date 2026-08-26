@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ChantiersController } from './chantiers.controller.js';
 import { ChantiersService } from './chantiers.service.js';
-import { NotificationsModule } from '../notifications/notifications.module.js';
+// P0.5 — Import du module commun contenant WorkflowStateService
+import { CommonModule } from '../common/common.module.js';
 
 @Module({
-  imports: [NotificationsModule],
+  imports: [CommonModule], // Ajout de CommonModule
   controllers: [ChantiersController],
   providers: [ChantiersService],
   exports: [ChantiersService],

@@ -31,7 +31,7 @@ import { Role } from '../../generated/prisma/client.js';
 @ApiTags('Matériaux')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)//avant ; Role.ADMIN => j'ai remplacé par ADMIN, TECHNICO, ASSISTANTE pour que les 3 roles puissent acceder aux materiaux
 @Controller('materiaux')
 export class MateriauxController {
   constructor(private readonly materiauxService: MateriauxService) {}
@@ -40,6 +40,7 @@ export class MateriauxController {
   // POST /api/materiaux — Créer un matériau
   // ──────────────────────────────────────────────
 
+  @Roles(Role.ADMIN)// ajoutée pour que seul l'admin puisse créer un matériau
   @Post()
   @ApiOperation({
     summary: 'Créer un matériau (Admin)',
@@ -60,8 +61,9 @@ export class MateriauxController {
   // ──────────────────────────────────────────────
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
   @ApiOperation({
-    summary: 'Liste des matériaux (Admin)',
+    summary: 'Liste des matériaux',
     description:
       'Retourne la liste paginée des matériaux. Filtrage par recherche, fournisseur et statut actif.',
   })
@@ -78,7 +80,8 @@ export class MateriauxController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
-  @ApiOperation({ summary: "Détail d'un matériau (Admin)" })
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE)
+  @ApiOperation({ summary: "Détail d'un matériau" })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Matériau trouvé' })
   @ApiResponse({ status: 404, description: 'Matériau non trouvé' })
@@ -92,7 +95,7 @@ export class MateriauxController {
   // ──────────────────────────────────────────────
   // PATCH /api/materiaux/:id — Modifier un matériau
   // ──────────────────────────────────────────────
-
+  @Roles(Role.ADMIN)//ajoutee pour que seul l'admin puisse modifier un matériau
   @Patch(':id')
   @ApiOperation({ summary: 'Modifier un matériau (Admin)' })
   @ApiParam({ name: 'id', type: Number })
@@ -110,6 +113,7 @@ export class MateriauxController {
   // DELETE /api/materiaux/:id — Supprimer un matériau
   // ──────────────────────────────────────────────
 
+  @Roles(Role.ADMIN)//ajoutee pour que seul l'admin puisse supprimer un matériau
   @Delete(':id')
   @ApiOperation({
     summary: 'Supprimer un matériau (Admin)',

@@ -66,7 +66,7 @@ async function main() {
   console.log(`✅ Technico créé : ${technico.email} (ID: ${technico.id})`);
   console.log(`   Mot de passe : Technico@2026!`);
 
-  // 2c. Créer le compte Assistante administrative
+  // 2b-bis. Créer le compte Assistante Administrative
   const assistantePassword = await bcrypt.hash('Assistante@2026!', 12);
   const assistante = await prisma.user.upsert({
     where: { email: 'assistante@batiment-pro.fr' },
@@ -78,7 +78,7 @@ async function main() {
       email: 'assistante@batiment-pro.fr',
       password: assistantePassword,
       role: 'ASSISTANTE',
-      telephone: '0611223344',
+      telephone: '0612345678',
       actif: true,
       mustChangePassword: false,
     },
@@ -86,47 +86,47 @@ async function main() {
   console.log(`✅ Assistante créée : ${assistante.email} (ID: ${assistante.id})`);
   console.log(`   Mot de passe : Assistante@2026!`);
 
-  // 2d. Créer le compte Chef de chantier
-  const chefChantierPassword = await bcrypt.hash('ChefChantier@2026!', 12);
-  const chefChantier = await prisma.user.upsert({
-    where: { email: 'chef.chantier@batiment-pro.fr' },
+  // 2b-ter. Créer le compte Chef de Chantier
+  const chefPassword = await bcrypt.hash('Chef@2026!', 12);
+  const chef = await prisma.user.upsert({
+    where: { email: 'chef@batiment-pro.fr' },
     update: {},
     create: {
       companyId: company.id,
-      nom: 'Bernard',
-      prenom: 'Julien',
-      email: 'chef.chantier@batiment-pro.fr',
-      password: chefChantierPassword,
+      nom: 'Leroy',
+      prenom: 'Jean',
+      email: 'chef@batiment-pro.fr',
+      password: chefPassword,
       role: 'CHEF_CHANTIER',
       telephone: '0622334455',
       actif: true,
       mustChangePassword: false,
     },
   });
-  console.log(`✅ Chef de chantier créé : ${chefChantier.email} (ID: ${chefChantier.id})`);
-  console.log(`   Mot de passe : ChefChantier@2026!`);
+  console.log(`✅ Chef de chantier créé : ${chef.email} (ID: ${chef.id})`);
+  console.log(`   Mot de passe : Chef@2026!`);
 
-  // 2e. Créer le compte Sous-traitant
-  const sousTraitantPassword = await bcrypt.hash('SousTraitant@2026!', 12);
-  const sousTraitant = await prisma.user.upsert({
-    where: { email: 'sous.traitant@batiment-pro.fr' },
+  // 2b-quater. Créer le compte Sous-traitant
+  const sousTraitantUserPassword = await bcrypt.hash('Soustraitant@2026!', 12);
+  const sousTraitantUser = await prisma.user.upsert({
+    where: { email: 'soustraitant@batiment-pro.fr' },
     update: {},
     create: {
       companyId: company.id,
-      nom: 'Moreau',
-      prenom: 'Lucas',
-      email: 'sous.traitant@batiment-pro.fr',
-      password: sousTraitantPassword,
+      nom: 'Bernard',
+      prenom: 'Pierre',
+      email: 'soustraitant@batiment-pro.fr',
+      password: sousTraitantUserPassword,
       role: 'SOUS_TRAITANT',
-      telephone: '0633445566',
+      telephone: '0655667788',
       actif: true,
       mustChangePassword: false,
     },
   });
-  console.log(`✅ Sous-traitant créé : ${sousTraitant.email} (ID: ${sousTraitant.id})`);
-  console.log(`   Mot de passe : SousTraitant@2026!`);
+  console.log(`✅ Sous-traitant créé : ${sousTraitantUser.email} (ID: ${sousTraitantUser.id})`);
+  console.log(`   Mot de passe : Soustraitant@2026!`);
 
-  // 2f. Créer les types de projet (gérés par Admin)
+  // 2c. Créer les types de projet (gérés par Admin)
   const typesProjetData = [
     { nom: 'Rénovation salle de bain', description: 'Travaux de rénovation complète ou partielle de salle de bain' },
     { nom: 'Rénovation cuisine', description: 'Travaux de rénovation de cuisine' },

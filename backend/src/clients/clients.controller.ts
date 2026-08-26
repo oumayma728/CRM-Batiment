@@ -31,6 +31,7 @@ import { Role } from '../../generated/prisma/client.js';
 @ApiTags('Clients')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE) // <-- AJOUTEE : restrict access to these roles for all endpoints in this controller
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly clientsService: ClientsService) {}
@@ -60,6 +61,7 @@ export class ClientsController {
   // ──────────────────────────────────────────────
 
   @Get()
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({
     summary: 'Liste des clients',
     description:
@@ -78,6 +80,7 @@ export class ClientsController {
   // ──────────────────────────────────────────────
 
   @Get(':id')
+  @Roles(Role.ADMIN, Role.TECHNICO, Role.ASSISTANTE, Role.CHEF_CHANTIER)
   @ApiOperation({ summary: "Détail d'un client" })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 200, description: 'Client trouvé' })

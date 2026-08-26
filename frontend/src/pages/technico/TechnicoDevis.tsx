@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import { DevisInvoice } from '@/components/DevisInvoice';
 import { DevisManualEditorModal } from '@/components/devis/DevisManualEditorModal';
@@ -30,47 +31,45 @@ import {
   FileSpreadsheet,
   Loader2,
   MoreVertical,
+  Search,
   Send,
   X,
   XCircle,
   Receipt,
 } from 'lucide-react';
-import SearchBar from '@/components/ui/SearchBar';
-import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
-import EmptyState from '@/components/ui/EmptyState';
 
 const statutConfig: Record<
   string,
   { label: string; color: string; bg: string; icon: React.ReactNode }
 > = {
   BROUILLON: { label: 'Brouillon', color: 'text-slate-700', bg: 'bg-slate-100', icon: <Clock size={14} /> },
-  ENVOYE: { label: 'Envoyé', color: 'text-blue-700', bg: 'bg-blue-100', icon: <Send size={14} /> },
-  ACCEPTE: { label: 'Accepté', color: 'text-blue-700', bg: 'bg-blue-100', icon: <CheckCircle2 size={14} /> },
-  SIGNE: { label: 'Signé conseiller', color: 'text-blue-800', bg: 'bg-blue-200', icon: <CheckCircle2 size={14} /> },
-  REFUSE: { label: 'Refusé', color: 'text-rose-700', bg: 'bg-rose-100', icon: <XCircle size={14} /> },
-  ANNULE: { label: 'Annulé', color: 'text-amber-700', bg: 'bg-amber-100', icon: <XCircle size={14} /> },
-  REVISE: { label: 'Révisé', color: 'text-blue-700', bg: 'bg-blue-100', icon: <MoreVertical size={14} /> },
-  RENVOYE: { label: 'Renvoyé', color: 'text-cyan-700', bg: 'bg-cyan-100', icon: <Send size={14} /> },
+  ENVOYE: { label: 'Envoye', color: 'text-blue-700', bg: 'bg-blue-100', icon: <Send size={14} /> },
+  ACCEPTE: { label: 'Accepte', color: 'text-emerald-700', bg: 'bg-emerald-100', icon: <CheckCircle2 size={14} /> },
+  SIGNE: { label: 'Signe conseiller', color: 'text-emerald-800', bg: 'bg-emerald-200', icon: <CheckCircle2 size={14} /> },
+  REFUSE: { label: 'Refuse', color: 'text-rose-700', bg: 'bg-rose-100', icon: <XCircle size={14} /> },
+  ANNULE: { label: 'Annule', color: 'text-amber-700', bg: 'bg-amber-100', icon: <XCircle size={14} /> },
+  REVISE: { label: 'Revise', color: 'text-violet-700', bg: 'bg-violet-100', icon: <MoreVertical size={14} /> },
+  RENVOYE: { label: 'Renvoye', color: 'text-cyan-700', bg: 'bg-cyan-100', icon: <Send size={14} /> },
 };
 
 const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; color: string }[]> = {
   BROUILLON: [
-    { label: 'Marquer Envoyé', value: 'ENVOYE', color: 'text-blue-600' },
+    { label: 'Marquer Envoye', value: 'ENVOYE', color: 'text-blue-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ENVOYE: [
-    { label: 'Marquer Signé', value: 'SIGNE', color: 'text-blue-700' },
-    { label: 'Marquer Accepté', value: 'ACCEPTE', color: 'text-blue-600' },
-    { label: 'Marquer Refusé', value: 'REFUSE', color: 'text-rose-600' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
+    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer Refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ACCEPTE: [
-    { label: 'Marquer Signé', value: 'SIGNE', color: 'text-blue-700' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   SIGNE: [],
   REFUSE: [
-    { label: 'Passer en Révisé', value: 'REVISE', color: 'text-blue-600' },
+    { label: 'Passer en Revise', value: 'REVISE', color: 'text-violet-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   ANNULE: [],
@@ -79,9 +78,9 @@ const statutActions: Record<DevisStatut, { label: string; value: DevisStatut; co
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
   RENVOYE: [
-    { label: 'Marquer Signé', value: 'SIGNE', color: 'text-blue-700' },
-    { label: 'Marquer Accepté', value: 'ACCEPTE', color: 'text-blue-600' },
-    { label: 'Marquer Refusé', value: 'REFUSE', color: 'text-rose-600' },
+    { label: 'Marquer Signe', value: 'SIGNE', color: 'text-emerald-700' },
+    { label: 'Marquer Accepte', value: 'ACCEPTE', color: 'text-emerald-600' },
+    { label: 'Marquer Refuse', value: 'REFUSE', color: 'text-rose-600' },
     { label: 'Annuler', value: 'ANNULE', color: 'text-amber-600' },
   ],
 };
@@ -149,12 +148,14 @@ function buildPurchaseOrderFeedback(data: unknown, fallback: string) {
 }
 
 export default function TechnicoDevis() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
-  const [sortBy, setSortBy] = useState('recent');
   const [showCreate, setShowCreate] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [pendingDevisId, setPendingDevisId] = useState<number | null>(null);
@@ -219,10 +220,19 @@ export default function TechnicoDevis() {
   const updateStatut = useMutation({
     mutationFn: ({ id, statut }: { id: number; statut: DevisStatut }) =>
       api.patch(`/devis/${id}/statut`, { statut }),
+    onMutate: () => {
+      setFeedback(null);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technico-devis'] });
       queryClient.invalidateQueries({ queryKey: ['technico-devis-brouillon'] });
-      setActionMenuId(null);
+      closeActionMenu();
+    },
+    onError: (error: unknown) => {
+      setFeedback({
+        type: 'error',
+        text: getApiErrorMessage(error, 'Erreur lors de la mise a jour du statut du devis.'),
+      });
     },
   });
 
@@ -237,13 +247,13 @@ export default function TechnicoDevis() {
       queryClient.invalidateQueries({ queryKey: ['technico-devis-brouillon'] });
       setFeedback({
         type: 'success',
-        text: response.data?.message ?? 'Devis envoyé au client avec succès.',
+        text: response.data?.message ?? 'Devis envoye au client avec succes.',
       });
     },
     onError: (error: unknown) => {
       setFeedback({
         type: 'error',
-        text: getApiErrorMessage(error, 'Erreur lors de l’envoi du devis au client.'),
+        text: getApiErrorMessage(error, 'Erreur lors de l envoi du devis au client.'),
       });
     },
     onSettled: () => {
@@ -272,7 +282,7 @@ export default function TechnicoDevis() {
         type: 'success',
         text: buildPurchaseOrderFeedback(
           response.data,
-          'Bon de commande validé et commandes fournisseur traitées.',
+          'Bon de commande valide et commandes fournisseur traitees.',
         ),
       });
     },
@@ -293,7 +303,7 @@ export default function TechnicoDevis() {
       setFeedback(null);
     },
     onSuccess: (response) => {
-      setFeedback({ type: 'success', text: 'Facture créée depuis le devis.' });
+      setFeedback({ type: 'success', text: 'Facture creee depuis le devis.' });
       navigate(`/technico/factures/${response.data.id}`);
     },
     onError: (error: unknown) => {
@@ -305,16 +315,6 @@ export default function TechnicoDevis() {
   });
 
   const devisList: Devis[] = data?.data ?? [];
-  const sortedDevisList = [...devisList].sort((a, b) => {
-    if (sortBy === 'amount') return (b.totalTTC ?? 0) - (a.totalTTC ?? 0);
-    if (sortBy === 'reference') return (a.reference ?? '').localeCompare(b.reference ?? '');
-    if (sortBy === 'client') {
-      const clientA = a.client ? `${a.client.nom} ${a.client.prenom ?? ''}` : '';
-      const clientB = b.client ? `${b.client.nom} ${b.client.prenom ?? ''}` : '';
-      return clientA.localeCompare(clientB);
-    }
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
   const meta = data?.meta ?? { total: 0, page: 1, totalPages: 1 };
   const allStatuts: DevisStatut[] = ['BROUILLON', 'ENVOYE', 'ACCEPTE', 'REFUSE', 'REVISE', 'RENVOYE', 'SIGNE'];
   const listErrorText = isError
@@ -337,6 +337,14 @@ export default function TechnicoDevis() {
 
   function canSendToClient(statut: string) {
     return ['BROUILLON', 'REVISE', 'ENVOYE', 'RENVOYE'].includes(statut);
+  }
+
+  function toggleActionMenu(devisId: number) {
+    setActionMenuId((current) => (current === devisId ? null : devisId));
+  }
+
+  function closeActionMenu() {
+    setActionMenuId(null);
   }
 
   function handleOpenFacture(factureId: number) {
@@ -381,11 +389,11 @@ export default function TechnicoDevis() {
       queryClient.invalidateQueries({ queryKey: ['technico-devis-detail', devisId] }),
     ]);
 
-    setActionMenuId(null);
+    closeActionMenu();
     setPreviewDevisId(devisId);
     setFeedback({
       type: 'success',
-      text: 'Signature apposée. Statut dossier : signe_conseiller.',
+      text: 'Signature apposee. Statut dossier: signe_conseiller.',
     });
   }
 
@@ -394,6 +402,8 @@ export default function TechnicoDevis() {
     statut: DevisStatut,
     modeValidation?: Devis['modeValidation'],
   ) {
+    closeActionMenu();
+
     if (statut !== 'SIGNE') {
       updateStatut.mutate({ id: devisId, statut });
       return;
@@ -450,14 +460,46 @@ export default function TechnicoDevis() {
       </div>
 
       {feedback && (
-        <div
-          className={
-            feedback.type === 'success'
-              ? 'rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
-              : 'rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700'
-          }
-        >
-          {feedback.text}
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm" onClick={() => setFeedback(null)}>
+          <div 
+            className="w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition-all border border-slate-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center text-center">
+              <div className={cn(
+                "mb-4 flex h-14 w-14 items-center justify-center rounded-full",
+                feedback.type === 'success' 
+                  ? "bg-emerald-50 text-emerald-600" 
+                  : "bg-red-50 text-red-600"
+              )}>
+                {feedback.type === 'success' ? (
+                  <CheckCircle2 size={28} />
+                ) : (
+                  <XCircle size={28} />
+                )}
+              </div>
+              
+              <h3 className="text-lg font-bold text-slate-900">
+                {feedback.type === 'success' ? "Succès" : "Action bloquée"}
+              </h3>
+              
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                {feedback.text}
+              </p>
+              
+              <button
+                onClick={() => setFeedback(null)}
+                className={cn(
+                  "mt-6 w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition",
+                  feedback.type === 'success'
+                    ? "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800"
+                    : "bg-red-600 hover:bg-red-700 active:bg-red-800"
+                )}
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -500,46 +542,44 @@ export default function TechnicoDevis() {
         })}
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <div className="flex max-w-md flex-1">
-          <SearchBar
-            value={search}
-            onChange={(value) => {
-              setSearch(value);
-              setPage(1);
-            }}
-            placeholder="Rechercher par référence..."
-            onClear={() => setSearch('')}
-          />
-        </div>
-        <select
-          value={sortBy}
-          onChange={(event) => setSortBy(event.target.value)}
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-sm outline-none"
-          aria-label="Trier les devis"
-        >
-          <option value="recent">Tri : plus récent</option>
-          <option value="amount">Tri : montant décroissant</option>
-          <option value="reference">Tri : référence A-Z</option>
-          <option value="client">Tri : client A-Z</option>
-        </select>
+      <div className="flex max-w-md items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm transition focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100">
+        <Search size={18} className="text-slate-400" />
+        <input
+          type="text"
+          placeholder="Rechercher par reference..."
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setPage(1);
+          }}
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+        />
+        {search && (
+          <button onClick={() => setSearch('')} className="text-slate-300 transition hover:text-slate-500">
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {isLoading ? (
-        <LoadingSkeleton type="list" count={5} />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="animate-spin text-teal-500" size={32} />
+        </div>
       ) : isError ? (
         <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm">
           {listErrorText}
         </div>
       ) : devisList.length === 0 ? (
-        <EmptyState
-          icon={FileSpreadsheet}
-          title="Aucun devis"
-          description="Créez votre premier devis."
-        />
+        <div className="rounded-3xl border border-slate-100 bg-white p-12 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-50">
+            <FileSpreadsheet size={28} className="text-teal-400" />
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900">Aucun devis</h3>
+          <p className="mt-1 text-sm text-slate-400">Creez votre premier devis.</p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {sortedDevisList.map((devis) => {
+          {devisList.map((devis) => {
             const config = statutConfig[devis.statut] ?? statutConfig.BROUILLON;
             const actions = statutActions[devis.statut] ?? [];
             const clientName = devis.client
@@ -580,7 +620,7 @@ export default function TechnicoDevis() {
                     {canSendToClient(devis.statut) && (
                       <button
                         onClick={() => sendClientMutation.mutate(devis.id)}
-                        className="rounded-lg p-2 text-slate-400 transition hover:bg-teal-50 hover:text-teal-600"
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
                         title={
                           devis.statut === 'ENVOYE' || devis.statut === 'RENVOYE'
                             ? 'Renvoyer au client'
@@ -596,14 +636,20 @@ export default function TechnicoDevis() {
                     )}
                     <button
                       onClick={() => setPreviewDevisId(devis.id)}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
+                      className="rounded-lg p-2 text-slate-400 transition hover:bg-teal-50 hover:text-teal-600"
                     >
                       <Eye size={16} />
                     </button>
                     <button
                       onClick={() => createFactureFromDevisMutation.mutate(devis.id)}
-                      className="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                      title="Transformer en facture"
+                      disabled={createFactureFromDevisMutation.isPending || !isAdmin}
+                      className={cn(
+                        "rounded-lg p-2 transition",
+                        isAdmin
+                          ? "text-slate-400 hover:bg-emerald-50 hover:text-emerald-600"
+                          : "text-slate-200 cursor-not-allowed opacity-40"
+                      )}
+                      title={isAdmin ? "Transformer en facture" : "Non autorisé (réservé à l'Admin)"}
                     >
                       {createFactureFromDevisMutation.isPending ? (
                         <Loader2 size={16} className="animate-spin" />
@@ -614,10 +660,11 @@ export default function TechnicoDevis() {
 
                     <div className="relative">
                       <button
-                        onClick={() => setActionMenuId(actionMenuId === devis.id ? null : devis.id)}
+                        type="button"
+                        onClick={() => toggleActionMenu(devis.id)}
                         className="rounded-lg p-2 text-slate-400 transition hover:bg-slate-100"
                       >
-                        <MoreVertical size={16} />
+                        <ChevronRight size={16} />
                       </button>
 
                       {actionMenuId === devis.id && actions.length > 0 && (
@@ -668,7 +715,7 @@ export default function TechnicoDevis() {
       {showSignatureModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-            <h3 className="mb-4 text-lg font-bold text-slate-900">Créer votre signature</h3>
+            <h3 className="mb-4 text-lg font-bold text-slate-900">Creer votre signature</h3>
             <SignatureCanvas ref={signatureCanvasRef} className="mb-4 h-40 w-full rounded-xl border" />
             <div className="flex justify-end gap-3">
               <button
@@ -683,7 +730,7 @@ export default function TechnicoDevis() {
               </button>
               <button
                 type="button"
-                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-blue-700 hover:to-blue-700"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 transition hover:from-teal-700 hover:to-emerald-700"
                 onClick={handleSaveSignatureAndSign}
               >
                 Enregistrer et signer
@@ -713,9 +760,9 @@ export default function TechnicoDevis() {
                   required
                   value={form.clientId}
                   onChange={(event) => setForm({ ...form, clientId: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 >
-                  <option value="">Sélectionner un client</option>
+                  <option value="">Selectionner un client</option>
                   {(clientsList ?? []).map((client) => (
                     <option key={client.id} value={client.id}>
                       {`${client.prenom ?? ''} ${client.nom}`.trim()}
@@ -732,7 +779,7 @@ export default function TechnicoDevis() {
                   step="0.1"
                   value={form.tauxTVA}
                   onChange={(event) => setForm({ ...form, tauxTVA: event.target.value })}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
 
@@ -742,13 +789,13 @@ export default function TechnicoDevis() {
                   value={form.notes}
                   onChange={(event) => setForm({ ...form, notes: event.target.value })}
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
                 />
               </div>
 
               {createMutation.error && (
                 <p className="rounded-lg bg-rose-50 px-4 py-2 text-sm text-rose-600">
-                  Erreur lors de la création.
+                  Erreur lors de la creation.
                 </p>
               )}
 
@@ -763,10 +810,10 @@ export default function TechnicoDevis() {
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:from-blue-700 hover:to-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-teal-600/20 transition hover:from-teal-700 hover:to-emerald-700 disabled:opacity-50"
                 >
                   {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                  Créer le devis
+                  Creer le devis
                 </button>
               </div>
             </form>
@@ -777,7 +824,7 @@ export default function TechnicoDevis() {
       {loadingPreview && previewDevisId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-xl">
-            <Loader2 size={18} className="animate-spin text-blue-600" />
+            <Loader2 size={18} className="animate-spin text-teal-600" />
             <span className="text-sm font-medium text-slate-700">Chargement du devis...</span>
           </div>
         </div>
@@ -866,6 +913,7 @@ function MenuAction({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn('w-full px-4 py-2 text-left text-sm font-medium transition hover:bg-slate-50', color)}
     >

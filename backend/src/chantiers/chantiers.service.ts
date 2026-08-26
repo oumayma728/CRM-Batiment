@@ -1,4 +1,6 @@
-﻿import {
+import { NotificationsService } from '../notifications/notifications.service.js';
+import { CreateDocumentChantierDto } from './dto/create-document-chantier.dto.js';
+import {
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -11,13 +13,13 @@ import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { CreateTacheDto, TaskAssignmentType } from './dto/create-tache.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
-import { CreateDocumentChantierDto } from './dto/create-document-chantier.dto.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
+import { WorkflowStateService } from '../common/workflow-state.service.js';
 
 @Injectable()
 export class ChantiersService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly workflowStateService: WorkflowStateService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
@@ -545,11 +547,30 @@ export class ChantiersService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const search = query.search?.trim();
-
+    //avant //
+    //const where: Prisma.ChantierWhereInput = {
+    // companyId: currentUser.companyId,
+    //};
+    //apres : //
     const where: Prisma.ChantierWhereInput = {
       companyId: currentUser.companyId,
     };
 
+    // Filtrer les chantiers selon le rôle de l'utilisateur
+    if (currentUser.role === Role.CHEF_CHANTIER) {
+      where.chefChantierId = currentUser.userId;
+    } else if (currentUser.role === Role.SOUS_TRAITANT) {
+      where.taches = {
+        some: {
+          affectations: {
+            some: {
+              userId: currentUser.userId,
+            },
+          },
+        },
+      };
+    } 
+    // fin apres 
     if (query.statut) {
       where.statut = query.statut;
     }
@@ -639,9 +660,95 @@ export class ChantiersService {
     };
   }
 
-  async findOne(id: number, currentUser: CurrentUserPayload) {
+  /*async findOne(id: number, currentUser: CurrentUserPayload) {
     const chantier = await this.prisma.chantier.findFirst({
       where: { id, companyId: currentUser.companyId },
+      include: {
+        client: true,
+        chefChantier: {
+          select: {
+            id: true,
+            nom: true,
+            prenom: true,
+            email: true,
+            role: true,
+          },
+        },
+        devis: {
+          select: {
+            id: true,
+            reference: true,
+            statut: true,
+            totalTTC: true,
+            dateValidation: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+        taches: {
+          orderBy: { ordre: 'asc' },
+          include: {
+            affectations: {
+              include: {
+                user: {
+                  select: { id: true, nom: true, prenom: true, email: true },
+                },
+                equipe: {
+                  select: { id: true, nom: true, type: true },
+                },
+              },
+            },
+          },
+        },
+        documents: {
+          orderBy: { createdAt: 'desc' },
+        sousTraitantsVisibles: {
+          select: { sousTraitant: { select: { id: true, nom: true, prenom: true, email: true } } },
+        },
+        },
+      },
+    });
+
+    if (!chantier) {
+      throw new NotFoundException(`Chantier #${id} introuvable.`);
+    }
+
+    const mappedTasks = chantier.taches.map((task) =>
+      this.mapTaskWithAssignment(task),
+    );
+
+    return {
+      ...chantier,
+      taches: mappedTasks,
+      statutAuto: this.computeChantierAutoStatus(chantier.taches),
+      resumeTaches: this.buildTaskSummary(chantier.taches),
+    };
+  }
+  */
+
+  //apres modif //
+  async findOne(id: number, currentUser: CurrentUserPayload) {
+    const where: Prisma.ChantierWhereInput = {
+      id,
+      companyId: currentUser.companyId,
+    };
+
+    //restriction d'acces selon le role 
+    if (currentUser.role === Role.CHEF_CHANTIER) {
+      where.chefChantierId = currentUser.userId;
+    } else if (currentUser.role === Role.SOUS_TRAITANT) {
+      where.taches = {
+        some: {
+          affectations: {
+            some: {
+              userId: currentUser.userId,
+            },
+          },
+        },
+      };
+    }
+
+    const chantier = await this.prisma.chantier.findFirst({
+      where,
       include: {
         client: true,
         chefChantier: {
@@ -692,12 +799,100 @@ export class ChantiersService {
       this.mapTaskWithAssignment(task),
     );
 
-    return {
+    //verification des acces aux données financieres du chantier selon le role de l'utilisateur
+    const isCommercialAllowed =
+      currentUser.role === Role.ADMIN ||
+      currentUser.role === Role.ASSISTANTE ||
+      currentUser.role === Role.TECHNICO;
+
+    const response = {
+      sousTraitantsVisibles: (chantier as any).sousTraitantsVisibles?.map((item: any) => item.sousTraitant) ?? [],
       ...chantier,
       taches: mappedTasks,
       statutAuto: this.computeChantierAutoStatus(chantier.taches),
       resumeTaches: this.buildTaskSummary(chantier.taches),
     };
+    
+    //masquage des devis si pas commercial ou admin 
+    if (!isCommercialAllowed) {
+      delete (response as any).devis;
+    }
+
+    return response;
+  }
+  // fin modif // 
+
+  async updateVisibility(
+    id: number,
+    sousTraitantIds: number[],
+    currentUser: CurrentUserPayload,
+  ) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: sousTraitantIds }, companyId: currentUser.companyId, role: Role.SOUS_TRAITANT, actif: true },
+      select: { id: true },
+    });
+    if (users.length !== sousTraitantIds.length) {
+      throw new BadRequestException('Un ou plusieurs sous-traitants sont invalides.');
+    }
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.chantierSousTraitant.deleteMany({ where: { chantierId: id } });
+      await transaction.chantierSousTraitant.createMany({
+        data: sousTraitantIds.map((sousTraitantId) => ({ chantierId: id, sousTraitantId })),
+      });
+    });
+    return this.findOne(id, currentUser);
+  }
+
+  async savePlan2d(
+    id: number,
+    plan2d: Record<string, unknown>,
+    currentUser: CurrentUserPayload,
+    imageDataUrl?: string,
+  ) {
+    const chantier = await this.ensureChantierInCompany(id, currentUser.companyId);
+    const documentUrl = imageDataUrl?.startsWith('data:image/')
+      ? imageDataUrl
+      : `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(plan2d))}`;
+    const documentName = imageDataUrl?.startsWith('data:image/')
+      ? `Plan 2D - ${chantier.reference}.png`
+      : `Plan 2D - ${chantier.reference}.json`;
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: plan2d as Prisma.InputJsonValue },
+      });
+      await transaction.documentChantier.create({
+        data: {
+          chantierId: id,
+          nom: documentName,
+          type: 'PLAN_2D',
+          url: documentUrl,
+        },
+      });
+    });
+
+    return this.findOne(id, currentUser);
+  }
+
+  async removePlan2d(id: number, currentUser: CurrentUserPayload) {
+    await this.ensureChantierInCompany(id, currentUser.companyId);
+
+    await this.prisma.$transaction(async (transaction) => {
+      await transaction.documentChantier.deleteMany({
+        where: { chantierId: id, type: 'PLAN_2D' },
+      });
+      await transaction.chantier.update({
+        where: { id },
+        data: { plan2d: Prisma.JsonNull },
+      });
+    });
+
+    return this.findOne(id, currentUser);
   }
 
   async createDocument(
@@ -793,7 +988,11 @@ export class ChantiersService {
     dto: UpdateChantierDto,
     currentUser: CurrentUserPayload,
   ) {
-    await this.findOne(id, currentUser);
+    const existing = await this.findOne(id, currentUser);
+
+    if (dto.statut && dto.statut !== existing.statut) {
+      this.workflowStateService.validateChantierTransition(existing.statut, dto.statut);
+    }
 
     if (dto.clientId) {
       await this.ensureClientInCompany(dto.clientId, currentUser.companyId);

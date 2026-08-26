@@ -1,9 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import api from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import type { CatalogueCategorieWithCompositions, OptionPrestation, Prestation } from '@/types';
+import type { CatalogueCategorieWithCompositions, OptionPrestation } from '@/types';
 import { formatCurrency, cn } from '@/lib/utils';
 import {
   Plus, Search, Edit, Trash2, X, Loader2, BookOpen, Download,
@@ -35,33 +35,12 @@ interface OptionPayload {
   }>;
 }
 
-type UniteValue =
-  | 'M2'
-  | 'ML'
-  | 'PIECE'
-  | 'JOUR'
-  | 'HEURE'
-  | 'LITRE'
-  | 'KG'
-  | 'FORFAIT';
-
-const UNITES: Array<{ value: UniteValue; label: string }> = [
-  { value: 'M2', label: 'm²' },
-  { value: 'ML', label: 'mètre linéaire' },
-  { value: 'PIECE', label: 'pièce' },
-  { value: 'JOUR', label: 'jour' },
-  { value: 'HEURE', label: 'heure' },
-  { value: 'LITRE', label: 'litre' },
-  { value: 'KG', label: 'kg' },
-  { value: 'FORFAIT', label: 'forfait' },
-];
-
 interface PrestationCreateFormState {
   nom: string;
   description: string;
   prixVenteMin: string;
   prixVenteMax: string;
-  unite: UniteValue;
+  unite: string;
   categorieId: string;
   sousCategorieId: string;
 }
@@ -71,7 +50,7 @@ const createEmptyPrestationForm = (): PrestationCreateFormState => ({
   description: '',
   prixVenteMin: '',
   prixVenteMax: '',
-  unite: 'M2',
+  unite: '',
   categorieId: '',
   sousCategorieId: '',
 });
@@ -82,23 +61,6 @@ const createDefaultOptionForm = (): PrestationOptionForm => ({
   obligatoire: true,
   choix: [{ nom: '', impactPrix: '' }],
 });
-
-function csvCell(value: unknown) {
-  return `"${String(value ?? '').replace(/"/g, '""')}"`;
-}
-
-function downloadCsv(filename: string, rows: unknown[][]) {
-  const content = rows.map((row) => row.map(csvCell).join(';')).join('\n');
-  const blob = new Blob([`\uFEFF${content}`], { type: 'text/csv;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-}
 
 function buildOptionsPayload(options: PrestationOptionForm[]) {
   const payload: OptionPayload[] = [];
@@ -183,7 +145,6 @@ export default function PrestationsPage() {
   const [expandedSubs, setExpandedSubs] = useState<Set<number>>(new Set());
   const [expandedPrestations, setExpandedPrestations] = useState<Set<number>>(new Set());
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState<Prestation | null>(null);
   const [form, setForm] = useState<PrestationCreateFormState>(() => createEmptyPrestationForm());
   const [optionsForm, setOptionsForm] = useState<PrestationOptionForm[]>([]);
 
@@ -230,22 +191,14 @@ export default function PrestationsPage() {
     },
     onSuccess: ({ optionsCount }) => {
       queryClient.invalidateQueries({ queryKey: ['catalogue-full'] });
-      closeModal();
+      setShowModal(false);
+      setForm(createEmptyPrestationForm());
+      setOptionsForm([]);
       window.alert(
         optionsCount > 0
           ? `Prestation creee avec ${optionsCount} option(s). Cliquez sur la fleche de la prestation pour voir le raffinement.`
           : 'Prestation creee avec succes.',
       );
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, body }: { id: number; body: Record<string, unknown> }) =>
-      api.patch(`/prestations/${id}`, body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['catalogue-full'] });
-      closeModal();
-      window.alert('Prestation modifiée avec succès.');
     },
   });
 
@@ -288,33 +241,13 @@ export default function PrestationsPage() {
     const parsedMin = Number(form.prixVenteMin);
     const parsedMax = Number(form.prixVenteMax);
 
-    if (
-      !Number.isFinite(parsedMin) ||
-      !Number.isFinite(parsedMax) ||
-      parsedMin <= 0 ||
-      parsedMax <= 0
-    ) {
-      window.alert('Veuillez saisir des prix strictement supérieurs à 0.');
+    if (!Number.isFinite(parsedMin) || !Number.isFinite(parsedMax)) {
+      window.alert('Veuillez saisir des prix valides.');
       return;
     }
 
     if (parsedMax < parsedMin) {
       window.alert('Le prix de vente max doit etre superieur ou egal au prix de vente min.');
-      return;
-    }
-
-    const prestationBody = {
-      nom: form.nom.trim(),
-      description: form.description.trim() || undefined,
-      prixVenteMin: parsedMin,
-      prixVenteMax: parsedMax,
-      unite: form.unite,
-      categorieId: parseInt(form.categorieId),
-      sousCategorieId: form.sousCategorieId ? parseInt(form.sousCategorieId) : undefined,
-    };
-
-    if (editing) {
-      updateMutation.mutate({ id: editing.id, body: prestationBody });
       return;
     }
 
@@ -325,64 +258,18 @@ export default function PrestationsPage() {
     }
 
     createMutation.mutate({
-      prestationBody,
+      prestationBody: {
+      nom: form.nom,
+      description: form.description || undefined,
+      prixVenteMin: parsedMin,
+      prixVenteMax: parsedMax,
+      unite: form.unite || undefined,
+        categorieId: parseInt(form.categorieId),
+        sousCategorieId: form.sousCategorieId ? parseInt(form.sousCategorieId) : undefined,
+      },
       options: builtOptions.payload,
     });
   }
-
-  function closeModal() {
-    setShowModal(false);
-    setEditing(null);
-    setForm(createEmptyPrestationForm());
-    setOptionsForm([]);
-  }
-
-  function openCreate() {
-    closeModal();
-    setShowModal(true);
-  }
-
-  function openEdit(prestation: Prestation) {
-    setEditing(prestation);
-    setForm({
-      nom: prestation.nom,
-      description: prestation.description ?? '',
-      prixVenteMin: String(prestation.prixVenteMin),
-      prixVenteMax: String(prestation.prixVenteMax),
-      unite: prestation.unite as UniteValue,
-      categorieId: String(prestation.categorieId),
-      sousCategorieId: prestation.sousCategorieId ? String(prestation.sousCategorieId) : '',
-    });
-    setOptionsForm([]);
-    setShowModal(true);
-  }
-
-  const createErrorMessage = (() => {
-    const mutationError = editing ? updateMutation.error : createMutation.error;
-    if (!mutationError) return null;
-
-    if (axios.isAxiosError(mutationError)) {
-      const data = mutationError.response?.data as
-        | { message?: string | string[] }
-        | undefined;
-
-      if (Array.isArray(data?.message)) {
-        return data.message.join(' ');
-      }
-
-      if (typeof data?.message === 'string') {
-        return data.message;
-      }
-    }
-
-    if (mutationError instanceof Error) {
-      return mutationError.message;
-    }
-
-    return editing
-      ? 'Erreur lors de la modification de la prestation.'
-      : 'Erreur lors de la cr├®ation de la prestation.';
-  })();
 
   const selectedCategory = (catalogue ?? []).find((category) => category.id === Number(form.categorieId));
   const selectedSubCategories = selectedCategory?.sousCategories ?? [];
@@ -442,13 +329,13 @@ export default function PrestationsPage() {
   }
 
   function toggleCat(id: number) {
-    setExpandedCats(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+    setExpandedCats(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
   function toggleSub(id: number) {
-    setExpandedSubs(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+    setExpandedSubs(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
   function togglePrestation(id: number) {
-    setExpandedPrestations(prev => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+    setExpandedPrestations(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
   function expandAll() {
     if (!catalogue) return;
@@ -470,7 +357,7 @@ export default function PrestationsPage() {
   function handleDeleteCategory(categoryId: number, categoryName: string) {
     if (deleteSelectedCategoryMutation.isPending) return;
     const confirmed = window.confirm(
-      `Voulez-vous vraiment supprimer la catégorie "${categoryName}" ?`,
+      `Voulez-vous vraiment supprimer la catÃ©gorie "${categoryName}" ?`,
     );
     if (!confirmed) return;
     deleteSelectedCategoryMutation.mutate(categoryId);
@@ -510,27 +397,8 @@ export default function PrestationsPage() {
     });
   });
 
-  function handleExport() {
-    const rows: unknown[][] = [
-      ['Cat├®gorie', 'Sous-catégorie', 'Prestation', 'Unité', 'Prix minimum', 'Prix maximum', 'Description'],
-    ];
-
-    for (const category of catalogue ?? []) {
-      for (const prestation of category.prestations ?? []) {
-        rows.push([category.nom, '', prestation.nom, prestation.unite, prestation.prixVenteMin, prestation.prixVenteMax, prestation.description]);
-      }
-      for (const subCategory of category.sousCategories ?? []) {
-        for (const prestation of subCategory.prestations ?? []) {
-          rows.push([category.nom, subCategory.nom, prestation.nom, prestation.unite, prestation.prixVenteMin, prestation.prixVenteMax, prestation.description]);
-        }
-      }
-    }
-
-    downloadCsv('catalogue-prestations.csv', rows);
-  }
-
   return (
-    <div className="">
+    <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -539,7 +407,7 @@ export default function PrestationsPage() {
             Catalogue des Prestations
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            {catalogue?.length ?? 0} catégories · {totalSousCategories} sous-catégories · {totalPrestations} prestations · {totalOptions} options
+            {catalogue?.length ?? 0} catÃ©gories Â· {totalSousCategories} sous-catÃ©gories Â· {totalPrestations} prestations Â· {totalOptions} options
           </p>
           {!isAdmin && (
             <p className="text-amber-700 text-xs mt-1">
@@ -548,11 +416,11 @@ export default function PrestationsPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={handleExport} disabled={totalPrestations === 0} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50">
+          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors text-sm font-medium">
             <Download size={16} /> Exporter
           </button>
           {isAdmin && (
-            <button onClick={openCreate} className="inline-flex items-center gap-2 batiflow-gradient px-5 py-2.5 rounded-xl text-sm font-medium text-white transition-all hover:shadow-lg hover:shadow-blue-500/20">
+            <button onClick={() => setShowModal(true)} className="inline-flex items-center gap-2 batiflow-gradient text-white px-5 py-2.5 rounded-xl hover:shadow-lg hover:shadow-blue-500/20 transition-all font-medium text-sm">
               <Plus size={17} /> Nouvelle prestation
             </button>
           )}
@@ -568,7 +436,7 @@ export default function PrestationsPage() {
             placeholder="Rechercher dans le catalogue..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all outline-none"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
@@ -577,7 +445,7 @@ export default function PrestationsPage() {
           )}
         </div>
         <button onClick={expandAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-          Tout déplier
+          Tout dÃ©plier
         </button>
         <button onClick={collapseAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-primary-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
           Tout replier
@@ -592,13 +460,13 @@ export default function PrestationsPage() {
       ) : filteredCatalogue.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
           <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-          <p className="text-lg font-medium text-gray-500">Aucun résultat</p>
+          <p className="text-lg font-medium text-gray-500">Aucun resultat</p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredCatalogue.map((cat) => (
             <div key={cat.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {/* Cat├®gorie header */}
+              {/* CatÃ©gorie header */}
               <div
                 className={cn(
                   'w-full flex items-center gap-2 px-5 py-3.5 hover:bg-gray-50/50 transition-colors',
@@ -614,15 +482,15 @@ export default function PrestationsPage() {
                 >
                   {expandedCats.has(cat.id) ? <ChevronDown size={18} className="text-primary-500" /> : <ChevronRight size={18} className="text-gray-400" />}
                   <div className="w-9 h-9 bg-gradient-to-br from-primary-100 to-blue-100 rounded-xl flex items-center justify-center">
-                    <Layers size={18} className="text-emerald-600" />
+                    <Layers size={18} className="text-primary-600" />
                   </div>
                   <div className="flex-1 text-left min-w-0">
                     <h3 className="text-sm font-bold text-gray-900 truncate">{cat.nom}</h3>
-                    {cat.description && <p className="text-xs text-gray-400 truncate">{cat.description}</p>}
+                    {cat.description && <p className="text-xs text-gray-500 truncate">{cat.description}</p>}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
                     <span>{cat.sousCategories?.length ?? 0} sous-cat.</span>
-                    <span className="text-gray-300">·</span>
+                    <span className="text-gray-300">Â·</span>
                     <span>
                       {(cat.sousCategories?.reduce((acc, sc) => acc + (sc.prestations?.length ?? 0), 0) ?? 0) + (cat.prestations?.length ?? 0)} prestations
                     </span>
@@ -639,10 +507,10 @@ export default function PrestationsPage() {
                     className={cn(
                       'inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-xs font-medium transition-colors',
                       deleteSelectedCategoryMutation.isPending
-                        ? 'text-gray-400 border-gray-200 cursor-not-allowed'
+                        ? 'text-gray-300 border-gray-200 cursor-not-allowed'
                         : 'text-gray-600 border-gray-300 hover:bg-gray-100',
                     )}
-                    title={`Supprimer la catégorie ${cat.nom}`}
+                    title={`Supprimer la catÃ©gorie ${cat.nom}`}
                   >
                     <Trash2 size={14} />
                     Supprimer
@@ -650,19 +518,18 @@ export default function PrestationsPage() {
                 )}
               </div>
 
-              {/* Sous-catégories */}
+              {/* Sous-catÃ©gories */}
               {expandedCats.has(cat.id) && (
-                <div className="border-t border-gray-200">
-                  {/* Direct prestations (without sous-catégorie) */}
+                <div className="border-t border-gray-100">
+                  {/* Direct prestations (without sous-catÃ©gorie) */}
                   {(cat.prestations?.length ?? 0) > 0 && (
-                    <div className="ml-8 border-l-2 border-gray-200">
+                    <div className="ml-8 border-l-2 border-gray-100">
                       {cat.prestations.map(p => (
                         <PrestationRow
                           key={p.id}
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
-                          onEdit={() => openEdit(p)}
                           onDelete={() => deleteMutation.mutate(p.id)}
                           canEdit={isAdmin}
                           indent={1}
@@ -673,7 +540,7 @@ export default function PrestationsPage() {
 
                   {cat.sousCategories?.map(sc => (
                     <div key={sc.id}>
-                      {/* Sous-catégorie header */}
+                      {/* Sous-catÃ©gorie header */}
                       <button
                         onClick={() => toggleSub(sc.id)}
                         className="w-full flex items-center gap-3 pl-12 pr-5 py-3 hover:bg-gray-50/50 transition-colors border-t border-gray-50"
@@ -682,19 +549,18 @@ export default function PrestationsPage() {
                         <FolderOpen size={16} className="text-emerald-500" />
                         <div className="flex-1 text-left">
                           <span className="text-sm font-semibold text-gray-800">{sc.nom}</span>
-                          {sc.description && <span className="text-xs text-gray-400 ml-2">— {sc.description}</span>}
+                          {sc.description && <span className="text-xs text-gray-400 ml-2">â€” {sc.description}</span>}
                         </div>
                         <span className="text-xs text-gray-400">{sc.prestations?.length ?? 0} prestations</span>
                       </button>
 
-                      {/* Prestations dans la sous-catégorie */}
+                      {/* Prestations dans la sous-catÃ©gorie */}
                       {expandedSubs.has(sc.id) && sc.prestations?.map(p => (
                         <PrestationRow
                           key={p.id}
                           prestation={p}
                           expanded={expandedPrestations.has(p.id)}
                           onToggle={() => togglePrestation(p.id)}
-                          onEdit={() => openEdit(p)}
                           onDelete={() => deleteMutation.mutate(p.id)}
                           canEdit={isAdmin}
                           indent={2}
@@ -711,14 +577,17 @@ export default function PrestationsPage() {
 
       {/* Create Modal */}
       {showModal && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">{editing ? 'Modifier la prestation' : 'Nouvelle prestation'}</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Nouvelle prestation</h2>
               <button
-                type="button"
-                onClick={closeModal}
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-slate-200 flex items-center justify-center text-gray-400"
+                onClick={() => {
+                  setShowModal(false);
+                  setForm(createEmptyPrestationForm());
+                  setOptionsForm([]);
+                }}
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500"
               >
                 <X size={18} />
               </button>
@@ -760,43 +629,26 @@ export default function PrestationsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix vente min *</label>
-                  <input type="number" step="0.01" min="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <input type="number" step="0.01" required value={form.prixVenteMin} onChange={(e) => setForm({ ...form, prixVenteMin: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Prix vente max *</label>
-                  <input type="number" step="0.01" min="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
+                  <input type="number" step="0.01" required value={form.prixVenteMax} onChange={(e) => setForm({ ...form, prixVenteMax: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Unité *</label>
-                  <select
-                    required
-                    value={form.unite}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        unite: e.target.value as UniteValue,
-                      })
-                    }
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    {UNITES.map((unite) => (
-                      <option key={unite.value} value={unite.value}>
-                        {unite.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">UnitÃ©</label>
+                  <input type="text" placeholder="mÂ², ml, u..." value={form.unite} onChange={(e) => setForm({ ...form, unite: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent" />
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
                 <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none" />
               </div>
-              {!editing ? (
               <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-semibold text-gray-800">Choix de prestation</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       Ajouter un ou plusieurs choix. Si optionnelle, saisir le prix de l option.
                     </p>
                   </div>
@@ -811,21 +663,21 @@ export default function PrestationsPage() {
                 </div>
 
                 {optionsForm.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-3 text-xs text-gray-400">
+                  <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-3 text-xs text-gray-500">
                     Aucun choix ajoute. Vous pouvez creer la prestation sans choix.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {optionsForm.map((option, optionIndex) => (
-                      <div key={optionIndex} className="rounded-2xl border border-gray-200 bg-white p-3 space-y-3">
+                      <div key={optionIndex} className="rounded-xl border border-gray-200 bg-white p-3 space-y-3">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                             Option #{optionIndex + 1}
                           </p>
                           <button
                             type="button"
                             onClick={() => removeOptionBlock(optionIndex)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-red-50"
+                            className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
                             title="Supprimer cette option"
                           >
                             <Trash2 size={14} />
@@ -920,7 +772,7 @@ export default function PrestationsPage() {
                                   type="button"
                                   onClick={() => removeChoiceFromOption(optionIndex, choiceIndex)}
                                   disabled={option.choix.length <= 1}
-                                  className="w-full px-2 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-400 hover:text-blue-600 hover:border-red-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                  className="w-full px-2 py-2 rounded-lg border border-gray-200 text-xs font-medium text-gray-500 hover:text-red-600 hover:border-red-200 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                   Retirer
                                 </button>
@@ -933,27 +785,22 @@ export default function PrestationsPage() {
                   </div>
                 )}
               </div>
-              ) : (
-                <p className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-                  Les options existantes restent inchangées. Elles peuvent être gérées depuis les d├®tails de la prestation.
-                </p>
-              )}
-              {createErrorMessage && (
-                <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  {createErrorMessage}
-                </p>
-              )}
+              {createMutation.error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">Erreur lors de la creation.</p>}
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={closeModal}
+                  onClick={() => {
+                    setShowModal(false);
+                    setForm(createEmptyPrestationForm());
+                    setOptionsForm([]);
+                  }}
                   className="px-4 py-2.5 text-sm font-medium text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Annuler
                 </button>
-                <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="px-6 py-2.5 text-sm font-semibold text-white rounded-2xl bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
-                  {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
-                  {editing ? 'Enregistrer' : 'Créer'}
+                <button type="submit" disabled={createMutation.isPending} className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all">
+                  {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
+                  Creer
                 </button>
               </div>
             </form>
@@ -964,15 +811,14 @@ export default function PrestationsPage() {
   );
 }
 
-// ├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Sub-component: Prestation Row
-// ├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼├óÔÇØÔé¼
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function PrestationRow({
   prestation: p,
   expanded,
   onToggle,
-  onEdit,
   onDelete,
   canEdit,
   indent,
@@ -980,18 +826,16 @@ function PrestationRow({
   prestation: CatalogueCategorieWithCompositions['prestations'][0];
   expanded: boolean;
   onToggle: () => void;
-  onEdit: () => void;
   onDelete: () => void;
   canEdit: boolean;
   indent: number;
 }) {
   const hasOptions = (p.options?.length ?? 0) > 0;
-  // Indentation reduite en mobile (ecran etroit), complete en desktop.
-  const paddingLeft = indent === 1 ? 'pl-3 md:pl-14' : 'pl-4 md:pl-20';
+  const paddingLeft = indent === 1 ? 'pl-14' : 'pl-20';
 
   return (
     <div className="border-t border-gray-50">
-      <div className={cn('flex flex-wrap items-center gap-3 pr-3 md:pr-5 py-3 hover:bg-primary-50/30 transition-colors', paddingLeft)}>
+      <div className={cn('flex items-center gap-3 pr-5 py-3 hover:bg-blue-50/30 transition-colors', paddingLeft)}>
         {hasOptions ? (
           <button onClick={onToggle} className="shrink-0">
             {expanded ? <ChevronDown size={14} className="text-amber-500" /> : <ChevronRight size={14} className="text-gray-400" />}
@@ -1000,12 +844,12 @@ function PrestationRow({
           <span className="w-3.5 shrink-0" />
         )}
         <div className="w-7 h-7 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center shrink-0">
-          <BookOpen size={14} className="text-primary-500" />
+          <BookOpen size={14} className="text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-900">{p.nom}</span>
-            <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-400 rounded">{p.unite}</span>
+            <span className="px-1.5 py-0.5 bg-gray-100 text-[10px] font-medium text-gray-500 rounded">{p.unite}</span>
             {hasOptions && (
               <span className="px-1.5 py-0.5 bg-amber-50 text-[10px] font-medium text-amber-600 rounded border border-amber-100">
                 {p.options!.length} option{p.options!.length > 1 ? 's' : ''}
@@ -1014,20 +858,20 @@ function PrestationRow({
           </div>
           {p.description && <p className="text-xs text-gray-400 truncate max-w-lg">{p.description}</p>}
         </div>
-        <span className="w-full pl-9 text-sm font-semibold text-gray-700 md:w-auto md:pl-0 md:whitespace-nowrap">
-          {formatCurrency(p.prixVenteMin)} – {formatCurrency(p.prixVenteMax)}
+        <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+          {formatCurrency(p.prixVenteMin)} â€“ {formatCurrency(p.prixVenteMax)}
         </span>
         {canEdit && (
           <div className="flex items-center gap-1 ml-2">
-            <button type="button" onClick={onEdit} className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50" title={`Modifier ${p.nom}`}><Edit size={14} /></button>
-            <button onClick={onDelete} className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-red-50"><Trash2 size={14} /></button>
+            <button className="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50"><Edit size={14} /></button>
+            <button onClick={onDelete} className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"><Trash2 size={14} /></button>
           </div>
         )}
       </div>
 
       {/* Options & Choix */}
       {expanded && hasOptions && (
-        <div className={cn('pb-3', indent === 1 ? 'pl-4 md:pl-24' : 'pl-5 md:pl-28')}>
+        <div className={cn('pb-3', indent === 1 ? 'pl-24' : 'pl-28')}>
           {p.options!.map((opt) => (
             <OptionBlock key={opt.id} option={opt} />
           ))}
@@ -1037,10 +881,13 @@ function PrestationRow({
   );
 }
 
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Sub-component: Option Block
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function OptionBlock({ option }: { option: OptionPrestation }) {
   return (
-    <div className="mt-2 bg-gray-50/80 rounded-2xl border border-gray-200 p-3">
+    <div className="mt-2 bg-gray-50/80 rounded-xl border border-gray-100 p-3">
       <div className="flex items-center gap-2 mb-2">
         <Settings2 size={13} className="text-amber-500" />
         <span className="text-xs font-bold text-gray-700">{option.nom}</span>
@@ -1049,7 +896,7 @@ function OptionBlock({ option }: { option: OptionPrestation }) {
             Obligatoire
           </span>
         )}
-        {option.description && <span className="text-[11px] text-gray-400 ml-1">— {option.description}</span>}
+        {option.description && <span className="text-[11px] text-gray-400 ml-1">â€” {option.description}</span>}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {option.choix.map(ch => (
@@ -1067,3 +914,4 @@ function OptionBlock({ option }: { option: OptionPrestation }) {
     </div>
   );
 }
+

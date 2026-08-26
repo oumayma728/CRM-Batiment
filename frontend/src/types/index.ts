@@ -22,6 +22,8 @@ export interface User {
 export interface AuthResponse {
   accessToken: string;
   user: User;
+  mustChangePassword?: boolean;
+  tempToken?: string;
 }
 
 export interface TypeProjet {
@@ -680,6 +682,14 @@ export interface Devis {
   bonCommande?: BonCommande;
   commandesFournisseur?: CommandeFournisseur[];
   signatureRequests?: DevisClientSignatureRequest[];
+  company?: {
+    id: number;
+    nom: string;
+    adresse?: string;
+    email?: string;
+    telephone?: string;
+    siret?: string;
+  };
 }
 
 export type DevisClientSignatureRequestStatut =

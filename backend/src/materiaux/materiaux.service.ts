@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { CreateMateriauDto } from './dto/create-materiau.dto.js';
@@ -188,6 +189,21 @@ export class MateriauxService {
    */
   async delete(id: number, currentUser: CurrentUserPayload) {
     await this.findOne(id, currentUser);
+
+    const usedInSignedDevis = await this.prisma.ligneDevis.findFirst({
+      where: {
+        materiauId: id,
+        devis: {
+          statut: 'SIGNE',
+        },
+      },
+    });
+
+    if (usedInSignedDevis) {
+      throw new BadRequestException(
+        'Impossible de supprimer un matériau utilisé dans un devis signé',
+      );
+    }
 
     return this.prisma.materiau.update({
       where: { id },

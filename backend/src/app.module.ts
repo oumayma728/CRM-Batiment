@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { DevController } from './dev.controller.js';
@@ -21,15 +22,11 @@ import { NotificationsModule } from './notifications/notifications.module.js';
 import { ChantiersModule } from './chantiers/chantiers.module.js';
 import { FacturesModule } from './factures/factures.module.js';
 import { AssistantModule } from './assistant/assistant.module.js';
+import { WorkflowModule } from './workflow.module.js';
 import { RagModule } from './rag/rag.module.js';
-// TODO: Fix imports in CatalogueModule
-// import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
-import { DashboardModule } from './dashboard/dashboard.module.js';
-import { AuditModule } from './audit/audit.module.js';
-import { SavModule } from './sav/sav.module.js';
-import { DemoRequestsModule } from './demo-requests/demo-requests.module.js';
 import { SousTraitantModule } from './sous-traitant/sous-traitant.module.js';
-import { StockModule } from './stock/stock.module.js';
+import { SousTraitantsModule } from './sous-traitants/sous-traitants.module.js';
+
 @Module({
   imports: [
     // Configuration globale (.env)
@@ -38,8 +35,12 @@ import { StockModule } from './stock/stock.module.js';
       envFilePath: '.env',
     }),
 
+    // Schedule module
+    ScheduleModule.forRoot(),
+
     // Modules fondation
     PrismaModule,
+    WorkflowModule,
 
     // Modules métier
     AuthModule,
@@ -62,12 +63,9 @@ import { StockModule } from './stock/stock.module.js';
     FacturesModule,
     RagModule,
     AssistantModule,
-    DashboardModule,
-    AuditModule,
-    SavModule,
-    DemoRequestsModule,
     SousTraitantModule,
-    StockModule,
+    
+    SousTraitantsModule,
   ],
   controllers: [AppController, DevController],
   providers: [AppService],

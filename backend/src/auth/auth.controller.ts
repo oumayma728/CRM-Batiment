@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Patch,
   UseGuards,
   HttpCode,
   HttpStatus,
@@ -14,11 +15,15 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service.js';
+import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
+import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ChangePasswordDto } from './dto/change-password.dto.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { ResetTemporaryPasswordDto } from './dto/reset-temporary-password.dto.js';
 import { SaveSignatureDto } from './dto/save-signature.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { VerifyResetCodeDto } from './dto/verify-reset-code.dto.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../common/guards/roles.guard.js';
 import { Roles } from '../common/decorators/roles.decorator.js';
@@ -50,6 +55,29 @@ export class AuthController {
   @ApiResponse({ status: 403, description: 'Compte désactivé' })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Vérifier si un email existe pour réinitialisation',
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto);
+  }
+
+  @Post('verify-reset-code')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verifier le code de reinitialisation' })
+  async verifyResetCode(@Body() dto: VerifyResetCodeDto) {
+    return this.authService.verifyResetCode(dto);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Réinitialiser le mot de passe' })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   // ──────────────────────────────────────────────
@@ -139,6 +167,17 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Non authentifié' })
   async getProfile(@CurrentUser() user: CurrentUserPayload) {
     return this.authService.getProfile(user);
+  }
+
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Modifier mon profil' })
+  async updateProfile(
+    @Body() dto: UpdateProfileDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.authService.updateProfile(dto, user);
   }
 
   @Get('signature')

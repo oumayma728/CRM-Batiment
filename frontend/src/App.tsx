@@ -1,68 +1,80 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import ChatbotWidget from '@/components/ChatbotWidget';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import RealtimeEventsBridge from '@/components/RealtimeEventsBridge';
+
+// Layouts
 import AppLayout from '@/layouts/AppLayout';
 import ChefChantierLayout from '@/layouts/ChefChantierLayout';
 import SousTraitantLayout from '@/layouts/SousTraitantLayout';
+import FournisseurLayout from '@/layouts/FournisseurLayout';
 import TechnicoLayout from '@/layouts/TechnicoLayout';
-import ProtectedRoute from '@/components/ProtectedRoute';
 
-// Public pages
-import LoginPage from '@/pages/LoginPage';
+// Public & Common pages
 import HomeLandingPage from '@/pages/loginPage2';
+import LoginPage from '@/pages/LoginPage';
 import { LoginTest } from '@/pages/LoginTest';
+import PublicDemoRequestPage from '@/pages/PublicDemoRequestPage';
 import ClientDevisValidationPage from '@/pages/ClientDevisValidationPage';
 import ClientDevisSignaturePage from '@/pages/ClientDevisSignaturePage';
-import PublicDemoRequestPage from '@/pages/PublicDemoRequestPage';
+import AccountSettingsPage from '@/pages/AccountSettingsPage';
 
-// Admin and shared pages
+// Admin pages
 import DashboardPage from '@/pages/DashboardPage';
 import ChantiersPage from '@/pages/ChantiersPage';
-import ClientsPage from '@/pages/ClientsPage';
 import CommandesFournisseurPage from '@/pages/CommandesFournisseurPage';
-import ChefDashboardPage from '@/pages/chef/ChefDashboardPage';
+import SavPage from '@/pages/SavPage';
+import ClientsPage from '@/pages/ClientsPage';
 import DemandesDevisPage from '@/pages/DemandesDevisPage';
+import DemoRequestsPage from '@/pages/DemoRequestsPage';
 import DevisPage from '@/pages/DevisPage';
 import FacturesPage from '@/pages/FacturesPage';
 import FactureDetailPage from '@/pages/FactureDetailPage';
 import PrestationsPage from '@/pages/PrestationsPage';
 import PrestationCompositionsPage from '@/pages/PrestationCompositionsPage';
 import MateriauxPage from '@/pages/MateriauxPage';
+import StockPage from '@/pages/StockPage';
 import ServicesMoPage from '@/pages/ServicesMoPage';
 import FournisseursPage from '@/pages/FournisseursPage';
+import SousTraitantsPage from '@/pages/SousTraitantsPage';
 import UsersPage from '@/pages/UsersPage';
 import TypesProjetPage from '@/pages/TypesProjetPage';
 import ParametresChiffragePage from '@/pages/ParametresChiffragePage';
 import RagDocumentsPage from '@/pages/RagDocumentsPage';
+import AdminProfile from '@/pages/AdminProfile';
 import TasksChantierPage from '@/pages/TasksChantierPage';
 import AuditPage from '@/pages/AuditPage';
-import SavPage from '@/pages/SavPage';
-import DemoRequestsPage from '@/pages/DemoRequestsPage';
-import StockPage from '@/pages/StockPage';
-import AccountSettingsPage from '@/pages/AccountSettingsPage';
+import HousePlanPage from '@/pages/HousePlanPage';
 
 // Technico pages
 import TechnicoDashboard from '@/pages/technico/TechnicoDashboard';
 import TechnicoClients from '@/pages/technico/TechnicoClients';
 import TechnicoDemandes from '@/pages/technico/TechnicoDemandes';
 import TechnicoDevis from '@/pages/technico/TechnicoDevis';
+import TechnicoDevisDetail from '@/pages/technico/TechnicoDevisDetail';
 import TechnicoFactures from '@/pages/technico/TechnicoFactures';
 import TechnicoFactureDetail from '@/pages/technico/TechnicoFactureDetail';
 import TechnicoPrestations from '@/pages/technico/TechnicoPrestations';
 import TechnicoMateriaux from '@/pages/technico/TechnicoMateriaux';
-import TechnicoChecklist from '@/pages/technico/TechnicoChecklist';
 import TechnicoCatalogueExplorer from '@/pages/technico/TechnicoCatalogueExplorer';
-import TechnicoDevisSignature from '@/pages/technico/TechnicoDevisSignature';
-import TechnicoProfile from '@/pages/technico/TechnicoProfile';
+import TechnicoChecklist from '@/pages/technico/TechnicoChecklist';
 import TechnicoAssistantIA from '@/pages/technico/TechnicoAssistantIA';
+import TechnicoProfile from '@/pages/technico/TechnicoProfile';
+import TechnicoDevisSignature from '@/pages/technico/TechnicoDevisSignature';
+
+// Chef pages
+import ChefDashboardPage from '@/pages/chef/ChefChantierProfile';
+import ChefPlansPage from '@/pages/chef/ChefPlansPage';
 
 // Sous-traitant pages
-import SousTraitantDashboardPage from '@/pages/sous-traitant/SousTraitantDashboardPage';
+import SousTraitantDashboardPage from '@/pages/sous-traitant/SousTraitantDashboard';
 import SousTraitantChantiersPage from '@/pages/sous-traitant/SousTraitantChantiersPage';
 import SousTraitantTachesPage from '@/pages/sous-traitant/SousTraitantTachesPage';
 import SousTraitantDocumentsPage from '@/pages/sous-traitant/SousTraitantDocumentsPage';
 import SousTraitantRapportsPhotosPage from '@/pages/sous-traitant/SousTraitantRapportsPhotosPage';
+import SousTraitantProfile from '@/pages/sous-traitant/SousTraitantProfile';
+
+import ChatbotWidget from '@/components/ChatbotWidget';
 
 function RoleRouter() {
   const { user } = useAuth();
@@ -104,6 +116,7 @@ export default function App() {
             <Route path="admin" element={<AppLayout />}>
               <Route index element={<DashboardPage />} />
               <Route path="chantiers" element={<ChantiersPage />} />
+              <Route path="chantiers/:id/plan-2d" element={<HousePlanPage />} />
               <Route path="commandes-fournisseur" element={<CommandesFournisseurPage />} />
               <Route path="sav" element={<SavPage />} />
               <Route path="clients" element={<ClientsPage />} />
@@ -119,12 +132,14 @@ export default function App() {
               <Route path="stock" element={<StockPage />} />
               <Route path="services-mo" element={<ServicesMoPage />} />
               <Route path="fournisseurs" element={<FournisseursPage />} />
+              <Route path="sous-traitants" element={<SousTraitantsPage />} />
               <Route path="taches-chantier" element={<TasksChantierPage />} />
               <Route path="utilisateurs" element={<UsersPage />} />
               <Route path="types-projet" element={<TypesProjetPage />} />
               <Route path="base-ia" element={<RagDocumentsPage />} />
               <Route path="parametres-chiffrage" element={<ParametresChiffragePage />} />
               <Route path="audit" element={<AuditPage />} />
+              <Route path="profil" element={<AdminProfile />} />
             </Route>
           </Route>
 

@@ -13,9 +13,9 @@ export class RolesGuard implements CanActivate {
       ctx.getClass(),
     ]);
 
-    // Si aucun rôle n'est spécifié, accès autorisé
+    // Toute route protégée doit déclarer explicitement sa matrice de rôles.
     if (!requiredRoles || requiredRoles.length === 0) {
-      return true;
+      return false;
     }
 
     const { user } = ctx.switchToHttp().getRequest();

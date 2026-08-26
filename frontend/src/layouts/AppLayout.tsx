@@ -8,6 +8,8 @@ import {
 } from 'react-router-dom';
 import {
   Box,
+  Briefcase,
+  UserCircle2,
   Building2,
   Calculator,
   CheckSquare,
@@ -182,6 +184,14 @@ const navItems: NavItem[] = [
     icon: <Truck size={18} />,
     roles: ['ADMIN', 'ASSISTANTE'],
   },
+  {
+    to: '/admin/sous-traitants',
+    label: 'Sous-traitants',
+    description: 'Gestion des sous-traitants',
+    group: 'Référentiel',
+    icon: <Briefcase size={18} />,
+    roles: ['ADMIN'],
+  },
 
   {
     to: '/admin/utilisateurs',
@@ -230,6 +240,14 @@ const navItems: NavItem[] = [
     group: 'Compte',
     icon: <Settings size={18} />,
     roles: ['ASSISTANTE'],
+  },
+  {
+    to: '/admin/profil',
+    label: 'Mon Profil',
+    description: 'Mon profil utilisateur',
+    group: 'Compte',
+    icon: <UserCircle2 size={18} />,
+    roles: ['ADMIN'],
   },
 ];
 
