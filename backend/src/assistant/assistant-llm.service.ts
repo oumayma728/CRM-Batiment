@@ -243,8 +243,9 @@ export class AssistantLlmService {
         isUrgent: Boolean(parsed.is_urgent),
         motsCles,
       };
-    } catch {
-      this.logger.warn('Failed to parse extracted fields JSON');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown';
+      this.logger.warn(`Failed to parse extracted fields JSON: ${message}`);
       return null;
     }
   }

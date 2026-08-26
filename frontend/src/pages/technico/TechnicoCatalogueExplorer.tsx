@@ -69,6 +69,7 @@ type DeletableEntity = {
 export default function TechnicoCatalogueExplorer() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'count'>('name');
   const [currentCatId, setCurrentCatId] = useState<number | null>(null);
   const [currentScId, setCurrentScId] = useState<number | null>(null);
   const [currentPrestId, setCurrentPrestId] = useState<number | null>(null);
@@ -330,10 +331,10 @@ export default function TechnicoCatalogueExplorer() {
 
   // ───── Search filter (global — categories level only) ─────
   const filteredCatalogue = useMemo(() => {
-    if (!catalogue || !search) return catalogue ?? [];
+    if (!catalogue) return [];
     const lc = search.toLowerCase();
-    return catalogue
-      .map((cat) => {
+    const baseCatalogue = search
+      ? catalogue.map((cat) => {
         const filteredSubs =
           cat.sousCategories
             ?.map((sc) => {
@@ -350,8 +351,21 @@ export default function TechnicoCatalogueExplorer() {
             .filter((sc) => sc.prestations.length > 0) ?? [];
         return { ...cat, sousCategories: filteredSubs };
       })
-      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0);
-  }, [catalogue, search]);
+      .filter((cat) => (cat.sousCategories?.length ?? 0) > 0)
+      : [...catalogue];
+
+    return baseCatalogue
+      .sort((a, b) => {
+        const countA =
+          (a.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (a.prestations?.length ?? 0);
+        const countB =
+          (b.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) +
+          (b.prestations?.length ?? 0);
+        if (sortBy === 'count') return countB - countA;
+        return a.nom.localeCompare(b.nom);
+      });
+  }, [catalogue, search, sortBy]);
 
   // ───── Stats ─────
   const stats = useMemo(() => {
@@ -390,7 +404,7 @@ export default function TechnicoCatalogueExplorer() {
           Explorateur Catalogue
         </h2>
         <p className="text-sm text-gray-400 mt-0.5">
-          {stats.cats} catégories · {stats.subs} sous-catégories · {stats.prests} prestations
+          {stats.cats} catégories • {stats.subs} sous-catégories • {stats.prests} prestations
         </p>
       </div>
 
@@ -432,20 +446,37 @@ export default function TechnicoCatalogueExplorer() {
       {viewLevel === 'categories' && (
         <>
           {/* Search */}
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all max-w-md">
-            <Search size={18} className="text-gray-400" />
-            <input
-              type="text"
-              placeholder="Rechercher catégorie, sous-catégorie, prestation..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="text-gray-300 hover:text-gray-500">
-                <X size={16} />
-              </button>
-            )}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-1 items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm focus-within:border-teal-400 focus-within:ring-2 focus-within:ring-teal-100 transition-all max-w-md">
+              <Search size={18} className="text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher catégorie, sous-catégorie, prestation..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="text-gray-300 hover:text-gray-500"
+                  aria-label="Effacer la recherche"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'name' | 'count')}
+              className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+              aria-label="Trier le catalogue"
+            >
+              <option value="name">Trier par nom</option>
+              <option value="count">Trier par nombre de prestations</option>
+            </select>
           </div>
 
           {/* Category grid */}
@@ -1494,9 +1525,9 @@ function EntityEditModal({
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const titleByType: Record<EditableEntity['type'], string> = {
-    categorie: 'Modifier la categorie',
-    sousCategorie: 'Modifier la sous-categorie',
-    option: 'Modifier l option',
+    categorie: 'Modifier la catégorie',
+    sousCategorie: 'Modifier la sous-catégorie',
+    option: 'Modifier l’option',
     choixOption: 'Modifier le choix',
   };
 
@@ -1662,7 +1693,7 @@ function EntityDeleteModal({
           <p className="text-center text-gray-600">
             Vous allez supprimer <strong>{entity.nom}</strong>.
           </p>
-          <p className="text-center text-sm text-gray-400">Cette action ne peut pas etre annulee.</p>
+          <p className="text-center text-sm text-gray-400">Cette action ne peut pas être annulée.</p>
 
           {error && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>}
 

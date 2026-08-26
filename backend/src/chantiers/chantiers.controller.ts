@@ -27,6 +27,7 @@ import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interf
 import { ChantiersService } from './chantiers.service.js';
 import { CreateChantierDto } from './dto/create-chantier.dto.js';
 import { CreateTacheDto } from './dto/create-tache.dto.js';
+import { CreateDocumentChantierDto } from './dto/create-document-chantier.dto.js';
 import { QueryChantierDto } from './dto/query-chantier.dto.js';
 import { UpdateChantierDto } from './dto/update-chantier.dto.js';
 import { UpdateTacheDto } from './dto/update-tache.dto.js';
@@ -148,6 +149,29 @@ export class ChantiersController {
     @CurrentUser() user: CurrentUserPayload,
   ) {
     return this.service.removeTask(id, tacheId, user);
+  }
+
+  @Post(':id/documents')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)
+  @ApiOperation({ summary: 'Ajouter un document à un chantier' })
+  @ApiParam({ name: 'id', type: Number })
+  createDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: CreateDocumentChantierDto,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.service.createDocument(id, dto, user);
+  }
+
+  @Delete(':id/documents/:documentId')
+  @Roles(Role.ADMIN, Role.ASSISTANTE, Role.CHEF_CHANTIER)
+  @ApiOperation({ summary: 'Supprimer un document d un chantier' })
+  removeDocument(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('documentId', ParseIntPipe) documentId: number,
+    @CurrentUser() user: CurrentUserPayload,
+  ) {
+    return this.service.removeDocument(id, documentId, user);
   }
 
   @Get(':id')

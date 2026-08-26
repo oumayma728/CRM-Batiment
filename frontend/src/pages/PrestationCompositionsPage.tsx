@@ -459,7 +459,7 @@ export default function PrestationCompositionsPage() {
         ) : filteredRows.length === 0 ? (
           <div className="text-center py-20 text-gray-500">
             <BookOpen size={48} className="mx-auto mb-4 text-gray-300" />
-            <p className="text-lg font-medium">Aucune composition trouvee</p>
+            <p className="text-lg font-medium">Aucune composition trouvée</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -513,7 +513,7 @@ export default function PrestationCompositionsPage() {
                     <td className="px-4 py-3 text-sm text-gray-700">{row.typeComposant}</td>
                     <td className="px-4 py-3">
                       <p className="text-sm text-gray-900">{row.composantNom}</p>
-                      <p className="text-xs text-gray-500">Unite: {row.composantUnite}</p>
+                      <p className="text-xs text-gray-500">Unité: {row.composantUnite}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-right text-gray-700">
                       {row.quantiteParUnite} / {row.prestationUnite}
@@ -589,7 +589,7 @@ export default function PrestationCompositionsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Materiau (optionnel)</label>
+                  <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Matériau (optionnel)</label>
                   <select
                     value={form.materiauId}
                     onChange={(e) => setForm((current) => ({ ...current, materiauId: e.target.value }))}
@@ -624,7 +624,7 @@ export default function PrestationCompositionsPage() {
               </div>
 
               <div>
-                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Quantite par unite de prestation</label>
+                <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Quantité par unité de prestation</label>
                 <input
                   type="number"
                   min="0.0001"

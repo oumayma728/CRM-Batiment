@@ -18,6 +18,7 @@ import {
 
 export default function TechnicoPrestations() {
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
   const [expandedCats, setExpandedCats] = useState<Set<number>>(new Set());
   const [expandedSubs, setExpandedSubs] = useState<Set<number>>(new Set());
   const [expandedPrestations, setExpandedPrestations] = useState<Set<number>>(new Set());
@@ -62,7 +63,13 @@ export default function TechnicoPrestations() {
       p.nom.toLowerCase().includes(lc) || p.description?.toLowerCase().includes(lc) || cat.nom.toLowerCase().includes(lc)
     ) ?? [];
     return { ...cat, sousCategories: filteredSubs, prestations: filteredDirect };
-  }).filter(cat => (cat.sousCategories?.length ?? 0) > 0 || (cat.prestations?.length ?? 0) > 0) ?? [];
+  }).filter(cat => (cat.sousCategories?.length ?? 0) > 0 || (cat.prestations?.length ?? 0) > 0)
+    .sort((a, b) => {
+      const countA = (a.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) + (a.prestations?.length ?? 0);
+      const countB = (b.sousCategories?.reduce((sum, sc) => sum + (sc.prestations?.length ?? 0), 0) ?? 0) + (b.prestations?.length ?? 0);
+      if (sortBy === 'count') return countB - countA;
+      return a.nom.localeCompare(b.nom);
+    }) ?? [];
 
   // Totals
   let totalPrestations = 0;
@@ -81,7 +88,7 @@ export default function TechnicoPrestations() {
           Catalogue Prestations
         </h2>
         <p className="text-sm text-gray-400 mt-0.5">
-          {catalogue?.length ?? 0} catégories · {totalSousCat} sous-catégories · {totalPrestations} prestations
+          {catalogue?.length ?? 0} catégories • {totalSousCat} sous-catégories • {totalPrestations} prestations
         </p>
       </div>
 
@@ -102,6 +109,15 @@ export default function TechnicoPrestations() {
             </button>
           )}
         </div>
+        <select
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value)}
+          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-500 outline-none"
+          aria-label="Trier les prestations"
+        >
+          <option value="name">Tri : catégorie A-Z</option>
+          <option value="count">Tri : plus fournies</option>
+        </select>
         <button onClick={expandAll} className="px-3 py-2 text-xs font-medium text-gray-500 hover:text-teal-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap">
           Tout déplier
         </button>
@@ -192,9 +208,9 @@ export default function TechnicoPrestations() {
   );
 }
 
-// ────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 // Prestation row (levels 3-5)
-// ────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 function TechnicoPrestationRow({
   prestation: p,
@@ -252,9 +268,9 @@ function TechnicoPrestationRow({
   );
 }
 
-// ────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 // Option block (level 4) + Choix (level 5)
-// ────────────────────────────────────────────
+// ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
 function TechnicoOptionBlock({ option }: { option: OptionPrestation }) {
   return (

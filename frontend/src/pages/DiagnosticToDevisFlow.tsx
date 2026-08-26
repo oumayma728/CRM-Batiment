@@ -1,5 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 import { formatCurrency, cn } from '@/lib/utils';
@@ -19,6 +21,7 @@ import {
  * Questions → Infos → Options → Devis Auto
  */
 export default function DiagnosticToDevisFlow() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [clientId, setClientId] = useState<string>('');
@@ -86,6 +89,11 @@ export default function DiagnosticToDevisFlow() {
     },
   });
 
+  const sendGeneratedDevisMutation = useMutation({
+    mutationFn: () => api.post(`/devis/${generatedDevisId}/send-client`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['devis'] }),
+  });
+
   const handleAnswerQuestion = (questionId: number, answer: string) => {
     api.post(`/diagnostic/sessions/${sessionId}/reponses`, {
       questionId,
@@ -108,15 +116,15 @@ export default function DiagnosticToDevisFlow() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
             <FileText size={36} className="text-blue-600" />
             Diagnostic → Devis Auto
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-slate-600 mt-2">
             Parcourez le flux complet : questions → infos → options → devis professionnel généré automatiquement
           </p>
         </div>
@@ -133,7 +141,7 @@ export default function DiagnosticToDevisFlow() {
                       ? 'bg-blue-600 text-white scale-110'
                       : currentStep > step || ['client', 'questions', 'infos', 'options', 'review', 'devis'].indexOf(currentStep) > i
                       ? 'bg-green-500 text-white'
-                      : 'bg-gray-300 text-gray-600',
+                      : 'bg-slate-300 text-slate-600',
                   )}
                 >
                   {['client', 'questions', 'infos', 'options', 'review', 'devis'].indexOf(currentStep) > i ? (
@@ -143,12 +151,12 @@ export default function DiagnosticToDevisFlow() {
                   )}
                 </div>
                 {i < arr.length - 1 && (
-                  <div className="flex-1 h-1 mx-2 bg-gray-300" />
+                  <div className="flex-1 h-1 mx-2 bg-slate-300" />
                 )}
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-gray-600">
+          <div className="flex justify-between text-xs text-slate-600">
             <span>Client</span>
             <span>Questions</span>
             <span>Infos</span>
@@ -163,14 +171,14 @@ export default function DiagnosticToDevisFlow() {
           {/* STEP 1: Client & Catégorie */}
           {currentStep === 'client' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900">Sélectionner le client</h2>
+              <h2 className="text-xl font-bold text-slate-900">Sélectionner le client</h2>
 
               <input
                 type="number"
                 placeholder="ID Client"
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
 
               <input
@@ -178,13 +186,13 @@ export default function DiagnosticToDevisFlow() {
                 placeholder="ID Catégorie (optionnel)"
                 value={categorieId}
                 onChange={(e) => setCategorieId(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
               />
 
               <button
                 onClick={() => createSessionMutation.mutate()}
                 disabled={!clientId || createSessionMutation.isPending}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 {createSessionMutation.isPending ? (
                   <Loader2 className="animate-spin" size={20} />
@@ -199,26 +207,26 @@ export default function DiagnosticToDevisFlow() {
           {/* STEP 2: Questions */}
           {currentStep === 'questions' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <ClipboardList size={24} className="text-amber-500" />
                 Questions diagnostiques
               </h2>
 
               {questionsLoading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="animate-spin text-gray-400" size={32} />
+                  <Loader2 className="animate-spin text-slate-500" size={32} />
                 </div>
               ) : questions?.data?.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-slate-500">
                   <AlertCircle size={32} className="mx-auto mb-2 opacity-50" />
                   <p>Aucune question pour cette catégorie</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {questions?.data?.map((q) => (
-                    <div key={q.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                      <p className="font-semibold text-gray-900 mb-2">{q.question}</p>
-                      {q.aide && <p className="text-xs text-gray-600 mb-3">{q.aide}</p>}
+                    <div key={q.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                      <p className="font-semibold text-slate-900 mb-2">{q.question}</p>
+                      {q.aide && <p className="text-xs text-slate-600 mb-3">{q.aide}</p>}
 
                       {q.typeReponse === 'CHOIX_UNIQUE' && (
                         <div className="space-y-2">
@@ -231,7 +239,7 @@ export default function DiagnosticToDevisFlow() {
                                 onChange={(e) => handleAnswerQuestion(q.id, e.target.value)}
                                 className="mr-2"
                               />
-                              <span className="text-gray-700">{choix}</span>
+                              <span className="text-slate-700">{choix}</span>
                             </label>
                           ))}
                         </div>
@@ -242,7 +250,7 @@ export default function DiagnosticToDevisFlow() {
                           type="text"
                           placeholder="Votre réponse..."
                           onChange={(e) => handleAnswerQuestion(q.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                          className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
                         />
                       )}
                     </div>
@@ -262,26 +270,26 @@ export default function DiagnosticToDevisFlow() {
           {/* STEP 3: Infos Requises */}
           {currentStep === 'infos' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <ClipboardList size={24} className="text-purple-500" />
                 Infos requises
               </h2>
 
               {infosLoading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="animate-spin text-gray-400" size={32} />
+                  <Loader2 className="animate-spin text-slate-500" size={32} />
                 </div>
               ) : (
                 <div className="space-y-4">
                   {infos?.data?.map((info) => (
-                    <div key={info.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <div key={info.id} className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                       <div className="flex items-center gap-2 mb-2">
-                        <p className="font-semibold text-gray-900">{info.nom}</p>
+                        <p className="font-semibold text-slate-900">{info.nom}</p>
                         <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
                           {info.typeInfo}
                         </span>
                       </div>
-                      {info.aide && <p className="text-xs text-gray-600 mb-3">{info.aide}</p>}
+                      {info.aide && <p className="text-xs text-slate-600 mb-3">{info.aide}</p>}
 
                       {info.typeInfo === 'MESURE' && (
                         <div className="flex gap-2">
@@ -289,12 +297,12 @@ export default function DiagnosticToDevisFlow() {
                             type="number"
                             placeholder="Valeur"
                             onChange={(e) => handleFillInfo(info.id, e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm"
                           />
                           <input
                             type="text"
                             placeholder={info.unite || 'm²'}
-                            className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            className="w-20 px-3 py-2 border border-slate-300 rounded-lg text-sm"
                           />
                         </div>
                       )}
@@ -329,26 +337,26 @@ export default function DiagnosticToDevisFlow() {
           {/* STEP 4: Options */}
           {currentStep === 'options' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <Settings2 size={24} className="text-green-500" />
                 Options de customisation
               </h2>
 
               {optionsLoading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="animate-spin text-gray-400" size={32} />
+                  <Loader2 className="animate-spin text-slate-500" size={32} />
                 </div>
               ) : (
                 <div className="space-y-6">
                   {options?.data?.map((prestGroup) => (
                     <div key={prestGroup.prestationId}>
-                      <p className="font-semibold text-gray-900 mb-3">{prestGroup.prestationNom}</p>
+                      <p className="font-semibold text-slate-900 mb-3">{prestGroup.prestationNom}</p>
                       <div className="space-y-3">
                         {prestGroup.options.map((opt) => (
-                          <div key={opt.id} className="bg-gray-50 rounded-lg p-4">
-                            <p className="font-medium text-gray-800 mb-2">{opt.nom}</p>
+                          <div key={opt.id} className="bg-slate-50 rounded-lg p-4">
+                            <p className="font-medium text-slate-800 mb-2">{opt.nom}</p>
                             {opt.description && (
-                              <p className="text-sm text-gray-600 mb-3">{opt.description}</p>
+                              <p className="text-sm text-slate-600 mb-3">{opt.description}</p>
                             )}
                             <div className="space-y-2">
                               {opt.choix.map((c) => (
@@ -391,11 +399,11 @@ export default function DiagnosticToDevisFlow() {
           {/* STEP 5: Review */}
           {currentStep === 'review' && (
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-gray-900">Résumé du diagnostic</h2>
+              <h2 className="text-xl font-bold text-slate-900">Résumé du diagnostic</h2>
 
               {sessionLoading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="animate-spin text-gray-400" size={32} />
+                  <Loader2 className="animate-spin text-slate-500" size={32} />
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -435,7 +443,7 @@ export default function DiagnosticToDevisFlow() {
               <button
                 onClick={() => generateDevisMutation.mutate()}
                 disabled={generateDevisMutation.isPending}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:bg-gray-400 text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 text-lg transition-all"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:bg-slate-400 text-white font-bold py-4 rounded-lg flex items-center justify-center gap-2 text-lg transition-all"
               >
                 {generateDevisMutation.isPending ? (
                   <Loader2 className="animate-spin" size={24} />
@@ -461,24 +469,24 @@ export default function DiagnosticToDevisFlow() {
               </div>
 
               {generatedDevisId && (
-                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200 space-y-4">
+                <div className="bg-slate-50 rounded-lg p-6 border border-slate-200 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600">ID Devis</p>
-                      <p className="text-lg font-bold text-gray-900">{generatedDevisId}</p>
+                      <p className="text-sm text-slate-600">ID Devis</p>
+                      <p className="text-lg font-bold text-slate-900">{generatedDevisId}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Statut</p>
+                      <p className="text-sm text-slate-600">Statut</p>
                       <p className="text-lg font-bold text-blue-600">BROUILLON</p>
                     </div>
                   </div>
 
                   <div className="flex gap-4">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
+                    <button type="button" onClick={() => navigate('/admin/devis', { state: { selectedDevisId: generatedDevisId } })} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors">
                       Voir le devis
                     </button>
-                    <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition-colors">
-                      Envoyer au client
+                    <button type="button" onClick={() => sendGeneratedDevisMutation.mutate()} disabled={sendGeneratedDevisMutation.isPending} className="flex-1 bg-slate-600 hover:bg-slate-700 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors">
+                      {sendGeneratedDevisMutation.isPending ? 'Envoi…' : 'Envoyer au client'}
                     </button>
                   </div>
                 </div>

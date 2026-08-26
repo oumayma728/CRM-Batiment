@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
   Bot,
   Building2,
@@ -10,6 +11,9 @@ import {
   Sparkles,
   User,
   X,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
   BarChart3,
   FileText,
   HardHat,
@@ -21,7 +25,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/api';
 import './ChatbotWidget.css';
-
+import { validateChatInput } from './chatValidation';
 /* ============================================================
    TYPES
    ============================================================ */
@@ -91,8 +95,10 @@ interface QuickSuggestion {
 
 const publicSuggestions: QuickSuggestion[] = [
   { label: 'Demander un devis', message: 'Je souhaite demander un devis pour des travaux', icon: <FileText size={12} /> },
-  { label: 'Services disponibles', message: 'Quels sont les services disponibles ?', icon: <Search size={12} /> },
-  { label: 'Tarifs', message: 'Je voudrais connaitre les tarifs', icon: <BarChart3 size={12} /> },
+  { label: 'Prendre rendez-vous', message: 'Je voudrais prendre un rendez-vous', icon: <Users size={12} /> },
+  { label: 'Suivre ma demande', message: 'Je veux suivre ma demande', icon: <Search size={12} /> },
+  { label: 'Nos services', message: 'Quels sont les services disponibles ?', icon: <HardHat size={12} /> },
+  { label: 'Questions fréquentes', message: 'Quelle est la différence entre un devis et une facture ?', icon: <Zap size={12} /> },
 ];
 
 const internalSuggestionsByRole: Record<string, QuickSuggestion[]> = {
@@ -165,6 +171,7 @@ export default function ChatbotWidget() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<string, 'UP' | 'DOWN'>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -212,7 +219,7 @@ export default function ChatbotWidget() {
       const welcomeContent = isInternal
         ? `Bonjour ${user?.prenom ?? ''} 👋\nJe suis votre assistant BatiCRM. Je peux vous aider à naviguer, obtenir des informations ou effectuer des actions rapides.\n\nQue puis-je faire pour vous ?`
         : (res.data.response_message as string) ||
-          'Bonjour ! 👋 Je suis l\'assistant BatiCRM. Comment puis-je vous aider ?';
+          'Bonjour ! 👋 Je suis Léa, votre assistante BatiCRM. Je peux vous aider pour un devis, un rendez-vous, le suivi de votre demande, ou répondre à vos questions. Comment puis-je vous aider ?';
 
       setMessages([
         {
@@ -233,7 +240,11 @@ export default function ChatbotWidget() {
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     if (!canSend) return;
-
+    const validation = validateChatInput(input);
+    if (!validation.valid) {
+      setError(validation.message ?? 'Message invalide.');
+      return;
+    }
     const userMessage = input.trim();
     setInput('');
     setError('');
@@ -267,6 +278,10 @@ export default function ChatbotWidget() {
         structuredWorkflow: res.data.structured_workflow,
       };
       setMessages((prev) => [...prev, assistantMsg]);
+      // Si le bot propose les choix principaux, on reaffiche les suggestions cliquables
+      if (res.data.response_message?.includes('Que souhaitez-vous faire')) {
+        setShowSuggestions(true);
+      }
     } catch (err) {
       setError(getApiErrorMessage(err, 'Echec d\'envoi. Veuillez réessayer.'));
     } finally {
@@ -311,9 +326,22 @@ export default function ChatbotWidget() {
             structuredWorkflow: res.data.structured_workflow,
           };
           setMessages((prev) => [...prev, assistantMsg]);
+          // Si le bot propose les choix principaux, on reaffiche les suggestions cliquables
+          if (res.data.response_message?.includes('Que souhaitez-vous faire')) {
+            setShowSuggestions(true);
+          }
         })
         .catch((err) => {
           setError(getApiErrorMessage(err, 'Echec d\'envoi.'));
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: generateMsgId(),
+              role: 'ASSISTANT',
+              content: 'Désolée, une erreur est survenue. Pouvez-vous réessayer ? 🙏',
+              timestamp: new Date(),
+            },
+          ]);
         })
         .finally(() => {
           setIsSending(false);
@@ -370,9 +398,29 @@ export default function ChatbotWidget() {
     setIsMinimized(false);
     await initSession(false);
   }
+  function handleCopy(content: string) {
+    void navigator.clipboard.writeText(content);
+  }
 
+  function handleFeedback(msg: ChatMessage, rating: 'UP' | 'DOWN') {
+    // On memorise le vote pour colorer le bouton (et eviter le double vote)
+    setFeedbackGiven((prev) => ({ ...prev, [msg.id]: rating }));
+    api
+      .post('/assistant/feedback', {
+        companyId: 1,
+        sessionId: sessionId ?? undefined,
+        messageExcerpt: msg.content.slice(0, 300),
+        rating,
+      })
+      .catch(() => {
+        // Silencieux : un echec de feedback ne doit jamais gener le client
+      });
+  }
   async function handleReset() {
-    await initSession(true);
+    const confirmed = window.confirm(
+      'Commencer une nouvelle conversation ? La conversation actuelle sera effacée.',
+    );
+    if (confirmed) await initSession(true);
   }
 
   function handleClose() {
@@ -413,11 +461,11 @@ export default function ChatbotWidget() {
           <div className="chatbot-header">
             <div className="chatbot-header-left">
               <div className="chatbot-header-avatar">
-                <Bot size={18} />
+                <span style={{ fontWeight: 700, fontSize: '15px' }}>L</span>
               </div>
               <div className="chatbot-header-info">
                 <h3>
-                  Assistant BatiCRM
+                  Léa · Assistant BatiCRM
                 </h3>
                 <div className="chatbot-header-status">
                   <span className="chatbot-status-dot" />
@@ -511,7 +559,11 @@ export default function ChatbotWidget() {
                 </div>
                 <div>
                   <div className="chatbot-msg-bubble">
-                    {msg.content}
+                    {msg.role === 'USER' ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )}
 
                     {/* Project Types */}
                     {msg.projectTypes && msg.projectTypes.length > 0 && (
@@ -576,6 +628,33 @@ export default function ChatbotWidget() {
                     )}
 
                   </div>
+                  {msg.role === 'ASSISTANT' && (
+                    <div className="chatbot-msg-actions">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(msg.content)}
+                        title="Copier la réponse"
+                      >
+                        <Copy size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFeedback(msg, 'UP')}
+                        className={feedbackGiven[msg.id] === 'UP' ? 'is-active-up' : ''}
+                        title="Réponse utile"
+                      >
+                        <ThumbsUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleFeedback(msg, 'DOWN')}
+                        className={feedbackGiven[msg.id] === 'DOWN' ? 'is-active-down' : ''}
+                        title="Réponse pas utile"
+                      >
+                        <ThumbsDown size={13} />
+                      </button>
+                    </div>
+                  )}
                   <div className="chatbot-msg-time">{formatTime(msg.timestamp)}</div>
                 </div>
               </div>

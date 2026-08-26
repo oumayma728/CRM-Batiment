@@ -1,337 +1,546 @@
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   ArrowRight,
+  BarChart3,
   Bot,
   Building2,
   CheckCircle2,
-  LayoutDashboard,
+  FileText,
+  HardHat,
+  Layers,
+  Menu,
+  MessageSquare,
+  Moon,
   PlayCircle,
+  Shield,
   Sparkles,
-  Wrench,
-  X,
+  Sun,
+  Users,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
-const quickPoints = [
-  'Gestion complete de vos activites',
-  'Assistant IA intelligent',
-  'Concu pour le BTP',
-];
-
-const modules = [
+const features = [
   {
+    icon: Users,
     title: 'Gestion des clients',
-    description: 'Centralisez les contacts, historiques et interactions en un seul endroit.',
-    icon: <Building2 size={18} />,
+    description: 'Centralisez les contacts, demandes et informations utiles au suivi commercial.',
+    color: 'from-blue-500 to-cyan-500',
   },
   {
+    icon: FileText,
+    title: 'Devis & facturation',
+    description: 'Préparez les devis, suivez leur validation et gérez les factures associées.',
+    color: 'from-indigo-500 to-violet-500',
+  },
+  {
+    icon: HardHat,
     title: 'Suivi des chantiers',
-    description: 'Pilotez avancement, equipes et jalons sans perdre de temps.',
-    icon: <Wrench size={18} />,
+    description: 'Suivez l’avancement, les tâches, les documents et les intervenants.',
+    color: 'from-amber-500 to-orange-500',
   },
   {
+    icon: Bot,
     title: 'Assistant IA',
-    description: 'Qualifiez les prospects et accelerez vos devis automatiquement.',
-    icon: <Bot size={18} />,
+    description: 'Aidez les équipes à qualifier les besoins et à exploiter les informations métier.',
+    color: 'from-purple-500 to-fuchsia-500',
   },
   {
-    title: 'Rapports & analyses',
-    description: 'Suivez les KPI cles pour prendre de meilleures decisions.',
-    icon: <LayoutDashboard size={18} />,
-  },
-];
-
-const demoScenes = [
-  {
-    title: 'Vue globale de votre activite',
-    description: 'Pilotez clients, chantiers, devis et factures depuis un tableau unique.',
+    icon: BarChart3,
+    title: 'Pilotage',
+    description: 'Visualisez les indicateurs utiles au suivi commercial et opérationnel.',
+    color: 'from-emerald-500 to-teal-500',
   },
   {
-    title: 'Suivi chantier en temps reel',
-    description: 'Visualisez avancement, equipe et priorites sans perdre de temps.',
-  },
-  {
-    title: 'Assistant IA pour vos devis',
-    description: 'Qualifiez les prospects et preparez vos demandes de devis rapidement.',
+    icon: Shield,
+    title: 'SAV & audit',
+    description: 'Suivez les réclamations et gardez une trace des actions sensibles.',
+    color: 'from-slate-500 to-slate-700',
   },
 ];
 
 export default function HomeLandingPage() {
-  const [isDemoOpen, setIsDemoOpen] = useState(false);
-  const [demoIndex, setDemoIndex] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [dark, setDark] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  const heroRef = useRef<HTMLElement | null>(null);
+  const featuresRef = useRef<HTMLElement | null>(null);
+  const contactRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!isDemoOpen) return;
+    const saved = localStorage.getItem('baticrm-theme');
+    setDark(saved === 'dark');
+  }, []);
 
-    const timer = window.setInterval(() => {
-      setDemoIndex((prev) => (prev + 1) % demoScenes.length);
-    }, 2800);
+  useEffect(() => {
+    localStorage.setItem('baticrm-theme', dark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', dark);
+  }, [dark]);
 
-    return () => window.clearInterval(timer);
-  }, [isDemoOpen]);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollTo = (ref: React.RefObject<HTMLElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setMenuOpen(false);
+  };
+
+  const d = dark;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#eaf1fb] text-[#102a53]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_10%,rgba(75,123,236,0.2),transparent_40%),radial-gradient(circle_at_85%_15%,rgba(56,189,248,0.18),transparent_45%),linear-gradient(180deg,#f3f7ff_0%,#e8f0ff_65%,#f5f8ff_100%)]" />
+    <div className={d ? 'dark' : ''}>
+      <div
+        className={`relative min-h-screen overflow-hidden font-sans transition-colors duration-300 ${
+          d
+            ? 'bg-[#0f1117] text-slate-100'
+            : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 text-slate-900'
+        }`}
+      >
+        <div className="pointer-events-none fixed inset-0 overflow-hidden">
+          <div
+            className={`absolute -right-40 -top-40 h-96 w-96 rounded-full blur-3xl ${
+              d ? 'bg-blue-900/30' : 'bg-blue-400/20'
+            }`}
+          />
+          <div
+            className={`absolute -bottom-40 -left-40 h-96 w-96 rounded-full blur-3xl ${
+              d ? 'bg-indigo-900/30' : 'bg-indigo-400/20'
+            }`}
+          />
+        </div>
 
-      <div className="relative mx-auto flex w-full max-w-7xl flex-col px-4 pb-16 pt-4 sm:px-6 lg:px-8">
-        <header className="rounded-2xl border border-white/60 bg-[#0f2e63] px-4 py-3 text-white shadow-[0_12px_40px_rgba(14,42,96,0.22)] sm:px-6">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 font-semibold tracking-wide">
-              <div className="rounded-lg bg-white/12 p-2">
-                <Building2 size={16} />
-              </div>
-              BatiCRM
-            </div>
-
-            <nav className="hidden items-center gap-7 text-sm text-white/85 md:flex">
-              <a className="transition hover:text-white" href="#fonctionnalites">Accueil</a>
-              <a className="transition hover:text-white" href="#fonctionnalites">Fonctionnalites</a>
-              <a className="transition hover:text-white" href="#">Tarifs</a>
-              <a className="transition hover:text-white" href="#">A propos</a>
-              <a className="transition hover:text-white" href="#">Contact</a>
-            </nav>
-
-            <div className="flex items-center gap-2">
+        <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+          <header
+            className={`sticky top-4 z-50 rounded-2xl border transition-all duration-300 ${
+              scrolled ? 'shadow-xl' : 'shadow-sm'
+            } ${
+              d
+                ? 'border-white/10 bg-[#1a1d2e]/90 backdrop-blur-xl'
+                : 'border-white/50 bg-white/85 backdrop-blur-xl'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">
               <button
                 type="button"
-                onClick={() => setIsDemoOpen(true)}
-                className="hidden rounded-lg bg-[#2f66d8] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#2a5bc4] sm:inline-flex"
+                onClick={() => scrollTo(heroRef)}
+                className="group flex items-center gap-2.5"
               >
-                Demander une demo
+                <div className="rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 p-2 text-white shadow-lg shadow-blue-500/30 transition group-hover:scale-105">
+                  <Building2 size={18} />
+                </div>
+                <span
+                  className={`text-xl font-extrabold tracking-tight ${
+                    d ? 'text-white' : 'text-slate-900'
+                  }`}
+                >
+                  Bati<span className="text-blue-600">CRM</span>
+                </span>
               </button>
-              <Link
-                to="/login"
-                className="inline-flex rounded-lg bg-white px-4 py-2 text-xs font-semibold text-[#0f2e63] transition hover:bg-[#e6edfb]"
-              >
-                Se connecter
-              </Link>
-            </div>
-          </div>
-        </header>
 
-        <section className="mt-8 grid items-center gap-10 lg:grid-cols-[1.05fr_1.2fr]">
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#9ab6ef] bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#2458bb]">
-              <Sparkles size={14} /> Nouveau
-            </span>
-
-            <h1 className="mt-5 max-w-xl text-4xl font-extrabold leading-[1.05] tracking-tight text-[#102a53] sm:text-5xl">
-              Gerez vos projets,
-              <br />
-              <span className="text-[#2f66d8]">developpez votre</span>
-              <br />
-              entreprise.
-            </h1>
-
-            <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-[#425d88]">
-              BatiCRM centralise vos clients, chantiers, devis et factures dans une seule
-              plateforme. Gagnez du temps, suivez vos projets en temps reel et developpez votre activite.
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-2 rounded-xl bg-[#2f66d8] px-5 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_rgba(47,102,216,0.35)] transition hover:translate-y-[-1px] hover:bg-[#2a5bc4]"
-              >
-                Decouvrir la plateforme
-                <ArrowRight size={16} />
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => setIsDemoOpen(true)}
-                className="inline-flex items-center gap-2 rounded-xl border border-[#a8bee9] bg-white/75 px-5 py-3 text-sm font-semibold text-[#1c427f] transition hover:bg-white"
-              >
-                Voir une demo
-                <PlayCircle size={16} />
-              </button>
-            </div>
-
-            <div className="mt-8 grid max-w-lg grid-cols-1 gap-2 sm:grid-cols-3">
-              {quickPoints.map((point) => (
-                <div key={point} className="flex items-start gap-2 rounded-lg bg-white/70 px-3 py-2 text-xs text-[#2f4f83] shadow-sm">
-                  <CheckCircle2 size={14} className="mt-[1px] shrink-0 text-[#2f66d8]" />
-                  <span>{point}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-3xl">
-            <div className="rounded-3xl border border-[#d2def4] bg-white p-3 shadow-[0_24px_70px_rgba(15,46,99,0.18)] sm:p-4">
-              <div className="grid min-h-[390px] grid-cols-[84px_1fr] overflow-hidden rounded-2xl border border-[#e0e8f7] bg-[#f8fbff]">
-                <aside className="bg-[#162f61] p-3 text-white/80">
-                  <div className="rounded-lg bg-white/15 p-2">
-                    <Building2 size={16} />
-                  </div>
-                  <div className="mt-4 space-y-2 text-[10px]">
-                    <div className="rounded-md bg-white/10 px-2 py-1">Dashboard</div>
-                    <div className="rounded-md px-2 py-1">Clients</div>
-                    <div className="rounded-md px-2 py-1">Chantiers</div>
-                    <div className="rounded-md px-2 py-1">Devis</div>
-                    <div className="rounded-md px-2 py-1">Factures</div>
-                  </div>
-                </aside>
-
-                <div className="p-3 sm:p-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-[#102a53]">Tableau de bord</h3>
-                    <div className="h-6 w-24 rounded-md bg-[#edf3ff]" />
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <div className="rounded-lg bg-[#2f66d8] p-2 text-white">
-                      <p className="text-[10px] opacity-85">CA</p>
-                      <p className="text-sm font-bold">142 580 EUR</p>
-                    </div>
-                    <div className="rounded-lg bg-[#2fc997] p-2 text-white">
-                      <p className="text-[10px] opacity-85">Chantiers</p>
-                      <p className="text-sm font-bold">8</p>
-                    </div>
-                    <div className="rounded-lg bg-[#ffb846] p-2 text-white">
-                      <p className="text-[10px] opacity-85">Devis</p>
-                      <p className="text-sm font-bold">13</p>
-                    </div>
-                    <div className="rounded-lg bg-[#7357e7] p-2 text-white">
-                      <p className="text-[10px] opacity-85">Clients</p>
-                      <p className="text-sm font-bold">247</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1.2fr_.8fr]">
-                    <div className="rounded-xl border border-[#dce6f8] bg-white p-3">
-                      <p className="text-xs font-semibold text-[#1f4684]">Evolution du chiffre d affaires</p>
-                      <div className="mt-2 h-24 rounded-lg bg-[linear-gradient(180deg,#eef4ff_0%,#ffffff_100%)] p-2">
-                        <svg viewBox="0 0 240 80" className="h-full w-full">
-                          <polyline
-                            fill="none"
-                            stroke="#2f66d8"
-                            strokeWidth="3"
-                            points="6,64 38,58 60,62 86,43 118,49 142,34 167,37 192,20 232,26"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl border border-[#dce6f8] bg-white p-3">
-                      <p className="text-xs font-semibold text-[#1f4684]">Repartition</p>
-                      <div className="mt-3 flex items-center justify-center">
-                        <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-[10px] border-[#e4ecfb]">
-                          <div className="absolute inset-0 rounded-full border-[10px] border-[#2fc997] border-r-[#f4c26f] border-b-[#7357e7] border-l-transparent" />
-                          <span className="z-10 text-xs font-bold text-[#1f4684]">68%</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            
-          </div>
-        </section>
-
-        <section id="fonctionnalites" className="mt-14 rounded-3xl border border-[#dbe5f7] bg-white/80 p-6 backdrop-blur-sm sm:p-8">
-          <h2 className="text-center text-2xl font-bold text-[#102a53]">
-            Tout ce dont vous avez besoin pour reussir
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-[#5e779f]">
-            Des fonctionnalites puissantes, pensees pour les entreprises du batiment.
-          </p>
-
-          <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {modules.map((module) => (
-              <article
-                key={module.title}
-                className="group rounded-2xl border border-[#dbe5f7] bg-white p-4 transition hover:-translate-y-1 hover:border-[#9eb8e8] hover:shadow-[0_16px_28px_rgba(18,49,108,0.14)]"
-              >
-                <div className="inline-flex rounded-lg bg-[#edf3ff] p-2 text-[#2f66d8]">
-                  {module.icon}
-                </div>
-                <h3 className="mt-3 text-sm font-semibold text-[#173a72]">{module.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-[#607da6]">{module.description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* ===== Demo Modal ===== */}
-      {isDemoOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0a1834]/65 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-4xl overflow-hidden rounded-3xl border border-[#bfcef0] bg-white shadow-[0_30px_90px_rgba(8,24,52,0.45)]">
-            <div className="flex items-center justify-between border-b border-[#dbe6fa] bg-[#f6f9ff] px-5 py-4">
-              <div>
-                <p className="text-sm font-semibold text-[#204780]">Presentation dynamique BatiCRM</p>
-                <p className="text-xs text-[#6b84ad]">Apercu automatique de l application</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDemoOpen(false)}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#ccdaf5] text-[#325a95] transition hover:bg-[#e9f1ff]"
-                title="Fermer la demo"
-              >
-                <X size={17} />
-              </button>
-            </div>
-
-            <div className="p-5">
-              <div className="relative aspect-video overflow-hidden rounded-2xl border border-[#d6e2f9] bg-[radial-gradient(circle_at_20%_15%,#3e78ed_0%,#1d4289_45%,#0f274f_100%)] px-6 py-5 text-white">
-                <div className="pointer-events-none absolute -right-8 top-4 h-32 w-32 rounded-full bg-cyan-300/20 blur-2xl" />
-                <div className="pointer-events-none absolute -left-10 bottom-2 h-36 w-36 rounded-full bg-blue-200/20 blur-2xl" />
-
-                <div className="relative flex h-full flex-col justify-between">
-                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/90">
-                    <PlayCircle size={14} /> Lecture auto
-                  </div>
-
-                  <div className="max-w-xl rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm transition-all duration-500">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">Scene {demoIndex + 1}</p>
-                    <h3 className="mt-2 text-2xl font-bold leading-tight">{demoScenes[demoIndex]?.title}</h3>
-                    <p className="mt-3 text-sm text-blue-100">{demoScenes[demoIndex]?.description}</p>
-
-                    <div className="mt-4 grid grid-cols-3 gap-2 text-[11px] text-white/85">
-                      <div className="rounded-lg border border-white/15 bg-white/10 px-2 py-1.5">Clients</div>
-                      <div className="rounded-lg border border-white/15 bg-white/10 px-2 py-1.5">Chantiers</div>
-                      <div className="rounded-lg border border-white/15 bg-white/10 px-2 py-1.5">Devis IA</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {demoScenes.map((scene, index) => (
-                      <button
-                        key={scene.title}
-                        type="button"
-                        onClick={() => setDemoIndex(index)}
-                        className="h-2 flex-1 overflow-hidden rounded-full bg-white/25"
-                        aria-label={`Aller a la scene ${index + 1}`}
-                      >
-                        <span
-                          className={`block h-full transition-all duration-500 ${index === demoIndex ? 'w-full bg-white' : 'w-0 bg-white/50'}`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-[#4a6896]">
-                  Cette demo presente les ecrans principaux de l application sans quitter la page d accueil.
-                </p>
+              <nav className="hidden items-center gap-1 md:flex">
                 <button
                   type="button"
-                  onClick={() => setIsDemoOpen(false)}
-                  className="rounded-xl bg-[#2f66d8] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a5bc4]"
+                  onClick={() => scrollTo(heroRef)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
                 >
-                  Fermer
+                  Accueil
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(featuresRef)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  Fonctionnalités
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(contactRef)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  À propos
+                </button>
+
+                <Link
+                  to="/demo"
+                  className="ml-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/25 transition hover:scale-[1.03]"
+                >
+                  <PlayCircle size={16} />
+                  Demander une démo
+                </Link>
+              </nav>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDark((current) => !current)}
+                  className={`rounded-xl p-2.5 transition hover:scale-105 ${
+                    d
+                      ? 'bg-white/10 text-yellow-300 hover:bg-white/20'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                  aria-label={d ? 'Activer le mode clair' : 'Activer le mode sombre'}
+                >
+                  {d ? <Sun size={17} /> : <Moon size={17} />}
+                </button>
+
+                <Link
+                  to="/login"
+                  className={`hidden rounded-xl border px-4 py-2 text-sm font-semibold transition sm:inline-flex ${
+                    d
+                      ? 'border-white/20 text-slate-200 hover:bg-white/10'
+                      : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  Connexion
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((current) => !current)}
+                  className={`rounded-lg p-2 md:hidden ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                  aria-label="Ouvrir le menu"
+                >
+                  <Menu size={22} />
                 </button>
               </div>
             </div>
-          </div>
+
+            {menuOpen && (
+              <div
+                className={`flex flex-col gap-2 border-t px-5 pb-5 pt-3 md:hidden ${
+                  d ? 'border-white/10' : 'border-slate-100'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => scrollTo(heroRef)}
+                  className={`rounded-xl px-4 py-3 text-left text-sm font-medium ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10'
+                      : 'text-slate-600 hover:bg-blue-50'
+                  }`}
+                >
+                  Accueil
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(featuresRef)}
+                  className={`rounded-xl px-4 py-3 text-left text-sm font-medium ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10'
+                      : 'text-slate-600 hover:bg-blue-50'
+                  }`}
+                >
+                  Fonctionnalités
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollTo(contactRef)}
+                  className={`rounded-xl px-4 py-3 text-left text-sm font-medium ${
+                    d
+                      ? 'text-slate-300 hover:bg-white/10'
+                      : 'text-slate-600 hover:bg-blue-50'
+                  }`}
+                >
+                  À propos
+                </button>
+                <Link
+                  to="/demo"
+                  onClick={() => setMenuOpen(false)}
+                  className="mt-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white"
+                >
+                  <PlayCircle size={18} />
+                  Demander une démo
+                </Link>
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-xl border px-4 py-3 text-center text-sm font-semibold ${
+                    d
+                      ? 'border-white/20 text-slate-200'
+                      : 'border-slate-200 text-slate-700'
+                  }`}
+                >
+                  Connexion
+                </Link>
+              </div>
+            )}
+          </header>
+
+          <section
+            ref={heroRef}
+            className="grid scroll-mt-24 items-center gap-12 py-16 lg:grid-cols-[1fr_0.95fr]"
+          >
+            <div>
+              <span
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold ${
+                  d
+                    ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
+                    : 'border-blue-200 bg-white/80 text-blue-700'
+                }`}
+              >
+                <Sparkles size={14} />
+                CRM dédié aux métiers du bâtiment
+              </span>
+
+              <h1
+                className={`mt-6 max-w-3xl text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl ${
+                  d ? 'text-white' : 'text-slate-900'
+                }`}
+              >
+                Pilotez vos projets
+                <br />
+                <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent">
+                  depuis une seule plateforme
+                </span>
+              </h1>
+
+              <p
+                className={`mt-6 max-w-2xl text-base leading-8 sm:text-lg ${
+                  d ? 'text-slate-400' : 'text-slate-600'
+                }`}
+              >
+                Centralisez clients, devis, chantiers, factures, SAV et suivi administratif
+                dans une interface pensée pour les équipes bureau et terrain.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/demo"
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:scale-[1.03]"
+                >
+                  Demander une démo
+                  <ArrowRight size={16} />
+                </Link>
+
+                <Link
+                  to="/login"
+                  className={`inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-semibold transition ${
+                    d
+                      ? 'border-white/20 text-slate-200 hover:bg-white/10'
+                      : 'border-slate-300 text-slate-700 hover:bg-white'
+                  }`}
+                >
+                  Se connecter
+                </Link>
+              </div>
+
+              <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+                {[
+                  'Suivi commercial',
+                  'Pilotage chantier',
+                  'SAV & audit',
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${
+                      d
+                        ? 'border-white/10 bg-white/5 text-slate-300'
+                        : 'border-slate-200 bg-white/80 text-slate-700'
+                    }`}
+                  >
+                    <CheckCircle2 size={15} className="text-blue-500" />
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              className={`rounded-3xl border p-4 shadow-2xl ${
+                d
+                  ? 'border-white/10 bg-[#1a1d2e]/90'
+                  : 'border-white/60 bg-white/90'
+              }`}
+            >
+              <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-50 dark:border-white/10 dark:bg-[#131722]">
+                <div className="flex items-center justify-between border-b border-slate-200/70 px-4 py-3 dark:border-white/10">
+                  <div>
+                    <p className={`text-sm font-bold ${d ? 'text-white' : 'text-slate-900'}`}>
+                      Tableau de bord
+                    </p>
+                    <p className={`text-xs ${d ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Aperçu de l’activité
+                    </p>
+                  </div>
+                  <div className="rounded-lg bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-500/15 dark:text-blue-300">
+                    BatiCRM
+                  </div>
+                </div>
+
+                <div className="grid gap-3 p-4 sm:grid-cols-2">
+                  {[
+                    ['Clients', 'Suivi commercial', Users],
+                    ['Chantiers', 'Planning & avancement', HardHat],
+                    ['Devis', 'Création & validation', FileText],
+                    ['SAV', 'Tickets & interventions', Shield],
+                  ].map(([label, helper, Icon]) => {
+                    const CardIcon = Icon as typeof Users;
+                    return (
+                      <div
+                        key={label as string}
+                        className={`rounded-xl border p-4 ${
+                          d
+                            ? 'border-white/10 bg-white/5'
+                            : 'border-slate-200 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-lg bg-blue-100 p-2 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300">
+                            <CardIcon size={18} />
+                          </div>
+                          <div>
+                            <p className={`text-sm font-semibold ${d ? 'text-white' : 'text-slate-900'}`}>
+                              {label as string}
+                            </p>
+                            <p className={`text-xs ${d ? 'text-slate-500' : 'text-slate-500'}`}>
+                              {helper as string}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="px-4 pb-4">
+                  <div
+                    className={`rounded-xl border p-4 ${
+                      d
+                        ? 'border-white/10 bg-white/5'
+                        : 'border-slate-200 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <BarChart3 size={17} className="text-blue-500" />
+                      <p className={`text-sm font-semibold ${d ? 'text-white' : 'text-slate-900'}`}>
+                        Suivi des indicateurs
+                      </p>
+                    </div>
+                    <div className="mt-4 flex h-24 items-end gap-2">
+                      {[32, 48, 40, 64, 55, 76, 68, 88].map((height, index) => (
+                        <div
+                          key={`${height}-${index}`}
+                          className="flex-1 rounded-t-md bg-gradient-to-t from-blue-600 to-indigo-400"
+                          style={{ height: `${height}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section ref={featuresRef} className="scroll-mt-24 py-8">
+            <div className="text-center">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold ${
+                  d
+                    ? 'border-purple-500/30 bg-purple-500/10 text-purple-400'
+                    : 'border-purple-200 bg-white/80 text-purple-700'
+                }`}
+              >
+                <Layers size={14} />
+                Fonctionnalités
+              </span>
+              <h2
+                className={`mt-4 text-3xl font-extrabold sm:text-4xl ${
+                  d ? 'text-white' : 'text-slate-900'
+                }`}
+              >
+                Les outils essentiels réunis au même endroit
+              </h2>
+            </div>
+
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((feature) => {
+                const Icon = feature.icon;
+                return (
+                  <article
+                    key={feature.title}
+                    className={`group rounded-2xl border p-6 transition hover:-translate-y-1 hover:shadow-xl ${
+                      d
+                        ? 'border-white/10 bg-white/5'
+                        : 'border-slate-200 bg-white'
+                    }`}
+                  >
+                    <div
+                      className={`inline-flex rounded-xl bg-gradient-to-br ${feature.color} p-3 text-white shadow-lg transition group-hover:scale-105`}
+                    >
+                      <Icon size={21} />
+                    </div>
+                    <h3
+                      className={`mt-4 text-base font-bold ${
+                        d ? 'text-white' : 'text-slate-900'
+                      }`}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p
+                      className={`mt-2 text-sm leading-6 ${
+                        d ? 'text-slate-400' : 'text-slate-600'
+                      }`}
+                    >
+                      {feature.description}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section
+            ref={contactRef}
+            className="scroll-mt-24 py-12"
+          >
+            <div className="rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 text-white shadow-2xl shadow-blue-500/20 sm:p-12">
+              <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                    <MessageSquare size={14} />
+                    Démonstration
+                  </div>
+                  <h2 className="mt-4 text-3xl font-extrabold">
+                    Découvrez BatiCRM avec votre propre besoin
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-blue-100">
+                    Remplissez la demande de démonstration. L’équipe pourra ensuite vous
+                    recontacter et planifier un échange adapté à votre contexte.
+                  </p>
+                </div>
+
+                <Link
+                  to="/demo"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-blue-700 shadow-lg transition hover:scale-[1.03]"
+                >
+                  Demander une démo
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+            </div>
+          </section>
         </div>
-      )}
+      </div>
     </div>
   );
 }

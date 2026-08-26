@@ -9,10 +9,14 @@ import { CreateMateriauDto } from './dto/create-materiau.dto.js';
 import { UpdateMateriauDto } from './dto/update-materiau.dto.js';
 import { QueryMateriauDto } from './dto/query-materiau.dto.js';
 import type { CurrentUserPayload } from '../common/interfaces/jwt-payload.interface.js';
+import { AuditService } from '../audit/audit.service.js';
 
 @Injectable()
 export class MateriauxService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   /**
    * Créer un matériau (ADMIN uniquement)
@@ -131,7 +135,7 @@ export class MateriauxService {
     dto: UpdateMateriauDto,
     currentUser: CurrentUserPayload,
   ) {
-    await this.findOne(id, currentUser);
+    const previous = await this.findOne(id, currentUser);
 
     // Si on change le fournisseur, vérifier l'appartenance
     if (dto.fournisseurId) {
@@ -150,7 +154,7 @@ export class MateriauxService {
       }
     }
 
-    return this.prisma.materiau.update({
+    const updated = await this.prisma.materiau.update({
       where: { id },
       data: {
         ...dto,
@@ -162,6 +166,22 @@ export class MateriauxService {
         },
       },
     });
+
+    if (dto.prixAchatFixe !== undefined && previous.prixAchatFixe !== updated.prixAchatFixe) {
+      await this.auditService.logPriceChange({
+        companyId: currentUser.companyId,
+        userId: currentUser.userId,
+        entite: 'Materiau',
+        entiteId: updated.id,
+        field: 'prixAchatFixe',
+        label: updated.nom,
+        oldValue: previous.prixAchatFixe,
+        newValue: updated.prixAchatFixe,
+        metadata: { unite: updated.unite },
+      });
+    }
+
+    return updated;
   }
 
   /**

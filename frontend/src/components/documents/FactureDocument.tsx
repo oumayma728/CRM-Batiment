@@ -28,7 +28,7 @@ function getLineDetails(ligne: LigneDevis) {
 function getLineCategory(ligne: LigneDevis) {
   if (ligne.prestation?.nom) return ligne.prestation.nom;
   if (ligne.materiau?.nom) return 'Fourniture';
-  if (ligne.serviceMainOeuvre?.nom) return 'Main d oeuvre';
+  if (ligne.serviceMainOeuvre?.nom) return 'Main d\'œuvre';
   return 'Divers';
 }
 
@@ -41,27 +41,27 @@ export function FactureDocument({
   const lignes = [...(devis.lignes ?? [])].sort((a, b) => a.ordre - b.ordre);
   const structuredNotes = parseStructuredDevisNotes(devis.notes);
   const tauxTVA = devis.tauxTVA ?? 20;
-  const paymentLabel = structuredNotes.paymentTerms.split('\n')[0] || 'Paiement a reception de facture.';
+  const paymentLabel = structuredNotes.paymentTerms.split('\n')[0] || 'Paiement à réception de facture.';
 
   return (
     <PrintDocumentModal
       title="Facture"
-      subtitle="Document comptable pret a l'impression"
+      subtitle="Document comptable prêt à l'impression"
       onClose={onClose}
       onPrint={onPrint}
     >
-      <article className="mx-auto w-full max-w-[920px] rounded-[30px] bg-white p-6 text-slate-800 shadow-[0_30px_80px_rgba(15,23,42,0.08)] md:p-10">
+      <article className="mx-auto w-full max-w-[920px] rounded-lg bg-white p-6 text-slate-800 shadow-[0_24px_70px_rgba(15,23,42,0.08)] md:p-10">
         <div className="flex flex-col gap-8 border-b border-slate-200 pb-8 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="text-3xl font-bold tracking-tight text-slate-900">BATIFLOW</p>
-            <p className="text-sm text-slate-500">Facturation travaux & renovation</p>
+            <p className="text-sm text-slate-500">Facturation travaux & rénovation</p>
             <div className="mt-4 space-y-1 text-sm text-slate-500">
               <p>contact@crm-batiment.fr</p>
               <p>+33 1 23 45 67 89</p>
             </div>
           </div>
 
-          <div className="grid gap-3 rounded-3xl bg-slate-50 p-5 md:min-w-[290px]">
+          <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-5 md:min-w-[300px]">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Facture</span>
               <span className="font-semibold text-slate-900">{facture.reference}</span>
@@ -74,6 +74,20 @@ export function FactureDocument({
               <span className="text-slate-500">Devis source</span>
               <span className="font-medium text-slate-900">{devis.reference}</span>
             </div>
+            {facture.dateEcheance ? (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Échéance</span>
+                <span className="font-medium text-slate-900">{formatDate(facture.dateEcheance)}</span>
+              </div>
+            ) : null}
+            {facture.typeFacture ? (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-500">Type</span>
+                <span className="font-medium text-slate-900">
+                  {facture.typeFacture === 'ACOMPTE' ? `Acompte ${facture.acomptePercent ?? ''}%` : 'Finale'}
+                </span>
+              </div>
+            ) : null}
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Statut</span>
               <span className="font-medium text-slate-900">{facture.statut}</span>
@@ -82,9 +96,9 @@ export function FactureDocument({
         </div>
 
         <div className="mt-8 grid gap-6 md:grid-cols-[1fr_0.9fr]">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Facturer a
+              Facturer à
             </p>
             <p className="mt-2 text-lg font-semibold text-slate-900">
               {getClientDisplayName(devis)}
@@ -96,9 +110,9 @@ export function FactureDocument({
             </div>
           </div>
 
-          <div className="rounded-3xl bg-slate-900 px-6 py-5 text-white">
+          <div className="rounded-lg bg-slate-900 px-6 py-5 text-white">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
-              Total a payer
+              Total à payer
             </p>
             <p className="mt-4 text-4xl font-bold">
               {formatCurrency(facture.montantTTC)}
@@ -120,15 +134,15 @@ export function FactureDocument({
           </div>
         </div>
 
-        <div className="mt-8 overflow-hidden rounded-3xl border border-slate-200">
+        <div className="mt-8 overflow-hidden rounded-lg border border-slate-200">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-slate-900 text-left text-sm text-white">
                 <th className="px-4 py-3 font-semibold md:px-5">N°</th>
                 <th className="px-4 py-3 font-semibold md:px-5">Description</th>
                 <th className="px-4 py-3 font-semibold md:px-5">Date</th>
-                <th className="px-4 py-3 font-semibold md:px-5">Categorie</th>
-                <th className="px-4 py-3 text-right font-semibold md:px-5">Quantite</th>
+                <th className="px-4 py-3 font-semibold md:px-5">Catégorie</th>
+                <th className="px-4 py-3 text-right font-semibold md:px-5">Quantité</th>
                 <th className="px-4 py-3 text-right font-semibold md:px-5">Prix U.</th>
                 <th className="px-4 py-3 text-right font-semibold md:px-5">TVA</th>
                 <th className="px-4 py-3 text-right font-semibold md:px-5">Total HT</th>
@@ -163,31 +177,35 @@ export function FactureDocument({
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Total HT</p>
             <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrency(facture.montantHT)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">TVA</p>
             <p className="mt-2 text-lg font-semibold text-slate-900">{formatCurrency(facture.montantTVA)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-300 bg-amber-50 px-4 py-3">
+          <div className="rounded-lg border border-slate-300 bg-amber-50 px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">Total TTC</p>
             <p className="mt-2 text-2xl font-bold text-slate-900">{formatCurrency(facture.montantTTC)}</p>
           </div>
         </div>
 
-        <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
-          <p className="font-semibold text-slate-900">Conditions de paiement: {paymentLabel}</p>
+        <div className="mt-8 rounded-lg border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">
+          <p className="font-semibold text-slate-900">Conditions de paiement : {paymentLabel}</p>
+          {facture.referencePaiement ? (
+            <p>Référence paiement : {facture.referencePaiement}</p>
+          ) : null}
           {structuredNotes.communication ? (
-            <p>Communication structuree: {structuredNotes.communication}</p>
+            <p>Communication structurée : {structuredNotes.communication}</p>
           ) : null}
           {structuredNotes.generalConditions.split('\n').map((line, index) => (
             <p key={`facture-general-${index}`}>{line}</p>
           ))}
-          <p>Document genere automatiquement a partir du devis valide {devis.reference}.</p>
+          <p>Document généré automatiquement à partir du devis validé {devis.reference}.</p>
         </div>
       </article>
     </PrintDocumentModal>
   );
 }
+

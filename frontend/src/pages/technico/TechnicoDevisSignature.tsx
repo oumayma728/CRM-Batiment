@@ -50,17 +50,17 @@ function getRequestLabel(statut?: string | null) {
     case 'EN_ATTENTE':
       return 'En attente';
     case 'OTP_ENVOYE':
-      return 'OTP envoye';
+      return 'OTP envoyé';
     case 'OTP_VERIFIE':
-      return 'OTP verifie';
+      return 'OTP vérifié';
     case 'SIGNE_CLIENT':
-      return 'Signe par le client';
+      return 'Signé par le client';
     case 'BLOQUE':
-      return 'Bloque';
+      return 'Bloqué';
     case 'EXPIRE':
-      return 'Expire';
+      return 'Expiré';
     case 'ANNULE':
-      return 'Annule';
+      return 'Annulé';
     default:
       return 'Aucune demande';
   }
@@ -122,7 +122,7 @@ export default function TechnicoDevisSignature() {
     onError: (error: unknown) => {
       setFeedback({
         type: 'error',
-        text: getApiErrorMessage(error, 'Impossible d envoyer le lien de signature client.'),
+        text: getApiErrorMessage(error, 'Impossible d’envoyer le lien de signature client.'),
       });
     },
   });
@@ -161,7 +161,7 @@ export default function TechnicoDevisSignature() {
     onError: (error: unknown) => {
       setFeedback({
         type: 'error',
-        text: getApiErrorMessage(error, 'Impossible d apposer la signature conseiller.'),
+        text: getApiErrorMessage(error, 'Impossible d’apposer la signature conseiller.'),
       });
     },
   });
@@ -184,7 +184,7 @@ export default function TechnicoDevisSignature() {
     <div className="space-y-6">
       <button
         onClick={() => navigate('/technico/devis')}
-        className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-700"
+        className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition hover:text-gray-700"
       >
         <ArrowLeft size={16} />
         Retour aux devis
@@ -200,15 +200,15 @@ export default function TechnicoDevisSignature() {
         </div>
       ) : (
         <>
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Devis a signer</p>
+          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-400">Devis à signer</p>
             <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-bold text-slate-900">{devis.reference}</h2>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+              <h2 className="text-2xl font-bold text-gray-900">{devis.reference}</h2>
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
                 Statut: {devis.statut}
               </span>
             </div>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-gray-500">
               Client: {`${devis.client?.prenom ?? ''} ${devis.client?.nom ?? ''}`.trim() || 'Client'} •
               Total TTC: {formatCurrency(devis.totalTTC ?? 0)}
             </p>
@@ -227,34 +227,34 @@ export default function TechnicoDevisSignature() {
           )}
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2">
                 <Send size={17} className="text-blue-600" />
-                <h3 className="text-lg font-bold text-slate-900">Signature client</h3>
+                <h3 className="text-lg font-bold text-gray-900">Signature client</h3>
               </div>
 
-              <p className="mt-3 text-sm text-slate-600">
-                Etat demande: <span className="font-semibold">{getRequestLabel(latestRequest?.statut)}</span>
+              <p className="mt-3 text-sm text-gray-600">
+                État demande : <span className="font-semibold">{getRequestLabel(latestRequest?.statut)}</span>
               </p>
               {latestRequest?.expiresAt && (
-                <p className="mt-1 text-xs text-slate-500">
-                  Expire le {formatDate(latestRequest.expiresAt)}
+                <p className="mt-1 text-xs text-gray-500">
+                  Expiré le {formatDate(latestRequest.expiresAt)}
                 </p>
               )}
               {devis.signatureClientDate && (
                 <p className="mt-2 inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
                   <CheckCircle2 size={14} />
-                  Client signe le {formatDate(devis.signatureClientDate)}
+                  Client signé le {formatDate(devis.signatureClientDate)}
                 </p>
               )}
 
               <div className="mt-4 space-y-3">
-                <label className="block text-sm font-medium text-slate-700">Telephone client</label>
+                <label className="block text-sm font-medium text-gray-700">Téléphone client</label>
                 <input
                   value={clientPhone}
                   onChange={(event) => setClientPhone(event.target.value)}
                   placeholder="+33612345678"
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                  className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
 
                 <button
@@ -268,13 +268,13 @@ export default function TechnicoDevisSignature() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2">
                 <Signature size={18} className="text-violet-600" />
-                <h3 className="text-lg font-bold text-slate-900">Signature conseiller</h3>
+                <h3 className="text-lg font-bold text-gray-900">Signature conseiller</h3>
               </div>
 
-              <p className="mt-3 text-sm text-slate-600">
+              <p className="mt-3 text-sm text-gray-600">
                 Configurez votre signature une fois puis apposez-la sur le devis.
               </p>
 
@@ -290,7 +290,7 @@ export default function TechnicoDevisSignature() {
                       canvasRef.current?.clear();
                       setSignatureDraft(null);
                     }}
-                    className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                    className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
                   >
                     Effacer
                   </button>
@@ -306,8 +306,8 @@ export default function TechnicoDevisSignature() {
                   </button>
                 </div>
                 {profileSignatureQuery.data?.signatureUpdatedAt && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    Derniere mise a jour: {formatDate(profileSignatureQuery.data.signatureUpdatedAt)}
+                  <p className="mt-2 text-xs text-gray-500">
+                    Dernière mise à jour : {formatDate(profileSignatureQuery.data.signatureUpdatedAt)}
                   </p>
                 )}
               </div>
@@ -332,14 +332,14 @@ export default function TechnicoDevisSignature() {
               )}
               {overview.signatureReadiness.canApposeConseillerSignature && !savedSignature && (
                 <p className="mt-2 text-xs text-amber-700">
-                  Veuillez d abord configurer votre signature dans votre profil.
+                  Veuillez d’abord configurer votre signature dans votre profil.
                 </p>
               )}
 
               {devis.signatureConseillerDate && (
                 <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
                   <CheckCircle2 size={14} />
-                  Conseiller signe le {formatDate(devis.signatureConseillerDate)}
+                  Conseiller signé le {formatDate(devis.signatureConseillerDate)}
                 </p>
               )}
             </div>

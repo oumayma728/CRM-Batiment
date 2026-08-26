@@ -178,6 +178,8 @@ export interface Materiau {
   finition?: string;
   unite: string;
   prixAchatFixe: number;
+  stockActuel?: number;
+  stockMinimum?: number;
   fournisseurId?: number;
   fournisseur?: Fournisseur;
   actif: boolean;
@@ -461,7 +463,7 @@ export interface InternalNotification {
   title: string;
   message: string;
   category: string;
-  level: 'info' | 'success' | 'warning';
+  level: 'info' | 'success' | 'warning' | 'danger';
   metadata: Record<string, unknown>;
   actor?: {
     id: number;
@@ -476,6 +478,22 @@ export interface InternalNotificationsResponse {
   items: InternalNotification[];
   summary: {
     total: number;
+    unreadPotential?: number;
+    alerts?: number;
+    facturesImpayees?: number;
+    montantFacturesImpayees?: number;
+    chantiersEnRetard?: number;
+    commandesEnAttente?: number;
+    stockBas?: number;
+    signatures?: number;
+    modificationsPrix?: number;
+    savOuverts?: number;
+    savEnCours?: number;
+    savUrgents?: number;
+    savNotifications?: number;
+    demoPending?: number;
+    demoScheduledSoon?: number;
+    demoNotifications?: number;
     supplierUpdates: number;
     receptionsPartielles: number;
     receptionsCompletes: number;
@@ -498,6 +516,48 @@ export type ChantierStatut =
   | 'CLOTURE';
 
 export type ChantierAutoStatut = 'EN_ATTENTE' | 'EN_COURS' | 'EN_RETARD' | 'CLOTURE';
+
+export interface DocumentChantier {
+  id: number;
+  chantierId: number;
+  nom: string;
+  type: string;
+  url: string;
+  createdAt: string;
+}
+
+export type StockStatus = 'DISPONIBLE' | 'BAS' | 'RUPTURE';
+
+export interface StockMaterial extends Materiau {
+  stockActuel: number;
+  stockMinimum: number;
+  statutStock: StockStatus;
+  valeurStock: number;
+}
+
+export interface StockMovement {
+  id: number;
+  materiauId: number;
+  type: 'ENTREE' | 'SORTIE' | 'AJUSTEMENT';
+  quantite: number;
+  stockAvant: number;
+  stockApres: number;
+  motif?: string;
+  reference?: string;
+  createdAt: string;
+  materiau: Pick<Materiau, 'id' | 'nom' | 'unite'>;
+  user?: Pick<User, 'id' | 'nom' | 'prenom'> | null;
+}
+
+export interface StockResponse {
+  items: StockMaterial[];
+  summary: {
+    totalReferences: number;
+    stockBas: number;
+    ruptures: number;
+    valeurTotale: number;
+  };
+}
 
 export interface Chantier {
   id: number;
@@ -527,6 +587,7 @@ export interface Chantier {
     taches?: number;
     documents?: number;
   };
+  documents?: DocumentChantier[];
 }
 
 export type TaskAssigneeType = 'AUCUNE' | 'SOUS_TRAITANT' | 'EQUIPE_INTERNE';
@@ -675,6 +736,45 @@ export interface LigneDevis {
   prestation?: { id: number; nom: string };
   materiau?: { id: number; nom: string };
   serviceMainOeuvre?: { id: number; nom: string };
+}
+
+
+export type DemoRequestStatut = 'PENDING' | 'CONTACTED' | 'SCHEDULED' | 'DONE' | 'CANCELED';
+
+export interface DemoRequest {
+  id: number;
+  companyId?: number | null;
+  assignedToId?: number | null;
+  nom: string;
+  prenom?: string | null;
+  email: string;
+  telephone?: string | null;
+  entreprise?: string | null;
+  message?: string | null;
+  statut: DemoRequestStatut;
+  source: string;
+  dateContact?: string | null;
+  dateDemo?: string | null;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  company?: {
+    id: number;
+    nom: string;
+    email?: string | null;
+    telephone?: string | null;
+  } | null;
+  assignedTo?: Pick<User, 'id' | 'nom' | 'prenom' | 'email' | 'role'> | null;
+}
+
+export interface DemoRequestsSummary {
+  total: number;
+  pending: number;
+  contacted: number;
+  scheduled: number;
+  done: number;
+  canceled: number;
+  scheduledSoon: number;
 }
 
 // Pagination

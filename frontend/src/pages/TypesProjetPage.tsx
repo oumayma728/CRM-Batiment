@@ -455,7 +455,7 @@ export default function TypesProjetPage() {
             Types de Projet
           </h1>
           <p className="text-gray-500 text-sm mt-0.5">
-            {complexTypes.length} tache(s) complexe(s) / {simpleTasks.length} tache(s) simple(s)
+            {complexTypes.length} tâche(s) complexe(s) / {simpleTasks.length} tâche(s) simple(s)
           </p>
         </div>
         <button
@@ -491,7 +491,7 @@ export default function TypesProjetPage() {
             </div>
             <p className="text-lg font-semibold text-red-700">Impossible de charger les types de projet</p>
             <p className="mt-1 text-sm text-red-500">
-              L&apos;API a retourne une erreur. Verifiez le backend ou rechargez la page.
+              L&apos;API a retourné une erreur. Vérifiez le backend ou rechargez la page.
             </p>
           </div>
         </div>
@@ -501,7 +501,7 @@ export default function TypesProjetPage() {
             <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FolderKanban size={32} className="text-gray-300" />
             </div>
-            <p className="text-lg font-semibold text-gray-700">Aucune tache</p>
+            <p className="text-lg font-semibold text-gray-700">Aucune tâche</p>
             <p className="text-sm text-gray-400 mt-1">Ajustez la recherche ou ajoutez un nouveau type de projet.</p>
             <button
               onClick={openCreate}
@@ -516,15 +516,15 @@ export default function TypesProjetPage() {
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-indigo-50/40">
               <div>
-                <h2 className="text-sm font-bold text-gray-900">Taches complexes</h2>
-                <p className="text-xs text-gray-500">Un grand projet avec plusieurs categories</p>
+                <h2 className="text-sm font-bold text-gray-900">Tâches complexes</h2>
+                <p className="text-xs text-gray-500">Un grand projet avec plusieurs catégories</p>
               </div>
               <span className="inline-flex items-center rounded-lg bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
                 {complexTypes.length}
               </span>
             </div>
             {complexTypes.length === 0 ? (
-              <div className="px-6 py-10 text-sm text-gray-500">Aucune tache complexe pour ce filtre.</div>
+              <div className="px-6 py-10 text-sm text-gray-500">Aucune tâche complexe pour ce filtre.</div>
             ) : (
               renderTypesTable(complexTypes)
             )}
@@ -533,8 +533,8 @@ export default function TypesProjetPage() {
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-emerald-50/40">
               <div>
-                <h2 className="text-sm font-bold text-gray-900">Taches simples</h2>
-                <p className="text-xs text-gray-500">Meme liste que les categories (1 categorie = 1 tache simple)</p>
+                <h2 className="text-sm font-bold text-gray-900">Tâches simples</h2>
+                <p className="text-xs text-gray-500">Même liste que les catégories (1 catégorie = 1 tâche simple)</p>
               </div>
               <span className="inline-flex items-center rounded-lg bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                 {simpleTasks.length}
@@ -543,7 +543,7 @@ export default function TypesProjetPage() {
             {categoriesError ? (
               <div className="px-6 py-10 text-sm text-red-600">Impossible de charger les categories.</div>
             ) : simpleTasks.length === 0 ? (
-              <div className="px-6 py-10 text-sm text-gray-500">Aucune tache simple pour ce filtre.</div>
+              <div className="px-6 py-10 text-sm text-gray-500">Aucune tâche simple pour ce filtre.</div>
             ) : (
               renderSimpleTasksTable(simpleTasks)
             )}
@@ -573,7 +573,7 @@ export default function TypesProjetPage() {
                   required
                   value={form.nom}
                   onChange={(e) => setForm({ ...form, nom: e.target.value })}
-                  placeholder="Ex: Renovation salle de bain"
+                  placeholder="Ex: Rénovation salle de bain"
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500/30 focus:border-primary-400 text-sm transition-all"
                 />
               </div>
@@ -629,7 +629,7 @@ export default function TypesProjetPage() {
               {isComplexMode ? (
                 <div>
                 <div className="flex items-center justify-between gap-3 mb-2">
-                  <label className="block text-[13px] font-semibold text-gray-700">Categories compatibles</label>
+                  <label className="block text-[13px] font-semibold text-gray-700">Catégories compatibles</label>
                   <span className="text-[11px] font-semibold text-indigo-600">
                     {form.categorieIds.length} selectionnee{form.categorieIds.length > 1 ? 's' : ''}
                   </span>
@@ -669,7 +669,7 @@ export default function TypesProjetPage() {
                           <span className="min-w-0">
                             <span className="block text-sm font-semibold">{categorie.nom}</span>
                             <span className="mt-0.5 block text-xs text-gray-500">
-                              {categorie.description || 'Categorie metier existante'}
+                              {categorie.description || 'Catégorie métier existante'}
                             </span>
                           </span>
                         </button>
@@ -678,23 +678,23 @@ export default function TypesProjetPage() {
                   </div>
                 )}
                 <p className="mt-2 text-xs text-gray-400">
-                  Selectionnez au moins 2 categories pour un type complexe.
+                  Sélectionnez au moins 2 catégories pour un type complexe.
                 </p>
                 {invalidComplexSelection && (
                   <p className="mt-2 text-xs text-red-600">
-                    Un type complexe doit avoir au minimum 2 categories.
+                    Un type complexe doit avoir au minimum 2 catégories.
                   </p>
                 )}
               </div>
               ) : (
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-700">
-                  En mode simple, la tache sera creee avec nom + description.
+                  En mode simple, la tâche sera créée avec nom + description.
                 </div>
               )}
 
               {(createMutation.error || createSimpleTaskMutation.error || updateMutation.error) && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Une erreur est survenue. Veuillez reessayer.
+                  Une erreur est survenue. Veuillez réessayer.
                 </p>
               )}
             </form>
@@ -713,7 +713,7 @@ export default function TypesProjetPage() {
                 className="px-6 py-2.5 text-sm font-medium text-white batiflow-gradient rounded-xl hover:shadow-lg hover:shadow-blue-500/20 disabled:opacity-50 flex items-center gap-2 transition-all"
               >
                 {saving && <Loader2 size={16} className="animate-spin" />}
-                {editingItem ? 'Enregistrer' : 'Creer'}
+                {editingItem ? 'Enregistrer' : 'Créer'}
               </button>
             </div>
           </div>
@@ -724,7 +724,7 @@ export default function TypesProjetPage() {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Modifier la tache simple</h2>
+              <h2 className="text-lg font-bold text-gray-900">Modifier la tâche simple</h2>
               <button
                 onClick={closeSimpleTaskModal}
                 className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition-colors"
@@ -756,7 +756,7 @@ export default function TypesProjetPage() {
               </div>
               {updateSimpleTaskMutation.error && (
                 <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                  Echec de modification de la tache simple.
+                  Échec de modification de la tâche simple.
                 </p>
               )}
               <div className="flex justify-end gap-3 pt-2">
@@ -788,13 +788,13 @@ export default function TypesProjetPage() {
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Trash2 className="text-red-600" size={24} />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer cette tache simple ?</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer cette tâche simple ?</h3>
             <p className="text-sm text-gray-500 mb-6">
-              La categorie "{deleteSimpleTask.category.nom}" et ses elements associes seront desactives.
+              La catégorie "{deleteSimpleTask.category.nom}" et ses éléments associés seront désactivés.
             </p>
             {deleteSimpleTaskMutation.error && (
               <p className="mb-4 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                Echec de suppression. Verifiez les dependances puis reessayez.
+                Échec de suppression. Vérifiez les dépendances puis réessayez.
               </p>
             )}
             <div className="flex gap-3">
@@ -829,7 +829,7 @@ export default function TypesProjetPage() {
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">Supprimer ce type ?</h3>
             <p className="text-sm text-gray-500 mb-6">
-              Ce type de projet sera supprime definitivement de la base de donnees.
+              Ce type de projet sera supprimé définitivement de la base de données.
             </p>
             <div className="flex gap-3">
               <button
