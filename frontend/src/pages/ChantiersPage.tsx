@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,6 +12,7 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle,
+  Map,
 } from 'lucide-react';
 import axios from 'axios';
 import api from '@/lib/api';
@@ -107,6 +109,7 @@ function toForm(chantier: Chantier): ChantierFormState {
 
 export default function ChantiersPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAssistante = user?.role === 'ASSISTANTE';
   const isAdmin = user?.role === 'ADMIN';
   const queryClient = useQueryClient();
@@ -409,6 +412,15 @@ export default function ChantiersPage() {
                     {(isAdmin || user?.role === 'CHEF_CHANTIER' || user?.role === 'ASSISTANTE') && (
                       <td className="px-5 py-4">
                         <div className="flex justify-end gap-2">
+                          {isAdmin && (
+                            <button
+                              onClick={() => navigate(`/admin/chantiers/${chantier.id}/plan-2d`)}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-blue-600 transition hover:bg-blue-50"
+                              title="Plan 2D"
+                            >
+                              <Map size={15} />
+                            </button>
+                          )}
                           <button
                             onClick={() => openEdit(chantier)}
                             className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 text-slate-600 transition hover:bg-stone-50"
