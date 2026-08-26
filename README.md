@@ -1,4 +1,4 @@
-﻿# ArchAI — Analyse Intelligente de Documents BTP
+# ArchAI - Analyse Intelligente de Documents BTP
 
 > Microservice d'extraction OCR et d'estimation de plans architecturaux pour le secteur du batiment.
 
@@ -29,7 +29,7 @@ Les entreprises de batiment recoivent chaque jour de nombreuses factures fournis
 
 ## Architecture
 
-`
+```
 archai/
 |
 +-- .env.example                  # Template des variables d'environnement
@@ -52,7 +52,7 @@ archai/
 |   |   +-- extractor_registry.py
 |   |   +-- ocr_facture_service.py
 |   |   +-- devis_generation_service.py
-|   |   +-- extractors/           # Moteurs OCR (voir section dediee)
+|   |   +-- extractors/           # Moteurs OCR
 |   +-- utils/
 |       +-- filename_utils.py
 |       +-- file_validation_utils.py
@@ -78,7 +78,7 @@ archai/
 +-- ground_truth.json             # Verite terrain factures
 +-- ground_truth_plans.json       # Verite terrain plans
 +-- rapport/                      # Documentation technique par ticket
-`
+```
 
 ---
 
@@ -99,25 +99,23 @@ archai/
 
 | Methode | Route | Description |
 |---------|-------|-------------|
-| GET | / | Health check |
-| POST | /api/ia/ocr-facture | Extraction d'une facture (PDF/image) |
-| POST | /api/ia/devis-from-plan | Analyse plan PDF + generation devis |
-| GET | /api/documents | Liste tous les documents extraits |
-| GET | /api/documents/{id} | Detail d'un document |
-| PATCH | /api/documents/{id} | Modifier les champs |
-| PATCH | /api/documents/{id}/statut | Changer statut (valide/rejete) |
-| DELETE | /api/documents/{id} | Supprimer un document |
-| GET | /api/documents/{id}/fichier | Telecharger le fichier original |
-| POST | /api/validation/confirm-expense | Valider un document + log corrections |
-| GET | /api/validation/metrics | Statistiques et performances systeme |
+| GET | `/` | Health check |
+| POST | `/api/ia/ocr-facture` | Extraction d'une facture (PDF/image) |
+| POST | `/api/ia/devis-from-plan` | Analyse plan PDF + generation devis |
+| GET | `/api/documents` | Liste tous les documents extraits |
+| GET | `/api/documents/{id}` | Detail d'un document |
+| PATCH | `/api/documents/{id}` | Modifier les champs |
+| PATCH | `/api/documents/{id}/statut` | Changer statut (valide/rejete) |
+| DELETE | `/api/documents/{id}` | Supprimer un document |
+| GET | `/api/documents/{id}/fichier` | Telecharger le fichier original |
+| POST | `/api/validation/confirm-expense` | Valider un document + log corrections |
+| GET | `/api/validation/metrics` | Statistiques et performances systeme |
 
 ---
 
 ## Installation
 
 ### Prerequis systeme (a installer une seule fois)
-
-Avant de faire quoi que ce soit, installez ces 3 logiciels :
 
 #### 1. Python 3.10 a 3.12
 Telechargez sur https://python.org/downloads/
@@ -128,85 +126,70 @@ Telechargez sur https://nodejs.org/ (version LTS recommandee).
 
 #### 3. Tesseract OCR (moteur local)
 Telechargez l'installeur Windows : https://github.com/UB-Mannheim/tesseract/wiki
-- Laissez le chemin par defaut : C:\Program Files\Tesseract-OCR
-- **Crucial** : Pendant l'installation, dans "Additional language data", **cochez "French"**.
-  Sans cela, la reconnaissance des factures francaises echouera.
+- Laissez le chemin par defaut : `C:\Program Files\Tesseract-OCR`
+- **Crucial** : Pendant l'installation, cochez le pack de langue **French**.
 
 > Note : EasyOCR telecharge ses modeles (~2 Go) automatiquement lors du premier appel.
-> C'est normal, cela peut prendre plusieurs minutes.
 
 ---
 
 ### Configuration des cles API
 
-Copiez le fichier .env.example en .env et remplissez vos cles :
+Copiez `.env.example` en `.env` et renseignez vos cles :
 
-`
+```
 GOOGLE_API_KEY=votre_cle_gemini
 MISTRAL_API_KEY=votre_cle_mistral
 GROQ_API_KEY=votre_cle_groq
-`
+```
 
 ---
 
 ### Backend (Python)
 
-Ouvrez un terminal a la **racine du projet** :
-
-`ash
+```bash
 # 1. Creer l'environnement virtuel
 python -m venv venv_ocr
 
-# 2. Activer l'environnement (Windows)
+# 2. Activer (Windows)
 .\venv_ocr\Scripts\activate
 
-# 3. Installer toutes les dependances Python
+# 3. Installer les dependances
 pip install -r requirements.txt
 
 # 4. Lancer le serveur
 python -m uvicorn app.main:app --reload --port 8000
-`
+```
 
-Le backend est accessible sur : http://localhost:8000
-Documentation Swagger : http://localhost:8000/docs
+Backend : http://localhost:8000 | Swagger : http://localhost:8000/docs
 
 ---
 
 ### Frontend (React)
 
-Ouvrez un **deuxieme terminal** dans le dossier rontend :
-
-`ash
+```bash
 cd frontend
-
-# 1. Installer toutes les dependances Node.js
-#    Cela installe : React, Vite, Tailwind CSS, ExcelJS, jsPDF, etc.
 npm install
-
-# 2. Lancer le serveur de developpement
 npm run dev
-`
+```
 
-L'interface est accessible sur : http://localhost:5173
+Interface : http://localhost:5173
 
 ---
 
-### Lancer apres la premiere installation
-
-Une fois les installations faites, vous n'avez plus besoin de les refaire.
-Pour relancer le projet :
+### Relancer apres installation
 
 **Terminal 1 (Backend) :**
-`ash
+```bash
 .\venv_ocr\Scripts\activate
 python -m uvicorn app.main:app --reload --port 8000
-`
+```
 
 **Terminal 2 (Frontend) :**
-`ash
+```bash
 cd frontend
 npm run dev
-`
+```
 
 ---
 
@@ -222,17 +205,17 @@ npm run dev
 ### Logique d'export Excel
 
 - **Format plat** : 1 ligne = 1 piece (plan) ou 1 produit (facture)
-- **Export selectif** : depuis la liste, uniquement les documents Valides selectionnes
-- **Plans** : bouton Export aussi disponible dans la vue detaillee du plan (valide)
+- **Export selectif** : depuis la liste, uniquement les documents Valides
+- **Plans** : bouton Export dans la vue detaillee + depuis la liste
 - **Factures** : export uniquement depuis la liste des documents
 
 ---
 
 ## Tests
 
-`ash
+```bash
 python -m pytest tests/test_ocr.py -v
-`
+```
 
 ---
 
@@ -240,4 +223,4 @@ python -m pytest tests/test_ocr.py -v
 
 > Le systeme permet a un utilisateur d'uploader une facture ou un plan architectural et d'obtenir une extraction structuree fiable, avec validation humaine integree et export Excel en tableau plat exploitable.
 
-**Statut : ATTEINT** -- Fonctionnel pour les deux cas d'usage principaux.
+**Statut : ATTEINT** - Fonctionnel pour les deux cas d'usage principaux.
