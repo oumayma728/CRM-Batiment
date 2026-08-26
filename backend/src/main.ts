@@ -1,5 +1,5 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
@@ -18,12 +18,16 @@ async function bootstrap() {
     }),
   );
 
-  // CORS (autorise localhost en dev et Netlify en prod)
+  // CORS (autorise le frontend React en dev)
   app.enableCors({
-    origin: true,
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:3001',
+      'http://localhost:3002',
+    ],
     credentials: true,
   });
-
   // Swagger (documentation API interactive)
   const config = new DocumentBuilder()
     .setTitle('CRM Bâtiment — API')
