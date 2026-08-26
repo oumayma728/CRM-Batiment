@@ -1,0 +1,212 @@
+@import "tailwindcss";
+
+/*
+ * ArchAI Studio — Obsidian Dark Mode Design System
+ * Tokens extraits exactement de Stitch (stitch_buildscan_ai_saas.zip)
+ * Compatible Tailwind CSS v4 (@tailwindcss/vite)
+ */
+
+@theme {
+  /* ── Colors (Dark Mode Obsidian) ── */
+  --color-surface: #12131a;
+  --color-surface-dim: #12131a;
+  --color-surface-bright: #383940;
+  --color-surface-container-lowest: #0c0e14;
+  --color-surface-container-low: #1a1b22;
+  --color-surface-container: #1e1f26;
+  --color-surface-container-high: #282a31;
+  --color-surface-container-highest: #33343c;
+  --color-surface-variant: #33343c;
+  --color-surface-tint: #c0c1ff;
+  --color-on-surface: #e2e1eb;
+  --color-on-surface-variant: #c7c4d7;
+  --color-on-background: #e2e1eb;
+  --color-background: #12131a;
+  --color-inverse-surface: #e2e1eb;
+  --color-inverse-on-surface: #2f3037;
+
+  --color-primary: #c0c1ff;
+  --color-on-primary: #1000a9;
+  --color-primary-container: #8083ff;
+  --color-on-primary-container: #0d0096;
+  --color-inverse-primary: #494bd6;
+  --color-primary-fixed: #e1e0ff;
+  --color-primary-fixed-dim: #c0c1ff;
+
+  --color-secondary: #c8c6c8;
+  --color-on-secondary: #313032;
+  --color-secondary-container: #474649;
+  --color-on-secondary-container: #b7b4b7;
+
+  --color-tertiary: #c8c5ca;
+  --color-on-tertiary: #303033;
+  --color-tertiary-container: #929094;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-outline: #908fa0;
+  --color-outline-variant: #464554;
+
+  --color-success-emerald: #10B981;
+  --color-warning-amber: #F59E0B;
+  --color-error-crimson: #EF4444;
+
+
+  /* ── Spacing ── */
+  --spacing-base: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 64px;
+  --spacing-gutter: 20px;
+  --spacing-margin: 24px;
+
+  /* ── Font Families ── */
+  --font-headline-xl: "Geist", sans-serif;
+  --font-headline-lg: "Geist", sans-serif;
+  --font-headline-lg-mobile: "Geist", sans-serif;
+  --font-body-md: "Inter", sans-serif;
+  --font-body-sm: "Inter", sans-serif;
+  --font-label-mono: "JetBrains Mono", monospace;
+  --font-button: "Inter", sans-serif;
+
+  /* ── Font Sizes ── */
+  --text-headline-xl: 48px;
+  --text-headline-xl--line-height: 56px;
+  --text-headline-xl--letter-spacing: -0.02em;
+  --text-headline-xl--font-weight: 700;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--letter-spacing: -0.01em;
+  --text-headline-lg--font-weight: 600;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 600;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+
+  --text-label-mono: 12px;
+  --text-label-mono--line-height: 16px;
+  --text-label-mono--letter-spacing: 0.05em;
+  --text-label-mono--font-weight: 500;
+
+  --text-button: 14px;
+  --text-button--line-height: 20px;
+  --text-button--font-weight: 600;
+}
+
+/* ── Base ── */
+body {
+  background-color: #09090b;
+  color: #e2e1eb;
+  font-family: "Inter", sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Glass Panel (from Stitch) ── */
+.glass-panel {
+  background: rgba(17, 17, 20, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* ── Primary Button (from Stitch) ── */
+.btn-primary {
+  background-color: #c0c1ff;
+  color: #1000a9;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border: none;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* ── Dropzone pulse animation (from Stitch) ── */
+.dropzone-pulse {
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% { border-color: rgba(255, 255, 255, 0.08); }
+  50% { border-color: #c0c1ff; }
+  100% { border-color: rgba(255, 255, 255, 0.08); }
+}
+
+/* ── Loading ring spinner (from Stitch) ── */
+.loading-ring {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #c0c1ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Glass Card (from Stitch Analytics) ── */
+.glass-card {
+  background-color: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ── Obsidian Glow Background (from Stitch) ── */
+.bg-obsidian-glow {
+  background: radial-gradient(circle at center, rgba(192, 193, 255, 0.05) 0%, transparent 70%);
+}
+
+/* ── SVG Sparkline (from Stitch) ── */
+.sparkline {
+  fill: none;
+  stroke: #c0c1ff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Gauge (from Stitch) ── */
+.gauge-bg {
+  fill: none;
+  stroke: #33343c;
+  stroke-width: 8;
+}
+
+.gauge-value {
+  fill: none;
+  stroke: #c0c1ff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 251.2;
+  stroke-dashoffset: 12.56;
+}

@@ -1,0 +1,177 @@
+[
+  {
+    "file": "facture_01_classic_blue.pdf",
+    "numero_facture": "2026/104",
+    "date_facture": "28/01/2026",
+    "montant_ht": 1553.4,
+    "montant_tva": 46.6,
+    "montant_ttc": 1600.0,
+    "produits": [
+      "TRINA SOLAR VERTEX S 440W",
+      "Onduleur Hybride Huawei SUN2000L-8KTL-M1",
+      "Main d'oeuvre Panneaux Photovoltaïques",
+      "Forfait matériel de montage",
+      "Optimiseurs Huawei P-450"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_02_emerald_modern.pdf",
+    "numero_facture": "2026/210",
+    "date_facture": "15/02/2026",
+    "montant_ht": 5760.0,
+    "montant_tva": 1124.8,
+    "montant_ttc": 6884.8,
+    "produits": [
+      "Panneau Solaire DualSun FLASH 450W",
+      "Onduleur Hybride Huawei SUN2000-10KTL-M1",
+      "Batterie Huawei LUNA2000 10kWh",
+      "Structure de surimposition K2 Systems"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_03_dark_orange.pdf",
+    "numero_facture": "2026/305",
+    "date_facture": "03/03/2026",
+    "montant_ht": 3430.0,
+    "montant_tva": 102.9,
+    "montant_ttc": 3532.9,
+    "produits": [
+      "PAC Air/Eau Daikin Altherma 3 H HT (12 kW)",
+      "Module Intérieur Hydrokit",
+      "Ballon Tampon Hydraulique 100L",
+      "Thermostat Tactile Daikin Madoka"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_04_slate_ev.pdf",
+    "numero_facture": "2026/412",
+    "date_facture": "18/03/2026",
+    "montant_ht": 1762.0,
+    "montant_tva": 52.86,
+    "montant_ttc": 1814.86,
+    "produits": [
+      "Panneau SunPower Maxeon 3 420W",
+      "Onduleur Hybride SolarEdge SE6K-RWS",
+      "Borne de Recharge SolarEdge Smart EV 22kW",
+      "Optimiseurs SolarEdge S440"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_05_purple_thermo.pdf",
+    "numero_facture": "2026/520",
+    "date_facture": "05/04/2026",
+    "montant_ht": 2740.0,
+    "montant_tva": 82.2,
+    "montant_ttc": 2822.2,
+    "produits": [
+      "Boiler Thermodynamique Atlantic Explorer 270L",
+      "Gaine d'extraction/aspiration isolée",
+      "Groupe de sécurité sanitaire"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_06_dark_futuristic.pdf",
+    "numero_facture": "2026/615",
+    "date_facture": "22/04/2026",
+    "montant_ht": 3455.0,
+    "montant_tva": 103.65,
+    "montant_ttc": 3558.65,
+    "produits": [
+      "Panneau Solaire Meyer Burger Black 430W",
+      "Onduleur Triphasé SMA Sunny Tripower 10.0",
+      "Lestage toiture terrasse K2 Dome"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_07_cream_editorial.pdf",
+    "numero_facture": "2026/728",
+    "date_facture": "10/05/2026",
+    "montant_ht": 5500.0,
+    "montant_tva": 165.0,
+    "montant_ttc": 5665.0,
+    "produits": [
+      "Structure Carport Aluminium Double Pente",
+      "Panneaux Solaires Biverre SunGrown BIPV 420W",
+      "Borne de Recharge Fronius Wattpilot 11kW"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_08_split_sidebar.pdf",
+    "numero_facture": "2026/834",
+    "date_facture": "28/05/2026",
+    "montant_ht": 3300.0,
+    "montant_tva": 687.0,
+    "montant_ttc": 3987.0,
+    "produits": [
+      "Panneau AIKO Neostar 2S+ 450W",
+      "Micro-onduleurs Enphase IQ8P",
+      "Système de batterie Enphase IQ Battery 5P"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_09_asymmetric_grid.pdf",
+    "numero_facture": "2026/942",
+    "date_facture": "14/06/2026",
+    "montant_ht": 3100.0,
+    "montant_tva": 1549.0,
+    "montant_ttc": 4649.0,
+    "produits": [
+      "Panneau Solaire REC Alpha Pure-R 425W",
+      "Batterie & Onduleur Tesla Powerwall 3",
+      "Tesla Backup Gateway 2"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_10_tech_matrix.pdf",
+    "numero_facture": "2026/1050",
+    "date_facture": "02/07/2026",
+    "montant_ht": 2590.0,
+    "montant_tva": 721.7,
+    "montant_ttc": 3311.7,
+    "produits": [
+      "Panneau Luxor ECO LINE N-Type 450W",
+      "Onduleur Hybride Sungrow SH10RT 10kW",
+      "Batterie Sungrow SBR096 (9.6 kWh)"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "facture_11_hero_circle.pdf",
+    "numero_facture": "2026/1165",
+    "date_facture": "20/07/2026",
+    "montant_ht": 2510.0,
+    "montant_tva": 1041.3,
+    "montant_ttc": 3551.3,
+    "produits": [
+      "Panneau SolarWatt Panel Vision AM 4.0 430W",
+      "Onduleur Hybride Fronius Symo GEN24 10.0",
+      "Batterie LG Energy Solution RESU 16H PRIME"
+    ],
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  },
+  {
+    "file": "Facture_104__2___1_.pdf",
+    "numero_facture": "2026/104",
+    "date_facture": "28/01/2026",
+    "montant_ht": 1553.4,
+    "montant_tva": 46.6,
+    "montant_ttc": 1600.0,
+    "produits": [
+      "TRINA SOLAR VERTEX S 440w N-TYPE",
+      "Onduleur Hybride Huawei Sun2000L-8KTL-M1",
+      "Main d'oeuvre Panneaux Photovoltaïques",
+      "Forfait matériel de montage"
+    ],
+    "note": "document reel original (le meme que classic_blue, mais mise en page brute/OCR)",
+    "nom_fournisseur": "PRONERGY LUXEMBOURG (Serenity Solution SARL)"
+  }
+]

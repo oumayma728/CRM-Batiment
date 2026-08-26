@@ -1,0 +1,31 @@
+﻿# ============================================================
+# ArchAI — Backend Python 3.12
+# ============================================================
+
+# --- Framework API ---
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic[email]
+pydantic-settings
+python-dotenv
+
+# --- Base de donnees ---
+sqlalchemy
+
+# --- OCR & Vision IA ---
+pymupdf
+pillow
+numpy
+easyocr
+pytesseract
+google-genai
+mistralai
+groq
+
+# --- Monitoring ---
+prometheus_client
+
+# --- Optionnel (moteurs payants — decommenter si budget valide) ---
+# openai
+# anthropic

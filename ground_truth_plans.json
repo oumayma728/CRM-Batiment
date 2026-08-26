@@ -1,0 +1,50 @@
+[
+  {
+    "document_id": "plan_01_synthetique",
+    "document_type": "plan",
+    "source_file": "Plans/exemple_plan_architectural.pdf",
+    "pieces": [
+      {"nom": "Salon", "cotes": ["4.50m"], "surface_m2": 14.5},
+      {"nom": "Cuisine", "cotes": ["3.20m"], "surface_m2": 8.2},
+      {"nom": "Chambre 1", "cotes": ["3.10m"], "surface_m2": 10.1},
+      {"nom": "SDB", "cotes": ["2.40m"], "surface_m2": 4.6},
+      {"nom": "Chambre 2", "cotes": ["2.90m", "2.60m"], "surface_m2": 9.3}
+    ],
+    "surface_totale_m2": 46.7,
+    "notes": "Gabarit synthetique de test, pas un vrai plan. Valeurs directement lisibles, aucune ambiguite."
+  },
+  {
+    "document_id": "plan_02_reel_aps_villa",
+    "document_type": "plan",
+    "source_file": "Plans/APS_VILLA_.pdf",
+    "pieces": [
+      {"nom": "Magasin", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "SDB", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "SDB 2", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "WC", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "WC Compteur", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Chambre 1", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Cuisine Bar", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Chambre 2", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "SAM", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Couloirs", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Dressing", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Chambre principale", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Salon", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Terrasse principale", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Lessive", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Douche", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Jardin", "cotes": [], "surface_m2": null, "niveau": "RDC"},
+      {"nom": "Salle d'etude", "cotes": [], "surface_m2": null, "niveau": "Etage 1"},
+      {"nom": "Dressing", "cotes": [], "surface_m2": null, "niveau": "Etage 1"},
+      {"nom": "SDB", "cotes": [], "surface_m2": null, "niveau": "Etage 1"},
+      {"nom": "Salon", "cotes": [], "surface_m2": null, "niveau": "Etage 1"},
+      {"nom": "Suite", "cotes": [], "surface_m2": null, "niveau": "Etage 1"},
+      {"nom": "Terrasse 2", "cotes": [], "surface_m2": null, "niveau": "Etage 1"}
+    ],
+    "surface_rdc_m2": 192.95,
+    "surface_plancher_etage_m2": 80.10,
+    "surface_totale_m2": 273.05,
+    "notes": "Plan reel (ARCHICAD), 2 niveaux (23 pieces au total). Aucune surface par piece imprimee sur le document -- seuls les totaux par niveau le sont dans le cartouche. surface_m2=null = information absente du document, pas une valeur a deviner."
+  }
+]
