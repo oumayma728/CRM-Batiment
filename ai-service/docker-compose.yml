@@ -1,0 +1,27 @@
+# Base PostgreSQL locale pour tester ai-service (sans installer Postgres sur Windows).
+#
+# Démarrer :
+#   docker compose up -d
+#
+# Arrêter :
+#   docker compose down
+#
+# URL à mettre dans .env :
+#   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/devis_ia_test
+
+services:
+  db:
+    image: postgres:16
+    container_name: devis_ia_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: devis_ia_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - devis_ia_pgdata:/var/lib/postgresql/data
+
+volumes:
+  devis_ia_pgdata:
