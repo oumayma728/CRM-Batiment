@@ -62,6 +62,7 @@ def demarrer_generation_devis(
         devis_id=devis_id,
         company_id=company_id,
         client_id=client_id,
+        createur_id=createur_id,
         occurrences=occurrences,
         tva_pourcent=tva_pourcent,
     )
@@ -111,6 +112,22 @@ def aplatir_lignes(devis: DevisEnConstruction) -> List[dict]:
                     "coutTotal": comp.cout_total or 0,
                 }
             )
+    if devis.remise_ht > 0:
+        lignes.append(
+            {
+                "prestationId": None,
+                "description": devis.remise_libelle or "Remise commerciale",
+                "materiauId": None,
+                "serviceMainOeuvreId": None,
+                "quantite": 1,
+                "unite": "FORFAIT",
+                "prixUnitaireVente": -round(devis.remise_ht, 2),
+                "prixAchat": 0,
+                "mainOeuvre": 0,
+                "totalHT": -round(devis.remise_ht, 2),
+                "coutTotal": 0,
+            }
+        )
     return lignes
 
 
@@ -140,6 +157,8 @@ def apercu_session(devis: DevisEnConstruction) -> Dict:
         "client_id": devis.client_id,
         "taux_marge": devis.taux_marge,
         "tva_pourcent": devis.tva_pourcent,
+        "remise_ht": devis.remise_ht,
+        "remise_libelle": devis.remise_libelle,
         "occurrences": devis.occurrences,
         "alertes_fourchette": etat["alertes_fourchette"],
         "quantites_manquantes": etat["quantites_manquantes"],
@@ -240,14 +259,30 @@ def enregistrer_brouillon(devis: DevisEnConstruction) -> Dict:
         marge_pourcent=resultat_marge["marge_pourcent"],
         tva_pourcent=devis.tva_pourcent,
     )
+    numero_version = repository.create_version_devis(
+        devis_id=devis.devis_id,
+        auteur_id=devis.createur_id,
+        lignes=lignes,
+        total_ht=sum(l["totalHT"] for l in lignes),
+        total_ttc=sum(l["totalHT"] for l in lignes) * (1 + devis.tva_pourcent / 100),
+        profit=resultat_marge["marge_total_eur"],
+        marge_pourcent=resultat_marge["marge_pourcent"],
+    )
+    resultat_marge["numero_version"] = numero_version
     return resultat_marge
 
 
-def envoyer_devis(devis: DevisEnConstruction) -> Dict:
+def envoyer_devis(devis: DevisEnConstruction, email_client: str) -> Dict:
+    """Valide, produit le PDF et l'envoie avant de passer le devis à ENVOYE."""
     resultat_marge = valider_et_sauvegarder(devis)
     if not peut_envoyer_devis(resultat_marge):
         raise ValueError(
             "Envoi bloqué : " + "; ".join(a["message"] for a in resultat_marge["alertes"])
         )
+    from .email_sender import send_devis_pdf
+    from .pdf_export import build_devis_pdf
+
+    export = repository.fetch_devis_export_data(devis.devis_id)
+    send_devis_pdf(email_client, export["devis"]["reference"], build_devis_pdf(export))
     repository.update_devis_statut(devis.devis_id, "ENVOYE")
     return resultat_marge

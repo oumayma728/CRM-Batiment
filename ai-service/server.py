@@ -7,6 +7,7 @@ Serveur FastAPI + interface graphique de test du pipeline devis IA.
 from __future__ import annotations
 
 from pathlib import Path
+import re
 from typing import Dict, List, Optional
 
 import bootstrap  # noqa: F401 — charge .env
@@ -28,7 +29,7 @@ from devis_generation.pipeline import (
     envoyer_devis,
     supprimer_occurrence,
 )
-from serialization import apply_quantite_updates, session_to_dict
+from serialization import apply_quantite_updates, apply_remise_update, session_to_dict
 from toolregistry import ToolRegistry
 from toolregistry.config import ToolRegistryConfig
 
@@ -64,6 +65,8 @@ class QuantiteUpdate(BaseModel):
 class RecalcRequest(BaseModel):
     taux_marge: float = Field(..., ge=0, le=2)
     quantites: Optional[List[QuantiteUpdate]] = None
+    remise_ht: float = Field(0, ge=0)
+    remise_libelle: str = Field("Remise commerciale", max_length=120)
 
 
 class OptionsRequest(BaseModel):
@@ -78,6 +81,10 @@ class AjoutPrestationRequest(BaseModel):
     quantite_ouvrage: Optional[float] = None
     taux_marge: float = Field(0.30, ge=0, le=2)
     quantites: Optional[List[QuantiteUpdate]] = None
+
+
+class EnvoyerDevisRequest(BaseModel):
+    email_client: str = Field(..., min_length=3, max_length=320)
 
 
 def _session(devis_id: int) -> DevisEnConstruction:
@@ -177,6 +184,10 @@ def recalculer(devis_id: int, body: RecalcRequest) -> dict:
     devis = _session(devis_id)
     if body.quantites:
         apply_quantite_updates(devis, [q.model_dump() for q in body.quantites])
+    try:
+        apply_remise_update(devis, body.remise_ht, body.remise_libelle)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     appliquer_marge_et_verifier(devis, body.taux_marge)
     return _payload(devis)
 
@@ -229,16 +240,25 @@ def enregistrer(devis_id: int) -> dict:
 
 
 @app.post("/api/devis/{devis_id}/envoyer")
-def envoyer(devis_id: int) -> dict:
+def envoyer(devis_id: int, body: EnvoyerDevisRequest) -> dict:
     devis = _session(devis_id)
+    email_client = body.email_client.strip()
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email_client):
+        raise HTTPException(status_code=422, detail="Adresse e-mail client invalide.")
     try:
-        resultat = envoyer_devis(devis)
+        resultat = envoyer_devis(devis, email_client=email_client)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     del _sessions[devis_id]
-    return {"ok": True, "statut": "ENVOYE", "devis_id": devis_id, "resultat_marge": resultat}
+    return {
+        "ok": True,
+        "statut": "ENVOYE",
+        "devis_id": devis_id,
+        "email_client": email_client,
+        "resultat_marge": resultat,
+    }
 
 
 @app.post("/api/photo/analyser")

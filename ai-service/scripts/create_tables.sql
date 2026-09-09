@@ -176,3 +176,21 @@ CREATE TABLE lignes_devis (
   "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Historique immuable des sauvegardes de brouillon. Le schéma CRM complet
+-- porte aussi la relation optionnelle vers users("auteurId"). Elle reste sans
+-- clé étrangère ici car ce script minimal ne crée pas la table users.
+CREATE TABLE versions_devis (
+  id SERIAL PRIMARY KEY,
+  "devisId" INTEGER NOT NULL REFERENCES devis(id) ON DELETE CASCADE,
+  "auteurId" INTEGER,
+  "numeroVersion" INTEGER NOT NULL,
+  justification TEXT,
+  "snapshotLignes" JSONB,
+  "totalHT" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "totalTTC" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  profit DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "margePourcent" DOUBLE PRECISION NOT NULL DEFAULT 0,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX "versions_devis_devisId_idx" ON versions_devis ("devisId");

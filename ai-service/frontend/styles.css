@@ -90,7 +90,7 @@ body {
 .tab-panel.active { display: block; }
 
 label { display: block; font-weight: 600; margin-bottom: 6px; }
-textarea, input[type="number"], select {
+textarea, input[type="number"], input[type="text"], input[type="email"], select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -171,8 +171,10 @@ textarea { resize: vertical; }
 .alert-band { background: #fff4d6; color: #7a4d00; padding: 8px 14px; font-size: 13px; }
 .missing-band { background: #fde8e6; color: var(--bad); padding: 8px 14px; font-size: 13px; }
 .comps { padding: 0 14px 10px; }
-.comp { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f0ebe3; font-size: 14px; }
+.comp { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(80px, auto) minmax(110px, auto) minmax(90px, auto); gap: 10px; padding: 6px 0; border-bottom: 1px solid #f0ebe3; font-size: 14px; }
+.comp-head { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
 .comp.zero { color: #b0a89c; }
+.remise-card { border-color: #d8b477; }
 .options { padding: 0 14px 8px; display: flex; flex-wrap: wrap; gap: 10px; font-size: 14px; }
 .card-foot { background: #faf7f1; font-weight: 600; }
 

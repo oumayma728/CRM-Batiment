@@ -66,6 +66,11 @@ class DevisEnConstruction:
     devis_id: int
     company_id: int
     client_id: int
+    createur_id: Optional[int] = None
     occurrences: List[OccurrencePrestation] = field(default_factory=list)
     taux_marge: Optional[float] = None
     tva_pourcent: float = 20.0
+    # Montant HT positif saisi par le commercial. Il devient une ligne
+    # négative « Remise commerciale » dans LigneDevis et les exports.
+    remise_ht: float = 0.0
+    remise_libelle: str = "Remise commerciale"

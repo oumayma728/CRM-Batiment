@@ -128,7 +128,12 @@ async function recalculer() {
   const data = await api(`/api/devis/${state.devis.devis_id}/recalculer`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ taux_marge: tauxMarge(), quantites: quantitesPayload() }),
+    body: JSON.stringify({
+      taux_marge: tauxMarge(),
+      quantites: quantitesPayload(),
+      remise_ht: state.devis.remise_ht || 0,
+      remise_libelle: state.devis.remise_libelle || "Remise commerciale",
+    }),
   });
   applySession(data);
 }
@@ -148,8 +153,10 @@ function renderOccs() {
     const card = document.createElement("article");
     card.className = "card" + (missing ? " missing" : "");
     const alerte = occ.alerte_fourchette;
+    const borneMin = alerte?.borne_min ?? occ.prix_vente_min * (occ.quantite_ouvrage || 0);
+    const borneMax = alerte?.borne_max ?? occ.prix_vente_max * (occ.quantite_ouvrage || 0);
     const alerteHtml = alerte
-      ? `<div class="alert-band">⚠ Prix hors fourchette (attendu ${euro(occ.prix_vente_min)}–${euro(occ.prix_vente_max)}) · écart ${euro(alerte.ecart)}</div>`
+      ? `<div class="alert-band">⚠ Prix hors fourchette pour ${occ.quantite_ouvrage} ${escapeHtml(occ.unite || "")} (attendu ${euro(borneMin)}–${euro(borneMax)}) · écart ${euro(alerte.ecart)}</div>`
       : "";
     const missingHtml = missing
       ? `<div class="missing-band">Quantité d'ouvrage manquante — le devis ne peut pas être finalisé.</div>`
@@ -166,7 +173,7 @@ function renderOccs() {
       .map((c) => {
         const zero = !occ.quantite_ouvrage;
         return `<div class="comp ${zero ? "zero" : ""}">
-          <span>• ${escapeHtml(c.nom)}</span>
+          <span>${escapeHtml(c.nom)}</span>
           <span>${c.quantite_calculee ?? 0} ${escapeHtml(c.unite || "")}</span>
           <span>${euro(c.prix_vente_unitaire)}</span>
           <span>${euro(c.total_ht)}</span>
@@ -186,10 +193,25 @@ function renderOccs() {
       </div>
       ${missingHtml}${alerteHtml}
       ${opts ? `<div class="options">${opts}</div>` : ""}
-      <div class="comps">${comps}</div>
+      <div class="comps">
+        <div class="comp comp-head"><span>Composant</span><span>Quantité</span><span>Prix unitaire HT</span><span>Total HT</span></div>
+        ${comps}
+      </div>
       <div class="card-foot"><span>Sous-total prestation</span><span>${euro(occ.prix_vente_total)}</span></div>
     `;
     list.appendChild(card);
+  }
+
+  if ((state.devis.remise_ht || 0) > 0) {
+    const remise = document.createElement("article");
+    remise.className = "card remise-card";
+    remise.innerHTML = `
+      <div class="card-head">
+        <h3>${escapeHtml(state.devis.remise_libelle || "Remise commerciale")}</h3>
+        <button class="btn danger" type="button" data-del-remise>Supprimer</button>
+      </div>
+      <div class="card-foot"><span>Remise HT</span><span>−${euro(state.devis.remise_ht)}</span></div>`;
+    list.appendChild(remise);
   }
 
   list.querySelectorAll("[data-qty]").forEach((el) => el.addEventListener("input", scheduleRecalc));
@@ -226,6 +248,12 @@ function renderOccs() {
       } catch (e) {
         toast(e.message, "bad");
       }
+    })
+  );
+  list.querySelectorAll("[data-del-remise]").forEach((el) =>
+    el.addEventListener("click", async () => {
+      state.devis.remise_ht = 0;
+      await recalculer().catch((e) => toast(e.message, "bad"));
     })
   );
 }
@@ -277,11 +305,22 @@ $("btn-save").addEventListener("click", async () => {
   }
 });
 
-$("btn-send").addEventListener("click", async () => {
+$("btn-send").addEventListener("click", () => {
+  if (!state.devis) return;
+  $("modal-send").showModal();
+});
+
+$("form-send").addEventListener("submit", async (event) => {
+  event.preventDefault();
   try {
     await recalculer();
-    const data = await api(`/api/devis/${state.devis.devis_id}/envoyer`, { method: "POST" });
-    toast(`Devis #${data.devis_id} envoyé au client.`, "ok");
+    const data = await api(`/api/devis/${state.devis.devis_id}/envoyer`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email_client: $("client-email").value.trim() }),
+    });
+    $("modal-send").close();
+    toast(`Devis #${data.devis_id} envoyé à ${data.email_client}.`, "ok");
     state.devis = null;
     $("zone2-work").classList.add("hidden");
     $("zone2-empty").classList.remove("hidden");
@@ -290,6 +329,7 @@ $("btn-send").addEventListener("click", async () => {
     toast(e.message, "bad");
   }
 });
+$("cancel-send").addEventListener("click", () => $("modal-send").close());
 
 $("btn-preview").addEventListener("click", () => {
   if (!state.devis) return;
@@ -340,6 +380,30 @@ $("confirm-add").addEventListener("click", async () => {
     toast(e.message, "bad");
   }
 });
+
+$("btn-add-remise").addEventListener("click", () => {
+  if (!state.devis) return;
+  $("remise-libelle").value = state.devis.remise_libelle || "Remise commerciale";
+  $("remise-montant").value = state.devis.remise_ht || "";
+  $("modal-remise").showModal();
+});
+$("form-remise").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const montant = parseFloat($("remise-montant").value);
+  if (!Number.isFinite(montant) || montant < 0) {
+    toast("Saisissez un montant de remise HT valide.", "bad");
+    return;
+  }
+  state.devis.remise_ht = montant;
+  state.devis.remise_libelle = $("remise-libelle").value.trim() || "Remise commerciale";
+  try {
+    await recalculer();
+    $("modal-remise").close();
+  } catch (e) {
+    toast(e.message, "bad");
+  }
+});
+$("cancel-remise").addEventListener("click", () => $("modal-remise").close());
 
 /* Photo */
 const drop = $("dropzone");

@@ -130,23 +130,33 @@ def verifier_fourchette(occurrences: List[OccurrencePrestation]) -> List[Dict]:
         if occ.quantite_ouvrage is None:
             continue
 
-        if occ.prix_vente_total < occ.prix_vente_min:
+        # prixVenteMin/prixVenteMax sont les bornes d'UNE unité de prestation.
+        # Une occurrence porte sur plusieurs unités (m², ml, pièce...) : les
+        # bornes de comparaison doivent donc être mises à l'échelle.
+        borne_min = round(occ.prix_vente_min * occ.quantite_ouvrage, 2)
+        borne_max = round(occ.prix_vente_max * occ.quantite_ouvrage, 2)
+
+        if occ.prix_vente_total < borne_min:
             alerte = {
                 "type": "FOURCHETTE_BASSE",
                 "prestation_id": occ.prestation_id,
                 "prestation_nom": occ.nom,
                 "prix_calcule": occ.prix_vente_total,
-                "borne": occ.prix_vente_min,
-                "ecart": round(occ.prix_vente_min - occ.prix_vente_total, 2),
+                "borne": borne_min,
+                "borne_min": borne_min,
+                "borne_max": borne_max,
+                "ecart": round(borne_min - occ.prix_vente_total, 2),
             }
-        elif occ.prix_vente_total > occ.prix_vente_max:
+        elif occ.prix_vente_total > borne_max:
             alerte = {
                 "type": "FOURCHETTE_HAUTE",
                 "prestation_id": occ.prestation_id,
                 "prestation_nom": occ.nom,
                 "prix_calcule": occ.prix_vente_total,
-                "borne": occ.prix_vente_max,
-                "ecart": round(occ.prix_vente_total - occ.prix_vente_max, 2),
+                "borne": borne_max,
+                "borne_min": borne_min,
+                "borne_max": borne_max,
+                "ecart": round(occ.prix_vente_total - borne_max, 2),
             }
         else:
             continue

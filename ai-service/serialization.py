@@ -20,8 +20,11 @@ def devis_to_dict(d: DevisEnConstruction) -> Dict[str, Any]:
         "devis_id": d.devis_id,
         "company_id": d.company_id,
         "client_id": d.client_id,
+        "createur_id": d.createur_id,
         "taux_marge": d.taux_marge,
         "tva_pourcent": d.tva_pourcent,
+        "remise_ht": d.remise_ht,
+        "remise_libelle": d.remise_libelle,
         "occurrences": [occurrence_to_dict(o) for o in d.occurrences],
     }
 
@@ -45,3 +48,13 @@ def apply_quantite_updates(
             occ.quantite_ouvrage = None
         else:
             occ.quantite_ouvrage = float(q)
+
+
+def apply_remise_update(devis: DevisEnConstruction, remise_ht: Any, remise_libelle: Any = None) -> None:
+    """Met à jour la remise de session; une remise ne peut pas être négative."""
+    montant = 0.0 if remise_ht in (None, "") else float(remise_ht)
+    if montant < 0:
+        raise ValueError("Le montant de remise doit être positif ou nul.")
+    devis.remise_ht = round(montant, 2)
+    if remise_libelle is not None:
+        devis.remise_libelle = str(remise_libelle).strip() or "Remise commerciale"

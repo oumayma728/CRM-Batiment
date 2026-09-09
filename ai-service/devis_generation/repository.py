@@ -9,6 +9,7 @@ tables/colonnes strictement identiques à shemaBD.pdf, pas de client Prisma
 """
 import os
 import time
+import json
 from contextlib import contextmanager
 from typing import List, Optional
 
@@ -180,9 +181,9 @@ def save_lignes_devis(devis_id: int, lignes: List[dict]) -> None:
     query = """
         INSERT INTO lignes_devis (
             "devisId", "prestationId", "materiauId", "serviceMainOeuvreId",
-            quantite, unite, "prixUnitaireVente", "prixAchat", "mainOeuvre",
+            description, quantite, unite, "prixUnitaireVente", "prixAchat", "mainOeuvre",
             "totalHT", "coutTotal", ordre, "createdAt", "updatedAt"
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), now())
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), now())
     """
     with _connection() as conn:
         with conn.cursor() as cur:
@@ -195,6 +196,7 @@ def save_lignes_devis(devis_id: int, lignes: List[dict]) -> None:
                         ligne["prestationId"],
                         ligne["materiauId"],
                         ligne["serviceMainOeuvreId"],
+                        ligne.get("description"),
                         ligne["quantite"],
                         ligne["unite"],
                         ligne["prixUnitaireVente"],
@@ -233,6 +235,91 @@ def update_devis_totaux(
                 query,
                 (total_ht, total_tva, total_ttc, cout_total, profit, marge_pourcent, tva_pourcent, devis_id),
             )
+
+
+def create_version_devis(
+    devis_id: int,
+    auteur_id: Optional[int],
+    lignes: List[dict],
+    total_ht: float,
+    total_ttc: float,
+    profit: float,
+    marge_pourcent: float,
+    justification: Optional[str] = None,
+) -> int:
+    """Archive l'état du brouillon et synchronise devis.versionCourante.
+
+    Le numéro est déterminé depuis les versions réellement présentes : le
+    premier enregistrement crée donc la version 1, puis 2, 3, etc., même si
+    la colonne devis.versionCourante possède déjà sa valeur par défaut.
+    """
+    next_version_query = '''
+        SELECT COALESCE(MAX("numeroVersion"), 0) + 1
+        FROM versions_devis
+        WHERE "devisId" = %s
+    '''
+    insert_query = '''
+        INSERT INTO versions_devis (
+            "devisId", "auteurId", "numeroVersion", justification,
+            "snapshotLignes", "totalHT", "totalTTC", profit,
+            "margePourcent", "createdAt"
+        ) VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s, %s, now())
+    '''
+    update_query = '''
+        UPDATE devis
+        SET "versionCourante" = %s, "updatedAt" = now()
+        WHERE id = %s
+    '''
+    with _connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(next_version_query, (devis_id,))
+            numero_version = int(cur.fetchone()[0])
+            cur.execute(
+                insert_query,
+                (
+                    devis_id,
+                    auteur_id,
+                    numero_version,
+                    justification,
+                    json.dumps(lignes),
+                    round(total_ht, 2),
+                    round(total_ttc, 2),
+                    round(profit, 2),
+                    round(marge_pourcent, 2),
+                ),
+            )
+            cur.execute(update_query, (numero_version, devis_id))
+    return numero_version
+
+
+def fetch_devis_export_data(devis_id: int) -> dict:
+    """Retourne le devis et ses lignes déjà persistées pour le PDF client."""
+    devis_query = '''
+        SELECT d.id, d.reference, d."dateCreation", d."totalHT", d."totalTVA",
+               d."totalTTC", d."tauxTVA", c.nom AS company_nom,
+               c.adresse AS company_adresse, c.email AS company_email,
+               c.telephone AS company_telephone, cl.nom AS client_nom,
+               cl.prenom AS client_prenom
+        FROM devis d
+        JOIN companies c ON c.id = d."companyId"
+        JOIN clients cl ON cl.id = d."clientId"
+        WHERE d.id = %s
+    '''
+    lignes_query = '''
+        SELECT description, quantite, unite, "prixUnitaireVente", "totalHT", ordre
+        FROM lignes_devis
+        WHERE "devisId" = %s
+        ORDER BY ordre, id
+    '''
+    with _connection() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute(devis_query, (devis_id,))
+            devis = cur.fetchone()
+            if devis is None:
+                raise ValueError(f"Devis introuvable : id={devis_id}")
+            cur.execute(lignes_query, (devis_id,))
+            lignes = [dict(row) for row in cur.fetchall()]
+    return {"devis": dict(devis), "lignes": lignes}
 
 
 def update_devis_statut(devis_id: int, statut: str) -> None:
